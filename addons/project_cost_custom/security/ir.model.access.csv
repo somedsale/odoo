@@ -1,3 +1,0 @@
-id,name,model_id:id,group_id,perm_read,perm_write,perm_create,perm_unlink
-access_project_cost,access_project_cost,model_project_cost,,1,1,1,1
-access_project_cost_line,access_project_cost_line,model_project_cost_line,,1,1,1,1
