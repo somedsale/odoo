@@ -6,13 +6,13 @@
             <field name="inherit_id" ref="product.product_template_only_form_view"/>
             <field name="arch" type="xml">
 
-                <!-- Thêm vào sau mô tả bán hàng -->
-                <xpath expr="//page[@name='general_information']/group" position="inside">
-                    <group string="Thông tin thêm">
-                        <field name="x_thong_so"/>
-                        <field name="x_xuat_xu"/>
-                    </group>
+                <xpath expr="//page[@name='general_information']/group/group[@name='group_general']" position="inside">
+                    <field name="x_thong_so"/>
+                    <field name="x_xuat_xu"/>
                 </xpath>
+                <field name="uom_po_id" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field>
 
             </field>
         </record>
