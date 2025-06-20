@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<odoo>
-    <!-- Kế thừa template báo giá mặc định -->
+<odoo><!-- Kế thừa template báo giá mặc định -->
     <template id="custom_sale_order_report" inherit_id="sale.report_saleorder_document">
-        <xpath expr="//div[@class='page']" position="replace">
-            <!-- Tùy chỉnh layout mới -->
-
-            <div class=""
-                style="font-family: Arial, sans-serif; border: 1px solid #ddd; padding: 20px; margin-top:100px">
+        <xpath expr="//div[@class=&apos;page&apos;]" position="replace"><!-- Tùy chỉnh layout mới -->
+            <div class="" style="font-family: &apos;Times New Roman&apos;, Times, serif;color:#000 !important; margin: 10px;">
                 <div style="width:100%; text-align:center">
-                    <h2>BẢNG BÁO GIÁ</h2>
+                    <h2 style="font-weight: bold;">BẢNG BÁO GIÁ</h2>
                 </div>
-                <p>Khách hàng: <span t-field="doc.partner_id.name" /></p>
-                <p>Ngày báo giá: <span t-field="doc.date_order" /></p>
+                <p>Nhân viên kinh doanh: <span t-field="doc.user_id.name"/>
+                </p>
+                <p>Khách hàng: <span t-field="doc.partner_id.name"/>
+                </p>
+                <p>Ngày báo giá: <span t-field="doc.date_order"/>
+                </p>
                 <p> Lời đầu tiên Công ty TNHH giải pháp kỹ thuật Y tế Miền Nam xin gửi Quý khách
                     hàng lời chúc sức khỏe và lời chào trân trọng nhất!</p>
                 <p>Công ty TNHH giải pháp kỹ thuật Y tế Miền Nam xin gửi Quý khách hàng bảng báo giá
                     sản phẩm, vật tư theo yêu cầu từ Quý khách hàng, cụ thể như sau:</p>
-                <table class="table table-bordered">
+                <table class="table table-bordered border-dark border-2" style="color:#000 !important;font-weight: bold;">
                     <thead>
-                        <tr>
+                        <tr class="table-bordered border-dark border-2">
                             <th>STT</th>
                             <th>Sản phẩm</th>
                             <th>Thông số</th>
@@ -30,51 +30,122 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <t t-set="stt" t-value="0" />
+                        <t t-set="stt" t-value="0"/>
                         <tr t-foreach="doc.order_line" t-as="line">
-                            <t t-set="stt" t-value="stt + 1" />
+                            <t t-set="stt" t-value="stt + 1"/>
                             <td>
-                                <span t-esc="stt" />
+                                <span t-esc="stt"/>
                             </td>
                             <td>
-                                <span t-field="line.product_id.name" />
+                                <span t-field="line.product_id.name"/>
+                            </td>
+                            <td><!-- <span t-field="line.x_thongso" /> --></td>
+                            <td><!-- <span t-field="line.x_xuatxu" /> --></td>
+                            <td>
+                                <span t-field="line.product_uom"/>
                             </td>
                             <td>
-                                <span t-field="line.product_id.description_sale" />
+                                <span t-field="line.product_uom_qty"/>
                             </td>
                             <td>
-                                <span t-field="line.product_uom_qty" />
+                                <span t-field="line.price_unit"/>
                             </td>
                             <td>
-                                <span />
+                                <span t-field="line.price_subtotal"/>
                             </td>
+                        </tr>
+                        <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
+                            <td></td>
                             <td>
-                                <span t-field="line.product_uom_qty" />
+                                Tổng
                             </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
                             <td>
-                                <span t-field="line.price_unit" />
+                                <span t-field="doc.amount_untaxed"/>
                             </td>
+                        </tr>
+                        <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3 color:#000 !important;font-weight: bold;">
+                            <td></td>
+                            <td t-attf-class="text-start {{ &apos;d-none d-md-table-cell&apos; if report_type == &apos;html&apos; else &apos;&apos; }}">
+                                VAT <span t-out="&apos;, &apos;.join(str(int(x.amount)) + &apos;%&apos; for x in line.tax_id) or &apos;&apos;"/>
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
                             <td>
-                                <span t-field="line.price_subtotal" />
+                                <span t-field="doc.amount_tax"/>
+                            </td>
+                        </tr>
+                        <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3 color:#000 !important;font-weight: bold;">
+                            <td></td>
+                            <td>
+                                Tổng cộng
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                <span t-field="doc.amount_total"/>
                             </td>
                         </tr>
                     </tbody>
-                </table>
-                <p>Tổng cộng: <span t-field="doc.amount_total" /></p>
-                <div>
+                </table><!-- <p>Tổng cộng: <span t-field="doc.amount_total" /></p> -->
+                <div style="font-size:14px; line-height:1.2">
                     <p>Điều kiện thương mại:</p>
                     <p>1. Báo giá đã bao gồm Thuế VAT;</p>
                     <p>2. Báo giá đã bao gồm lắp đặt và vận chuyển</p>
                     <p>3. Thời gian giao hàng: 05 - 07 Tuần kể từ ngày tạm ứng</p>
                     <p>4. Thời gian bảo hành 12 tháng kể từ ngày nhận hàng;</p>
                     <p>5. Điều khoản thanh toán:</p>
-                    <p>+ Tạm ứng 50% ngay sau khi xác nhận đặt hàng;</p>
-                    <p>+ Thanh toán tới 70% sau khi nghiệm thu vật tư đầu vào</p>
-                    <p>+ Thanh toán đủ 100% sau khi nghiệm thu hoàn thành lắp đặt.</p>
+                    <p style="padding-left:10px">+ Tạm ứng 50% ngay sau khi xác nhận đặt hàng;</p>
+                    <p style="padding-left:10px">+ Thanh toán tới 70% sau khi nghiệm thu vật tư đầu
+                        vào</p>
+                    <p style="padding-left:10px">+ Thanh toán đủ 100% sau khi nghiệm thu hoàn thành
+                        lắp đặt.</p>
                     <p>6. Phương thức thanh toán: Chuyển khoản;</p>
                     <p>7. Địa điểm giao hàng: Tp Hồ Chí Minh</p>
                     <p>8. Bảng báo giá trên có hiệu lực trong vòng 15 ngày, sau đó có thể được thay
                         đổi mà không thông báo trước.</p>
+                </div>
+                <div class="row">
+                    <div class="col-6" style="text-align:center;line-height:1.8">
+                        <div>
+                            <i>Xác nhận của khách hàng</i>
+                        </div>
+                        <div>
+                            <i>(Ký tên, đóng dấu)</i>
+                        </div>
+                    </div>
+                    <div class="col-6" style="text-align:center;line-height:1.8">
+                        <div>
+                            <i>
+                                <t t-esc="doc.formatted_date"/>
+                            </i>
+                        </div>
+                        <div>
+                            <b>
+                                <i>CÔNG TY TNHH GIẢI PHÁP KỸ THUẬT
+                                    Y TẾ MIỀN NAM</i>
+                            </b>
+                        </div>
+                        <div>
+                            <b>
+                                <i>PHÒNG KINH DOANH</i>
+                            </b>
+                        </div>
+                        <div style="height:65px"></div>
+                        <div>
+                            <span t-field="doc.user_id.name"/>
+                        </div>
+                    </div>
                 </div>
             </div>
         </xpath>

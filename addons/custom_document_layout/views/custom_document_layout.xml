@@ -1,34 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<odoo>
-    <!-- Kế thừa template báo giá mặc định -->
+<odoo><!-- Kế thừa template báo giá mặc định -->
     <template id="custom_sale_order_report" inherit_id="web.external_layout_boxed">
-        <xpath expr="//div[@t-att-style='report_header_style']" position="replace">
-            <!-- Tùy chỉnh layout mới -->
-             
-         <div t-attf-class="header o_company_#{company.id}_layout" >
-
-            <div class="row">
-                <div class="col-6" style="display:flex; align-items:center">
-                    <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" alt="Logo" style="width:250px"/>
+        <xpath expr="//div[@t-att-style=&apos;report_header_style&apos;]" position="replace"><!-- Tùy chỉnh layout mới -->
+            <div t-attf-class="header o_company_#{company.id}_layout">
+                <div class="row" style="display:flex !important; align-items:center !important; border-bottom: 1px solid #ddd;margin-top:10px padding-bottom:5px">
+                    <div class="col-6">
+                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" alt="Logo" style="width:250px;"/>
+                    </div>
+                    <div class="col-6 text-end" style="line-height:0.5 !important; color:#000 !important">
+                        <p style="padding: 0; margin: 0; ">
+                            <b><i>Somed Co., Ltd</i></b>
+                        </p>
+                        <p style="padding: 0; margin: 0; ">
+                        <i>Phone:</i> <a  style=" color:#000 !important" href="tel:(+84)932760599"> <i>(+84) 932.760.599</i></a>
+                        </p>
+                        <p style="padding: 0; margin: 0; ">
+                            <a  style=" color:#000 !important" href="mailto:sales@somed.vn"><i>sales@somed.vn</i></a>
+                        </p>
+                        <p style="padding: 0; margin: 0; ">
+                            <a  style=" color:#000 !important" href="https://www.somed.vn"><i>www.somed.vn</i></a>
+                        </p>
+                    </div>
                 </div>
-                <div class="col-6 text-end">
-                    
-                        <span t-field="company.company_details"/>
-
+            </div>
+        </xpath>
+        <xpath expr="//div[@class=&apos;pt-5&apos;]" position="replace">
+            <div></div>
+        </xpath>
+        <xpath expr="//div[@t-attf-class=&apos;footer o_boxed_footer o_company_#{company.id}_layout&apos;]" position="replace">
+            <div>
+                <div class="footer" style="position: running(footer); height: 30px; width: 100%; font-family: Arial, sans-serif; text-align: center; border-top: 1px solid #ddd;padding-top:5px">
+                    <span>CÔNG TY TNHH GIẢI PHÁP KỸ THUẬT Y TẾ MIỀN NAM - All rights reserved © <t t-esc="company.name"/>
+                    </span>
                 </div>
-            </div>
-        </div>
-        </xpath>
-        <xpath expr="//div[@class='pt-5']" position="replace">
-            <div>
-
-            </div>
-        </xpath>
-                <xpath expr="//div[@t-attf-class='footer o_boxed_footer o_company_#{company.id}_layout']" position="replace">
-            <div>
-                <div class="footer" style="position: running(footer); height: 30px; width: 100%; font-family: Arial, sans-serif; text-align: center; border-top: 1px solid #ddd;">
-                <span>Custom Footer - All rights reserved © <t t-esc="company.name"/></span>
-            </div>
             </div>
         </xpath>
     </template>
