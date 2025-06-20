@@ -4,7 +4,7 @@
     "author": "Duy Dev",
     "category": "Sales",
     "summary": "Show Thông số và Xuất xứ in Quotation Line",
-    "depends": ["sale", "product"],
+    "depends": ["sale", "product", "product_custom_info"],
     "data": [
         "views/sale_order_views.xml",
     ],
