@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Kế thừa template báo giá mặc định -->
+    <template id="custom_sale_order_report" inherit_id="sale.report_saleorder_document">
+        <xpath expr="//div[@class='page']" position="replace">
+            <!-- Tùy chỉnh layout mới -->
+
+            <div class=""
+                style="font-family: Arial, sans-serif; border: 1px solid #ddd; padding: 20px; margin-top:100px">
+                <div style="width:100%; text-align:center">
+                    <h2>BẢNG BÁO GIÁ</h2>
+                </div>
+                <p>Khách hàng: <span t-field="doc.partner_id.name" /></p>
+                <p>Ngày báo giá: <span t-field="doc.date_order" /></p>
+                <p> Lời đầu tiên Công ty TNHH giải pháp kỹ thuật Y tế Miền Nam xin gửi Quý khách
+                    hàng lời chúc sức khỏe và lời chào trân trọng nhất!</p>
+                <p>Công ty TNHH giải pháp kỹ thuật Y tế Miền Nam xin gửi Quý khách hàng bảng báo giá
+                    sản phẩm, vật tư theo yêu cầu từ Quý khách hàng, cụ thể như sau:</p>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Sản phẩm</th>
+                            <th>Thông số</th>
+                            <th>Xuất xứ</th>
+                            <th>DVT</th>
+                            <th>Khối lượng</th>
+                            <th>Đơn giá</th>
+                            <th>Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="stt" t-value="0" />
+                        <tr t-foreach="doc.order_line" t-as="line">
+                            <t t-set="stt" t-value="stt + 1" />
+                            <td>
+                                <span t-esc="stt" />
+                            </td>
+                            <td>
+                                <span t-field="line.product_id.name" />
+                            </td>
+                            <td>
+                                <span t-field="line.product_id.description_sale" />
+                            </td>
+                            <td>
+                                <span t-field="line.product_uom_qty" />
+                            </td>
+                            <td>
+                                <span />
+                            </td>
+                            <td>
+                                <span t-field="line.product_uom_qty" />
+                            </td>
+                            <td>
+                                <span t-field="line.price_unit" />
+                            </td>
+                            <td>
+                                <span t-field="line.price_subtotal" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>Tổng cộng: <span t-field="doc.amount_total" /></p>
+                <div>
+                    <p>Điều kiện thương mại:</p>
+                    <p>1. Báo giá đã bao gồm Thuế VAT;</p>
+                    <p>2. Báo giá đã bao gồm lắp đặt và vận chuyển</p>
+                    <p>3. Thời gian giao hàng: 05 - 07 Tuần kể từ ngày tạm ứng</p>
+                    <p>4. Thời gian bảo hành 12 tháng kể từ ngày nhận hàng;</p>
+                    <p>5. Điều khoản thanh toán:</p>
+                    <p>+ Tạm ứng 50% ngay sau khi xác nhận đặt hàng;</p>
+                    <p>+ Thanh toán tới 70% sau khi nghiệm thu vật tư đầu vào</p>
+                    <p>+ Thanh toán đủ 100% sau khi nghiệm thu hoàn thành lắp đặt.</p>
+                    <p>6. Phương thức thanh toán: Chuyển khoản;</p>
+                    <p>7. Địa điểm giao hàng: Tp Hồ Chí Minh</p>
+                    <p>8. Bảng báo giá trên có hiệu lực trong vòng 15 ngày, sau đó có thể được thay
+                        đổi mà không thông báo trước.</p>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

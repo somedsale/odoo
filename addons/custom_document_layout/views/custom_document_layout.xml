@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Kế thừa template báo giá mặc định -->
+    <template id="custom_sale_order_report" inherit_id="web.external_layout_boxed">
+        <xpath expr="//div[@t-att-style='report_header_style']" position="replace">
+            <!-- Tùy chỉnh layout mới -->
+             
+         <div t-attf-class="header o_company_#{company.id}_layout" >
+
+            <div class="row">
+                <div class="col-6" style="display:flex; align-items:center">
+                    <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" alt="Logo" style="width:250px"/>
+                </div>
+                <div class="col-6 text-end">
+                    
+                        <span t-field="company.company_details"/>
+
+                </div>
+            </div>
+        </div>
+        </xpath>
+        <xpath expr="//div[@class='pt-5']" position="replace">
+            <div>
+
+            </div>
+        </xpath>
+                <xpath expr="//div[@t-attf-class='footer o_boxed_footer o_company_#{company.id}_layout']" position="replace">
+            <div>
+                <div class="footer" style="position: running(footer); height: 30px; width: 100%; font-family: Arial, sans-serif; text-align: center; border-top: 1px solid #ddd;">
+                <span>Custom Footer - All rights reserved © <t t-esc="company.name"/></span>
+            </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

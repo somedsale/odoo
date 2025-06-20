@@ -1,14 +1,13 @@
 {
     'name': 'Custom Quotation Layout',
     'version': '1.0',
-    'summary': 'Customize quotation layout for Odoo',
-    'depends': ['sale'],  # Module này phụ thuộc vào module sale
+    'category': 'Sales',
+    'summary': 'Custom layout for sale quotation with logo and company info',
+    'depends': ['sale', 'web'],
     'data': [
-        'views/sale_order_views.xml',  # File XML chứa tùy chỉnh giao diện
-    ],
-    'css': [
-    'static/css/custom_quotation.css',
+        'views/report_quotation.xml',
+        
     ],
     'installable': True,
-    'auto_install': False,
+    'application': False,
 }
