@@ -1,0 +1,187 @@
+<odoo>
+    <template id="custom_sale_order_portal_content_test" inherit_id="sale.sale_order_portal_content">
+        <xpath expr="//div[@id='sale_info']" position="replace">
+            <div id="sale_info" class="col-12 col-lg-6 mb-4">
+                <span id="sale_info_title">
+                    <h4 class="mb-1">Thông tin</h4>
+                    <hr class="mt-1 mb-2"/>
+                </span>
+                <table class="table table-borderless table-sm">
+                    <tbody style="white-space:nowrap" id="sale_info_table">
+                        <tr>
+                            <th t-if="sale_order.state in ['sale', 'cancel']" class="ps-0 pb-0">Ngày đặt:</th>
+                            <th t-else="" class="ps-0 pb-0">Ngày:</th>
+                            <td class="w-100 pb-0 text-wrap">
+                                <span t-field="sale_order.date_order" t-options='{"widget": "date"}'/>
+                            </td>
+                        </tr>
+                        <tr t-if="sale_order.validity_date and sale_order.state in ['draft', 'sent']">
+                            <th class="ps-0 pb-0">Ngày hết hạn:</th>
+                            <td class="w-100 pb-0 text-wrap">
+                                <span t-field="sale_order.validity_date" t-options='{"widget": "date"}'/>
+                            </td>
+                        </tr>
+                        <tr t-if="sale_order.client_order_ref">
+                            <th class="ps-0 pb-0">Tham chiếu:</th>
+                            <td class="w-100 pb-0 text-wrap">
+                                <span t-field="sale_order.client_order_ref"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </xpath>
+        <xpath expr="//div[@id='customer_info']" position="replace">
+            <!-- ======  Customer Information  ====== -->
+            <div id="customer_info" class="col-12 col-lg-6 mb-4">
+                <h4 class="mb-1">
+                    <t t-if="sale_order.partner_shipping_id == sale_order.partner_invoice_id">
+                Chi phí và địa chỉ giao hàng
+                    </t>
+                    <t t-else="">
+                Địa chỉ thanh toán
+                    </t>
+                    <small t-if="sale_order.partner_id == sale_order.partner_invoice_id == sale_order.env.user.partner_id">
+                        <a class="small" t-attf-href="/my/account?redirect={{sale_order.get_portal_url()}}">
+                            <i class="fa fa-fw fa-pencil"/>
+                        </a>
+                    </small>
+                </h4>
+                <hr class="mt-1 mb-2"/>
+                <div t-field="sale_order.partner_invoice_id" t-options="{'widget': 'contact', 'fields': ['name', 'address', 'phone', 'email']}"/>
+                <span t-if="sale_order.partner_shipping_id != sale_order.partner_invoice_id" id="shipping_address" class="col-lg-6">
+                    <br/>
+                    <h4 class="mb-1">
+                Địa chỉ vận chuyển
+                    </h4>
+                    <hr class="mt-1 mb-2"/>
+                    <div t-field="sale_order.partner_shipping_id" t-options='{ "widget": "contact", "fields": [ "name", "address"]}'/>
+                </span>
+            </div>
+
+            <t t-set="invoices" t-value="sale_order.invoice_ids.filtered(lambda i: i.state not in ['draft', 'cancel']).sorted('date', reverse=True)[:3]"/>
+            <div id="sale_invoices" t-if="invoices and sale_order.state in ['sale', 'cancel']" class="col-12 col-lg-6 mb-4">
+                <h4 class="mb-1">Hóa đơn cuối cùng</h4>
+                <hr class="mt-1 mb-2"/>
+                <t t-foreach="invoices" t-as="i">
+                    <t t-set="report_url" t-value="i.get_portal_url()"/>
+                    <t t-set="authorized_tx_ids" t-value="i.authorized_transaction_ids"/>
+                    <div class="d-flex flex-column">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <a t-att-href="report_url">
+                                <span t-out="i.name"/>
+                            </a>
+                            <div t-if="i.payment_state in ('paid', 'in_payment')" class="small badge text-bg-success orders_label_text_align">
+                                <i class="fa fa-fw fa-check"/>
+                                    Chi trả
+                            </div>
+                            <div t-elif="i.payment_state == 'reversed'" class="small badge text-bg-success orders_label_text_align">
+                                <i class="fa fa-fw fa-check"/>
+                                Hoàn trả
+                            </div>
+                            <div t-elif="authorized_tx_ids" class="small badge text-bg-success orders_label_text_align">
+                                <i class="fa fa-fw fa-check"/>
+                                        Authorized
+                            </div>
+                            <div t-else="" class="small badge text-bg-info orders_label_text_align">
+                                <i class="fa fa-fw fa-clock-o"/>
+                                Đợi thanh toán
+                            </div>
+                        </div>
+                        <div class="small d-lg-inline-block">Ngày: <span class="text-muted" t-field="i.invoice_date"/>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </xpath>
+        <!-- Table -->
+        <xpath expr="//table[@id='sales_order_table']" position="replace">
+            <div class="table-responsive">
+                <table t-att-data-order-id="sale_order.id" t-att-data-token="sale_order.access_token" class="table table-sm" id="sales_order_table">
+                    <thead class="bg-100">
+                        <tr>
+                            <th class="text-start">STT</th>
+                            <th class="text-start" id="product_name_header">Sản phẩm</th>
+                            <th class="text-start" id="product_ts">Thông số</th>
+                            <th class="text-start" id="product_xs">Xuất sứ</th>
+
+                            <th class="text-start" id="product_qty_header">Số lượng</th>
+                            <th class="text-start" id="product_uom_header">Đơn vị</th>
+                            <th t-attf-class="text-start {{ 'd-none d-sm-table-cell' if report_type == 'html' else '' }}">
+                                Giá sản phẩm
+                            </th>
+
+                            <th t-attf-class="text-start {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}" id="taxes_header">
+                                Thuế
+                            </th>
+                            <th class="text-start">Tạm tính</th>
+                        </tr>
+                    </thead>
+                    <tbody class="sale_tbody">
+
+                        <t t-set="current_subtotal" t-value="0"/>
+                        <t t-set="lines_to_report" t-value="sale_order._get_order_lines_to_report()"/>
+
+                        <t t-foreach="lines_to_report" t-as="line" t-index="line_index" t-last="line_last">
+                            <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal"/>
+
+                            <tr t-att-class="'bg-200 fw-bold o_line_section' if line.display_type == 'line_section' else 'fst-italic o_line_note' if line.display_type == 'line_note' else ''">
+                                <t t-if="not line.display_type">
+                                    <!-- Sản phẩm -->
+                                    <td class="text-start">
+                                        <t t-out="line_index + 1"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="line.name"/>
+                                    </td>
+                                    <td>
+                                        <span>Thông số</span>
+                                    </td>
+                                    <td>
+                                        <span>Xuất sứ</span>
+                                    </td>
+
+                                    <!-- Số lượng -->
+                                    <td class="text-start">
+                                        <span t-field="line.product_uom_qty"/>
+                                    </td>
+
+                                    <!-- Đơn vị -->
+                                    <td class="text-start">
+                                        <span t-field="line.product_uom"/>
+                                    </td>
+
+                                    <!-- Giá sản phẩm -->
+                                    <td t-attf-class="text-start {{ 'd-none d-sm-table-cell' if report_type == 'html' else '' }}">
+                                        <div t-if="line.discount &gt;= 0" t-field="line.price_unit" t-att-style="line.discount and 'text-decoration: line-through' or None" t-att-class="(line.discount and 'text-danger' or '') + ' text-start'" />
+                                        <div t-if="line.discount">
+                                            <t t-out="(1-line.discount / 100.0) * line.price_unit" t-options='{"widget": "float", "decimal_precision": "Product Price"}'/>
+                                        </div>
+                                    </td>
+
+
+                                    <!-- Thuế -->
+                                    <td t-attf-class="text-start {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}">
+                                        <span t-out="', '.join(map(lambda x: (x.description or x.name), line.tax_id))"/>
+                                    </td>
+
+                                    <!-- Tạm tính -->
+                                    <td t-if="not line.is_downpayment" class="text-start">
+                                        <span class="oe_order_line_price_subtotal" t-field="line.price_subtotal"/>
+                                    </td>
+                                </t>
+
+
+                            </tr>
+
+
+
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+
+        </xpath>
+
+    </template>
+</odoo>
