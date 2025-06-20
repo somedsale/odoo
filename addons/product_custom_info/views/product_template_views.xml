@@ -9,6 +9,7 @@
                 <xpath expr="//page[@name='general_information']/group/group[@name='group_general']" position="inside">
                     <field name="x_thong_so"/>
                     <field name="x_xuat_xu"/>
+                    <field name="x_hang_sx"/>
                 </xpath>
                 <field name="uom_po_id" position="attributes">
                     <attribute name="invisible">1</attribute>

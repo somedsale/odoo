@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_estimated_delivery_time_user,access.estimated.delivery.time.user,model_estimated_delivery_time,,1,1,1,1
+access_warranty_duration_user,access.warranty.duration.user,model_warranty_duration,,1,1,1,1
