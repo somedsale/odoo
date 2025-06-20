@@ -9,7 +9,26 @@
                 <xpath expr="//field[@name='order_line']/tree/field[@name='name']" position="after">
                     <field name="x_thongso" />
                     <field name="x_xuatxu"/>
+                    <field name="x_hangsx"/>
                 </xpath>
+                <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="is_including_transport"/>
+                    <field name="is_including_installation"/>
+                    <field name="x_estimated_delivery_time_id" options="{'no_create': False}" />
+                    <field name="x_warranty_duration_id" options="{'no_create': False}"/>
+                </xpath>
+                <t t-if="o.x_custom_payment_terms">
+                    <p>
+                        <strong>Điều khoản thanh toán:</strong>
+                    </p>
+                    <ul>
+                        <t t-foreach="o.x_custom_payment_terms.splitlines()" t-as="line">
+                            <li>
+                                <t t-esc="line"/>
+                            </li>
+                        </t>
+                    </ul>
+                </t>
 
             </field>
         </record>
