@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<odoo><!-- Kế thừa template báo giá mặc định -->
+<odoo>    <!-- Kế thừa template báo giá mặc định -->
     <template id="custom_sale_order_report" inherit_id="sale.report_saleorder_document">
-        <xpath expr="//div[@class=&apos;page&apos;]" position="replace"><!-- Tùy chỉnh layout mới -->
+        <xpath expr="//div[@class=&apos;page&apos;]" position="replace">            <!-- Tùy chỉnh layout mới -->
             <div class="" style="font-family: &apos;Times New Roman&apos;, Times, serif;color:#000 !important; margin: 10px;">
                 <div style="width:100%; text-align:center">
                     <h2 style="font-weight: bold;">BẢNG BÁO GIÁ</h2>
@@ -23,7 +23,7 @@
                             <th>Sản phẩm</th>
                             <th>Thông số</th>
                             <th>Xuất xứ</th>
-                            <th>DVT</th>
+                            <th>Đơn vị</th>
                             <th>Khối lượng</th>
                             <th>Đơn giá</th>
                             <th>Thành tiền</th>
@@ -39,8 +39,12 @@
                             <td>
                                 <span t-field="line.product_id.name"/>
                             </td>
-                            <td><span t-field="line.x_thongso" /></td>
-                            <td><span t-field="line.x_xuatxu" /></td>
+                            <td>
+                                <span t-field="line.x_thongso" />
+                            </td>
+                            <td>
+                                <span t-field="line.x_xuatxu" />
+                            </td>
                             <td>
                                 <span t-field="line.product_uom"/>
                             </td>
@@ -97,23 +101,46 @@
                             </td>
                         </tr>
                     </tbody>
-                </table><!-- <p>Tổng cộng: <span t-field="doc.amount_total" /></p> -->
+                </table>                <!-- <p>Tổng cộng: <span t-field="doc.amount_total" /></p> -->
                 <div style="font-size:14px; line-height:1.2">
                     <p>Điều kiện thương mại:</p>
                     <p>1. Báo giá đã bao gồm Thuế VAT;</p>
-                    <p>2. Báo giá đã bao gồm lắp đặt và vận chuyển</p>
-                    <p>3. Thời gian giao hàng: 05 - 07 Tuần kể từ ngày tạm ứng</p>
-                    <p>4. Thời gian bảo hành 12 tháng kể từ ngày nhận hàng;</p>
+                    <t t-if="doc.is_including_installation and doc.is_including_transport">
+                        <p>2. Báo giá đã bao gồm lắp đặt và vận chuyển;</p>
+                    </t>
+                    <t t-elif="doc.is_including_installation">
+                        <p>2. Báo giá đã bao gồm lắp đặt;</p>
+                    </t>
+                    <t t-elif="doc.is_including_transport">
+                        <p>2. Báo giá đã bao gồm vận chuyển;</p>
+                    </t>
+                    <t t-elif ="not doc.is_including_installation and not doc.is_including_transport">
+                        <p>2. Báo giá chưa bao gồm lắp đặt và vận chuyển;</p>
+                    </t>
+
+                    <t t-if="doc.x_estimated_delivery_time_id">
+                        <p>3. Thời gian giao hàng: <t t-out="doc.x_estimated_delivery_time_id.name"/>
+                        </p>
+                    </t>
+
+                    <t t-if="doc.x_warranty_duration_id">
+                        <p>4. Thời gian bảo hành: <t t-out="doc.x_warranty_duration_id.name"/>
+                        </p>
+                    </t>
                     <p>5. Điều khoản thanh toán:</p>
-                    <p style="padding-left:10px">+ Tạm ứng 50% ngay sau khi xác nhận đặt hàng;</p>
-                    <p style="padding-left:10px">+ Thanh toán tới 70% sau khi nghiệm thu vật tư đầu
-                        vào</p>
-                    <p style="padding-left:10px">+ Thanh toán đủ 100% sau khi nghiệm thu hoàn thành
-                        lắp đặt.</p>
+                    <div style="white-space: pre-line; line-height: 1.2;">
+                        <t t-out="doc.x_custom_payment_terms"/>
+                    </div>
                     <p>6. Phương thức thanh toán: Chuyển khoản;</p>
-                    <p>7. Địa điểm giao hàng: Tp Hồ Chí Minh</p>
-                    <p>8. Bảng báo giá trên có hiệu lực trong vòng 15 ngày, sau đó có thể được thay
-                        đổi mà không thông báo trước.</p>
+                    <t t-if="doc.x_delivery_location">
+                        <p>7. Địa điểm giao hàng: <t t-out="doc.x_delivery_location"/>
+                        </p>
+                    </t>
+                    <t t-if="doc.validity_date and doc.date_order">
+                        <t t-set="valid_days" t-value="(doc.validity_date - doc.date_order.date()).days"/>
+                        <p>8. Bảng báo giá trên có hiệu lực trong vòng <t t-out="valid_days"/>
+ ngày, sau đó có thể được thay đổi mà không thông báo trước.</p>
+                    </t>
                 </div>
                 <div class="row">
                     <div class="col-6" style="text-align:center;line-height:1.8">

@@ -20,10 +20,12 @@ class SaleOrder(models.Model):
     )
     x_custom_payment_terms = fields.Text(
     string="Điều khoản thanh toán tùy chỉnh",
-    default="""+ Tạm ứng 50%% ngay sau khi xác nhận đặt hàng;
-+ Thanh toán tới 70%% sau khi nghiệm thu vật tư đầu vào;
-+ Thanh toán đủ 100%% sau khi nghiệm thu hoàn thành lắp đặt."""
-)
+    default="hehehehe")
+
+    x_delivery_location = fields.Text(
+        string="Địa điểm giao hàng"
+    )
+
 
 
 
