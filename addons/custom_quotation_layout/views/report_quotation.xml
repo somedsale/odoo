@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<odoo><!-- Kế thừa template báo giá mặc định -->
+<odoo>    <!-- Kế thừa template báo giá mặc định -->
     <template id="custom_sale_order_report" inherit_id="sale.report_saleorder_document">
-        <xpath expr="//div[@class=&apos;page&apos;]" position="replace"><!-- Tùy chỉnh layout mới -->
+        <xpath expr="//div[@class=&apos;page&apos;]" position="replace">            <!-- Tùy chỉnh layout mới -->
             <div class="" style="font-family: &apos;Times New Roman&apos;, Times, serif;color:#000 !important; margin: 10px;">
                 <div style="width:100%; text-align:center">
                     <h2 style="font-weight: bold;">BẢNG BÁO GIÁ</h2>
@@ -17,8 +17,8 @@
                 <p>Công ty TNHH giải pháp kỹ thuật Y tế Miền Nam xin gửi Quý khách hàng bảng báo giá
                     sản phẩm, vật tư theo yêu cầu từ Quý khách hàng, cụ thể như sau:</p>
                 <table class="table" style="font-family: &apos;Times New Roman&apos;, Times, serif !important; color:#000 !important;">
-                    
-                    
+
+
                     <tbody>
                         <tr class="table-bordered border-dark border-2" style="height:auto;">
                             <th>STT</th>
@@ -80,9 +80,11 @@
                         </tr>
                         <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3 color:#000 !important;font-weight: bold;">
                             <td></td>
-                            <td t-attf-class="text-start {{ &apos;d-none d-md-table-cell&apos; if report_type == &apos;html&apos; else &apos;&apos; }}">
+                            <td t-attf-class="text-start align-middle {{ &apos;d-none d-md-table-cell&apos; if report_type == &apos;html&apos; else &apos;&apos; }}">
                                 VAT <span t-out="&apos;, &apos;.join(str(int(x.amount)) + &apos;%&apos; for x in line.tax_id) or &apos;&apos;"/>
                             </td>
+                            <td></td>
+                            <td></td>
                             <td></td>
                             <td></td>
                             <td></td>
@@ -102,50 +104,97 @@
                             <td></td>
                             <td></td>
                             <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
                             <td>
                                 <span t-field="doc.amount_total"/>
                             </td>
                         </tr>
                     </tbody>
-                </table><!-- <p>Tổng cộng: <span t-field="doc.amount_total" /></p> -->
-                <div style="font-size:14px; line-height:1.2">
+                </table>                <!-- <p>Tổng cộng: <span t-field="doc.amount_total" /></p> -->
+                <div style="font-size:14px;">
                     <p>Điều kiện thương mại:</p>
-                    <p>1. Báo giá đã bao gồm Thuế VAT</p>
+                    <t t-set="line_num" t-value="1"/>
+
+                    <p>
+                        <t t-out="line_num"/>
+                        . Báo giá đã bao gồm Thuế VAT
+                    </p>
+                    <t t-set="line_num" t-value="line_num + 1"/>
+
                     <t t-if="doc.is_including_installation and doc.is_including_transport">
-                        <p>2. Báo giá đã bao gồm lắp đặt và vận chuyển</p>
+                        <p>
+                            <t t-out="line_num"/>
+                            . Báo giá đã bao gồm lắp đặt và vận chuyển</p>
+                        <t t-set="line_num" t-value="line_num + 1"/>
                     </t>
                     <t t-elif="doc.is_including_installation">
-                        <p>2. Báo giá đã bao gồm lắp đặt</p>
+                        <p>
+                            <t t-out="line_num"/>
+                            . Báo giá đã bao gồm lắp đặt</p>
+                        <t t-set="line_num" t-value="line_num + 1"/>
                     </t>
                     <t t-elif="doc.is_including_transport">
-                        <p>2. Báo giá đã bao gồm vận chuyển</p>
+                        <p>
+                            <t t-out="line_num"/>
+                            . Báo giá đã bao gồm vận chuyển</p>
+                        <t t-set="line_num" t-value="line_num + 1"/>
                     </t>
                     <t t-elif="not doc.is_including_installation and not doc.is_including_transport">
-                        <p>2. Báo giá chưa bao gồm lắp đặt và vận chuyển</p>
+                        <p>
+                            <t t-out="line_num"/>
+                            . Báo giá chưa bao gồm lắp đặt và vận chuyển</p>
+                        <t t-set="line_num" t-value="line_num + 1"/>
                     </t>
+
                     <t t-if="doc.x_estimated_delivery_time_id">
-                        <p>3. Thời gian giao hàng: <t t-out="doc.x_estimated_delivery_time_id.name"/>
+                        <p>
+                            <t t-out="line_num"/>
+                            . Thời gian giao hàng: <t t-out="doc.x_estimated_delivery_time_id.name"/>
                         </p>
+                        <t t-set="line_num" t-value="line_num + 1"/>
                     </t>
+
                     <t t-if="doc.x_warranty_duration_id">
-                        <p>4. Thời gian bảo hành: <t t-out="doc.x_warranty_duration_id.name"/>
+                        <p>
+                            <t t-out="line_num"/>
+                            . Thời gian bảo hành: <t t-out="doc.x_warranty_duration_id.name"/>
                         </p>
+                        <t t-set="line_num" t-value="line_num + 1"/>
                     </t>
-                    <p>5. Điều khoản thanh toán:</p>
-                    <div style="white-space: pre-line; margin-top:-10px;">
+
+                    <p>
+                        <t t-out="line_num"/>
+                        . Điều khoản thanh toán:</p>
+                    <div style="white-space: pre-line; line-height: 1.6; margin-top: -10px; margin-bottom: 4px;">
                         <t t-out="doc.x_custom_payment_terms"/>
                     </div>
-                    <p>6. Phương thức thanh toán: Chuyển khoản;</p>
+                    <t t-set="line_num" t-value="line_num + 1"/>
+
+                    <p>
+                        <t t-out="line_num"/>
+                        . Phương thức thanh toán: Chuyển khoản</p>
+                    <t t-set="line_num" t-value="line_num + 1"/>
+
                     <t t-if="doc.x_delivery_location">
-                        <p>7. Địa điểm giao hàng: <t t-out="doc.x_delivery_location"/>
+                        <p>
+                            <t t-out="line_num"/>
+                        . Địa điểm giao hàng: <t t-out="doc.x_delivery_location"/>
                         </p>
+                        <t t-set="line_num" t-value="line_num + 1"/>
                     </t>
+
                     <t t-if="doc.validity_date and doc.date_order">
                         <t t-set="valid_days" t-value="(doc.validity_date - doc.date_order.date()).days"/>
-                        <p>8. Bảng báo giá trên có hiệu lực trong vòng <t t-out="valid_days"/>
+                        <p>
+                            <t t-out="line_num"/>
+                            . Bảng báo giá trên có hiệu lực trong vòng <t t-out="valid_days"/>
  ngày, sau đó có thể được thay đổi mà không thông báo trước.</p>
+                        <t t-set="line_num" t-value="line_num + 1"/>
                     </t>
                 </div>
+
                 <div class="row">
                     <div class="col-6" style="text-align:center;line-height:1.8">
                         <div>
