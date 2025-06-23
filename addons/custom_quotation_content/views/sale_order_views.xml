@@ -15,11 +15,15 @@
                     <field name="is_including_transport"/>
                     <field name="is_including_installation"/>
                     <field name="x_estimated_delivery_time_id" options="{'no_create': False}" />
+                    <field name="x_custom_payment_terms" options="{'no_create': False}"/>
                     <field name="x_warranty_duration_id" options="{'no_create': False}"/>
-                    <field name ="x_custom_payment_terms" options="{'no_create': False}"/>
                     <field name="x_delivery_location"/>
                     <field name="x_payment_method_id" options="{'no_create': False}"/>
+                    <field name="x_quote_valid_until"/>
                 </xpath>
+                <field name="payment_term_id" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field>
 
             </field>
         </record>

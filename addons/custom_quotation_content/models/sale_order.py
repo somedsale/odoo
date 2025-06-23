@@ -32,6 +32,10 @@ class SaleOrder(models.Model):
         comodel_name='payment.method',
         string='Phương thức thanh toán'
     )
+    x_quote_valid_until = fields.Integer(
+    string="Thời hạn báo giá (ngày)"
+)
+
 
 
 
