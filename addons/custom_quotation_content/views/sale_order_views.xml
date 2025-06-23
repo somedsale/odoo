@@ -18,7 +18,10 @@
                     <field name="x_warranty_duration_id" options="{'no_create': False}"/>
                     <field name ="x_custom_payment_terms" options="{'no_create': False}"/>
                     <field name="x_delivery_location"/>
+
+                    <field name="payment_term_id" invisible="1"/>
                 </xpath>
+
 
             </field>
         </record>
