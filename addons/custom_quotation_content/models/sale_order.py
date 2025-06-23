@@ -12,15 +12,18 @@ class SaleOrder(models.Model):
 )
     x_estimated_delivery_time_id = fields.Many2one(
         'estimated.delivery.time', 
-        string="Estimated Delivery Time"
+        string="Thời gian giao hàng dự tính"
     )
     x_warranty_duration_id = fields.Many2one(
         'warranty.duration',
-        string="Warranty Duration"
+        string="Thời gian bảo hành"
     )
     x_custom_payment_terms = fields.Text(
     string="Điều khoản thanh toán tùy chỉnh",
-    default="hehehehe")
+    default="+ Tạm ứng 50% ngay sau khi xác nhận đặt hàng\n"
+            "+ Thanh toán tới 70% sau khi nghiệm thu vật tư đầu vào\n"
+            "+ Thanh toán đủ 100% sau khi nghiệm thu hoàn thành lắp đặt."
+)
 
     x_delivery_location = fields.Text(
         string="Địa điểm giao hàng"
