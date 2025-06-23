@@ -24,7 +24,7 @@
                             <th style="width:150px !important;border-right: 1px solid black;">Sản phẩm</th>
                             <th style="width:150px !important;border-right: 1px solid black;">Mã Sản phẩm</th>
                             <th style="width:400px !important;border-right: 1px solid black;">Thông số</th>
-                            <th style="width:100px !important;border-right: 1px solid black;">Xuất xứ</th>
+                            <th style="width:100px !important;border-right: 1px solid black;">Thương Hiệu/Xuất xứ</th>
                             <th style="width:100px !important;border-right: 1px solid black;">Đơn vị</th>
                             <th style="width:120px !important;border-right: 1px solid black;">Khối lượng</th>
                             <th style="min-width:100px !important;border-right: 1px solid black;">Đơn giá</th>
@@ -185,7 +185,8 @@
 
                     <p>
                         <t t-out="line_num"/>
-                        . Phương thức thanh toán: Chuyển khoản</p>
+                        . Phương thức thanh toán: <t t-out="doc.x_payment_method_id.name"/>
+                    </p>
                     <t t-set="line_num" t-value="line_num + 1"/>
 
                     <p>
@@ -201,45 +202,46 @@
                     </t>
 
                     <t t-if="doc.validity_date and doc.date_order">
-                        <t t-set="valid_days" t-value="(doc.validity_date - doc.date_order.date()).days"/>
+                        <!-- <t t-set="valid_days" t-value="(doc.validity_date - doc.date_order.date()).days"/> -->
                         <p>
                             <t t-out="line_num"/>
-                            . Bảng báo giá có hiệu lực trong vòng <t t-out="valid_days"/>
+                            . Bảng báo giá có hiệu lực trong vòng <t t-out="doc.x_quote_valid_until"/>
                             ngày, sau đó có thể được thay đổi mà không thông báo trước.</p>
                         <t t-set="line_num" t-value="line_num + 1"/>
                     </t>
                 </div>
 
-
-                <div class="row">
-                    <div class="col-6" style="text-align:center;line-height:1.8">
-                        <div>
-                            <i>Xác nhận của khách hàng</i>
+                <div style="page-break-inside: avoid; display: block; overflow: hidden;">
+                    <div class="row">
+                        <div class="col-6" style="text-align:center;line-height:1.8">
+                            <div>
+                                <i>Xác nhận của khách hàng</i>
+                            </div>
+                            <div>
+                                <i>(Ký tên, đóng dấu)</i>
+                            </div>
                         </div>
-                        <div>
-                            <i>(Ký tên, đóng dấu)</i>
-                        </div>
-                    </div>
-                    <div class="col-6" style="text-align:center;line-height:1.8">
-                        <div>
-                            <i>
-                                <t t-esc="doc.formatted_date"/>
-                            </i>
-                        </div>
-                        <div>
-                            <b>
-                                <i>CÔNG TY TNHH GIẢI PHÁP KỸ THUẬT
-                                    Y TẾ MIỀN NAM</i>
-                            </b>
-                        </div>
-                        <div>
-                            <b>
-                                <i>PHÒNG KINH DOANH</i>
-                            </b>
-                        </div>
-                        <div style="height:65px"></div>
-                        <div>
-                            <span t-field="doc.user_id.name"/>
+                        <div class="col-6" style="text-align:center;line-height:1.8">
+                            <div>
+                                <i>
+                                    <t t-esc="doc.formatted_date"/>
+                                </i>
+                            </div>
+                            <div>
+                                <b>
+                                    <i>CÔNG TY TNHH GIẢI PHÁP KỸ THUẬT
+                                        Y TẾ MIỀN NAM</i>
+                                </b>
+                            </div>
+                            <div>
+                                <b>
+                                    <i>PHÒNG KINH DOANH</i>
+                                </b>
+                            </div>
+                            <div style="height:65px"></div>
+                            <div>
+                                <span t-field="doc.user_id.name"/>
+                            </div>
                         </div>
                     </div>
                 </div>
