@@ -7,6 +7,7 @@
             <field name="arch" type="xml">
 
                 <xpath expr="//field[@name='order_line']/tree/field[@name='name']" position="after">
+                    <field name="default_code" widget="char" style="max-width:150px" class="oe_ellipsis"/>
                     <field name="x_thongso" widget="char" style="max-width:150px" class="oe_ellipsis"/>
                     <field name="x_xuatxu" widget="char" style="max-width:150px" class="oe_ellipsis"/>
                     <field name="x_hangsx" widget="char" style="max-width:150px" class="oe_ellipsis"/>
@@ -16,6 +17,9 @@
                     <field name="is_including_installation"/>
                     <field name="x_estimated_delivery_time_id" options="{'no_create': False}" />
                     <field name="x_custom_payment_terms" options="{'no_create': False}"/>
+
+                </xpath>
+                <xpath expr="//field[@name='date_order']" position="after">
                     <field name="x_warranty_duration_id" options="{'no_create': False}"/>
                     <field name="x_delivery_location"/>
                     <field name="x_payment_method_id" options="{'no_create': False}"/>
@@ -23,6 +27,9 @@
                 </xpath>
                 <field name="payment_term_id" position="attributes">
                     <attribute name="invisible">1</attribute>
+                </field>
+                <field name="date_order" position="attributes">
+                    <attribute name="readonly">1</attribute>
                 </field>
 
             </field>
