@@ -104,18 +104,18 @@
                 </table>                <!-- <p>Tổng cộng: <span t-field="doc.amount_total" /></p> -->
                 <div style="font-size:14px; line-height:1.2">
                     <p>Điều kiện thương mại:</p>
-                    <p>1. Báo giá đã bao gồm Thuế VAT;</p>
+                    <p>1. Báo giá đã bao gồm Thuế VAT</p>
                     <t t-if="doc.is_including_installation and doc.is_including_transport">
-                        <p>2. Báo giá đã bao gồm lắp đặt và vận chuyển;</p>
+                        <p>2. Báo giá đã bao gồm lắp đặt và vận chuyển</p>
                     </t>
                     <t t-elif="doc.is_including_installation">
-                        <p>2. Báo giá đã bao gồm lắp đặt;</p>
+                        <p>2. Báo giá đã bao gồm lắp đặt</p>
                     </t>
                     <t t-elif="doc.is_including_transport">
-                        <p>2. Báo giá đã bao gồm vận chuyển;</p>
+                        <p>2. Báo giá đã bao gồm vận chuyển</p>
                     </t>
                     <t t-elif ="not doc.is_including_installation and not doc.is_including_transport">
-                        <p>2. Báo giá chưa bao gồm lắp đặt và vận chuyển;</p>
+                        <p>2. Báo giá chưa bao gồm lắp đặt và vận chuyển</p>
                     </t>
 
                     <t t-if="doc.x_estimated_delivery_time_id">
@@ -128,7 +128,7 @@
                         </p>
                     </t>
                     <p>5. Điều khoản thanh toán:</p>
-                    <div style="white-space: pre-line; line-height: 1.2;">
+                    <div style="white-space: pre-line; margin-top:-10px;">
                         <t t-out="doc.x_custom_payment_terms"/>
                     </div>
                     <p>6. Phương thức thanh toán: Chuyển khoản;</p>
