@@ -1,4 +1,4 @@
-from odoo import fields, models
+from odoo import fields, models,api
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
@@ -27,6 +27,10 @@ class SaleOrder(models.Model):
 
     x_delivery_location = fields.Text(
         string="Địa điểm giao hàng"
+    )
+    x_payment_method_id = fields.Many2one(
+        comodel_name='payment.method',
+        string='Phương thức thanh toán'
     )
 
 
