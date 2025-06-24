@@ -2,44 +2,62 @@
 <odoo>    <!-- Kế thừa template báo giá mặc định -->
     <template id="custom_sale_order_report" inherit_id="sale.report_saleorder_document">
         <xpath expr="//div[@class=&apos;page&apos;]" position="replace">            <!-- Tùy chỉnh layout mới -->
-            <div class="" style="font-family: &apos;Times New Roman&apos;, Times, serif;color:#000 !important; margin: 0px 10px;">
+            <div class="" style="font-family: &apos;Times New Roman&apos;, Times, serif;color:#000 !important;">
                 <div style="font-weight: bold;text-align:center;visibility: hidden">BẢNG BÁO GIÁ</div>
                 <h2 style="font-weight: bold;text-align:center;font-size:20px;">BẢNG BÁO GIÁ - <span t-esc="doc.name"/>
                 </h2>
 
-                <div class="row">
-                    <div style="padding-right:10px;" class="col-6">
-                        <p>Khách hàng: <span t-field="doc.partner_id.name"/>
-                        </p>
+                <table style="width: 100%; font-size:14px; line-height: 1.8; border: none; border-collapse: collapse;">
+                    <tr style="border: none;">
+                        <td style="width: 50%; padding-right: 10px; border: none;">
+                            <strong>Khách hàng:</strong>
+                            <span t-field="doc.partner_id.name"/>
+                        </td>
+                        <td style="width: 50%; padding-left: 10px; border: none;">
+                            <strong>Nhân viên kinh doanh:</strong>
+                            <span t-field="doc.user_id.name"/>
+                        </td>
+                    </tr>
+                    <tr style="border: none;">
+                        <td style="padding-right: 10px; border: none;">
+                            <strong>Địa chỉ:</strong>
+                            <span t-field="doc.partner_id.contact_address"/>
+                        </td>
+                        <td style="padding-left: 10px; border: none;">
+                            <strong>Địa chỉ:</strong>
+                            <span t-field="doc.user_id.contact_address"/>
+                        </td>
+                    </tr>
+                    <tr style="border: none;">
+                        <td style="padding-right: 10px; border: none;">
+                            <strong>Điện thoại:</strong>
+                            <span t-field="doc.partner_id.phone"/>
+                        </td>
+                        <td style="padding-left: 10px; border: none;">
+                            <strong>Điện thoại:</strong>
+                            <span t-field="doc.user_id.phone"/>
+                        </td>
+                    </tr>
+                    <tr style="border: none;">
+                        <td style="padding-right: 10px; border: none;">
+                            <strong>Email:</strong>
+                            <span t-field="doc.partner_id.email"/>
+                        </td>
+                        <td style="padding-left: 10px; border: none;">
+                            <strong>Email:</strong>
+                            <span t-field="doc.user_id.email"/>
+                        </td>
+                    </tr>
+                </table>
 
-                        <p >Địa chỉ: <span t-field="doc.partner_id.contact_address"/>
-                        </p>
 
-                        <p >Điện thoại: <span t-field="doc.partner_id.phone"/>
-                        </p>
-
-                        <p >Email: <span t-field="doc.partner_id.email"/>
-                        </p>
-                    </div>
-                    <div class="col-6">
-                        <p>Nhân viên kinh doanh: <span t-field="doc.user_id.name"/>
-                        </p>
-                        <p >Địa chỉ: <span t-field="doc.user_id.contact_address"/>
-                        </p>
-
-                        <p >Điện thoại: <span t-field="doc.user_id.phone"/>
-                        </p>
-
-                        <p >Email: <span t-field="doc.user_id.email"/>
-                        </p>
-                    </div>
-
+                <div style="font-size:14px; line-height: 1.8;margin-top:10px">
+                    <p> Lời đầu tiên Công ty TNHH giải pháp kỹ thuật Y tế Miền Nam xin gửi Quý khách
+        hàng lời chúc sức khỏe và lời chào trân trọng nhất!</p>
+                    <p>Công ty TNHH giải pháp kỹ thuật Y tế Miền Nam xin gửi Quý khách hàng bảng báo giá
+        sản phẩm, vật tư theo yêu cầu từ Quý khách hàng, cụ thể như sau:</p>
                 </div>
 
-                <p> Lời đầu tiên Công ty TNHH giải pháp kỹ thuật Y tế Miền Nam xin gửi Quý khách
-                    hàng lời chúc sức khỏe và lời chào trân trọng nhất!</p>
-                <p>Công ty TNHH giải pháp kỹ thuật Y tế Miền Nam xin gửi Quý khách hàng bảng báo giá
-                    sản phẩm, vật tư theo yêu cầu từ Quý khách hàng, cụ thể như sau:</p>
                 <table class="table" style="font-family: &apos;Times New Roman&apos;, Times, serif !important; color:#000 !important;">
 
                     <tbody>
