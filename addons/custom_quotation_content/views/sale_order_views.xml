@@ -5,12 +5,13 @@
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
-
+                <field name="partner_id" />
                 <xpath expr="//field[@name='order_line']/tree/field[@name='name']" position="after">
                     <field name="default_code" widget="char" style="max-width:150px" class="oe_ellipsis"/>
                     <field name="x_thongso" widget="char" style="max-width:150px" class="oe_ellipsis"/>
                     <field name="x_xuatxu" widget="char" style="max-width:150px" class="oe_ellipsis"/>
                     <field name="x_hangsx" widget="char" style="max-width:150px" class="oe_ellipsis"/>
+                    <field name="x_chi_phi_nhan_cong" widget="monetary"/>
                 </xpath>
                 <xpath expr="//field[@name='partner_id']" position="after">
                     <field name="is_including_transport"/>

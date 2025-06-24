@@ -17,3 +17,15 @@ class SaleOrder(models.Model):
             # Lấy ngày từ date_order, nếu không có thì dùng ngày hiện tại
             date = record.date_order or datetime.now()
             record.formatted_date = f"Tp. Hồ Chí Minh, ngày {date.day:02d} tháng {date.month:02d} năm {date.year}"
+    # x_hr_address = fields.Char(string="Địa chỉ nhân viên")
+    # x_hr_phone = fields.Char(string="SĐT nhân viên")
+
+    # @api.model
+    # def create(self, vals):
+    #     res = super().create(vals)
+    #     if res.user_id:
+    #         emp = self.env['hr.employee'].search([('user_id', '=', res.user_id.id)], limit=1)
+    #         if emp:
+    #             res.x_hr_address = emp.work_location
+    #             res.x_hr_phone = emp.work_phone
+    #     return res
