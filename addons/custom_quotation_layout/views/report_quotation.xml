@@ -2,16 +2,40 @@
 <odoo>    <!-- Kế thừa template báo giá mặc định -->
     <template id="custom_sale_order_report" inherit_id="sale.report_saleorder_document">
         <xpath expr="//div[@class=&apos;page&apos;]" position="replace">            <!-- Tùy chỉnh layout mới -->
-            <div class="" style="font-family: &apos;Times New Roman&apos;, Times, serif;color:#000 !important; margin: 10px;padding-bottom:10px;">
-                <div style="width:100%; text-align:center">
-                    <h2 style="font-weight: bold;">BẢNG BÁO GIÁ</h2>
+            <div class="" style="font-family: &apos;Times New Roman&apos;, Times, serif;color:#000 !important; margin: 0px 10px;">
+                <div style="font-weight: bold;text-align:center;visibility: hidden">BẢNG BÁO GIÁ</div>
+                <h2 style="font-weight: bold;text-align:center;font-size:20px;">BẢNG BÁO GIÁ - <span t-esc="doc.name"/>
+                </h2>
+
+                <div class="row">
+                    <div style="padding-right:10px;" class="col-6">
+                        <p>Khách hàng: <span t-field="doc.partner_id.name"/>
+                        </p>
+
+                        <p >Địa chỉ: <span t-field="doc.partner_id.contact_address"/>
+                        </p>
+
+                        <p >Điện thoại: <span t-field="doc.partner_id.phone"/>
+                        </p>
+
+                        <p >Email: <span t-field="doc.partner_id.email"/>
+                        </p>
+                    </div>
+                    <div class="col-6">
+                        <p>Nhân viên kinh doanh: <span t-field="doc.user_id.name"/>
+                        </p>
+                        <p >Địa chỉ: <span t-field="doc.user_id.contact_address"/>
+                        </p>
+
+                        <p >Điện thoại: <span t-field="doc.user_id.phone"/>
+                        </p>
+
+                        <p >Email: <span t-field="doc.user_id.email"/>
+                        </p>
+                    </div>
+
                 </div>
-                <p>Nhân viên kinh doanh: <span t-field="doc.user_id.name"/>
-                </p>
-                <p>Khách hàng: <span t-field="doc.partner_id.name"/>
-                </p>
-                <p>Ngày báo giá: <t t-esc="doc.date_order.strftime('%d/%m/%Y')"/>
-                </p>
+
                 <p> Lời đầu tiên Công ty TNHH giải pháp kỹ thuật Y tế Miền Nam xin gửi Quý khách
                     hàng lời chúc sức khỏe và lời chào trân trọng nhất!</p>
                 <p>Công ty TNHH giải pháp kỹ thuật Y tế Miền Nam xin gửi Quý khách hàng bảng báo giá
@@ -44,7 +68,9 @@
                                 <span t-field="line.product_id.default_code" t-field-options='{"widget": "char"}'/>
                             </td>
                             <td style="width:300px !important;">
-                                <span t-field="line.x_thongso" />
+                                <i>
+                                    <span t-field="line.x_thongso" />
+                                </i>
                             </td>
                             <td>
                                 <span t-field="line.x_xuatxu" />
@@ -113,7 +139,11 @@
                         </tr>
                     </tbody>
                 </table>                <!-- <p>Tổng cộng: <span t-field="doc.amount_total" /></p> -->
-
+                <div style="page-break-inside: avoid;">
+                    <div style="text-align: center; font-weight: bold; margin-top: 10px;">
+                        Số tiền bằng chữ: <span t-esc="doc.currency_id.amount_to_text_vi(doc.amount_total)"/>
+                    </div>
+                </div>
                 <div style="font-size:14px;">
                     <p>
                         <strong>Điều kiện thương mại:</strong>
@@ -211,7 +241,7 @@
                     </t>
                 </div>
 
-                <div style="page-break-inside: avoid; display: block; overflow: hidden;">
+                <div style="page-break-inside: avoid;">
                     <div class="row">
                         <div class="col-6" style="text-align:center;line-height:1.8">
                             <div>
