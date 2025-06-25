@@ -4,9 +4,24 @@
         <xpath expr="//div[@class=&apos;page&apos;]" position="replace">            <!-- Tùy chỉnh layout mới -->
             <div class="" style="font-family: &apos;Times New Roman&apos;, Times, serif;color:#000 !important;">
                 <div style="font-weight: bold;text-align:center;visibility: hidden">BẢNG BÁO GIÁ</div>
-                <h2 style="font-weight: bold;text-align:center;font-size:20px;">BẢNG BÁO GIÁ - <span t-esc="doc.name"/>
-                </h2>
+                <div style="display: flex; align-items: center;">
+                    <!-- Cột trái để cân giữa -->
+                    <div style="flex: 1;"></div>
 
+                    <!-- Tiêu đề ở giữa -->
+                    <div style="flex: 1; text-align: center;">
+                        <h2 style="font-weight: bold; font-size: 20px; margin: 0; line-height: 1;">
+                            BẢNG BÁO GIÁ
+                        </h2>
+                    </div>
+
+                    <!-- Mã báo giá bên phải -->
+                    <div style="flex: 1; text-align: right; position: relative;">
+                        <div t-esc="doc.name" style="color:#27B1FC;font-size: 16px; font-weight: bold; position: relative; top: -4px;" />
+                    </div>
+                </div>
+                <!-- // đọc dữ liệu nhân viên  -->
+                <t t-set="emp" t-value="env['hr.employee'].search([('user_id', '=', doc.user_id.id)], limit=1)"/>
                 <table style="width: 100%; font-size:14px; line-height: 1.8; border: none; border-collapse: collapse;">
                     <tr style="border: none;">
                         <td style="width: 50%; padding-right: 10px; border: none;">
@@ -25,7 +40,9 @@
                         </td>
                         <td style="padding-left: 10px; border: none;">
                             <strong>Địa chỉ:</strong>
-                            <span t-field="doc.user_id.contact_address"/>
+                            <t t-if="emp.address_id">
+                                <t t-out="emp.address_id.contact_address"/>
+                            </t>
                         </td>
                     </tr>
                     <tr style="border: none;">
@@ -35,7 +52,9 @@
                         </td>
                         <td style="padding-left: 10px; border: none;">
                             <strong>Điện thoại:</strong>
-                            <span t-field="doc.user_id.phone"/>
+                            <t t-if="emp.work_phone">
+                                <t t-out="emp.work_phone"/>
+                            </t>
                         </td>
                     </tr>
                     <tr style="border: none;">
@@ -58,105 +77,107 @@
         sản phẩm, vật tư theo yêu cầu từ Quý khách hàng, cụ thể như sau:</p>
                 </div>
 
-                <table class="table" style="font-family: &apos;Times New Roman&apos;, Times, serif !important; color:#000 !important;">
+                <div style="page-break-inside: avoid;">
+                    <table class="table" style="font-family: 'Times New Roman', Times, serif !important; color:#000 !important;">
+                        <tbody>
+                            <tr class="table-bordered border-dark border-2" style="height:auto;">
+                                <th style="width:90px !important;border-right: 1px solid black;">STT</th>
+                                <th style="width:150px !important;border-right: 1px solid black;">Sản phẩm</th>
+                                <th style="width:150px !important;border-right: 1px solid black;">MSP</th>
+                                <th style="width:400px !important;border-right: 1px solid black;">Thông số</th>
+                                <th style="width:100px !important;border-right: 1px solid black;">Xuất xứ</th>
+                                <th style="width:100px !important;border-right: 1px solid black;">Đơn vị</th>
+                                <th style="width:120px !important;border-right: 1px solid black;">Khối lượng</th>
+                                <th style="min-width:100px !important;border-right: 1px solid black;">Đơn giá</th>
+                                <th style="min-width:100px !important;border-right: 1px solid black;">Thành tiền</th>
+                                <th style="min-width:100px !important;border-right: 1px solid black;">Ghi chú</th>
+                            </tr>
+                            <t t-set="stt" t-value="0"/>
+                            <t t-foreach="doc.order_line" t-as="line">
+                                <t t-set="stt" t-value="stt + 1"/>
+                                <tr class="table-bordered border-dark border-2">
+                                    <td>
+                                        <span t-esc="stt"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="line.product_id.name"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="line.product_id.default_code" t-field-options='{"widget": "char"}'/>
+                                    </td>
+                                    <td >
+                                        <i>
+                                            <span t-field="line.x_thongso"/>
+                                        </i>
+                                    </td>
+                                    <td>
+                                        <span t-field="line.x_xuatxu" />
+                                    </td>
+                                    <td>
+                                        <span t-field="line.product_uom"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="line.product_uom_qty"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="line.price_unit"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="line.price_subtotal"/>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </t>
+                            <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
+                                <td></td>
+                                <td>Tổng</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td>
+                                    <span t-field="doc.amount_untaxed"/>
+                                </td>
+                                <td></td>
+                            </tr>
+                            <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
+                                <td></td>
+                                <td t-attf-class="text-start align-middle {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}">
+                                    VAT <span t-out="', '.join(str(int(x.amount)) + '%' for x in line.tax_id) or ''"/>
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td>
+                                    <span t-field="doc.amount_tax"/>
+                                </td>
+                                <td></td>
+                            </tr>
+                            <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
+                                <td></td>
+                                <td>Tổng cộng</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td>
+                                    <span t-field="doc.amount_total"/>
+                                </td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                    <tbody>
-                        <tr class="table-bordered border-dark border-2" style="height:auto;">
-                            <th style="width:90px !important;border-right: 1px solid black;">STT</th>
-                            <th style="width:150px !important;border-right: 1px solid black;">Sản phẩm</th>
-                            <th style="width:150px !important;border-right: 1px solid black;">Mã Sản phẩm</th>
-                            <th style="width:400px !important;border-right: 1px solid black;">Thông số</th>
-                            <th style="width:100px !important;border-right: 1px solid black;">Thương Hiệu/Xuất xứ</th>
-                            <th style="width:100px !important;border-right: 1px solid black;">Đơn vị</th>
-                            <th style="width:120px !important;border-right: 1px solid black;">Khối lượng</th>
-                            <th style="min-width:100px !important;border-right: 1px solid black;">Đơn giá</th>
-                            <th style="min-width:100px !important;border-right: 1px solid black;">Thành tiền</th>
-                            <th style="min-width:100px !important;border-right: 1px solid black;">Ghi chú</th>
-                        </tr>
-                        <t t-set="stt" t-value="0"/>
-                        <tr t-foreach="doc.order_line" t-as="line">
-                            <t t-set="stt" t-value="stt + 1"/>
-                            <td>
-                                <span t-esc="stt"/>
-                            </td>
-                            <td>
-                                <span t-field="line.product_id.name"/>
-                            </td>
-                            <td>
-                                <span t-field="line.product_id.default_code" t-field-options='{"widget": "char"}'/>
-                            </td>
-                            <td style="width:300px !important;">
-                                <i>
-                                    <span t-field="line.x_thongso" />
-                                </i>
-                            </td>
-                            <td>
-                                <span t-field="line.x_xuatxu" />
-                            </td>
-                            <td>
-                                <span t-field="line.product_uom"/>
-                            </td>
-                            <td>
-                                <span t-field="line.product_uom_qty"/>
-                            </td>
-                            <td>
-                                <span t-field="line.price_unit"/>
-                            </td>
-                            <td>
-                                <span t-field="line.price_subtotal"/>
-                            </td>
-                            <td></td>
-                        </tr>
-                        <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
-                            <td></td>
-                            <td>
-                                Tổng
-                            </td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td>
-                                <span t-field="doc.amount_untaxed"/>
-                            </td>
-                            <td></td>
-                        </tr>
-                        <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3 color:#000 !important;font-weight: bold;">
-                            <td></td>
-                            <td t-attf-class="text-start align-middle {{ &apos;d-none d-md-table-cell&apos; if report_type == &apos;html&apos; else &apos;&apos; }}">
-                                VAT <span t-out="&apos;, &apos;.join(str(int(x.amount)) + &apos;%&apos; for x in line.tax_id) or &apos;&apos;"/>
-                            </td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td>
-                                <span t-field="doc.amount_tax"/>
-                            </td>
-                            <td></td>
-                        </tr>
-                        <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3 color:#000 !important;font-weight: bold;">
-                            <td></td>
-                            <td>
-                                Tổng cộng
-                            </td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td>
-                                <span t-field="doc.amount_total"/>
-                            </td>
-                            <td></td>
-                        </tr>
-                    </tbody>
-                </table>                <!-- <p>Tổng cộng: <span t-field="doc.amount_total" /></p> -->
+
+                <!-- <p>Tổng cộng: <span t-field="doc.amount_total" /></p> -->
                 <div style="page-break-inside: avoid;">
                     <div style="text-align: center; font-weight: bold; margin-top: 10px;">
                         Số tiền bằng chữ: <span t-esc="doc.currency_id.amount_to_text_vi(doc.amount_total)"/>

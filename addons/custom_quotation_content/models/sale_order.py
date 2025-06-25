@@ -35,6 +35,21 @@ class SaleOrder(models.Model):
     x_quote_valid_until = fields.Integer(
     string="Thời hạn báo giá (ngày)"
 )
+    partner_id = fields.Many2one(
+        'res.partner',
+        string='Customer',
+        domain="[('customer_rank', '>', 0)]"
+    )
+    @api.depends('order_line.price_subtotal', 'order_line.price_tax')
+    def _amount_all(self):
+        for order in self:
+            amount_untaxed = sum(line.price_subtotal for line in order.order_line)
+            amount_tax = sum(line.price_tax for line in order.order_line)
+            order.update({
+                'amount_untaxed': amount_untaxed,
+                'amount_tax': amount_tax,
+                'amount_total': amount_untaxed + amount_tax,
+            })
 
 
 
