@@ -7,15 +7,17 @@
             <field name="arch" type="xml">
                 <field name="partner_id" />
                 <xpath expr="//field[@name='order_line']/tree/field[@name='name']" position="after">
-                    <field name="default_code" widget="char" style="max-width:150px" class="oe_ellipsis"/>
-                    <field name="x_thongso" widget="char" style="max-width:150px" class="oe_ellipsis"/>
-                    <field name="x_xuatxu" widget="char" style="max-width:150px" class="oe_ellipsis"/>
-                    <field name="x_hangsx" widget="char" style="max-width:150px" class="oe_ellipsis"/>
+                    <field name="default_code" class="oe_ellipsis"/>
+                    <field name="x_thongso" class="oe_ellipsis"/>
+                    <field name="x_xuatxu" class="oe_ellipsis"/>
+                    <field name="x_hangsx" class="oe_ellipsis"/>
                     <field name="x_chi_phi_nhan_cong" widget="monetary"/>
                 </xpath>
                 <xpath expr="//field[@name='partner_id']" position="after">
-                    <field name="is_including_transport"/>
+                    <field name="partner_contact_id" placeholder="Người đại diện"/>
+                    <field name="partner_contact_phone"/>
                     <field name="is_including_installation"/>
+                    <field name="is_including_transport"/>
                     <field name="x_estimated_delivery_time_id" options="{'no_create': False}" />
                     <field name="x_custom_payment_terms" options="{'no_create': False}"/>
 
@@ -25,14 +27,37 @@
                     <field name="x_delivery_location"/>
                     <field name="x_payment_method_id" options="{'no_create': False}"/>
                     <field name="x_quote_valid_until"/>
+                    <!-- <field name="tax_totals" widget="account-tax-totals-field" nolabel="1" colspan="2" readonly="1"/> -->
                 </xpath>
+                <field name="validity_date" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                </field>
                 <field name="payment_term_id" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </field>
                 <field name="date_order" position="attributes">
                     <attribute name="readonly">1</attribute>
                 </field>
+                <xpath expr="//group[@name='sale_total']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
 
+                <!-- Chèn cái mới -->
+                <xpath expr="//notebook" position="after">
+                    <group string="Tổng tiền (tùy chỉnh)">
+                        <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        <field name="amount_tax" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        <field name="amount_total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    </group>
+                </xpath>
+
+                <!-- <xpath expr="//group[@name='sale_total']" position="replace">
+                    <group name="custom_sale_totals" string="Tổng tiền (tuỳ chỉnh)">
+                        <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        <field name="amount_tax" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        <field name="amount_total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    </group>
+                </xpath> -->
             </field>
         </record>
     </data>

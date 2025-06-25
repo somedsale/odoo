@@ -1,6 +1,7 @@
 from odoo import fields, models,api
+from datetime import datetime, timedelta
 class SaleOrder(models.Model):
-    _inherit = 'sale.order'
+    _inherit = 'sale.order'   
 
     is_including_transport = fields.Boolean(
     string="Đã bao gồm vận chuyển",
@@ -50,6 +51,48 @@ class SaleOrder(models.Model):
                 'amount_tax': amount_tax,
                 'amount_total': amount_untaxed + amount_tax,
             })
+    @api.onchange('x_quote_valid_until', 'date_order')
+    def _onchange_quote_valid_until(self):
+        for order in self:
+            if order.x_quote_valid_until and order.date_order:
+                order.validity_date = fields.Date.to_string(
+                    fields.Date.from_string(order.date_order) + timedelta(days=order.x_quote_valid_until)
+                )
+    @api.model
+    def create(self, vals):
+        if vals.get('x_quote_valid_until') and vals.get('date_order'):
+            vals['validity_date'] = fields.Datetime.to_datetime(vals['date_order']) + timedelta(
+                days=vals['x_quote_valid_until'])
+        return super().create(vals)
+
+    def write(self, vals):
+        if 'x_quote_valid_until' in vals or 'date_order' in vals:
+            x_quote_valid_until = vals.get('x_quote_valid_until', self.x_quote_valid_until)
+            date_order = fields.Datetime.to_datetime(vals.get('date_order', self.date_order))
+            vals['validity_date'] = date_order + timedelta(days=x_quote_valid_until)
+        return super().write(vals)
+    
+    partner_contact_id = fields.Many2one(
+        'res.partner',
+        string='Người đại diện',
+        domain="[('id', 'child_of', partner_id), ('id', '!=', partner_id)]",
+        help='Người đại diện hoặc liên hệ con của khách hàng.'
+        
+    )
+
+    @api.onchange('partner_id')
+    def _onchange_partner_clear_contact(self):
+        self.partner_contact_id = False
+    partner_contact_phone = fields.Char(
+        string="SĐT Người đại diện",
+        compute="_compute_partner_contact_phone",
+    )
+   
+    @api.depends('partner_contact_id')
+    def _compute_partner_contact_phone(self):
+        for order in self:
+            phone = order.partner_contact_id.phone or order.partner_contact_id.mobile
+            order.partner_contact_phone = phone or ''
 
 
 
