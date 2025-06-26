@@ -185,7 +185,7 @@
                 </div>                <!-- <p>Tổng cộng: <span t-field="doc.amount_total" /></p> -->
                 <div style="page-break-inside: avoid;">
                     <div style="text-align: center; font-weight: bold; margin-top: 10px;">
-                        Số tiền bằng chữ: <span t-esc="doc.currency_id.amount_to_text_vi(doc.amount_total)"/>
+                        Số tiền bằng chữ: <span><t t-esc="doc.number_to_text(doc.amount_total)"/></span>
                     </div>
                 </div>
                 <div style="font-size:14px;">
