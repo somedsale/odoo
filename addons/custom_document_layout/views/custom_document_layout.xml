@@ -39,7 +39,7 @@
         <xpath expr="//div[@t-attf-class=&apos;footer o_boxed_footer o_company_#{company.id}_layout&apos;]" position="replace">
             <div>
                 <div class="footer" style="position: running(footer); height: 30px; width: 100%; font-family: Arial, sans-serif; text-align: center; border-top: 1px solid #ddd;padding-top:5px">
-                    <span>CÔNG TY TNHH GIẢI PHÁP KỸ THUẬT Y TẾ MIỀN NAM - All rights reserved © Somed Co., Ltd <t t-esc="company.name"/>
+                    <span><i>SOUTH MEDICAL TECHNOLOGY SOLUTIONS COMPANY LIMITED - All rights reserved © Somed Co., Ltd</i>
                     </span>
                 </div>
             </div>
