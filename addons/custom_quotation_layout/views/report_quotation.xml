@@ -19,7 +19,7 @@
                 </div><!-- // đọc dữ liệu nhân viên  -->
                 <t t-set="emp" t-value="env[&apos;hr.employee&apos;].search([(&apos;user_id&apos;, &apos;=&apos;, doc.user_id.id)], limit=1)"/>
                 <table style="color:#000; width: 100%; font-size:14px; line-height: 1.8; border: none; border-style: none; outline: none; border-collapse: collapse;">
-                    <tr style="border: none;">
+                    <tr style="border: none;color:#000 !important;">
                         <td style="width: 50%; padding-right: 10px; border: none;">
                             <strong>Khách hàng:</strong>
                             <span t-field="doc.partner_id.name"/>
@@ -29,7 +29,7 @@
                             <span t-field="doc.user_id.name"/>
                         </td>
                     </tr>
-                    <tr style="border: none;">
+                    <tr style="border: none;color:#000 !important;">
                         <td style="padding-right: 10px; border: none;">
                             <strong>Địa chỉ:</strong>
                             <span t-if="doc.partner_id.contact_address" t-esc="doc.partner_id.contact_address.replace(doc.partner_id.name or &apos;&apos;, &apos;&apos;).strip()"/>
@@ -39,7 +39,7 @@
                             <span>213 Đường TL15, Khu Phố 3C, P.Thạnh Lộc, Q.12, TP HCM</span>
                         </td>
                     </tr>
-                    <tr style="border: none;">
+                    <tr style="border: none;color:#000 !important;">
                         <t t-if="doc.partner_contact_id">
                             <td style="padding-right: 10px; border: none;">
                                 <strong>Người liên hệ:</strong>
@@ -65,7 +65,7 @@
                             </t>
                         </td>
                     </tr>
-                    <tr style="border: none;">
+                    <tr style="border: none;color:#000 !important;">
                         <td style="padding-right: 10px; border: none;">
                             <strong>Email:</strong>
                             <t t-if="doc.partner_contact_id.email">
