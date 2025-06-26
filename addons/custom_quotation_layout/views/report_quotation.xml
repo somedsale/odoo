@@ -5,7 +5,6 @@
             <div class="" style="font-family: &apos;Times New Roman&apos;, Times, serif;color:#000 !important;">
                 <div style="font-weight: bold;text-align:center;visibility: hidden">BẢNG BÁO GIÁ</div>
                 <div style="display: flex; align-items: center;"><!-- Cột trái để cân giữa -->
-                    <div style="flex: 1;"></div><!-- Tiêu đề ở giữa -->
                     <div style="flex: 1; text-align: center;">
                         <h2 style="font-weight: bold; font-size: 20px; margin: 0; line-height: 1;">
                             BẢNG BÁO GIÁ
@@ -13,6 +12,9 @@
                     </div><!-- Mã báo giá bên phải -->
                     <div style="flex: 1; text-align: right; position: relative;">
                         <div t-esc="doc.name" style="color:#27B1FC;font-size: 16px; font-weight: bold; position: relative; top: -4px;"/>
+                    </div>
+                    <div style="flex: 1; text-align: left; position: relative; font-weight: bold; top: -4px;">
+                        <span>Dự án: <span t-esc="doc.x_project_name" style=" font-weight: normal;"/></span>
                     </div>
                 </div><!-- // đọc dữ liệu nhân viên  -->
                 <t t-set="emp" t-value="env[&apos;hr.employee&apos;].search([(&apos;user_id&apos;, &apos;=&apos;, doc.user_id.id)], limit=1)"/>
