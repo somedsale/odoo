@@ -88,7 +88,7 @@
         sản phẩm, vật tư theo yêu cầu từ Quý khách hàng, cụ thể như sau:</p>
                 </div>
                 <div style="page-break-inside: auto;">
-                    <table class="table" style="font-family: &apos;Times New Roman&apos;, Times, serif !important; color:#000 !important;">
+                    <table class="table" style="font-family: &apos;Times New Roman&apos;, Times, serif !important; color:#000 !important;border-dark border-2;">
                         <tbody>
                             <tr class="table-bordered border-dark border-2" style="height:auto; ">
                                 <th style="width:90px !important;border-right: 1px solid black;">STT</th>
