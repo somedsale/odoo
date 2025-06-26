@@ -104,8 +104,8 @@
                             <t t-set="stt" t-value="0"/>
                             <t t-foreach="doc.order_line" t-as="line">
                                 <t t-set="stt" t-value="stt + 1"/>
-                                <tr class="">
-                                    <td class="text-center">
+                                <tr class="table-bordered border-dark border-2; height:auto; ">
+                                    <td class="text-center" style="border-left: 2px solid black;">
                                         <span t-esc="stt"/>
                                     </td>
                                     <td>
@@ -133,7 +133,7 @@
                                     <td>
                                         <span t-field="line.price_subtotal"/>
                                     </td>
-                                    <td></td>
+                                    <td style="border-right: 2px solid black;"></td>
                                 </tr>
                             </t>
                             <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
