@@ -1,5 +1,6 @@
 from odoo import fields, models,api
 from datetime import datetime, timedelta
+from collections import defaultdict
 class SaleOrder(models.Model):
     _inherit = 'sale.order'   
 
@@ -41,16 +42,6 @@ class SaleOrder(models.Model):
         string='Customer',
         domain="[('customer_rank', '>', 0)]"
     )
-    @api.depends('order_line.price_subtotal', 'order_line.price_tax')
-    def _amount_all(self):
-        for order in self:
-            amount_untaxed = sum(line.price_subtotal for line in order.order_line)
-            amount_tax = sum(line.price_tax for line in order.order_line)
-            order.update({
-                'amount_untaxed': amount_untaxed,
-                'amount_tax': amount_tax,
-                'amount_total': amount_untaxed + amount_tax,
-            })
     @api.onchange('x_quote_valid_until', 'date_order')
     def _onchange_quote_valid_until(self):
         for order in self:
@@ -103,6 +94,51 @@ class SaleOrder(models.Model):
         string="Dự án",
         help="Tên dự án hoặc mô tả ngắn gọn về dự án liên quan đến đơn hàng này.",
     )
+    x_tax_summary = fields.Html(string="Chi tiết thuế", compute="_compute_tax_summary", sanitize=False)
+# viết lại tổng giá 
+    @api.depends('order_line.tax_id', 'order_line.price_total', 'amount_untaxed', 'amount_tax', 'amount_total')
+    def _compute_tax_summary(self):
+        for order in self:
+            tax_totals = defaultdict(float)
+            currency = order.currency_id
+
+            for line in order.order_line.filtered(lambda l: not l.display_type):
+                price_unit = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
+                taxes = line.tax_id.compute_all(
+                    price_unit, currency, line.product_uom_qty,
+                    product=line.product_id, partner=order.partner_id
+                )
+                for tax in taxes['taxes']:
+                    tax_totals[tax['name']] += tax['amount']
+
+            # Bắt đầu build chuỗi HTML hiển thị
+            summary_lines = [
+     "<table style='width:100%; table-layout:auto; border-collapse:collapse;'>"
+]
+
+            summary_lines.append(
+    f"<tr><td style='font-weight:bold;  white-space:nowrap; padding:4px;'>Tổng chưa thuế:</td>"
+    f"<td style='text-align:right; white-space:nowrap; padding:4px;'>{currency.format(order.amount_untaxed)}</td></tr>"
+)
+
+# Dòng thuế
+            for tax_name, amount in tax_totals.items():
+                 summary_lines.append(
+        f"<tr><td style='white-space:nowrap; padding:4px;'><b>Thuế trên {tax_name}:</b></td>"
+        f"<td style='text-align:right; white-space:nowrap; padding:4px;'>{currency.format(amount)}</td></tr>"
+    )
+
+# Dòng tổng cộng
+            summary_lines.append(
+            f"<tr><td style='font-weight:bold;  white-space:nowrap; padding:4px;'>Tổng cộng:</td>"
+            f"<td style='text-align:right; font-weight:bold; white-space:nowrap; padding:4px;'>{currency.format(order.amount_total)}</td></tr>"
+)
+
+            summary_lines.append("</table>")
+            order.x_tax_summary = ''.join(summary_lines)
+
+
+
 
 
 

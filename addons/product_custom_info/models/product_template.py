@@ -40,3 +40,4 @@ class ProductTemplate(models.Model):
             vals['default_code'] = f"{prefix}{next_index:03d}"
 
         return super().create(vals)
+    x_gia_nhan_cong = fields.Monetary(string="Giá nhân công", currency_field='currency_id',default=0.0)
