@@ -7,15 +7,16 @@
             <field name="arch" type="xml">
                 <field name="partner_id" />
                 <xpath expr="//field[@name='order_line']/tree/field[@name='name']" position="after">
-                    <field name="default_code" class="oe_ellipsis"/>
-                    <field name="x_thongso" class="oe_ellipsis"/>
-                    <field name="x_xuatxu" class="oe_ellipsis"/>
-                    <field name="x_hangsx" class="oe_ellipsis"/>
-                    <field name="x_chi_phi_nhan_cong" widget="monetary"/>
+                    <field name="default_code" string="Mã SP" class="oe_ellipsis" optional="hide"/>
+                    <field name="x_thongso" string="Thông số" class="oe_ellipsis" optional="show"/>
+                    <field name="x_xuatxu" string="Xuất xứ" class="oe_ellipsis" optional="show"/>
+                    <field name="x_hangsx" string="Hãng SX" class="oe_ellipsis" optional="show"/>
+                    <field name="x_chi_phi_nhan_cong" widget="monetary" optional="hide"/>
                 </xpath>
                 <xpath expr="//field[@name='partner_id']" position="after">
-                    <field name="partner_contact_id" placeholder="Người đại diện"/>
-                    <field name="partner_contact_phone"/>
+                    <field name="show_contact" invisible="1"/>
+                    <field name="partner_contact_id" invisible="not show_contact"/>
+                    <field name="partner_contact_phone" invisible="not show_contact"/>
                     <field name="is_including_installation"/>
                     <field name="is_including_transport"/>
                     <field name="x_estimated_delivery_time_id" options="{'no_create': False}" />
@@ -23,6 +24,7 @@
 
                 </xpath>
                 <xpath expr="//field[@name='date_order']" position="after">
+                    <field name="x_project_name" placeholder="Tên dự án"/>
                     <field name="x_warranty_duration_id" options="{'no_create': False}"/>
                     <field name="x_delivery_location"/>
                     <field name="x_payment_method_id" options="{'no_create': False}"/>
@@ -44,7 +46,7 @@
 
                 <!-- Chèn cái mới -->
                 <xpath expr="//notebook" position="after">
-                    <group string="Tổng tiền (tùy chỉnh)">
+                    <group string="Tổng tiền">
                         <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                         <field name="amount_tax" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                         <field name="amount_total" widget="monetary" options="{'currency_field': 'currency_id'}"/>

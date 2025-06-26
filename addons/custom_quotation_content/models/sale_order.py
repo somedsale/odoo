@@ -34,7 +34,7 @@ class SaleOrder(models.Model):
         string='Phương thức thanh toán'
     )
     x_quote_valid_until = fields.Integer(
-    string="Thời hạn báo giá (ngày)"
+    string="Thời hạn báo giá (ngày)",default=15,
 )
     partner_id = fields.Many2one(
         'res.partner',
@@ -93,9 +93,16 @@ class SaleOrder(models.Model):
         for order in self:
             phone = order.partner_contact_id.phone or order.partner_contact_id.mobile
             order.partner_contact_phone = phone or ''
+    show_contact = fields.Boolean(compute="_compute_show_contact")
+    @api.depends('partner_id.company_type')
+    def _compute_show_contact(self):
+        for order in self:
+            order.show_contact = order.partner_id.company_type == 'company'
 
-
-
+    x_project_name = fields.Text(
+        string="Dự án",
+        help="Tên dự án hoặc mô tả ngắn gọn về dự án liên quan đến đơn hàng này.",
+    )
 
 
 
