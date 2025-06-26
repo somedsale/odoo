@@ -10,6 +10,7 @@
                     <field name="x_thong_so"/>
                     <field name="x_xuat_xu"/>
                     <field name="x_hang_sx"/>
+                    <field name="x_gia_nhan_cong" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 </xpath>
                 <field name="uom_po_id" position="attributes">
                     <attribute name="invisible">1</attribute>
