@@ -104,7 +104,7 @@
                             <t t-foreach="doc.order_line" t-as="line">
                                 <t t-set="stt" t-value="stt + 1"/>
                                 <tr class="table-bordered border-dark border-2">
-                                    <td>
+                                    <td class="text-center">
                                         <span t-esc="stt"/>
                                     </td>
                                     <td>
@@ -118,13 +118,13 @@
                                             <span t-field="line.x_thongso"/>
                                         </i>
                                     </td>
-                                    <td>
+                                    <td class="text-center">
                                         <span t-field="line.x_xuatxu"/>
                                     </td>
-                                    <td>
+                                    <td class="text-center">
                                         <span t-field="line.product_uom"/>
                                     </td>
-                                    <td>
+                                    <td class="text-center">
                                         <span t-field="line.product_uom_qty"/>
                                     </td>
                                     <td>
