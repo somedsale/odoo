@@ -16,8 +16,6 @@
                     <div style="flex: 1; text-align: left; position: relative; font-weight: bold; top: -4px;">
                         <span>Dự án: <span t-esc="doc.x_project_name" style=" font-weight: normal;"/>
                         </span>
-                        <span>Dự án: <span t-esc="doc.x_project_name" style=" font-weight: normal;"/>
-                        </span>
                     </div>
                 </div><!-- // đọc dữ liệu nhân viên  -->
                 <t t-set="emp" t-value="env[&apos;hr.employee&apos;].search([(&apos;user_id&apos;, &apos;=&apos;, doc.user_id.id)], limit=1)"/>
