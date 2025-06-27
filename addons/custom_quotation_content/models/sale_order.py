@@ -111,11 +111,16 @@ class SaleOrder(models.Model):
             currency = order.currency_id
 
             for line in order.order_line.filtered(lambda l: not l.display_type):
-                price_unit = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
+                # Giá sau chiết khấu
+                price_unit = (line.price_unit or 0.0) * (1 - (line.discount or 0.0) / 100.0)
+                # Cộng giá nhân công
+                price_unit_with_nhan_cong = price_unit + (line.x_chi_phi_nhan_cong or 0.0)
+
                 taxes = line.tax_id.compute_all(
-                    price_unit, currency, line.product_uom_qty,
+                    price_unit_with_nhan_cong, currency, line.product_uom_qty,
                     product=line.product_id, partner=order.partner_id
                 )
+
                 for tax in taxes['taxes']:
                     tax_details[tax['name']]['base'] += tax['base']
                     tax_details[tax['name']]['amount'] += tax['amount']
@@ -130,11 +135,11 @@ class SaleOrder(models.Model):
                 f"<td style='text-align:right; white-space:nowrap; padding:4px;'>{currency.format(order.amount_untaxed)}</td></tr>"
             )
 
-            # Thuế chi tiết
+            # Chi tiết thuế
             for tax_name, data in tax_details.items():
                 summary_lines.append(
                     f"<tr><td style='white-space:nowrap; padding:4px;'>"
-                    f"<b>Thuế {tax_name} trên {currency.format(data['base'])}:</b></td>"
+                    f"<b>{tax_name} trên {currency.format(data['base'])}:</b></td>"
                     f"<td style='text-align:right; white-space:nowrap; padding:4px;'>{currency.format(data['amount'])}</td></tr>"
                 )
 
