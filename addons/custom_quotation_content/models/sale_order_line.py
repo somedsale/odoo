@@ -18,6 +18,7 @@ class SaleOrderLine(models.Model):
             self.x_hangsx = tmpl.x_hang_sx
             self.default_code = tmpl.default_code
             self.x_chi_phi_nhan_cong = tmpl.x_gia_nhan_cong
+    
     @api.depends('product_uom_qty', 'discount', 'price_unit', 'tax_id', 'x_chi_phi_nhan_cong')
     def _compute_amount(self):
         for line in self:
