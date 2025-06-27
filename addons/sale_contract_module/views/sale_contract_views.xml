@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sale_contract_tree_view" model="ir.ui.view">
+        <field name="name">sale.contract.tree</field>
+        <field name="model">sale.contract</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="sale_order_id"/>
+                <field name="date"/>
+                <field name="amount_total"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="sale_contract_form_view" model="ir.ui.view">
+        <field name="name">sale.contract.form</field>
+        <field name="model">sale.contract</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm" string="Confirm" type="object" class="btn-primary" invisible="state in ['confirmed', 'done', 'cancel']"/>
+                    <button name="action_done" string="Mark as Done" type="object" class="btn-primary" invisible="state in ['done', 'cancel']"/>
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state == 'cancel'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="partner_id"/>
+                        <field name="sale_order_id"/>
+                        <field name="date"/>
+                        <field name="amount_total"/>
+                    </group>
+                    <group>
+                        <field name="contract_details" placeholder="Enter contract details here..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_sale_contract" model="ir.actions.act_window">
+        <field name="name">Sale Contracts</field>
+        <field name="res_model">sale.contract</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_sale_contract" name="Sale Contracts" parent="sale.sale_menu_root" action="action_sale_contract" sequence="10"/>
+</odoo>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <report
+        id="action_report_sale_contract"
+        model="sale.contract"
+        string="Sale Contract PDF"
+        report_type="qweb-pdf"
+        name="sale_contract_module.sale_contract_template"
+        file="sale_contract_module.sale_contract_template"
+    />
+</odoo>
