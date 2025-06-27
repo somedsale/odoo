@@ -7,13 +7,17 @@ class SaleOrder(models.Model):
     is_including_transport = fields.Boolean(
     string="Đã bao gồm vận chuyển",
     default=False
-)
+    )
     is_including_installation = fields.Boolean(
     string="Đã bao gồm lắp đặt",
     default=False
-)
+    )
     is_show_chi_phi_nhan_cong = fields.Boolean(
         string="Hiển thị chi phí nhân công",
+        default=False,
+    )
+    is_show_ma_sp = fields.Boolean(
+        string="Hiển thị mã sản phẩm",
         default=False,
     )
     x_estimated_delivery_time_id = fields.Many2one(
