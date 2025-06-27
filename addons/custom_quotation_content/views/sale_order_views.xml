@@ -19,7 +19,7 @@
                     <field name="partner_contact_phone" invisible="not show_contact"/>
                     <field name="is_including_installation"/>
                     <field name="is_including_transport"/>
-                    <field name="is_show_chi_phi_nhan_cong"/>
+                    <!-- <field name="is_show_chi_phi_nhan_cong"/> -->
                     <field name="x_estimated_delivery_time_id" options="{'no_create': False}" />
                     <field name="x_custom_payment_terms" options="{'no_create': False}"/>
 
