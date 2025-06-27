@@ -49,19 +49,14 @@
                 <!-- Chèn cái mới -->
                 <xpath expr="//notebook" position="after">
                     <group string="Tổng tiền">
-                        <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        <!-- <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                         <field name="amount_tax" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                        <field name="amount_total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        <field name="amount_total" widget="monetary" options="{'currency_field': 'currency_id'}"/> -->
+                        <field name="x_tax_summary" readonly="1" nolabel="1"/>
                     </group>
                 </xpath>
 
-                <!-- <xpath expr="//group[@name='sale_total']" position="replace">
-                    <group name="custom_sale_totals" string="Tổng tiền (tuỳ chỉnh)">
-                        <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                        <field name="amount_tax" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                        <field name="amount_total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                    </group>
-                </xpath> -->
+
             </field>
         </record>
     </data>

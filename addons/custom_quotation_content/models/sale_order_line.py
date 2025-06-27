@@ -18,6 +18,7 @@ class SaleOrderLine(models.Model):
             self.x_hangsx = tmpl.x_hang_sx
             self.default_code = tmpl.default_code
             self.x_chi_phi_nhan_cong = tmpl.x_gia_nhan_cong
+    
     @api.depends('product_uom_qty', 'discount', 'price_unit', 'tax_id', 'x_chi_phi_nhan_cong')
     def _compute_amount(self):
         for line in self:
@@ -26,17 +27,14 @@ class SaleOrderLine(models.Model):
 
             # Tính thuế dựa trên giá sản phẩm
             taxes = line.tax_id.compute_all(
-                price_unit_discounted,
+                price_unit_discounted+line.x_chi_phi_nhan_cong,
                 currency=line.currency_id,
                 quantity=line.product_uom_qty,
                 product=line.product_id,
                 partner=line.order_id.partner_shipping_id
             )
 
-            # Chi phí nhân công không tính thuế, cộng riêng
-            nhan_cong_total = (line.x_chi_phi_nhan_cong or 0.0) * line.product_uom_qty
-
-            price_subtotal = taxes['total_excluded'] + nhan_cong_total
+            price_subtotal = taxes['total_excluded']
             price_tax = taxes['total_included'] - taxes['total_excluded']
             price_total = price_subtotal + price_tax
 
