@@ -14,7 +14,8 @@
                         <div t-esc="doc.name" style="color:#27B1FC;font-size: 16px; font-weight: bold; position: relative; top: -4px;"/>
                     </div>
                     <div style="flex: 1; text-align: left; position: relative; font-weight: bold; top: -4px;">
-                        <span>Dự án: <span t-esc="doc.x_project_name" style=" font-weight: normal;"/></span>
+                        <span>Dự án: <span t-esc="doc.x_project_name" style=" font-weight: normal;"/>
+                        </span>
                     </div>
                 </div><!-- // đọc dữ liệu nhân viên  -->
                 <t t-set="emp" t-value="env[&apos;hr.employee&apos;].search([(&apos;user_id&apos;, &apos;=&apos;, doc.user_id.id)], limit=1)"/>
@@ -93,11 +94,16 @@
                             <tr class="table-bordered border-dark border-2" style="height:auto; ">
                                 <th style="width:90px !important;border-right: 1px solid black;">STT</th>
                                 <th style="width:150px !important;border-right: 1px solid black;">Sản phẩm</th>
-                                <!-- <th style="width:150px !important;border-right: 1px solid black;">MSP</th> -->
+                                <t t-if="doc.is_show_ma_sp">
+                                    <th style="width:100px !important;border-right: 1px solid black;">Mã SP</th>
+                                </t>
                                 <th style="width:400px !important;border-right: 1px solid black;">Thông số</th>
                                 <th style="width:100px !important;border-right: 1px solid black;">Xuất xứ</th>
                                 <th style="width:100px !important;border-right: 1px solid black;">Đơn vị</th>
                                 <th style="width:120px !important;border-right: 1px solid black;">Khối lượng</th>
+                                <t t-if="doc.is_show_chi_phi_nhan_cong">
+                                    <th style="width:100px !important;border-right: 1px solid black;">Chi phí nhân công</th>
+                                </t>
                                 <th style="min-width:100px !important;border-right: 1px solid black;">Đơn giá</th>
                                 <th style="min-width:100px !important;border-right: 1px solid black;">Thành tiền</th>
                                 <th style="min-width:100px !important;border-right: 1px solid black;">Ghi chú</th>
@@ -111,9 +117,12 @@
                                     </td>
                                     <td>
                                         <span t-field="line.product_id.name"/>
-                                    </td><!-- <td>
-                                        <span t-field="line.product_id.default_code" t-field-options='{"widget": "char"}'/>
-                                    </td> -->
+                                    </td>
+                                    <t t-if="doc.is_show_ma_sp">
+                                        <td class="text-center">
+                                            <span t-field="line.product_id.default_code" t-field-options='{"widget": "char"}'/>
+                                        </td>
+                                        </t>    
                                     <td>
                                         <i>
                                             <span t-field="line.x_thongso"/>
@@ -128,6 +137,11 @@
                                     <td class="text-center">
                                         <span t-field="line.product_uom_qty"/>
                                     </td>
+                                    <t t-if="doc.is_show_chi_phi_nhan_cong">
+                                        <td class="text-center">
+                                            <span t-field="line.x_chi_phi_nhan_cong" t-field-options='{"widget": "monetary", "currency_field": "currency_id"}'/>
+                                        </td>
+                                    </t>
                                     <td>
                                         <span t-field="line.price_unit"/>
                                     </td>
