@@ -168,7 +168,7 @@
                                     </td>
                                     <td></td>
                                 </tr>
-                                <t t-foreach="tax_details.items()" t-as="item">
+                                <!-- <t t-foreach="tax_details.items()" t-as="item">
                                     <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
                                         <td colspan="9" style="white-space:nowrap; text-align: left;vertical-align: middle;">
                                             <t t-esc="&apos;VAT %s trên %s đ&apos; % (item[0], &apos;{:,.0f}&apos;.format(item[1][&apos;base&apos;]))"/>
@@ -178,9 +178,9 @@
                                         </td>
                                         <td></td>
                                     </tr>
-                                </t>
+                                </t> -->
                                 <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
-                                    <td colspan="9" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng VAT</td><!-- <td></td> -->
+                                    <td colspan="9" style="white-space:nowrap; text-align: left;vertical-align: middle;"> VAT <span t-out="', '.join(str(int(x.amount)) + '%' for x in line.tax_id) or ''"/></td><!-- <td></td> -->
                                     <td>
                                         <span t-field="doc.amount_tax"/>
                                     </td>
@@ -202,7 +202,7 @@
                                     </td>
                                     <td></td>
                                 </tr>
-                                <t t-foreach="tax_details.items()" t-as="item">
+                                <!-- <t t-foreach="tax_details.items()" t-as="item">
                                     <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
                                         <td colspan="8" style="white-space:nowrap; text-align: left;vertical-align: middle;">
                                             <t t-esc="&apos;VAT %s trên %s đ&apos; % (item[0], &apos;{:,.0f}&apos;.format(item[1][&apos;base&apos;]))"/>
@@ -212,9 +212,9 @@
                                         </td>
                                         <td></td>
                                     </tr>
-                                </t>
+                                </t> -->
                                 <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
-                                    <td colspan="8" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng VAT</td><!-- <td></td> -->
+                                    <td colspan="8" style="white-space:nowrap; text-align: left;vertical-align: middle;"> VAT <span t-out="', '.join(str(int(x.amount)) + '%' for x in line.tax_id) or ''"/></td><!-- <td></td> -->
                                     <td>
                                         <span t-field="doc.amount_tax"/>
                                     </td>
@@ -236,7 +236,7 @@
                                     </td>
                                     <td></td>
                                 </tr>
-                                <t t-foreach="tax_details.items()" t-as="item">
+                                <!-- <t t-foreach="tax_details.items()" t-as="item">
                                     <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
                                         <td colspan="7" style="white-space:nowrap; text-align: left;vertical-align: middle;">
                                             <t t-esc="&apos;VAT %s trên %s đ&apos; % (item[0], &apos;{:,.0f}&apos;.format(item[1][&apos;base&apos;]))"/>
@@ -246,9 +246,9 @@
                                         </td>
                                         <td></td>
                                     </tr>
-                                </t>
+                                </t> -->
                                 <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
-                                    <td colspan="7" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng VAT</td><!-- <td></td> -->
+                                    <td colspan="7" style="white-space:nowrap; text-align: left;vertical-align: middle;"> VAT <span t-out="', '.join(str(int(x.amount)) + '%' for x in line.tax_id) or ''"/></td><!-- <td></td> -->
                                     <td>
                                         <span t-field="doc.amount_tax"/>
                                     </td>
