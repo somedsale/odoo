@@ -182,7 +182,7 @@
                                 <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
                                     <td colspan="9" style="white-space:nowrap; text-align: left;vertical-align: middle;"> VAT <span t-out="', '.join(str(int(x.amount)) + '%' for x in line.tax_id) or ''"/></td><!-- <td></td> -->
                                     <td>
-                                        <span t-field="doc.amount_tax"/>
+                                        <span t-field="doc.price_tax"/>
                                     </td>
                                     <td></td>
                                 </tr>
@@ -216,7 +216,7 @@
                                 <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
                                     <td colspan="8" style="white-space:nowrap; text-align: left;vertical-align: middle;"> VAT <span t-out="', '.join(str(int(x.amount)) + '%' for x in line.tax_id) or ''"/></td><!-- <td></td> -->
                                     <td>
-                                        <span t-field="doc.amount_tax"/>
+                                        <span t-field="line.price_tax"/>
                                     </td>
                                     <td></td>
                                 </tr>
@@ -250,7 +250,7 @@
                                 <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
                                     <td colspan="7" style="white-space:nowrap; text-align: left;vertical-align: middle;"> VAT <span t-out="', '.join(str(int(x.amount)) + '%' for x in line.tax_id) or ''"/></td><!-- <td></td> -->
                                     <td>
-                                        <span t-field="doc.amount_tax"/>
+                                        <span t-field="doc.price_tax"/>
                                     </td>
                                     <td></td>
                                 </tr>
