@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<odoo><!-- Kế thừa template báo giá mặc định -->
+<odoo>    <!-- Kế thừa template báo giá mặc định -->
     <template id="custom_sale_order_report" inherit_id="sale.report_saleorder_document">
-        <xpath expr="//div[@class=&apos;page&apos;]" position="replace"><!-- Tùy chỉnh layout mới -->
+        <xpath expr="//div[@class=&apos;page&apos;]" position="replace">            <!-- Tùy chỉnh layout mới -->
             <div class="" style="font-family: &apos;Times New Roman&apos;, Times, serif;color:#000 !important;">
                 <div style="font-weight: bold;text-align:center;visibility: hidden">BẢNG BÁO GIÁ</div>
-                <div style="display: flex; align-items: center;"><!-- Cột trái để cân giữa -->
+                <div style="display: flex; align-items: center;">                    <!-- Cột trái để cân giữa -->
                     <div style="flex: 1; text-align: center;">
                         <h2 style="font-weight: bold; font-size: 20px; margin: 0; line-height: 1;">
                             BẢNG BÁO GIÁ
                         </h2>
-                    </div><!-- Mã báo giá bên phải -->
+                    </div>                    <!-- Mã báo giá bên phải -->
                     <div style="flex: 1; text-align: right; position: relative;">
                         <div t-esc="doc.name" style="color:#27B1FC;font-size: 16px; font-weight: bold; position: relative; top: -4px;"/>
                     </div>
                     <div style="flex: 1; text-align: left; position: relative; font-weight: bold; top: -4px;">
-                        <span>Dự án: <span t-esc="doc.x_project_name" style=" font-weight: normal;"/></span>
+                        <span>Dự án: <span t-esc="doc.x_project_name" style=" font-weight: normal;"/>
+                        </span>
                     </div>
-                </div><!-- // đọc dữ liệu nhân viên  -->
+                </div>                <!-- // đọc dữ liệu nhân viên  -->
                 <t t-set="emp" t-value="env[&apos;hr.employee&apos;].search([(&apos;user_id&apos;, &apos;=&apos;, doc.user_id.id)], limit=1)"/>
                 <table style="color:#000; width: 100%; font-size:14px; line-height: 1.8; border: none; border-style: none; outline: none; border-collapse: collapse;">
                     <tr style="border: none;color:#000 !important;">
@@ -92,7 +93,7 @@
                         <tbody>
                             <tr class="table-bordered border-dark border-2" style="height:auto; ">
                                 <th style="width:90px !important;border-right: 1px solid black;">STT</th>
-                                <th style="width:150px !important;border-right: 1px solid black;">Sản phẩm</th><!-- <th style="width:150px !important;border-right: 1px solid black;">MSP</th> -->
+                                <th style="width:150px !important;border-right: 1px solid black;">Sản phẩm</th>                                <!-- <th style="width:150px !important;border-right: 1px solid black;">MSP</th> -->
                                 <th style="width:400px !important;border-right: 1px solid black;">Thông số</th>
                                 <th style="width:100px !important;border-right: 1px solid black;">Xuất xứ</th>
                                 <th style="width:100px !important;border-right: 1px solid black;">Đơn vị</th>
@@ -110,7 +111,7 @@
                                     </td>
                                     <td>
                                         <span t-field="line.product_id.name"/>
-                                    </td><!-- <td>
+                                    </td>                                    <!-- <td>
                                         <span t-field="line.product_id.default_code" t-field-options='{"widget": "char"}'/>
                                     </td> -->
                                     <td>
@@ -137,41 +138,41 @@
                                 </tr>
                             </t>
                             <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
-                                <td></td>
-                                <td>Tổng</td><!-- <td></td> -->
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
+                                <td colspan="7" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng chưa VAT</td>                                <!-- <td></td> -->
                                 <td>
                                     <span t-field="doc.amount_untaxed"/>
                                 </td>
                                 <td></td>
                             </tr>
+                            <t t-set="tax_details" t-value="{}"/>
+                            <t t-foreach="doc.order_line" t-as="line">
+                                <t t-foreach="line.tax_id" t-as="tax">
+                                    <t t-set="base" t-value="tax_details.get(tax.name, {'base': 0.0, 'amount': 0.0})"/>
+                                    <t t-set="tax_details" t-value="dict(tax_details, **{tax.name: {'base': base['base'] + line.price_subtotal, 'amount': base['amount'] + (line.price_subtotal * tax.amount / 100)}})"/>
+                                </t>
+                            </t>
+
+                            <t t-foreach="tax_details.items()" t-as="item">
+                                <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
+                                    <td colspan="7" style="white-space:nowrap; text-align: left;vertical-align: middle;">
+                                        <t t-esc="'VAT %s trên %s đ' % (item[0], '{:,.0f}'.format(item[1]['base']))"/>
+                                    </td>
+                                    <td style="white-space:nowrap;">
+                                        <t t-esc="'%s đ' % '{:,.0f}'.format(item[1]['amount'])"/>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </t>
                             <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
-                                <td></td>
-                                <td t-attf-class="text-start align-middle {{ &apos;d-none d-md-table-cell&apos; if report_type == &apos;html&apos; else &apos;&apos; }}">
-                                    VAT <span t-out="&apos;, &apos;.join(str(int(x.amount)) + &apos;%&apos; for x in line.tax_id) or &apos;&apos;"/>
-                                </td><!-- <td></td> -->
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
+                                <td colspan="7" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng VAT</td>                                <!-- <td></td> -->
                                 <td>
                                     <span t-field="doc.amount_tax"/>
                                 </td>
                                 <td></td>
                             </tr>
+
                             <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
-                                <td></td>
-                                <td>Tổng cộng</td><!-- <td></td> -->
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
+                                <td colspan="7" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng</td>
                                 <td>
                                     <span t-field="doc.amount_total"/>
                                 </td>
@@ -179,126 +180,127 @@
                             </tr>
                         </tbody>
                     </table>
-                </div><!-- <p>Tổng cộng: <span t-field="doc.amount_total" /></p> -->
+                </div>
+                <!-- <p>Tổng cộng: <span t-field="doc.amount_total" /></p> -->
                 <div style="page-break-inside: avoid;">
                     <div style="text-align: center; font-weight: bold; margin-top: 10px;">
                         Số tiền bằng chữ: <span>
-                            <t t-esc="doc.number_to_text(doc.amount_total)"/>
-                        </span>
-                    </div>
+                        <t t-esc="doc.number_to_text(doc.amount_total)"/>
+                    </span>
                 </div>
-                <div style="font-size:14px;">
-                    <p>
-                        <strong>Điều kiện thương mại:</strong>
-                    </p>
-                    <t t-set="line_num" t-value="1"/>
-                    <p>
-                        <t t-out="line_num"/>
+            </div>
+            <div style="font-size:14px;">
+                <p>
+                    <strong>Điều kiện thương mại:</strong>
+                </p>
+                <t t-set="line_num" t-value="1"/>
+                <p>
+                    <t t-out="line_num"/>
 . Báo giá đã bao gồm Thuế VAT</p>
-                    <t t-set="line_num" t-value="line_num + 1"/>
-                    <t t-if="doc.is_including_installation and doc.is_including_transport">
-                        <p>
-                            <t t-out="line_num"/>
-. Báo giá đã bao gồm lắp đặt và vận chuyển</p>
-                        <t t-set="line_num" t-value="line_num + 1"/>
-                    </t>
-                    <t t-elif="doc.is_including_installation">
-                        <p>
-                            <t t-out="line_num"/>
-. Báo giá đã bao gồm lắp đặt</p>
-                        <t t-set="line_num" t-value="line_num + 1"/>
-                    </t>
-                    <t t-elif="doc.is_including_transport">
-                        <p>
-                            <t t-out="line_num"/>
-. Báo giá đã bao gồm vận chuyển</p>
-                        <t t-set="line_num" t-value="line_num + 1"/>
-                    </t>
-                    <t t-elif="not doc.is_including_installation and not doc.is_including_transport">
-                        <p>
-                            <t t-out="line_num"/>
-. Báo giá chưa bao gồm lắp đặt và vận chuyển</p>
-                        <t t-set="line_num" t-value="line_num + 1"/>
-                    </t>
-                    <t t-if="doc.x_estimated_delivery_time_id">
-                        <p>
-                            <t t-out="line_num"/>
-. Thời gian giao hàng: <t t-out="doc.x_estimated_delivery_time_id.name"/>
-                        </p>
-                        <t t-set="line_num" t-value="line_num + 1"/>
-                    </t>
-                    <t t-if="doc.x_warranty_duration_id">
-                        <p>
-                            <t t-out="line_num"/>
-. Thời gian bảo hành: <t t-out="doc.x_warranty_duration_id.name"/>
-                        </p>
-                        <t t-set="line_num" t-value="line_num + 1"/>
-                    </t>
-                    <p style="margin-bottom: -25px;">
-                        <t t-out="line_num"/>
-. Điều khoản thanh toán:
-                    </p>
-                    <div style="white-space: pre-line; margin-top: 0; line-height: 2.2; margin-left: 15px;">
-                        <t t-out="doc.x_custom_payment_terms"/>
-                    </div>
-                    <t t-set="line_num" t-value="line_num + 1"/>
+                <t t-set="line_num" t-value="line_num + 1"/>
+                <t t-if="doc.is_including_installation and doc.is_including_transport">
                     <p>
                         <t t-out="line_num"/>
-. Phương thức thanh toán: <t t-out="doc.x_payment_method_id.name"/>
+. Báo giá đã bao gồm lắp đặt và vận chuyển</p>
+                    <t t-set="line_num" t-value="line_num + 1"/>
+                </t>
+                <t t-elif="doc.is_including_installation">
+                    <p>
+                        <t t-out="line_num"/>
+. Báo giá đã bao gồm lắp đặt</p>
+                    <t t-set="line_num" t-value="line_num + 1"/>
+                </t>
+                <t t-elif="doc.is_including_transport">
+                    <p>
+                        <t t-out="line_num"/>
+. Báo giá đã bao gồm vận chuyển</p>
+                    <t t-set="line_num" t-value="line_num + 1"/>
+                </t>
+                <t t-elif="not doc.is_including_installation and not doc.is_including_transport">
+                    <p>
+                        <t t-out="line_num"/>
+. Báo giá chưa bao gồm lắp đặt và vận chuyển</p>
+                    <t t-set="line_num" t-value="line_num + 1"/>
+                </t>
+                <t t-if="doc.x_estimated_delivery_time_id">
+                    <p>
+                        <t t-out="line_num"/>
+. Thời gian giao hàng: <t t-out="doc.x_estimated_delivery_time_id.name"/>
                     </p>
                     <t t-set="line_num" t-value="line_num + 1"/>
-                    <t t-if="doc.x_delivery_location">
-                        <p>
-                            <t t-out="line_num"/>
+                </t>
+                <t t-if="doc.x_warranty_duration_id">
+                    <p>
+                        <t t-out="line_num"/>
+. Thời gian bảo hành: <t t-out="doc.x_warranty_duration_id.name"/>
+                    </p>
+                    <t t-set="line_num" t-value="line_num + 1"/>
+                </t>
+                <p style="margin-bottom: -25px;">
+                    <t t-out="line_num"/>
+. Điều khoản thanh toán:
+                </p>
+                <div style="white-space: pre-line; margin-top: 0; line-height: 2.2; margin-left: 15px;">
+                    <t t-out="doc.x_custom_payment_terms"/>
+                </div>
+                <t t-set="line_num" t-value="line_num + 1"/>
+                <p>
+                    <t t-out="line_num"/>
+. Phương thức thanh toán: <t t-out="doc.x_payment_method_id.name"/>
+                </p>
+                <t t-set="line_num" t-value="line_num + 1"/>
+                <t t-if="doc.x_delivery_location">
+                    <p>
+                        <t t-out="line_num"/>
 . Địa điểm giao hàng: <t t-out="doc.x_delivery_location"/>
-                        </p>
-                        <t t-set="line_num" t-value="line_num + 1"/>
-                    </t>
-                    <t t-if="doc.validity_date and doc.date_order">
-                        <p>
-                            <t t-out="line_num"/>
+                    </p>
+                    <t t-set="line_num" t-value="line_num + 1"/>
+                </t>
+                <t t-if="doc.validity_date and doc.date_order">
+                    <p>
+                        <t t-out="line_num"/>
 . Bảng báo giá có hiệu lực trong vòng <t t-out="doc.x_quote_valid_until"/>
  ngày,
                             sau đó có thể được thay đổi mà không thông báo trước.
-                        </p>
-                        <t t-set="line_num" t-value="line_num + 1"/>
-                    </t>
-                </div>
-                <div style="page-break-inside: avoid;">
-                    <div class="row">
-                        <div class="col-6" style="text-align:center;line-height:1.8">
-                            <div>
-                                <i>Xác nhận của khách hàng</i>
-                            </div>
-                            <div>
-                                <i>(Ký tên, đóng dấu)</i>
-                            </div>
+                    </p>
+                    <t t-set="line_num" t-value="line_num + 1"/>
+                </t>
+            </div>
+            <div style="page-break-inside: avoid;">
+                <div class="row">
+                    <div class="col-6" style="text-align:center;line-height:1.8">
+                        <div>
+                            <i>Xác nhận của khách hàng</i>
                         </div>
-                        <div class="col-6" style="text-align:center;line-height:1.8">
-                            <div>
-                                <i>
-                                    <t t-esc="doc.formatted_date"/>
-                                </i>
-                            </div>
-                            <div>
-                                <b>
-                                    <i>CÔNG TY TNHH GIẢI PHÁP KỸ THUẬT
+                        <div>
+                            <i>(Ký tên, đóng dấu)</i>
+                        </div>
+                    </div>
+                    <div class="col-6" style="text-align:center;line-height:1.8">
+                        <div>
+                            <i>
+                                <t t-esc="doc.formatted_date"/>
+                            </i>
+                        </div>
+                        <div>
+                            <b>
+                                <i>CÔNG TY TNHH GIẢI PHÁP KỸ THUẬT
                                         Y TẾ MIỀN NAM</i>
-                                </b>
-                            </div>
-                            <div>
-                                <b>
-                                    <i>PHÒNG KINH DOANH</i>
-                                </b>
-                            </div>
-                            <div style="height:65px"></div>
-                            <div>
-                                <span t-field="doc.user_id.name"/>
-                            </div>
+                            </b>
+                        </div>
+                        <div>
+                            <b>
+                                <i>PHÒNG KINH DOANH</i>
+                            </b>
+                        </div>
+                        <div style="height:65px"></div>
+                        <div>
+                            <span t-field="doc.user_id.name"/>
                         </div>
                     </div>
                 </div>
             </div>
-        </xpath>
-    </template>
+        </div>
+    </xpath>
+</template>
 </odoo>
