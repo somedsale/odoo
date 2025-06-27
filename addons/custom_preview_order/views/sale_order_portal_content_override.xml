@@ -1,99 +1,5 @@
 <odoo>
     <template id="custom_sale_order_portal_content_test" inherit_id="sale.sale_order_portal_content">
-        <xpath expr="//div[@id='sale_info']" position="replace">
-            <div id="sale_info" class="col-12 col-lg-6 mb-4">
-                <span id="sale_info_title">
-                    <h4 class="mb-1">Thông tin</h4>
-                    <hr class="mt-1 mb-2"/>
-                </span>
-                <table class="table table-borderless table-sm">
-                    <tbody style="white-space:nowrap" id="sale_info_table">
-                        <tr>
-                            <th t-if="sale_order.state in ['sale', 'cancel']" class="ps-0 pb-0">Ngày đặt:</th>
-                            <th t-else="" class="ps-0 pb-0">Ngày:</th>
-                            <td class="w-100 pb-0 text-wrap">
-                                <span t-field="sale_order.date_order" t-options='{"widget": "date"}'/>
-                            </td>
-                        </tr>
-                        <tr t-if="sale_order.validity_date and sale_order.state in ['draft', 'sent']">
-                            <th class="ps-0 pb-0">Ngày hết hạn:</th>
-                            <td class="w-100 pb-0 text-wrap">
-                                <span t-field="sale_order.validity_date" t-options='{"widget": "date"}'/>
-                            </td>
-                        </tr>
-                        <tr t-if="sale_order.client_order_ref">
-                            <th class="ps-0 pb-0">Tham chiếu:</th>
-                            <td class="w-100 pb-0 text-wrap">
-                                <span t-field="sale_order.client_order_ref"/>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </xpath>
-        <xpath expr="//div[@id='customer_info']" position="replace">
-            <!-- ======  Customer Information  ====== -->
-            <div id="customer_info" class="col-12 col-lg-6 mb-4">
-                <h4 class="mb-1">
-                    <t t-if="sale_order.partner_shipping_id == sale_order.partner_invoice_id">
-                Chi phí và địa chỉ giao hàng
-                    </t>
-                    <t t-else="">
-                Địa chỉ thanh toán
-                    </t>
-                    <small t-if="sale_order.partner_id == sale_order.partner_invoice_id == sale_order.env.user.partner_id">
-                        <a class="small" t-attf-href="/my/account?redirect={{sale_order.get_portal_url()}}">
-                            <i class="fa fa-fw fa-pencil"/>
-                        </a>
-                    </small>
-                </h4>
-                <hr class="mt-1 mb-2"/>
-                <div t-field="sale_order.partner_invoice_id" t-options="{'widget': 'contact', 'fields': ['name', 'address', 'phone', 'email']}"/>
-                <span t-if="sale_order.partner_shipping_id != sale_order.partner_invoice_id" id="shipping_address" class="col-lg-6">
-                    <br/>
-                    <h4 class="mb-1">
-                Địa chỉ vận chuyển
-                    </h4>
-                    <hr class="mt-1 mb-2"/>
-                    <div t-field="sale_order.partner_shipping_id" t-options='{ "widget": "contact", "fields": [ "name", "address"]}'/>
-                </span>
-            </div>
-
-            <t t-set="invoices" t-value="sale_order.invoice_ids.filtered(lambda i: i.state not in ['draft', 'cancel']).sorted('date', reverse=True)[:3]"/>
-            <div id="sale_invoices" t-if="invoices and sale_order.state in ['sale', 'cancel']" class="col-12 col-lg-6 mb-4">
-                <h4 class="mb-1">Hóa đơn cuối cùng</h4>
-                <hr class="mt-1 mb-2"/>
-                <t t-foreach="invoices" t-as="i">
-                    <t t-set="report_url" t-value="i.get_portal_url()"/>
-                    <t t-set="authorized_tx_ids" t-value="i.authorized_transaction_ids"/>
-                    <div class="d-flex flex-column">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <a t-att-href="report_url">
-                                <span t-out="i.name"/>
-                            </a>
-                            <div t-if="i.payment_state in ('paid', 'in_payment')" class="small badge text-bg-success orders_label_text_align">
-                                <i class="fa fa-fw fa-check"/>
-                                    Chi trả
-                            </div>
-                            <div t-elif="i.payment_state == 'reversed'" class="small badge text-bg-success orders_label_text_align">
-                                <i class="fa fa-fw fa-check"/>
-                                Hoàn trả
-                            </div>
-                            <div t-elif="authorized_tx_ids" class="small badge text-bg-success orders_label_text_align">
-                                <i class="fa fa-fw fa-check"/>
-                                        Authorized
-                            </div>
-                            <div t-else="" class="small badge text-bg-info orders_label_text_align">
-                                <i class="fa fa-fw fa-clock-o"/>
-                                Đợi thanh toán
-                            </div>
-                        </div>
-                        <div class="small d-lg-inline-block">Ngày: <span class="text-muted" t-field="i.invoice_date"/>
-                        </div>
-                    </div>
-                </t>
-            </div>
-        </xpath>
         <!-- Table -->
         <xpath expr="//table[@id='sales_order_table']" position="replace">
             <div class="table-responsive">
@@ -107,6 +13,9 @@
 
                             <th class="text-start" id="product_qty_header">Số lượng</th>
                             <th class="text-start" id="product_uom_header">Đơn vị</th>
+                            <th class="text-start" id="product_nhancong_header">
+                                Nhân công
+                            </th>
                             <th t-attf-class="text-start {{ 'd-none d-sm-table-cell' if report_type == 'html' else '' }}">
                                 Giá sản phẩm
                             </th>
@@ -115,6 +24,7 @@
                                 Thuế
                             </th>
                             <th class="text-start">Tạm tính</th>
+                            <th class="text-start">Thành tiền</th>
                         </tr>
                     </thead>
                     <tbody class="sale_tbody">
@@ -150,6 +60,10 @@
                                     <td class="text-start">
                                         <span t-field="line.product_uom"/>
                                     </td>
+                                    <!-- Nhân công -->
+                                    <td class="text-start">
+                                        <span t-field="line.x_chi_phi_nhan_cong" class="oe_ellipsis"/>
+                                    </td>
 
                                     <!-- Giá sản phẩm -->
                                     <td t-attf-class="text-start {{ 'd-none d-sm-table-cell' if report_type == 'html' else '' }}">
@@ -170,6 +84,11 @@
                                         <span class="oe_order_line_price_subtotal" t-field="line.price_subtotal"/>
                                     </td>
 
+                                    <!-- Thành tiền -->
+                                    <td t-if="not line.is_downpayment" class="text-start">
+                                        <span class="oe_order_line_price_total" t-field="line.price_total"/>
+                                    </td>
+
                                 </t>
 
 
@@ -181,7 +100,11 @@
                     </tbody>
                 </table>
             </div>
-
+        </xpath>
+        <xpath expr="//div[@id='total']" position="replace">
+            <t t-if="sale_order.x_tax_summary">
+                <div t-raw="sale_order.x_tax_summary"/>
+            </t>
         </xpath>
 
     </template>
