@@ -18,7 +18,7 @@
                     </div>
                 </div><!-- // đọc dữ liệu nhân viên  -->
                 <t t-set="emp" t-value="env[&apos;hr.employee&apos;].search([(&apos;user_id&apos;, &apos;=&apos;, doc.user_id.id)], limit=1)"/>
-                <table style="color:#000; width: 100%; font-size:14px; line-height: 1.8; border: none; border-style: none; outline: none; border-collapse: collapse;">
+                <table style="color:#000; width: 100%; font-size:14px; line-height: 1.8; border-color: white; border-style: none; outline: none; border-collapse: collapse;">
                     <tr style="border: none;color:#000 !important;">
                         <td style="width: 50%; padding-right: 10px; border: none;">
                             <strong>Khách hàng:</strong>
@@ -92,7 +92,8 @@
                         <tbody>
                             <tr class="table-bordered border-dark border-2" style="height:auto; ">
                                 <th style="width:90px !important;border-right: 1px solid black;">STT</th>
-                                <th style="width:150px !important;border-right: 1px solid black;">Sản phẩm</th><!-- <th style="width:150px !important;border-right: 1px solid black;">MSP</th> -->
+                                <th style="width:150px !important;border-right: 1px solid black;">Sản phẩm</th>
+                                <!-- <th style="width:150px !important;border-right: 1px solid black;">MSP</th> -->
                                 <th style="width:400px !important;border-right: 1px solid black;">Thông số</th>
                                 <th style="width:100px !important;border-right: 1px solid black;">Xuất xứ</th>
                                 <th style="width:100px !important;border-right: 1px solid black;">Đơn vị</th>

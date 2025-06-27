@@ -12,6 +12,10 @@ class SaleOrder(models.Model):
     string="Đã bao gồm lắp đặt",
     default=False
 )
+    is_show_chi_phi_nhan_cong = fields.Boolean(
+        string="Hiển thị chi phí nhân công",
+        default=False,
+    )
     x_estimated_delivery_time_id = fields.Many2one(
         'estimated.delivery.time', 
         string="Thời gian giao hàng dự tính"
