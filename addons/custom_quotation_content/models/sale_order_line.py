@@ -26,17 +26,14 @@ class SaleOrderLine(models.Model):
 
             # Tính thuế dựa trên giá sản phẩm
             taxes = line.tax_id.compute_all(
-                price_unit_discounted,
+                price_unit_discounted+line.x_chi_phi_nhan_cong,
                 currency=line.currency_id,
                 quantity=line.product_uom_qty,
                 product=line.product_id,
                 partner=line.order_id.partner_shipping_id
             )
 
-            # Chi phí nhân công không tính thuế, cộng riêng
-            nhan_cong_total = (line.x_chi_phi_nhan_cong or 0.0) * line.product_uom_qty
-
-            price_subtotal = taxes['total_excluded'] + nhan_cong_total
+            price_subtotal = taxes['total_excluded']
             price_tax = taxes['total_included'] - taxes['total_excluded']
             price_total = price_subtotal + price_tax
 
