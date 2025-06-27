@@ -107,7 +107,7 @@ class SaleOrder(models.Model):
     @api.depends('order_line.tax_id', 'order_line.price_total', 'amount_untaxed', 'amount_tax', 'amount_total')
     def _compute_tax_summary(self):
         for order in self:
-            tax_totals = defaultdict(float)
+            tax_details = defaultdict(lambda: {'base': 0.0, 'amount': 0.0})
             currency = order.currency_id
 
             for line in order.order_line.filtered(lambda l: not l.display_type):
@@ -117,30 +117,32 @@ class SaleOrder(models.Model):
                     product=line.product_id, partner=order.partner_id
                 )
                 for tax in taxes['taxes']:
-                    tax_totals[tax['name']] += tax['amount']
+                    tax_details[tax['name']]['base'] += tax['base']
+                    tax_details[tax['name']]['amount'] += tax['amount']
 
-            # Bắt đầu build chuỗi HTML hiển thị
             summary_lines = [
-     "<table style='width:100%; table-layout:auto; border-collapse:collapse;'>"
-]
+                "<table style='width:100%; table-layout:auto; border-collapse:collapse;'>"
+            ]
 
+            # Tổng chưa thuế
             summary_lines.append(
-    f"<tr><td style='font-weight:bold;  white-space:nowrap; padding:4px;'>Tổng chưa thuế:</td>"
-    f"<td style='text-align:right; white-space:nowrap; padding:4px;'>{currency.format(order.amount_untaxed)}</td></tr>"
-)
+                f"<tr><td style='font-weight:bold; white-space:nowrap; padding:4px;'>Tổng chưa thuế:</td>"
+                f"<td style='text-align:right; white-space:nowrap; padding:4px;'>{currency.format(order.amount_untaxed)}</td></tr>"
+            )
 
-# Dòng thuế
-            for tax_name, amount in tax_totals.items():
-                 summary_lines.append(
-        f"<tr><td style='white-space:nowrap; padding:4px;'><b>Thuế trên {tax_name}:</b></td>"
-        f"<td style='text-align:right; white-space:nowrap; padding:4px;'>{currency.format(amount)}</td></tr>"
-    )
+            # Thuế chi tiết
+            for tax_name, data in tax_details.items():
+                summary_lines.append(
+                    f"<tr><td style='white-space:nowrap; padding:4px;'>"
+                    f"<b>Thuế {tax_name} trên {currency.format(data['base'])}:</b></td>"
+                    f"<td style='text-align:right; white-space:nowrap; padding:4px;'>{currency.format(data['amount'])}</td></tr>"
+                )
 
-# Dòng tổng cộng
+            # Tổng cộng
             summary_lines.append(
-            f"<tr><td style='font-weight:bold;  white-space:nowrap; padding:4px;'>Tổng cộng:</td>"
-            f"<td style='text-align:right; font-weight:bold; white-space:nowrap; padding:4px;'>{currency.format(order.amount_total)}</td></tr>"
-)
+                f"<tr><td style='font-weight:bold; white-space:nowrap; padding:4px;'>Tổng cộng:</td>"
+                f"<td style='text-align:right; font-weight:bold; white-space:nowrap; padding:4px;'>{currency.format(order.amount_total)}</td></tr>"
+            )
 
             summary_lines.append("</table>")
             order.x_tax_summary = ''.join(summary_lines)
