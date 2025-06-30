@@ -155,8 +155,6 @@ class SaleOrder(models.Model):
     string="Đã bao gồm kiểm thử",
     help ="Chọn nếu báo giá đã bao gồm chi phí kiểm thử sản phẩm hoặc dịch vụ.",
     default=False)
-    x_note = fields.Text(
-        string="Ghi chú")
 
 
 

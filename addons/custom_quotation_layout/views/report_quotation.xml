@@ -151,7 +151,7 @@
                                         <span t-field="line.price_subtotal"/>
                                     </td>
                                     <td style="border-right: 2px solid black;">
-                                        <span t-field="doc.x_note"/>
+                                        <span t-field="line.x_note"/>
                                     </td>
                                 </tr>
                             </t>
