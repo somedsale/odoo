@@ -139,7 +139,7 @@ class SaleOrder(models.Model):
             for tax_name, data in tax_details.items():
                 summary_lines.append(
                     f"<tr><td style='white-space:nowrap; padding:4px;'>"
-                    f"<b>{tax_name} trên {currency.format(data['base'])}:</b></td>"
+                    f"<b>Thuế {tax_name} trên {currency.format(data['base'])}:</b></td>"
                     f"<td style='text-align:right; white-space:nowrap; padding:4px;'>{currency.format(data['amount'])}</td></tr>"
                 )
 
