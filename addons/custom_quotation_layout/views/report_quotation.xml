@@ -150,7 +150,9 @@
                                     <td>
                                         <span t-field="line.price_subtotal"/>
                                     </td>
-                                    <td style="border-right: 2px solid black;"></td>
+                                    <td style="border-right: 2px solid black;">
+                                        <span t-field="line.x_note"/>
+                                    </td>
                                 </tr>
                             </t>
                             <t t-set="tax_details" t-value="{}"/>
@@ -282,6 +284,20 @@
                     <strong>Điều kiện thương mại:</strong>
                 </p>
                 <t t-set="line_num" t-value="1"/>
+                <t t-if="doc.is_including_testing">
+                    <p>
+                        <t t-out="line_num"/>
+. Báo giá đã bao gồm chi phí testing
+                    </p>
+                    <t t-set="line_num" t-value="line_num + 1"/>
+                </t>
+                <t t-else="">
+                    <p>
+                        <t t-out="line_num"/>
+. Báo giá chưa bao gồm chi phí testing
+                    </p>
+                    <t t-set="line_num" t-value="line_num + 1"/>
+                </t>
                 <p>
                     <t t-out="line_num"/>
 . Báo giá đã bao gồm Thuế VAT</p>

@@ -12,6 +12,7 @@
                     <field name="x_xuatxu" string="Xuất xứ" class="oe_ellipsis" optional="show"/>
                     <field name="x_hangsx" string="Hãng SX" class="oe_ellipsis" optional="show"/>
                     <field name="x_chi_phi_nhan_cong" widget="monetary" optional="hide"/>
+                    <field name="x_note" string="Ghi chú" class="oe_ellipsis" optional="hide"/>
                 </xpath>
                 <xpath expr="//field[@name='partner_id']" position="after">
                     <field name="show_contact" invisible="1"/>
@@ -31,6 +32,7 @@
                     <field name="x_delivery_location"/>
                     <field name="x_payment_method_id" options="{'no_create': False}"/>
                     <field name="x_quote_valid_until"/>
+                    <field name ="is_including_testing"/>
                     <!-- <field name="tax_totals" widget="account-tax-totals-field" nolabel="1" colspan="2" readonly="1"/> -->
                 </xpath>
                 <field name="validity_date" position="attributes">

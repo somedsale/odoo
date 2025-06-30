@@ -151,6 +151,10 @@ class SaleOrder(models.Model):
 
             summary_lines.append("</table>")
             order.x_tax_summary = ''.join(summary_lines)
+    is_including_testing = fields.Boolean(
+    string="Đã bao gồm kiểm thử",
+    help ="Chọn nếu báo giá đã bao gồm chi phí kiểm thử sản phẩm hoặc dịch vụ.",
+    default=False)
 
 
 
