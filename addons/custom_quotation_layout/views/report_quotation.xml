@@ -245,7 +245,7 @@
                                 <t t-foreach="tax_details.items()" t-as="item">
                                     <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
                                         <td colspan="7" style="white-space:nowrap; text-align: left;vertical-align: middle;">
-                                            <t t-esc="&apos;VAT %s trên %s đ&apos; % (item[0], &apos;{:,.0f}&apos;.format(item[1][&apos;base&apos;]))"/>
+                                            <t t-esc="&apos;VAT %s&apos; % item[0]"/>
                                         </td>
                                         <td style="white-space:nowrap;">
                                             <t t-esc="&apos;%s đ&apos; % &apos;{:,.0f}&apos;.format(item[1][&apos;amount&apos;])"/>
@@ -253,14 +253,14 @@
                                         <td></td>
                                     </tr>
                                 </t>
-                                <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
+                                <!-- <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
                                     <td colspan="7" style="white-space:nowrap; text-align: left;vertical-align: middle;"> Tổng thuế 
                                     </td>
                                     <td>
                                         <span t-field="doc.amount_tax"/>
                                     </td>
                                     <td></td>
-                                </tr>
+                                </tr> -->
                                 <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
                                     <td colspan="7" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng</td>
                                     <td>
