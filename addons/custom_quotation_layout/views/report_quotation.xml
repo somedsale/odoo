@@ -287,14 +287,7 @@
                 <t t-if="doc.is_including_testing">
                     <p>
                         <t t-out="line_num"/>
-. Báo giá đã bao gồm chi phí testing
-                    </p>
-                    <t t-set="line_num" t-value="line_num + 1"/>
-                </t>
-                <t t-else="">
-                    <p>
-                        <t t-out="line_num"/>
-. Báo giá chưa bao gồm chi phí testing
+. Báo giá đã bao gồm chi phí kiểm định 
                     </p>
                     <t t-set="line_num" t-value="line_num + 1"/>
                 </t>
