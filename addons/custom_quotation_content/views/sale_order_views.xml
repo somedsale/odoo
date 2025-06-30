@@ -31,6 +31,8 @@
                     <field name="x_delivery_location"/>
                     <field name="x_payment_method_id" options="{'no_create': False}"/>
                     <field name="x_quote_valid_until"/>
+                    <field name ="is_including_testing"/>
+                    <field name ="x_note" placeholder="Ghi chú"/>
                     <!-- <field name="tax_totals" widget="account-tax-totals-field" nolabel="1" colspan="2" readonly="1"/> -->
                 </xpath>
                 <field name="validity_date" position="attributes">
