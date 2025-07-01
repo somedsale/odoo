@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template for Sale Contract Report -->
+    <template id="report_sale_contract_document">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <h2>Sale Contract: <span t-field="o.name"/></h2>
+                    <p>Customer: <span t-field="o.partner_id"/></p>
+                    <p>Date: <span t-field="o.date_contract"/></p>
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Description</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="o.contract_lines" t-as="line">
+                                <tr>
+                                    <td><span t-field="line.product_id"/></td>
+                                    <td><span t-field="line.name"/></td>
+                                    <td><span t-field="line.quantity"/></td>
+                                    <td><span t-field="line.price_unit"/></td>
+                                    <td><span t-field="line.price_subtotal"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    <p>Total: <span t-field="o.amount_total"/></p>
+                    <h3>Terms and Conditions</h3>
+                    <p><span t-field="o.terms_conditions"/></p>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Report definition -->
+    <record id="action_report_sale_contract" model="ir.actions.report">
+        <field name="name">Sale Contract PDF</field>
+        <field name="model">sale.contract</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_sale_contract.report_sale_contract_document</field>
+        <field name="report_file">custom_sale_contract.report_sale_contract_document</field>
+        <field name="print_report_name">'Sale Contract - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_sale_contract"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>
