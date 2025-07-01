@@ -1,4 +1,4 @@
-version: '3.1'
+version: "3.1"
 services:
   web:
     image: odoo:17.0
@@ -20,8 +20,19 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_PASSWORD=odoo
       - POSTGRES_USER=odoo
+    ports:
+      - "5432:5432"
     volumes:
       - odoo-db-data:/var/lib/postgresql/data
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com # ⚡ đổi thành email bạn muốn
+      PGADMIN_DEFAULT_PASSWORD: admin123 # ⚡ đổi thành password bạn muốn
+    ports:
+      - "5050:80" # Truy cập pgadmin qua http://localhost:5050
+    depends_on:
+      - db
 volumes:
   odoo-web-data:
   odoo-db-data:
