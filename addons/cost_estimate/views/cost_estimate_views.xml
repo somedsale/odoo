@@ -1,4 +1,5 @@
 <odoo>
+    <!-- Tree view -->
     <record id="view_cost_estimate_tree" model="ir.ui.view">
         <field name="name">cost.estimate.tree</field>
         <field name="model">cost.estimate</field>
@@ -6,11 +7,13 @@
             <tree>
                 <field name="name"/>
                 <field name="project_id"/>
+                <field name="currency_id" optional ="hide"/>
                 <field name="total_cost"/>
             </tree>
         </field>
     </record>
 
+    <!-- Form view -->
     <record id="view_cost_estimate_form" model="ir.ui.view">
         <field name="name">cost.estimate.form</field>
         <field name="model">cost.estimate</field>
@@ -20,10 +23,10 @@
                     <group>
                         <field name="name"/>
                         <field name="project_id"/>
+                        <field name="currency_id" readonly="1"/>
                     </group>
                     <group>
                         <field name="total_cost" readonly="1"/>
-                        <field name="currency_id" />
                     </group>
                     <notebook>
                         <page string="Chi tiết dự toán">
@@ -31,8 +34,9 @@
                                 <tree editable="bottom">
                                     <field name="product_id"/>
                                     <field name="quantity"/>
-                                    <field name="price_unit" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                                    <field name="price_subtotal" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="1"/>
+                                    <field name="price_unit"/>
+                                    <field name="price_subtotal" readonly="1"/>
+                                    <field name="currency_id" optional ="hide"/>
                                 </tree>
                             </field>
                         </page>
@@ -42,9 +46,15 @@
         </field>
     </record>
 
+    <!-- Action -->
     <record id="action_cost_estimate" model="ir.actions.act_window">
         <field name="name">Dự toán chi phí Dự án</field>
         <field name="res_model">cost.estimate</field>
         <field name="view_mode">tree,form</field>
     </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_cost_estimate_root" name="Dự toán chi phí" parent="project.menu_main_pm" sequence="99"/>
+
+    <menuitem id="menu_cost_estimate_main" name="Quản lý dự toán" parent="menu_cost_estimate_root" action="action_cost_estimate" sequence="1"/>
 </odoo>
