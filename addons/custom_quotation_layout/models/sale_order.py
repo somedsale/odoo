@@ -15,7 +15,7 @@ class SaleOrder(models.Model):
     def _compute_formatted_date(self):
         for record in self:
             # Lấy ngày từ date_order, nếu không có thì dùng ngày hiện tại
-            date = record.date_order or datetime.now()
+            date = datetime.now()
             record.formatted_date = f"Tp. Hồ Chí Minh, ngày {date.day:02d} tháng {date.month:02d} năm {date.year}"
     # x_hr_address = fields.Char(string="Địa chỉ nhân viên")
     # x_hr_phone = fields.Char(string="SĐT nhân viên")

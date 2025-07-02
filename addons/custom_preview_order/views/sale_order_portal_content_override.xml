@@ -13,8 +13,7 @@
 
                             <th class="text-start" id="product_qty_header">Số lượng</th>
                             <th class="text-start" id="product_uom_header">Đơn vị</th>
-                            <t t-set="show_nhancong" t-value="any(line.x_chi_phi_nhan_cong for line in sale_order.order_line)"/>
-                            <th t-if="show_nhancong" class="text-start" id="product_nhancong_header">
+                            <th class="text-start" id="product_nhancong_header">
                                 Nhân công
                             </th>
                             <th t-attf-class="text-start {{ 'd-none d-sm-table-cell' if report_type == 'html' else '' }}">
@@ -63,9 +62,7 @@
                                     </td>
                                     <!-- Nhân công -->
                                     <td class="text-start">
-                                        <t t-if="show_nhancong">
-                                            <span t-field="line.x_chi_phi_nhan_cong" class="oe_ellipsis"/>
-                                        </t>
+                                        <span t-field="line.x_chi_phi_nhan_cong" class="oe_ellipsis"/>
                                     </td>
 
                                     <!-- Giá sản phẩm -->

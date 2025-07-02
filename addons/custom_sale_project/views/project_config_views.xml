@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tạo bản ghi mặc định -->
+    <record id="project_config_default" model="project.config">
+        <field name="default_project_manager_id" eval="False"/>
+    </record>
+
+    <record id="project_config_view_form" model="ir.ui.view">
+        <field name="name">Project Configuration</field>
+        <field name="model">project.config</field>
+        <field name="arch" type="xml">
+            <form string="Project Configuration">
+                <sheet>
+                    <group>
+                        <field name="default_project_manager_id" string="Default Project Manager"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="project_config_server_action" model="ir.actions.server">
+        <field name="name">Project Configuration</field>
+        <field name="model_id" ref="model_project_config"/>
+        <field name="state">code</field>
+        <field name="code">
+            action = env['project.config'].action_open_config()
+        </field>
+    </record>
+
+    <menuitem id="project_config_menu" name="Project Configuration" parent="project.menu_project_config" action="project_config_server_action" sequence="10"/>
+</odoo>

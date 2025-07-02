@@ -139,7 +139,7 @@ class SaleOrder(models.Model):
             for tax_name, data in tax_details.items():
                 summary_lines.append(
                     f"<tr><td style='white-space:nowrap; padding:4px;'>"
-                    f"<b>{tax_name} trên {currency.format(data['base'])}:</b></td>"
+                    f"<b>Thuế {tax_name} trên {currency.format(data['base'])}:</b></td>"
                     f"<td style='text-align:right; white-space:nowrap; padding:4px;'>{currency.format(data['amount'])}</td></tr>"
                 )
 
@@ -151,6 +151,10 @@ class SaleOrder(models.Model):
 
             summary_lines.append("</table>")
             order.x_tax_summary = ''.join(summary_lines)
+    is_including_testing = fields.Boolean(
+    string="Đã bao gồm kiểm thử",
+    help ="Chọn nếu báo giá đã bao gồm chi phí kiểm thử sản phẩm hoặc dịch vụ.",
+    default=False)
 
 
 

@@ -4,11 +4,11 @@
         <field name="name">sale.contract.tree</field>
         <field name="model">sale.contract</field>
         <field name="arch" type="xml">
-            <tree string="Sale Contracts">
+            <tree>
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="date_contract"/>
-                <field name="amount_total"/>
+                <field name="amount_total"/> <!-- Đảm bảo sử dụng amount_total -->
                 <field name="state"/>
             </tree>
         </field>
@@ -18,49 +18,53 @@
         <field name="name">sale.contract.form</field>
         <field name="model">sale.contract</field>
         <field name="arch" type="xml">
-            <form string="Sale Contract">
+            <form>
                 <header>
-                    <button name="action_send" string="Send" type="object" class="oe_highlight" invisible="state != 'draft'"/>
-                    <button name="action_sign" string="Sign" type="object" class="oe_highlight" invisible="state != 'sent'"/>
-                    <button name="action_cancel" string="Cancel" type="object" invisible="state not in ('draft', 'sent')"/>
+                    <button name="action_confirm" string="Confirm" type="object" class="btn-primary" invisible="state in ['confirmed', 'done']"/>
+                    <button name="action_done" string="Mark as Done" type="object" class="btn-primary" invisible="state in ['done', 'cancel']"/>
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state == 'cancel'"/>
+                    <button name="action_create_from_sale_order" string="Load from Sale Order" type="object" invisible="state != 'draft'"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
                     <group>
                         <field name="name"/>
                         <field name="partner_id"/>
+                        <field name="sale_order_id"/>
                         <field name="date_contract"/>
+                        <field name="amount_total"/> <!-- Đảm bảo sử dụng amount_total -->
                     </group>
                     <notebook>
                         <page string="Contract Lines">
-                            <field name="contract_line_ids">
+                            <field name="contract_lines">
                                 <tree editable="bottom">
                                     <field name="product_id"/>
                                     <field name="name"/>
                                     <field name="quantity"/>
                                     <field name="price_unit"/>
-                                    <field name="tax_id" widget="many2many_tags"/>
                                     <field name="price_subtotal"/>
                                 </tree>
                             </field>
                         </page>
-                        <page string="Terms">
-                            <field name="note"/>
+                        <page string="Terms and Conditions">
+                            <field name="terms_conditions" nolabel="1"/>
                         </page>
                     </notebook>
-                    <group>
-                        <field name="amount_total"/>
-                    </group>
                 </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
             </form>
         </field>
     </record>
 
-        <record id="action_sale_contract" model="ir.actions.act_window">
+    <record id="action_sale_contract" model="ir.actions.act_window">
         <field name="name">Sale Contracts</field>
         <field name="res_model">sale.contract</field>
         <field name="view_mode">tree,form</field>
     </record>
 
-    <menuitem id="menu_sale_contract" name="Sale Contracts" parent="sale.menu_sale_order" action="action_sale_contract" sequence="10"/>
+    <menuitem id="menu_sale_contract" name="Sale Contracts" parent="sale.sale_menu_root" action="action_sale_contract" sequence="20"/>
 </odoo>
