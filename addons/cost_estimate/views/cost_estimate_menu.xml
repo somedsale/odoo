@@ -1,0 +1,6 @@
+<odoo>
+    <!-- Menu của bạn nằm trong module Dự án -->
+    <menuitem id="menu_cost_estimate_root" name="Dự toán chi phí" parent="project.menu_main_pm" sequence="99"/>
+
+    <menuitem id="menu_cost_estimate_main" name="Quản lý dự toán" parent="menu_cost_estimate_root" action="action_cost_estimate" sequence="1"/>
+</odoo>
