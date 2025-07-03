@@ -7,7 +7,7 @@ class CostEstimateLine(models.Model):
     cost_estimate_id = fields.Many2one('cost.estimate', string='Dự toán', ondelete='cascade')
     product_id = fields.Many2one('product.product', string='Sản phẩm', ondelete='set null')
     quantity = fields.Float('Số lượng', default=1.0)
-    price_unit = fields.Monetary('Đơn giá', currency_field='currency_id')
+    price_unit = fields.Monetary('Đơn giá', currency_field='currency_id', default=0.0)  # Người dùng nhập thủ công
     price_subtotal = fields.Monetary(
         'Thành tiền',
         compute='_compute_price_subtotal',

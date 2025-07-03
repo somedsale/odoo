@@ -4,9 +4,10 @@ class CostEstimate(models.Model):
     _name = 'cost.estimate'
     _description = 'Dự toán chi phí Dự án'
 
-    name = fields.Char('Tên dự toán', required=True)
-    project_id = fields.Many2one('project.project', string='Dự án', required=True, ondelete='restrict')
-    currency_id = fields.Many2one('res.currency', string='Tiền tệ', required=True)
+    name = fields.Char('Tên dự toán', required=True, default='New')
+    project_id = fields.Many2one('project.project', string='Dự án', ondelete='restrict')
+    sale_order_id = fields.Many2one('sale.order', string='Đơn hàng', ondelete='restrict')
+    currency_id = fields.Many2one('res.currency', string='Tiền tệ', required=True, default=lambda self: self.env.company.currency_id)
     total_cost = fields.Monetary(
         string='Tổng chi phí',
         compute='_compute_total_cost',
