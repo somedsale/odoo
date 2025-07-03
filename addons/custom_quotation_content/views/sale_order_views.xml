@@ -5,8 +5,11 @@
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
-                <field name="partner_id" />
-                <xpath expr="//field[@name='order_line']/tree/field[@name='name']" position="after">
+                <field name="partner_id"/><!-- Tìm nút Gửi bằng Email và thêm nút Gửi kế bên -->
+                <xpath expr="//button[@name=&apos;action_quotation_send&apos;]" position="after">
+                    <button name="action_set_sent" type="object" string="Gửi báo giá" class="oe_highlight" invisible="state != &apos;draft&apos;" confirm="Bạn có chắc muốn chuyển trạng thái sang Đã gửi?"/>
+                </xpath>
+                <xpath expr="//field[@name=&apos;order_line&apos;]/tree/field[@name=&apos;name&apos;]" position="after">
                     <field name="default_code" string="Mã SP" class="oe_ellipsis" optional="hide"/>
                     <field name="x_thongso" string="Thông số" class="oe_ellipsis" optional="show"/>
                     <field name="x_xuatxu" string="Xuất xứ" class="oe_ellipsis" optional="show"/>
@@ -14,7 +17,7 @@
                     <field name="x_chi_phi_nhan_cong" widget="monetary" optional="hide"/>
                     <field name="x_note" string="Ghi chú" class="oe_ellipsis" optional="hide"/>
                 </xpath>
-                <xpath expr="//field[@name='partner_id']" position="after">
+                <xpath expr="//field[@name=&apos;partner_id&apos;]" position="after">
                     <field name="show_contact" invisible="1"/>
                     <field name="partner_contact_id" invisible="not show_contact"/>
                     <field name="partner_contact_phone" invisible="not show_contact"/>
@@ -22,18 +25,16 @@
                     <field name="is_including_transport"/>
                     <field name="is_show_chi_phi_nhan_cong"/>
                     <field name="is_show_ma_sp"/>
-                    <field name="x_estimated_delivery_time_id" options="{'no_create': False}" />
-                    <field name="x_custom_payment_terms" options="{'no_create': False}"/>
-
+                    <field name="x_estimated_delivery_time_id" options="{&apos;no_create&apos;: False}"/>
+                    <field name="x_custom_payment_terms" options="{&apos;no_create&apos;: False}"/>
                 </xpath>
-                <xpath expr="//field[@name='date_order']" position="after">
+                <xpath expr="//field[@name=&apos;date_order&apos;]" position="after">
                     <field name="x_project_name" placeholder="Tên dự án"/>
-                    <field name="x_warranty_duration_id" options="{'no_create': False}"/>
+                    <field name="x_warranty_duration_id" options="{&apos;no_create&apos;: False}"/>
                     <field name="x_delivery_location"/>
-                    <field name="x_payment_method_id" options="{'no_create': False}"/>
+                    <field name="x_payment_method_id" options="{&apos;no_create&apos;: False}"/>
                     <field name="x_quote_valid_until"/>
-                    <field name ="is_including_testing"/>
-                    <!-- <field name="tax_totals" widget="account-tax-totals-field" nolabel="1" colspan="2" readonly="1"/> -->
+                    <field name="is_including_testing"/><!-- <field name="tax_totals" widget="account-tax-totals-field" nolabel="1" colspan="2" readonly="1"/> -->
                 </xpath>
                 <field name="validity_date" position="attributes">
                     <attribute name="readonly">1</attribute>
@@ -44,23 +45,17 @@
                 <field name="date_order" position="attributes">
                     <attribute name="readonly">1</attribute>
                 </field>
-                <xpath expr="//group[@name='sale_total']" position="attributes">
+                <xpath expr="//group[@name=&apos;sale_total&apos;]" position="attributes">
                     <attribute name="invisible">1</attribute>
-                </xpath>
-
-                <!-- Chèn cái mới -->
+                </xpath><!-- Chèn cái mới -->
                 <xpath expr="//notebook" position="after">
-                    <group string="Tổng tiền">
-                        <!-- <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    <group string="Tổng tiền"><!-- <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                         <field name="amount_tax" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                         <field name="amount_total" widget="monetary" options="{'currency_field': 'currency_id'}"/> -->
                         <field name="x_tax_summary" readonly="1" nolabel="1"/>
                     </group>
                 </xpath>
-
-
             </field>
         </record>
     </data>
 </odoo>
-  
