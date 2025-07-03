@@ -39,7 +39,7 @@
                         </td>
                         <td style="padding-left: 10px; border: none;">
                             <strong>Địa chỉ:</strong>
-                            <span>213 Đường TL15, Khu Phố 3C, P.Thạnh Lộc, Q.12, TP HCM</span>
+                            <span t-if="doc.user_id.address_id.contact_address" t-esc="doc.user_id.address_id.contact_address.replace(doc.user_id.address_id.complete_name or &apos;&apos;, &apos;&apos;).strip()"/>
                         </td>
                     </tr>
                     <tr style="border: none;color:#000 !important;">
