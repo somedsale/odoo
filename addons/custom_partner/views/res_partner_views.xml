@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_custom_address" model="ir.ui.view">
+        <field name="name">res.partner.form.custom.address</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml"><!-- Thay thế div o_address_format để chỉ giữ trường street -->
+            <xpath expr="//div[@class=&apos;o_address_format&apos;]" position="replace">
+                <div class="o_address_format">
+                    <field name="street" placeholder="Street..." class="o_address_street" readonly="type == &apos;contact&apos; and parent_id"/>
+                </div>
+            </xpath><!-- Sửa context của child_ids để loại bỏ các trường đã xóa -->
+            <xpath expr="//field[@name=&apos;child_ids&apos;]" position="attributes">
+                <attribute name="context">{&apos;default_parent_id&apos;: id, &apos;default_street&apos;: street, &apos;default_lang&apos;: lang, &apos;default_user_id&apos;: user_id, &apos;default_type&apos;: &apos;other&apos;}</attribute>
+            </xpath><!-- Xóa trường mobile -->
+            <xpath expr="//field[@name=&apos;mobile&apos;]" position="replace"/><!-- Xóa trường category_id -->
+            <xpath expr="//field[@name=&apos;category_id&apos;]" position="replace"/>
+            <xpath expr="//field[@name=&apos;title&apos;]" position="replace"/>
+            <xpath expr="//span[@name=&apos;address_name&apos;]" position="replace">
+                <span class="o_form_label o_td_label" name="address_name">
+                    <field name="type" invisible="1" readonly="user_ids" class="fw-bold"/>
+                    <b>Địa chỉ</b><!-- Hiển thị nhãn "Address" mặc định -->
+                </span>
+            </xpath>
+            <!-- <xpath expr="//form/sheet" position="replace">
+                <field name="type" required="1" widget="radio" options="{'horizontal': true}" default="'contact'"/>
+            </xpath> -->
+        </field>
+    </record>
+</odoo>

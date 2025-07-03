@@ -4,6 +4,11 @@ from collections import defaultdict
 class SaleOrder(models.Model):
     _inherit = 'sale.order'   
 
+    def action_set_sent(self):
+            """Chuyển trạng thái báo giá sang Đã gửi"""
+            for record in self:
+                if record.state == 'draft':
+                    record.state = 'sent'
     is_including_transport = fields.Boolean(
     string="Đã bao gồm vận chuyển",
     default=False
