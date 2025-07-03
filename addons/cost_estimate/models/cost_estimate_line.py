@@ -1,26 +1,20 @@
 from odoo import models, fields, api
+
 class CostEstimateLine(models.Model):
     _name = 'cost.estimate.line'
     _description = 'Chi tiết dự toán'
 
     cost_estimate_id = fields.Many2one('cost.estimate', string='Dự toán', ondelete='cascade')
-    product_id = fields.Many2one('product.product', string='Vật tư')
-    material_id = fields.Many2one('project.material', string='Vật tư 2')
+    product_id = fields.Many2one('product.product', string='Sản phẩm', ondelete='set null')
     quantity = fields.Float('Số lượng', default=1.0)
-    price_unit = fields.Monetary('Đơn giá', required=True, currency_field='currency_id')
+    price_unit = fields.Monetary('Đơn giá', currency_field='currency_id')
     price_subtotal = fields.Monetary(
         'Thành tiền',
         compute='_compute_price_subtotal',
         store=True,
         currency_field='currency_id'
     )
-    currency_id = fields.Many2one(
-        'res.currency',
-        string='Tiền tệ',
-        related='cost_estimate_id.currency_id',
-        readonly=True,
-        store=True
-    )
+    currency_id = fields.Many2one('res.currency', related='cost_estimate_id.currency_id', store=True, readonly=True)
 
     @api.depends('quantity', 'price_unit')
     def _compute_price_subtotal(self):
