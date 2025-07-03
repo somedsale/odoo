@@ -5,6 +5,7 @@ class CostEstimateLine(models.Model):
 
     cost_estimate_id = fields.Many2one('cost.estimate', string='Dự toán', ondelete='cascade')
     product_id = fields.Many2one('product.product', string='Vật tư')
+    material_id = fields.Many2one('project.material', string='Vật tư 2')
     quantity = fields.Float('Số lượng', default=1.0)
     price_unit = fields.Monetary('Đơn giá', required=True, currency_field='currency_id')
     price_subtotal = fields.Monetary(
