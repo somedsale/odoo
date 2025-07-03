@@ -10,6 +10,7 @@ class SaleOrder(models.Model):
         res = super(SaleOrder, self).action_confirm()
         for order in self:
             if order.state == 'sale':
+                # Tạo dự án
                 if order.x_project_name:
                     name_project = order.x_project_name + ' - ' + order.name
                 else:
@@ -25,6 +26,49 @@ class SaleOrder(models.Model):
                     _logger.info(f"Using Default Project Manager: {config.default_project_manager_id.name}")
                 else:
                     _logger.info("No Project Manager assigned")
-                _logger.info(f"Creating project with values: {project_vals}")
-                self.env['project.project'].create(project_vals)
+                
+                # Tạo dự án
+                project = self.env['project.project'].create(project_vals)
+                _logger.info(f"Created project with values: {project_vals}")
+
+                # Danh sách các giai đoạn
+                stage_names = [
+                    'Đơn đặt hàng mới',
+                    'Mua Hàng',
+                    'Sản xuất',
+                    'Giao hàng',
+                    'Lắp đặt',
+                    'Nghiệm thu',
+                    'Hoàn thành'
+                ]
+
+                # Tạo các giai đoạn cho dự án
+                stage_dict = {}
+                sequence = 0
+                for stage_name in stage_names:
+                    stage_vals = {
+                        'name': stage_name,
+                        'sequence': sequence,
+                        'project_ids': [(4, project.id)],  # Gắn giai đoạn vào dự án
+                    }
+                    stage = self.env['project.task.type'].create(stage_vals)
+                    stage_dict[stage_name] = stage
+                    _logger.info(f"Created stage: {stage_name} for project: {project.name}")
+                    sequence += 10
+
+                # Tạo nhiệm vụ cho các sản phẩm tiêu dùng trong giai đoạn "Đơn đặt hàng mới"
+                new_order_stage = stage_dict.get('Đơn đặt hàng mới')
+                if new_order_stage:
+                    for line in order.order_line:
+                        if line.product_id.product_tmpl_id.type == 'consu':
+                            task_vals = {
+                                'name': f"Task for {line.product_id.name}",
+                                'project_id': project.id,
+                                'stage_id': new_order_stage.id,
+                                'partner_id': order.partner_id.id,
+                            }
+                            self.env['project.task'].create(task_vals)
+                            _logger.info(f"Created task for product: {line.product_id.name} in stage: Đơn đặt hàng mới")
+                        else:
+                            _logger.info(f"Skipped product: {line.product_id.name} (not consumable)")
         return res
