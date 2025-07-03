@@ -8,6 +8,7 @@
     'data': [
         'security/ir.model.access.csv',
         'views/material_views.xml',
+        'views/material_views_line.xml',
     ],
     'installable': True,
     'application': True,

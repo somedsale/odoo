@@ -1,11 +1,11 @@
-from odoo import models
+from odoo import models,fields
 import logging
 
 _logger = logging.getLogger(__name__)
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
-
+    project_id = fields.Many2one('project.project', string='Dự án', readonly=True)
     def action_confirm(self):
         res = super(SaleOrder, self).action_confirm()
         for order in self:
@@ -29,8 +29,7 @@ class SaleOrder(models.Model):
                 
                 # Tạo dự án
                 project = self.env['project.project'].create(project_vals)
-                _logger.info(f"Created project with values: {project_vals}")
-
+                
                 # Danh sách các giai đoạn
                 stage_names = [
                     'Đơn đặt hàng mới',
@@ -71,4 +70,19 @@ class SaleOrder(models.Model):
                             _logger.info(f"Created task for product: {line.product_id.name} in stage: Đơn đặt hàng mới")
                         else:
                             _logger.info(f"Skipped product: {line.product_id.name} (not consumable)")
+                if not order.cost_estimate_id:
+                    # Tạo dự toán
+                    budget_vals = {
+                        'name': f'Dự toán cho {name_project}',
+                        'sale_order_id': order.id,
+                        'project_id': project.id,
+                        'currency_id': order.currency_id.id,
+                        'line_ids': [(0, 0, {
+                            'product_id': line.product_id.id,
+                            'quantity': line.product_uom_qty,
+                            'price_unit': 0.0,
+                        }) for line in order.order_line if line.product_id],
+                    }
+                    cost_estimate = self.env['cost.estimate'].create(budget_vals)
+                    order.cost_estimate_id = cost_estimate.id
         return res

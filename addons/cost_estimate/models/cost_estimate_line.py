@@ -20,3 +20,14 @@ class CostEstimateLine(models.Model):
     def _compute_price_subtotal(self):
         for rec in self:
             rec.price_subtotal = rec.quantity * rec.price_unit
+    def open_material_list(self):
+        self.ensure_one()
+        return {
+            'name': 'Danh sách vật tư - %s' % self.product_id.display_name,
+            'type': 'ir.actions.act_window',
+            'res_model': 'product.material.line',  # Model vật tư của bạn
+            'view_mode': 'tree,form',
+            'domain': [('product_id', '=', self.product_id.id)],
+            'context': {'default_product_id': self.product_id.id},
+            'target': 'current',  # hoặc 'new' nếu muốn popup
+        }

@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_project_material_user,access.project.material.user,model_project_material,,1,1,1,1
+access_product_material_line_user,access.product.material.line.user,model_product_material_line,,1,1,1,1
