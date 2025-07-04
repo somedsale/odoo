@@ -1,0 +1,41 @@
+<odoo>
+    <!-- Tree view danh mục vật tư -->
+    <record id="view_material_category_tree" model="ir.ui.view">
+        <field name="name">material.category.tree</field>
+        <field name="model">material.category</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="code" readonly="1"/>
+                <field name="description"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form view danh mục vật tư -->
+    <record id="view_material_category_form" model="ir.ui.view">
+        <field name="name">material.category.form</field>
+        <field name="model">material.category</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="code" readonly="1"/>
+                        <field name="description"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_material_category" model="ir.actions.act_window">
+        <field name="name">Danh mục vật tư</field>
+        <field name="res_model">material.category</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_material_category" name="Danh mục vật tư" parent="menu_project_material_root" action="action_material_category"/>
+</odoo>

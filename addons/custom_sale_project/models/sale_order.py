@@ -77,11 +77,16 @@ class SaleOrder(models.Model):
                         'sale_order_id': order.id,
                         'project_id': project.id,
                         'currency_id': order.currency_id.id,
-                        'line_ids': [(0, 0, {
-                            'product_id': line.product_id.id,
-                            'quantity': line.product_uom_qty,
-                            'price_unit': 0.0,
-                        }) for line in order.order_line if line.product_id],
+                        'line_ids': [
+                            (0, 0, {
+                                'product_id': line.product_id.id,
+                                'unit': line.product_uom.id,
+                                'quantity': line.product_uom_qty,
+                                'price_unit': 0.0,
+                            })
+                            for line in order.order_line
+                            if line.product_id and line.product_id.product_tmpl_id.type == 'consu'
+                        ],
                     }
                     cost_estimate = self.env['cost.estimate'].create(budget_vals)
                     order.cost_estimate_id = cost_estimate.id

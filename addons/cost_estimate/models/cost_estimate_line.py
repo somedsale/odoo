@@ -15,6 +15,7 @@ class CostEstimateLine(models.Model):
         currency_field='currency_id'
     )
     currency_id = fields.Many2one('res.currency', related='cost_estimate_id.currency_id', store=True, readonly=True)
+    unit = fields.Many2one('uom.uom', string='Đơn vị')
 
     @api.depends('quantity', 'price_unit')
     def _compute_price_subtotal(self):

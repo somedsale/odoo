@@ -5,8 +5,9 @@
         <field name="arch" type="xml">
             <tree>
                 <field name="name"/>
-                <field name="code"/>
-                <field name="description"/>
+                <field name="code" readonly="1"/>
+                <field name="unit" widget="selection" options="{'no_create': True}" string="Đơn vị"/>
+                <field name="category_id"/>
             </tree>
         </field>
     </record>
@@ -19,8 +20,9 @@
                 <sheet>
                     <group>
                         <field name="name"/>
-                        <field name="code"/>
                         <field name="description"/>
+                        <field name="unit" options="{'no_create': True}" string="Đơn vị"/>
+                        <field name="category_id"/>
                     </group>
                 </sheet>
             </form>
