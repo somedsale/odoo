@@ -15,7 +15,7 @@
             </xpath><!-- Xóa trường mobile -->
             <xpath expr="//field[@name=&apos;mobile&apos;]" position="replace"/><!-- Xóa trường category_id -->
             <xpath expr="//field[@name=&apos;category_id&apos;]" position="replace"/>
-            <xpath expr="//field[@name=&apos;title&apos;]" position="replace"/>
+            <!-- <xpath expr="//field[@name=&apos;title&apos;]" position="replace"/> -->
             <xpath expr="//span[@name=&apos;address_name&apos;]" position="replace">
                 <span class="o_form_label o_td_label" name="address_name">
                     <field name="type" invisible="1" readonly="user_ids" class="fw-bold"/>
