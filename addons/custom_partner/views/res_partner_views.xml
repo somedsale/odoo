@@ -21,6 +21,15 @@
             <xpath expr="//field[@name=&apos;mobile&apos;]" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
+            <xpath expr="//field[@name=&apos;category_id&apos;]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name=&apos;website&apos;]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//form/sheet/group/group/field[@name=&apos;mobile&apos;]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
             <xpath expr="//span[@name=&apos;address_name&apos;]" position="replace">
                 <span class="o_form_label o_td_label" name="address_name">
                     <field name="type" invisible="1" readonly="user_ids" class="fw-bold"/>
