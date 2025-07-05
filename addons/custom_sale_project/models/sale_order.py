@@ -82,7 +82,6 @@ class SaleOrder(models.Model):
                                 'product_id': line.product_id.id,
                                 'unit': line.product_uom.id,
                                 'quantity': line.product_uom_qty,
-                                'price_unit': 0.0,
                             })
                             for line in order.order_line
                             if line.product_id and line.product_id.product_tmpl_id.type == 'consu'

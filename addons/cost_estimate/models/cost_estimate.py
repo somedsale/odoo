@@ -11,7 +11,7 @@ class CostEstimate(models.Model):
     total_cost = fields.Monetary(
         string='Tổng chi phí',
         compute='_compute_total_cost',
-        store=True,
+        store=False,
         currency_field='currency_id'
     )
     line_ids = fields.One2many('cost.estimate.line', 'cost_estimate_id', string='Chi tiết dự toán')

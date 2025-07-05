@@ -3,14 +3,12 @@
         <field name="name">product.material.line.tree</field>
         <field name="model">product.material.line</field>
         <field name="arch" type="xml">
-            <tree >
-                <field name="material_id" options="{'no_create': False, 'no_create_edit': False}"/>
-                <field name="price_unit_display" />
+            <tree>
+                <field name="material_id" />
                 <field name="quantity"/>
-
                 <field name="unit" widget="selection" options="{'no_create': True}" string="Đơn vị"/>
                 <field name="price_unit" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-
+                <field name="price_total" sum="Tổng thành tiền" widget="monetary" options="{'currency_field': 'currency_id'}"/>
             </tree>
         </field>
     </record>

@@ -18,7 +18,7 @@
         <field name="name">cost.estimate.form</field>
         <field name="model">cost.estimate</field>
         <field name="arch" type="xml">
-            <form string="Dự toán chi phí Dự án">
+            <form string="Dự toán chi phí Dự án" edit="false" create="false" delete="false">
                 <sheet>
                     <group>
                         <field name="name"/>
@@ -28,16 +28,20 @@
                         <field name="total_cost" readonly="1"/>
                     </group>
 
-                    <field name="line_ids">
-                        <tree create="false" delete="false" editable="false">
-                            <field name="product_id" readonly="1"/>
-                            <field name="unit" readonly="1"/>
-                            <field name="quantity" readonly="1"/>
-                            <field name="price_subtotal" readonly="1"/>
-                            <field name="currency_id" optional="hide"/>
-                            <button name="open_material_list" string="" type="object" class="btn-dark btn-sm" icon="fa-list" />
-                        </tree>
-                    </field>
+                    <notebook>
+                        <page string="Chi tiết dòng dự toán" readonly="1">
+                            <field name="line_ids">
+                                <tree create="false" delete="false" editable="false">
+                                    <field name="product_id" readonly="1"/>
+                                    <field name="unit" readonly="1"/>
+                                    <field name="quantity" readonly="1"/>
+                                    <field name="price_subtotal" readonly="1"/>
+                                    <field name="currency_id" optional="hide"/>
+                                    <button name="open_material_list" string="" type="object" class="btn-dark btn-sm" icon="fa-list"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
 
                 </sheet>
             </form>
