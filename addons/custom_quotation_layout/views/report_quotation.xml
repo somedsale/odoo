@@ -145,7 +145,7 @@
                                         </td>
                                     </t>
                                     <td>
-                                        <span t-field="line.price_unit"/> <span>₫</span>
+                                        <span t-field="line.formatted_price"/>
                                     </td>
                                     <td>
                                         <span t-field="line.price_subtotal"/>
