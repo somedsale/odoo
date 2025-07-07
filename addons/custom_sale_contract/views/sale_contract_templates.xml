@@ -111,7 +111,7 @@
                             </tr>
                             <tr>
                                 <td style="border: 1px solid #fff;">Điện thoại</td>
-                                <td style="border: 1px solid #fff;">: <span t-field="o.partner_id.parent_id.phone"/>
+                                <td style="border: 1px solid #fff;">: <t t-esc="o.partner_id.phone or o.partner_id.parent_id.phone"/>
                                 </td>
                             </tr>
                             <tr>
@@ -245,40 +245,76 @@
                                 <table style="width:100%; border-collapse: collapse; font-size: 11pt; margin-top: 10px;">
                                     <thead>
                                         <tr style="border: 1px solid black;">
-                                            <th style="border: 1px solid black;">STT</th>
-                                            <th style="border: 1px solid black;">Thông tin hàng hóa </th>
-                                            <th style="border: 1px solid black;">Đơn vị tính</th>
-                                            <th style="border: 1px solid black;">Số lượng</th>
-                                            <th style="border: 1px solid black;">Đơn giá </th>
-                                            <th style="border: 1px solid black;">Thành tiền</th>
+                                            <th style="border: 1px solid black; margin:5px;width:40px">STT</th>
+                                            <th style="border: 1px solid black; margin:5px">Thông tin hàng hóa </th>
+                                            <th style="border: 1px solid black; margin:5px;width:50px">Đơn vị tính</th>
+                                            <th style="border: 1px solid black; margin:5px;width:50px">Số lượng</th>
+                                            <th style="border: 1px solid black; margin:5px;min-width:100px">Đơn giá </th>
+                                            <th style="border: 1px solid black; margin:5px;min-width:100px">Thành tiền</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <t t-foreach="o.contract_lines" t-as="line">
                                             <tr style="border: 1px solid black;">
-                                                <td style="border: 1px solid black;">
+                                                <td style="border: 1px solid black; margin:5px">
                                                     <t t-esc="line_index + 1"/>
                                                 </td>
-                                                <td style="border: 1px solid black; width: 33%;">
+                                                <td style="border: 1px solid black; margin:5px">
                                                     <span t-field="line.product_id.name"/>
                                                     <span t-field="line.thong_so"/>
                                                 </td>
-                                                <td style="border: 1px solid black;">
+                                                <td style="border: 1px solid black; margin:5px">
                                                     <span t-field="line.product_uom_id"/>
                                                 </td>
-                                                <td style="border: 1px solid black;">
+                                                <td style="border: 1px solid black; margin:5px">
                                                     <span t-field="line.quantity"/>
                                                 </td>
-                                                <td style="border: 1px solid black;">
+                                                <td style="border: 1px solid black; margin:5px">
                                                     <span t-field="line.price_unit"/>
                                                 </td>
-                                                <td style="border: 1px solid black;">
+                                                <td style="border: 1px solid black; margin:5px">
                                                     <span t-field="line.price_subtotal"/>
                                                 </td>
-                                            </tr>
+                                            </tr>         
+                                
                                         </t>
                                     </tbody>
+                                    <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
+                                    <td colspan="5" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng chưa VAT</td><!-- <td></td> -->
+                                    <td>
+                                        <span t-field="o.amount_untaxed"/>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            <t t-set="tax_details" t-value="{}"/>
+                            <t t-foreach="o.order_line" t-as="line">
+                                <t t-foreach="line.tax_id" t-as="tax">
+                                    <t t-set="base" t-value="tax_details.get(tax.name, {&apos;base&apos;: 0.0, &apos;amount&apos;: 0.0})"/>
+                                    <t t-set="tax_details" t-value="dict(tax_details, **{tax.name: {&apos;base&apos;: base[&apos;base&apos;] + line.price_subtotal, &apos;amount&apos;: base[&apos;amount&apos;] + (line.price_subtotal * tax.amount / 100)}})"/>
+                                </t>
+                            </t>
+                                <t t-foreach="tax_details.items()" t-as="item">
+                                    <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
+                                        <td colspan="5" style="white-space:nowrap; text-align: left;vertical-align: middle;">
+                                            <t t-esc="&apos;VAT %s&apos; % item[0]"/>
+                                        </td>
+                                        <td style="white-space:nowrap;">
+                                            <t t-esc="&apos;%s đ&apos; % &apos;{:,.0f}&apos;.format(item[1][&apos;amount&apos;])"/>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                </t>
+                                <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
+                                    <td colspan="5" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng</td>
+                                    <td>
+                                        <span t-field="o.amount_total"/>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </table>
+                                <div>
+                                                    
+                                </div>
                             </div>
                         </div>
                     </div>

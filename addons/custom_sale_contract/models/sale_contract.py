@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from collections import defaultdict
 
 class SaleContract(models.Model):
     _name = 'sale.contract'
@@ -20,7 +21,10 @@ class SaleContract(models.Model):
         ('done', 'Done'),
         ('cancel', 'Cancelled'),
     ], string='Status', default='draft')
-    amount_total = fields.Float(string='Total', compute='_compute_amount_total', store=True)
+    amount_untaxed = fields.Float(string='Untaxed Amount', store=True)
+    amount_tax = fields.Float(string='Tax Amount', store=True)
+    amount_total = fields.Float(string='Total', store=True)
+    order_line = fields.One2many('sale.order.line', 'order_id', string='Order Lines', store=False)
     company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company.id)
     company_address = fields.Char(string='Company Address', compute='_compute_company_address', store=False)
 
@@ -34,10 +38,6 @@ class SaleContract(models.Model):
             vals['name'] = self.env['ir.sequence'].next_by_code('sale.contract') or 'New'
         return super(SaleContract, self).create(vals)
 
-    @api.depends('contract_lines.price_subtotal')
-    def _compute_amount_total(self):
-        for contract in self:
-            contract.amount_total = sum(line.price_subtotal for line in contract.contract_lines)
 
     def action_confirm(self):
         self.write({'state': 'confirmed'})
@@ -51,6 +51,9 @@ class SaleContract(models.Model):
     def action_create_from_sale_order(self):
         if self.sale_order_id:
             self.contract_lines = [(5, 0, 0)]  # Clear existing lines
+            self.amount_total = self.sale_order_id.amount_total
+            self.amount_untaxed = self.sale_order_id.amount_untaxed
+            self.amount_tax = self.sale_order_id.amount_tax
             for line in self.sale_order_id.order_line:
                 self.contract_lines.create({
                     'contract_id': self.id,
