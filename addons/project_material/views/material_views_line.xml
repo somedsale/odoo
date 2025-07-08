@@ -3,13 +3,29 @@
         <field name="name">product.material.line.tree</field>
         <field name="model">product.material.line</field>
         <field name="arch" type="xml">
-            <tree>
-                <field name="material_id" />
-                <field name="quantity"/>
-                <field name="unit" widget="selection" options="{'no_create': True}" string="Đơn vị"/>
-                <field name="price_unit" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                <field name="price_total" sum="Tổng thành tiền" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+            <tree editable="bottom">
+                <field name="material_id" required="1" width="30%"/>
+                <field name="quantity" required="1" width="15%"/>
+                <field name="unit" widget="selection" options="{'no_create': True}" required="1" width="15%"/>
+                <field name="price_unit" required="1" width="20%"/>
+                <field name="price_total" readonly="1" width="20%"/>
             </tree>
+        </field>
+    </record>
+
+    <record id="view_product_material_line_form" model="ir.ui.view">
+        <field name="name">product.material.line.form</field>
+        <field name="model">product.material.line</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="material_id" required="1"/>
+                    <field name="quantity" required="1"/>
+                    <field name="unit" required="1"/>
+                    <field name="price_unit" required="1"/>
+                    <field name="price_total" readonly="1"/>
+                </group>
+            </form>
         </field>
     </record>
 </odoo>

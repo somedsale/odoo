@@ -1,34 +1,17 @@
 from odoo import models, fields, api
-from odoo.tools import format_amount
+import logging
+_logger = logging.getLogger(__name__)
 
 class ProductMaterialLine(models.Model):
     _name = 'product.material.line'
     _description = 'Product Material Line'
 
-    product_id = fields.Many2one('product.product', string='Sản phẩm')
-    material_id = fields.Many2one('project.material', string='Vật tư')
-    quantity = fields.Float(string='Số lượng')
+    product_id = fields.Many2one('product.product', string='Sản phẩm', ondelete='restrict')
+    material_id = fields.Many2one('project.material', string='Vật tư', required=True)
+    quantity = fields.Float(string='Số lượng', default=1.0)
     unit = fields.Many2one('uom.uom', string='Đơn vị', required=True)
-    price_unit = fields.Float(
-        string='Đơn giá',
-        digits=(16, 0),
-        default=0.0
-    )
-    currency_id = fields.Many2one(
-        'res.currency',
-        string='Tiền tệ',
-        default=lambda self: self.env.company.currency_id,
-        required=True
-    )
-    estimate_line_id = fields.Many2one(
-        'cost.estimate.line',  # Sửa từ 'estimate.line' thành 'cost.estimate.line'
-        string='Dòng dự toán',
-        ondelete='cascade'
-    )
-    price_unit_display = fields.Char(
-        string='Đơn giá (hiển thị)',
-        compute='_compute_price_unit_display'
-    )
+    price_unit = fields.Float(string='Đơn giá', digits=(16, 0), default=0.0)
+    estimate_line_id = fields.Many2one('cost.estimate.line', string='Dòng dự toán', ondelete='cascade', required=True)
     price_total = fields.Float(
         string='Thành tiền',
         compute='_compute_price_total',
@@ -36,24 +19,18 @@ class ProductMaterialLine(models.Model):
         digits=(16, 0)
     )
 
-    @api.depends('price_unit', 'currency_id')
-    def _compute_price_unit_display(self):
-        for rec in self:
-            if rec.currency_id:
-                rec.price_unit_display = format_amount(
-                    rec.env,
-                    rec.price_unit,
-                    rec.currency_id
-                )
-            else:
-                rec.price_unit_display = '{:,.0f}₫'.format(rec.price_unit).replace(',', '.')
-
-    @api.onchange('material_id')
-    def _onchange_material_id(self):
-        if self.material_id and self.material_id.unit:
-            self.unit = self.material_id.unit
-
     @api.depends('price_unit', 'quantity')
     def _compute_price_total(self):
         for rec in self:
             rec.price_total = rec.price_unit * rec.quantity
+            _logger.debug("Computed price_total for product.material.line %s: %s", rec.id, rec.price_total)
+
+    @api.onchange('material_id')
+    def _onchange_material_id(self):
+        if self.material_id:
+            self.unit = self.material_id.unit
+            self.price_unit = 0.0
+        else:
+            self.unit = False
+            self.price_unit = 0.0
+

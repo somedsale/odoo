@@ -76,7 +76,7 @@ class SaleOrder(models.Model):
                         'name': f'Dự toán cho {name_project}',
                         'sale_order_id': order.id,
                         'project_id': project.id,
-                        'currency_id': order.currency_id.id,
+                        # 'currency_id': order.currency_id.id,
                         'line_ids': [
                             (0, 0, {
                                 'product_id': line.product_id.id,
