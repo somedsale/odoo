@@ -46,12 +46,39 @@
                                     <field name="name"/>
                                     <field name="quantity"/>
                                     <field name="price_unit"/>
+                                    <field name="tax_id"/>
                                     <field name="price_subtotal"/>
                                 </tree>
                             </field>
                         </page>
                         <page string="Terms and Conditions">
-                            <field name="terms_conditions" nolabel="1"/>
+                            <field name="terms_conditions">
+                                <tree parent_field="parent_id">
+                                    <field name="full_name"/>
+                                    <field name="name"/>
+                                    <field name="description"/>
+                                </tree>
+                                <form>
+                                    <group>
+                                        <field name="contract_id"/>
+                                        <field name="parent_id"/>
+                                        <field name="sequence"/>
+                                        <field name="full_name" readonly="1"/>
+                                        <field name="name"/>
+                                        <field name="description" widget="html"/>
+                                    </group>
+                                    <group string="Sub Terms">
+                                        <field name="child_ids" context="{&apos;default_contract_id&apos;: contract_id}">
+                                            <tree editable="bottom">
+                                                <field name="sequence"/>
+                                                <field name="full_name"/>
+                                                <field name="name"/>
+                                                <field name="description"/>
+                                            </tree>
+                                        </field>
+                                    </group>
+                                </form>
+                            </field>
                         </page>
                     </notebook>
                 </sheet>
