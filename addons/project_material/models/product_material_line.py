@@ -11,7 +11,6 @@ class ProductMaterialLine(models.Model):
     quantity = fields.Float(string='Số lượng', default=1.0)
     unit = fields.Many2one('uom.uom', string='Đơn vị', required=True)
     price_unit = fields.Float(string='Đơn giá', digits=(16, 0), default=0.0)
-    estimate_line_id = fields.Many2one('cost.estimate.line', string='Dòng dự toán', ondelete='cascade', required=True)
     price_total = fields.Float(
         string='Thành tiền',
         compute='_compute_price_total',
