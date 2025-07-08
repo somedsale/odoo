@@ -13,7 +13,7 @@ class SaleContract(models.Model):
     partner_id = fields.Many2one('res.partner', string='Customer', required=True)
     sale_order_id = fields.Many2one('sale.order', string='Sale Order', domain=[('state', 'in', ['sale', 'done'])])
     date_contract = fields.Date(string='Contract Date', default=fields.Date.today)
-    terms_conditions = fields.Text(string='Terms and Conditions')
+    terms_conditions = fields.One2many('sale.contract.term', 'contract_id', string='Terms and Conditions')  # Thay Text bằng One2many    
     contract_lines = fields.One2many('sale.contract.line', 'contract_id', string='Contract Lines')
     state = fields.Selection([
         ('draft', 'Draft'),
@@ -27,7 +27,6 @@ class SaleContract(models.Model):
     order_line = fields.One2many('sale.order.line', 'order_id', string='Order Lines', store=False)
     company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company.id)
     company_address = fields.Char(string='Company Address', compute='_compute_company_address', store=False)
-
     @api.depends('company_id')
     def _compute_company_address(self):
         for contract in self:
@@ -64,6 +63,7 @@ class SaleContract(models.Model):
                     'quantity': line.product_uom_qty,
                     'price_unit': line.price_unit,
                     'price_subtotal': line.price_subtotal,
+                    'tax_id': line.tax_id.id,
                 })
     @api.depends('partner_contact_id')
     def _compute_partner_contact_phone(self):
@@ -71,6 +71,10 @@ class SaleContract(models.Model):
             phone = order.partner_contact_id.phone or order.partner_contact_id.mobile
             order.partner_contact_phone = phone or ''
     show_contact = fields.Boolean(compute="_compute_show_contact")
+    def formatted_price(self, price):
+        
+            # Định dạng giá trị thành chuỗi, ví dụ: 563.000 đ
+            return '{:,.0f} ₫'.format(price).replace(',', '.')   
 class SaleContractLine(models.Model):
     _name = 'sale.contract.line'
     _description = 'Sale Contract Line'
@@ -83,7 +87,45 @@ class SaleContractLine(models.Model):
     price_subtotal = fields.Float(string='Subtotal', compute='_compute_price_subtotal', store=True)
     thong_so = fields.Text(string='Technical Specifications')
     product_uom_id = fields.Many2one('uom.uom', string='Unit of Measure')
+    tax_id = fields.Many2one('account.tax', string='Tax', domain=[('type_tax_use', '=', 'sale')])
     @api.depends('quantity', 'price_unit')
     def _compute_price_subtotal(self):
         for line in self:
             line.price_subtotal = line.quantity * line.price_unit
+class SaleContractTerm(models.Model):
+    _name = 'sale.contract.term'
+    _description = 'Sale Contract Term'
+    _parent_store = True
+    _parent_name = 'parent_id'
+    _order = 'sequence, id'
+
+    contract_id = fields.Many2one('sale.contract', string='Contract', required=True, ondelete='cascade')
+    parent_id = fields.Many2one('sale.contract.term', string='Parent Term', index=True)
+    parent_path = fields.Char(index=True)
+
+    child_ids = fields.One2many('sale.contract.term', 'parent_id', string='Sub Terms')
+
+    sequence = fields.Integer(string='Sequence', default=1)
+    name = fields.Char(string='Title', required=True)
+    description = fields.Text(string='Description')
+
+    full_name = fields.Char(string='Numbering', compute='_compute_full_name', store=True)
+    level = fields.Integer(string='Level', compute='_compute_level', store=True)
+
+    @api.depends('parent_id')
+    def _compute_level(self):
+        for term in self:
+            level = 0
+            parent = term.parent_id
+            while parent:
+                level += 1
+                parent = parent.parent_id
+            term.level = level
+
+    @api.depends('parent_id.full_name', 'sequence')
+    def _compute_full_name(self):
+        for term in self:
+            if term.parent_id and term.parent_id.full_name:
+                term.full_name = f"{term.parent_id.full_name}{term.sequence}."
+            else:
+                term.full_name = f"{term.sequence}."
