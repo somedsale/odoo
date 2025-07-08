@@ -10,4 +10,4 @@ class SaleOrderLine(models.Model):
     def _compute_formatted_price(self):
         for record in self:
             # Định dạng giá trị thành chuỗi, ví dụ: 563.000 đ
-            record.formatted_price = '{:,.0f} đ'.format(record.price_unit).replace(',', '.')
+            record.formatted_price = '{:,.0f} ₫'.format(record.price_unit).replace(',', '.')
