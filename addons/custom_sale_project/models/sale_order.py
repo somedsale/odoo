@@ -82,6 +82,7 @@ class SaleOrder(models.Model):
                                 'product_id': line.product_id.id,
                                 'unit': line.product_uom.id,
                                 'quantity': line.product_uom_qty,
+                                'sale_order_line_id': line.id,
                             })
                             for line in order.order_line
                             if line.product_id

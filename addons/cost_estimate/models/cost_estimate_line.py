@@ -22,13 +22,23 @@ class CostEstimateLine(models.Model):
         'estimate_line_id',
         string='Dòng vật tư'
     )
+    sale_order_line_id = fields.Many2one('sale.order.line', string="Dòng báo giá gốc")
+    is_from_sale_order = fields.Boolean(string='Từ báo giá', compute='_compute_is_from_sale_order')
+    @api.depends('sale_order_line_id')
+    def _compute_is_from_sale_order(self):
+        for line in self:
+            line.is_from_sale_order = bool(line.sale_order_line_id)
 
-
-    @api.depends('material_line_ids.price_total')
+    @api.depends('material_line_ids.price_total', 'quantity')
     def _compute_price_subtotal(self):
         for rec in self:
-            rec.price_subtotal = sum(line.price_total for line in rec.material_line_ids if line.exists())
-            _logger.debug("Computed price_subtotal for cost.estimate.line %s: %s", rec.id, rec.price_subtotal)
+            # Tổng tiền vật tư của 1 sản phẩm * số lượng sản phẩm
+            material_total = sum(line.price_total for line in rec.material_line_ids if line.exists())
+            rec.price_subtotal = material_total * rec.quantity
+            _logger.debug(
+                "Computed price_subtotal for cost.estimate.line %s: %s (material_total=%s x quantity=%s)",
+                rec.id, rec.price_subtotal, material_total, rec.quantity
+            )
 
     @api.onchange('product_id')
     def _onchange_product_id(self):
@@ -36,22 +46,6 @@ class CostEstimateLine(models.Model):
             self.unit = self.product_id.uom_id
         else:
             self.unit = False
-    def open_material_list(self):
-        self.ensure_one()
-        if not self.id:
-            raise UserError("Vui lòng lưu dòng dự toán trước khi mở danh sách vật tư.")
-        return {
-            'name': 'Danh sách vật tư - %s' % (self.product_id.display_name or 'Không có sản phẩm'),
-            'type': 'ir.actions.act_window',
-            'res_model': 'product.material.line',
-            'view_mode': 'tree,form',
-            'domain': [('estimate_line_id', '=', self.id)],
-            'context': {
-                'default_estimate_line_id': self.id,
-                'default_product_id': self.product_id.id,
-                'default_unit': self.unit.id if self.unit else False,
-            },
-            'target': 'current',
-        }
+
 
 

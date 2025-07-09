@@ -66,9 +66,10 @@
             <form string="Chi tiết dòng dự toán">
                 <sheet>
                     <group>
-                        <field name="product_id"/>
-                        <field name="quantity"/>
-                        <field name="unit"/>
+                        <field name="is_from_sale_order" invisible="1"/>
+                        <field name="product_id" readonly="is_from_sale_order"/>
+                        <field name="quantity" readonly="is_from_sale_order"/>
+                        <field name="unit" readonly="is_from_sale_order"/>
                         <field name="price_subtotal" readonly="1"/>
                     </group>
                     <notebook>
