@@ -37,5 +37,6 @@
     </record>
 
     <!-- Menu -->
-    <menuitem id="menu_material_category" name="Danh mục vật tư" parent="menu_project_material_root" action="action_material_category"/>
+    <menuitem id="menu_material_category" name="Danh mục vật tư" parent="menu_material_root" action="action_material_category"/>
+
 </odoo>

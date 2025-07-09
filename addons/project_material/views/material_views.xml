@@ -35,6 +35,8 @@
         <field name="view_mode">tree,form</field>
     </record>
 
-    <menuitem id="menu_project_material_root" name="Vật tư"/>
-    <menuitem id="menu_project_material_list" name="Danh sách vật tư" parent="menu_project_material_root" action="action_project_material"/>
+    <menuitem id="menu_material_root" name="Vật tư" parent="project.menu_main_pm"/>
+    <!-- hoặc parent nào bạn thấy phù hợp -->
+
+    <menuitem id="menu_project_material_list" name="Danh sách vật tư" parent="menu_material_root" action="action_project_material"/>
 </odoo>

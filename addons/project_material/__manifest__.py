@@ -4,7 +4,7 @@
     'category': 'Project',
     'summary': 'Quản lý vật tư dự án',
     'author': 'Your Name',
-    'depends': ['base', 'uom', 'product'],
+    'depends': ['base', 'uom', 'product','project'],
     'data': [
         'security/ir.model.access.csv',
         'data/sequence.xml',
