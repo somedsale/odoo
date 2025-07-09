@@ -6,33 +6,37 @@
         <field name="arch" type="xml">
             <tree>
                 <field name="name"/>
+                <field name="name_contract"/>
+                <field name="num_contract"/>
                 <field name="partner_id"/>
                 <field name="date_contract"/>
-                <field name="amount_total"/> <!-- Đảm bảo sử dụng amount_total -->
+                <field name="amount_total"/><!-- Đảm bảo sử dụng amount_total -->
                 <field name="state"/>
             </tree>
         </field>
     </record>
-
     <record id="view_sale_contract_form" model="ir.ui.view">
         <field name="name">sale.contract.form</field>
         <field name="model">sale.contract</field>
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <button name="action_confirm" string="Confirm" type="object" class="btn-primary" invisible="state in ['confirmed', 'done']"/>
-                    <button name="action_done" string="Mark as Done" type="object" class="btn-primary" invisible="state in ['done', 'cancel']"/>
-                    <button name="action_cancel" string="Cancel" type="object" invisible="state == 'cancel'"/>
-                    <button name="action_create_from_sale_order" string="Load from Sale Order" type="object" invisible="state != 'draft'"/>
+                    <button name="action_confirm" string="Confirm" type="object" class="btn-primary" invisible="state in [&apos;confirmed&apos;, &apos;done&apos;]"/>
+                    <button name="action_done" string="Mark as Done" type="object" class="btn-primary" invisible="state in [&apos;done&apos;, &apos;cancel&apos;]"/>
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state == &apos;cancel&apos;"/>
+                    <button name="action_create_from_sale_order" string="Load from Sale Order" type="object" invisible="state != &apos;draft&apos;"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
                     <group>
                         <field name="name"/>
+                        <field name="name_contract"/>
+                        <field name="num_contract"/>
                         <field name="partner_id"/>
+                        <field name="bank"/>
                         <field name="sale_order_id"/>
                         <field name="date_contract"/>
-                        <field name="amount_total"/> <!-- Đảm bảo sử dụng amount_total -->
+                        <field name="amount_total"/><!-- Đảm bảo sử dụng amount_total -->
                     </group>
                     <notebook>
                         <page string="Contract Lines">
@@ -42,12 +46,39 @@
                                     <field name="name"/>
                                     <field name="quantity"/>
                                     <field name="price_unit"/>
+                                    <field name="tax_id"/>
                                     <field name="price_subtotal"/>
                                 </tree>
                             </field>
                         </page>
                         <page string="Terms and Conditions">
-                            <field name="terms_conditions" nolabel="1"/>
+                            <field name="terms_conditions">
+                                <tree parent_field="parent_id">
+                                    <field name="full_name"/>
+                                    <field name="name"/>
+                                    <field name="description"/>
+                                </tree>
+                                <form>
+                                    <group>
+                                        <field name="contract_id"/>
+                                        <field name="parent_id"/>
+                                        <field name="sequence"/>
+                                        <field name="full_name" readonly="1"/>
+                                        <field name="name"/>
+                                        <field name="description" widget="html"/>
+                                    </group>
+                                    <group string="Sub Terms">
+                                        <field name="child_ids" context="{&apos;default_contract_id&apos;: contract_id}">
+                                            <tree editable="bottom">
+                                                <field name="sequence"/>
+                                                <field name="full_name"/>
+                                                <field name="name"/>
+                                                <field name="description"/>
+                                            </tree>
+                                        </field>
+                                    </group>
+                                </form>
+                            </field>
                         </page>
                     </notebook>
                 </sheet>
@@ -59,12 +90,10 @@
             </form>
         </field>
     </record>
-
     <record id="action_sale_contract" model="ir.actions.act_window">
         <field name="name">Sale Contracts</field>
         <field name="res_model">sale.contract</field>
         <field name="view_mode">tree,form</field>
     </record>
-
     <menuitem id="menu_sale_contract" name="Sale Contracts" parent="sale.sale_menu_root" action="action_sale_contract" sequence="20"/>
 </odoo>

@@ -1,52 +1,336 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo>
-    <!-- Template for Sale Contract Report -->
-    <template id="report_sale_contract_document">
+<odoo><!-- Paper format for A4 portrait --><!-- Paper format for A4 portrait -->
+    <record id="custom_sale_contract_a4_portrait" model="report.paperformat">
+        <field name="name">Custom Sale Contract A4 Portrait</field>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">30</field><!-- Điều chỉnh từ 40mm xuống 30mm -->
+        <field name="margin_bottom">30</field><!-- Tăng từ 23mm lên 30mm -->
+        <field name="margin_left">10</field><!-- Tăng từ 7mm lên 10mm -->
+        <field name="margin_right">10</field><!-- Tăng từ 7mm lên 10mm -->
+        <field name="header_spacing">25</field><!-- Giảm từ 35mm xuống 25mm -->
+        <field name="dpi">90</field>
+    </record>
+    <template id="custom_sale_contract_layout">
         <t t-call="web.html_container">
-            <t t-call="web.external_layout">
-                <div class="page">
-                    <h2>Sale Contract: <span t-field="o.name"/></h2>
-                    <p>Customer: <span t-field="o.partner_id"/></p>
-                    <p>Date: <span t-field="o.date_contract"/></p>
-                    <table class="table table-condensed">
-                        <thead>
+            <t t-set="o" t-value="o or doc"/>
+            <div class="header"></div>
+            <div class="article" style="font-family: Times New Roman; font-size: 11pt; line-height: 1.5;">
+                <t t-raw="0"/><!-- Nội dung chính của báo cáo -->
+            </div>
+            <div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt;">
+                <p>
+                    <span class="page"/>
+                </p>
+            </div>
+        </t>
+    </template><!-- Template for Sale Contract Report -->
+    <template id="report_sale_contract_document">
+        <t t-call="custom_sale_contract.custom_sale_contract_layout">
+            <t t-foreach="docs" t-as="o">
+                <div class="page" style="width: 210mm; height: 297mm; margin: 10mm;">
+                    <div style="position:relative; display: flex; flex-direction: column; align-items: between; justify-content: center;height: 277mm;">
+                        <div style="text-align: center; font-weight: bold; font-size: 14pt;">
+                            <br/>
+                            <br/>
+                            <p>
+                                HỢP ĐỒNG
+                            </p>
+                            <p>
+                                <span t-field="o.name_contract"/>
+                            </p>
+                            <p style="font-size: 11pt;">Số: <span t-field="o.num_contract"/>
+                            </p>
+                        </div>
+                        <div style="text-align: center; font-weight: bold; font-size: 14pt;">
+                            <br/>
+                            <br/>
+                            <br/>
+                            <br/>
+                            <p>
+                                GIỮA
+                            </p>
+                            <br/>
+                            <br/>
+                            <p>
+                                <span t-field="o.partner_id.parent_id"/>
+                            </p>
+                            <br/>
+                            <br/>
+                            <p>
+                                VÀ
+                            </p>
+                            <br/>
+                            <br/>
+                            <p>
+                                CÔNG TY TNHH GIẢI PHÁP KỸ THUẬT Y TẾ MIỀN NAM
+                            </p>
+                        </div>
+                        <div style="position: absolute; bottom: 20mm; left: 0; width: 100%; text-align: center;">
+                            , ngày ... tháng … năm 2025
+                        </div>
+                    </div>
+                    <div>
+                        <div style="text-align: center; font-weight: bold; margin-top: 10px; margin-bottom: 10px; font-size: 12pt;">
+                            <b>
+                                <u>CĂN CỨ PHÁP LÝ:</u>
+                            </b>
+                        </div>
+                        <div>
+                            <p style="margin:0;">- Căn cứ Bộ Luật Dân Sự số 91/2015/QH13 đã được Quốc hội thông qua ngày 24 tháng 11 năm 2015.</p>
+                            <p style="margin:0;">- Căn cứ Luật Thương Mại số 36/2005/QH11 đã được Quốc hội thông qua ngày 14/06/2005.</p>
+                            <p style="margin:0;">- Căn cứ Luật Doanh nghiệp số 59/2020/QH14 được Quốc hội thông qua ngày 17/06/2020.</p>
+                            <p style="margin:0;">- Căn cứ sự thỏa thuận của các bên.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <b>HỢP ĐỒNG <span t-field="o.name_contract"/> (“Hợp đồng”)</b> này được lập và ký kết vào ngày ... tháng … năm <span t-esc="datetime.datetime.now().year"/>;
+                    </div>
+                    <div style="border-bottom: 2px solid #000; margin: 10px 0;"></div>
+                    <div>
+                        <p>
+                            <b>
+                                <u>GIỮA:</u>
+                            </b>
+                        </p>
+                        <p style="uppercase; font-weight: bold;">
+                            <b>
+                                <span t-field="o.partner_id.parent_id"/>
+                            </b>
+                        </p>
+                        <table style="width:100%; font-size: 11pt; border-collapse: collapse; border: 1px solid #fff;">
                             <tr>
-                                <th>Product</th>
-                                <th>Description</th>
-                                <th>Quantity</th>
-                                <th>Unit Price</th>
-                                <th>Subtotal</th>
+                                <td style="width: 30%; border: 1px solid #fff;">Giấy CNĐKDN</td>
+                                <td style="border: 1px solid #fff;">: <span t-field="o.partner_id.parent_id.vat"/>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <t t-foreach="o.contract_lines" t-as="line">
-                                <tr>
-                                    <td><span t-field="line.product_id"/></td>
-                                    <td><span t-field="line.name"/></td>
-                                    <td><span t-field="line.quantity"/></td>
-                                    <td><span t-field="line.price_unit"/></td>
-                                    <td><span t-field="line.price_subtotal"/></td>
+                            <tr>
+                                <td style="border: 1px solid #fff;">Địa chỉ trụ sở</td>
+                                <td style="border: 1px solid #fff;">: <span t-field="o.partner_id.parent_id.street"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #fff;">Điện thoại</td>
+                                <td style="border: 1px solid #fff;">: <t t-esc="o.partner_id.phone or o.partner_id.parent_id.phone"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #fff;">Đại diện bởi</td>
+                                <td style="border: 1px solid #fff;">: <span t-field="o.partner_id.title"/>
+                                    <span t-field="o.partner_id.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #fff;">Chức vụ</td>
+                                <td style="border: 1px solid #fff;">: <span t-field="o.partner_id.function"/>
+                                </td>
+                            </tr>
+                        </table>
+                        <div>
+                            <div style="text-align: right;">
+                                <p>
+                                    (Sau đây gọi là “<b>Bên A</b>”)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <p>
+                            <b>
+                                <u>VÀ:</u>
+                            </b>
+                        </p>
+                        <p style="uppercase; font-weight: bold;">
+                            <b>
+                                CÔNG TY TNHH GIẢI PHÁP KỸ THUẬT Y TẾ MIỀN NAM 
+                            </b>
+                        </p>
+                        <table style="width:100%; font-size: 11pt; border-collapse: collapse; border: 1px solid #fff;">
+                            <tr>
+                                <td style="width: 30%; border: 1px solid #fff;">Giấy CNĐKDN</td>
+                                <td style="border: 1px solid #fff;">: 0315076468
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #fff;">Địa chỉ trụ sở</td>
+                                <td style="border: 1px solid #fff;">: <span t-field="o.company_address"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #fff;">Điện thoại</td>
+                                <td style="border: 1px solid #fff;">: 0935.235.129
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #fff;">Số tài khoản</td>
+                                <td style="border: 1px solid #fff;">: <span t-field="o.bank"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #fff;">Đại diện bởi</td>
+                                <td style="border: 1px solid #fff;">: Ông Đỗ Minh Toàn
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #fff;">Chức vụ</td>
+                                <td style="border: 1px solid #fff;">: Giám đốc
+                                </td>
+                            </tr>
+                        </table>
+                        <div>
+                            <div style="text-align: right;">
+                                <p>
+                                    (Sau đây gọi là “<b>Bên B</b>”)
+                                </p>
+                            </div>
+                        </div>
+                        <div style="text-align: center;">
+                            <p>
+                                (Bên B và Bên A sau đây gọi riêng là “<b>Bên</b>” và gọi chung là “<b>Các Bên</b>” hoặc “<b>Hai Bên</b>”)
+                            </p>
+                        </div>
+                        <div>
+                            <p>
+                                <i>
+                                    <b>
+                                        CÁC BÊN THỎA THUẬN NHƯ SAU:
+                                    </b>
+                                </i>
+                            </p>
+                        </div>
+                        <div>
+                            <div>
+                                <p>
+                                    <b>
+                                    ĐIỀU 1: ĐỊNH NGHĨA VÀ DIỄN GIẢI
+                                </b>
+                                </p>
+                            </div>
+                            <div>
+                                <div>
+                                    <p>
+                                    1.1	Trừ khi ngữ cảnh có yêu cầu khác đi, các từ ngữ và thuật ngữ dưới đây sẽ có nghĩa như sau:
+                                </p>
+                                </div>
+                                <div>
+                                    <p>
+                                    1.2	Trừ khi ngữ cảnh hoặc các quy định của Hợp đồng có yêu cầu khác đi, thì:
+                                </p>
+                                    <div>
+                                        <p>1.2.1 Đề mục hoặc tiêu đề chỉ để tiện tham khảo và không được xem xét để diễn giải hoặc giải thích về mặt nội dung cho Hợp đồng này;</p>
+                                    </div>
+                                    <div>
+                                        <p>1.2.2 Mọi tham chiếu đến Điều và Phụ lục là các tham chiếu đến Điều và Phụ lục của Hợp Đồng này.</p>
+                                    </div>
+                                    <div>
+                                        <p>1.2.3 Việc dẫn chiếu đến một người hoặc một bên thứ ba sẽ được hiểu là dẫn chiếu đến cá nhân hoặc pháp nhân được thành lập dưới bất kỳ hình thức nào cũng như những bên thế vị hoặc bên kế nhiệm của họ.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div>
+                                <p>
+                                    <b>
+                                    ĐIỀU 2: ĐỐI TƯỢNG HỢP ĐỒNG
+                                </b>
+                                </p>
+                            </div>
+                            <div>
+                                <p>
+                                    2.1	Hai Bên thống nhất và giao cho Bên B <span t-field="o.name_contract"/> cho Bên A làm Chủ đầu tư, với số lượng sản phẩm như sau:
+                                </p>
+                            </div>
+                            <div>
+                                <table style="width:100%; border-collapse: collapse; font-size: 11pt; margin-top: 10px;">
+                                    <thead>
+                                        <tr style="border: 1px solid black;">
+                                            <th style="border: 1px solid black; margin:5px;width:40px">STT</th>
+                                            <th style="border: 1px solid black; margin:5px; max-width:450px">Thông tin hàng hóa </th>
+                                            <th style="border: 1px solid black; margin:5px;min-width:110px">Đơn vị tính</th>
+                                            <th style="border: 1px solid black; margin:5px;width:80px">Số lượng</th>
+                                            <th style="border: 1px solid black; margin:5px;min-width:120px">Đơn giá </th>
+                                            <th style="border: 1px solid black; margin:5px;min-width:120px">Thành tiền</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="o.contract_lines" t-as="line">
+                                            <tr style="border: 1px solid black;">
+                                                <td style="border: 1px solid black; margin:5px; text-align: center; padding: 5px;">
+                                                    <t t-esc="line_index + 1"/>
+                                                </td>
+                                                <td style="border: 1px solid black; margin:5px;padding: 5px;">
+                                                    <span t-field="line.product_id.name"/>
+                                                    <span t-field="line.thong_so"/>
+                                                </td>
+                                                <td style="border: 1px solid black; margin:5px; text-align: center; padding: 5px;">
+                                                    <span t-field="line.product_uom_id"/>
+                                                </td>
+                                                <td style="border: 1px solid black; margin:5px; text-align: center; padding: 5px;">
+                                                    <span t-field="line.quantity"/>
+                                                </td>
+                                                <td style="border: 1px solid black; margin:5px; text-align: right; padding: 5px;">
+                                                     <t t-esc="o.formatted_price(line.price_unit)"/>
+                                                </td>
+                                                <td style="border: 1px solid black; margin:5px; text-align: right; padding: 5px;">
+                                                     <t t-esc="o.formatted_price(line.price_subtotal)"/>
+                                                </td>
+                                            </tr>         
+                                
+                                        </t>
+                                    </tbody>
+                                    <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
+                                    <td colspan="5" style="white-space:nowrap; text-align: left;vertical-align: middle; padding:5px">Tổng cộng (chưa bao gồm thuế VAT)</td><!-- <td></td> -->
+                                    <td style="white-space:nowrap;text-align: right; padding: 5px;">
+                                        <t t-esc="o.formatted_price(o.amount_untaxed)"/>
+                                    </td>
+                                    <td></td>
                                 </tr>
+                            <t t-set="tax_details" t-value="{}"/>
+                            <t t-foreach="o.contract_lines" t-as="line">
+                                <t t-foreach="line.tax_id" t-as="tax">
+                                    <t t-set="base" t-value="tax_details.get(tax.name, {&apos;base&apos;: 0.0, &apos;amount&apos;: 0.0})"/>
+                                    <t t-set="tax_details" t-value="dict(tax_details, **{tax.name: {&apos;base&apos;: base[&apos;base&apos;] + line.price_subtotal, &apos;amount&apos;: base[&apos;amount&apos;] + (line.price_subtotal * tax.amount / 100)}})"/>
+                                </t>
                             </t>
-                        </tbody>
-                    </table>
-                    <p>Total: <span t-field="o.amount_total"/></p>
-                    <h3>Terms and Conditions</h3>
-                    <p><span t-field="o.terms_conditions"/></p>
+                                <t t-foreach="tax_details.items()" t-as="item">
+                                    <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
+                                        <td colspan="5" style="white-space:nowrap; text-align: left;vertical-align: middle; padding:5px">
+                                            <t t-esc="&apos;Thuế GTGT %s&apos; % item[0]"/>
+                                        </td>
+                                        <td style="white-space:nowrap;text-align: right padding: 5px;">
+                                            <t t-esc="&apos;%s đ&apos; % &apos;{:,.0f}&apos;.format(item[1][&apos;amount&apos;])"/>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                </t>
+                                <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
+                                    <td colspan="5" style="white-space:nowrap; text-align: left;vertical-align: middle; padding:5px">Tổng cộng (đã bao gồm thuế VAT)</td>
+                                    <td style="white-space:nowrap;text-align: right;padding: 5px;">
+                                         <t t-esc="o.formatted_price(o.amount_total)"/>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                </table>
+                                <div>
+                                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </t>
         </t>
-    </template>
-
-    <!-- Report definition -->
+    </template><!-- Report definition -->
     <record id="action_report_sale_contract" model="ir.actions.report">
         <field name="name">Sale Contract PDF</field>
         <field name="model">sale.contract</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">custom_sale_contract.report_sale_contract_document</field>
         <field name="report_file">custom_sale_contract.report_sale_contract_document</field>
-        <field name="print_report_name">'Sale Contract - %s' % (object.name)</field>
+        <field name="print_report_name">&apos;Sale Contract - %s&apos; % (object.name)</field>
         <field name="binding_model_id" ref="model_sale_contract"/>
         <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="custom_sale_contract_a4_portrait"/>
     </record>
 </odoo>
