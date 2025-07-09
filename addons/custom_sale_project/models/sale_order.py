@@ -84,7 +84,7 @@ class SaleOrder(models.Model):
                                 'quantity': line.product_uom_qty,
                             })
                             for line in order.order_line
-                            if line.product_id and line.product_id.product_tmpl_id.type == 'consu'
+                            if line.product_id
                         ],
                     }
                     cost_estimate = self.env['cost.estimate'].create(budget_vals)
