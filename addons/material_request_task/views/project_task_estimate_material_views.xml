@@ -16,6 +16,20 @@
                         </tree>
                     </field>
                 </page>
+                <page string="Vật tư đã duyệt">
+                    <field name="approved_material_lines">
+                        <tree>
+                            <field name="material_id"/>
+                            <field name="quantity"/>
+                            <field name="unit"/>
+                            <field name="price_unit"/>
+                            <field name="description"/>
+                        </tree>
+                    </field>
+                </page>
+                <page string="So sánh vật tư">
+                    <field name="compare_material_html" readonly="1"/>
+                </page>
             </xpath>
         </field>
     </record>
