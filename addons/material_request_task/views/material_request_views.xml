@@ -1,0 +1,60 @@
+<odoo>
+    <record id="view_material_request_form" model="ir.ui.view">
+        <field name="name">material.request.form</field>
+        <field name="model">material.request</field>
+        <field name="arch" type="xml">
+            <form string="Đề xuất vật tư">
+                <field name="show_button_submit" invisible="1"/>
+                <field name="show_button_approve" invisible="1"/>
+                <field name="show_button_done" invisible="1"/>
+
+                <header>
+                    <button name="action_submit" type="object" string="Gửi duyệt" class="btn-primary" invisible="not show_button_submit"/>
+                    <button name="action_approve" type="object" string="Duyệt" class="btn-success" invisible="not show_button_approve"/>
+                    <button name="action_done" type="object" string="Hoàn tất" class="btn-secondary" invisible="not show_button_done"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,done"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name" invisible="1"/>
+                        <field name="task_id"/>
+                        <field name="requested_by" readonly="1" options="{'no_open': True}"/>
+                    </group>
+
+                    <field name="line_ids">
+                        <tree editable="bottom">
+                            <field name="material_id"/>
+                            <field name="quantity"/>
+                            <field name="unit"/>
+                            <field name="description"/>
+                            <field name ="price_unit"/>
+                        </tree>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_material_request_tree" model="ir.ui.view">
+        <field name="name">material.request.tree</field>
+        <field name="model">material.request</field>
+        <field name="arch" type="xml">
+            <tree >
+                <field name="name"/>
+                <field name="task_id"/>
+                <field name="create_date" string="Ngày tạo" readonly="1"/>
+                <field name="requested_by"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-primary="state == 'submitted'" decoration-success="state == 'approved'" decoration-muted="state == 'done'"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <record id="action_material_request" model="ir.actions.act_window">
+        <field name="name">Đề xuất vật tư</field>
+        <field name="res_model">material.request</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="menu_material_request_root" name="Đề xuất vật tư" parent="project.menu_main_pm"/>
+    <menuitem id="menu_material_request" name="Đề xuất vật tư" parent="menu_material_request_root" action="action_material_request"/>
+</odoo>

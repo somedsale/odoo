@@ -1,0 +1,22 @@
+<odoo>
+    <record id="view_project_task_form_inherit_estimate_material" model="ir.ui.view">
+        <field name="name">project.task.form.inherit.estimate.material</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/notebook" position="inside">
+                <page string="Vật tư dự toán">
+                    <field name="material_lines_from_estimate">
+                        <tree>
+                            <field name="material_id"/>
+                            <field name="unit"/>
+                            <field name="quantity"/>
+                            <field name="price_unit"/>
+                            <field name="price_total"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

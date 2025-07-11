@@ -54,7 +54,7 @@ class SaleOrder(models.Model):
                     stage_dict[stage_name] = stage
                     _logger.info(f"Created stage: {stage_name} for project: {project.name}")
                     sequence += 10
-
+                product_task_map = {}
                 # Tạo nhiệm vụ cho các sản phẩm tiêu dùng trong giai đoạn "Đơn đặt hàng mới"
                 new_order_stage = stage_dict.get('Đơn đặt hàng mới')
                 if new_order_stage:
@@ -66,8 +66,9 @@ class SaleOrder(models.Model):
                                 'stage_id': new_order_stage.id,
                                 'partner_id': order.partner_id.id,
                             }
-                            self.env['project.task'].create(task_vals)
+                            task =self.env['project.task'].create(task_vals)
                             _logger.info(f"Created task for product: {line.product_id.name} in stage: Đơn đặt hàng mới")
+                            product_task_map[line.product_id.id] = task.id 
                         else:
                             _logger.info(f"Skipped product: {line.product_id.name} (not consumable)")
                 if not order.cost_estimate_id:
@@ -83,6 +84,7 @@ class SaleOrder(models.Model):
                                 'unit': line.product_uom.id,
                                 'quantity': line.product_uom_qty,
                                 'sale_order_line_id': line.id,
+                                'task_id': product_task_map.get(line.product_id.id),
                             })
                             for line in order.order_line
                             if line.product_id

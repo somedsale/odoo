@@ -46,6 +46,7 @@ class CostEstimateLine(models.Model):
             self.unit = self.product_id.uom_id
         else:
             self.unit = False
+    task_id = fields.Many2one('project.task', string='Nhiệm vụ')
 
 
 
