@@ -61,10 +61,14 @@ class SaleOrder(models.Model):
                     for line in order.order_line:
                         if line.product_id.product_tmpl_id.type == 'consu':
                             task_vals = {
-                                'name': f"Task for {line.product_id.name}",
+                                'name': f"{line.product_id.name} - {line.product_uom_qty} {line.product_uom.name}",
                                 'project_id': project.id,
                                 'stage_id': new_order_stage.id,
                                 'partner_id': order.partner_id.id,
+                                'quantity': line.product_uom_qty,
+                                'uom_id': line.product_uom.id,
+                                'allow_billable': True,
+                                'user_ids': [(6, 0, [config.default_project_manager_id.id])] if config and config.default_project_manager_id else [],
                             }
                             self.env['project.task'].create(task_vals)
                             _logger.info(f"Created task for product: {line.product_id.name} in stage: Đơn đặt hàng mới")
