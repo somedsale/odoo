@@ -116,7 +116,7 @@
                                 <t t-if="line.display_type != 'line_section'">
                                 <t t-set="stt" t-value="stt + 1"/>
                                 <tr class="table-bordered border-dark border-2; height:auto; ">
-                                    <td class="text-center" style="border-left: 2px solid black;">
+                                    <td class="text-center" style="border-left: 2px solid black; text-align: center;">
                                         <span t-esc="stt"/>
                                     </td>
                                     <td>
