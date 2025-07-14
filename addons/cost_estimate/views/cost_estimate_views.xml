@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- TREE VIEW COST ESTIMATE -->
+    <record id="view_cost_estimate_tree" model="ir.ui.view">
+        <field name="name">cost.estimate.tree</field>
+        <field name="model">cost.estimate</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="sale_order_id"/>
+                <field name="project_id"/>
+                <field name="total_cost"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- FORM VIEW COST ESTIMATE -->
+    <record id="view_cost_estimate_form" model="ir.ui.view">
+        <field name="name">cost.estimate.form</field>
+        <field name="model">cost.estimate</field>
+        <field name="arch" type="xml">
+            <form string="Dự toán chi phí Dự án">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="sale_order_id" readonly="1"/>
+                        <field name="project_id" readonly="1"/>
+                        <field name="total_cost" readonly="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Chi tiết dòng dự toán">
+                            <field name="line_ids" editable="bottom" options="{'no_open': True}">
+                                <tree>
+                                    <field name="product_id" required="1"/>
+                                    <field name="quantity" required="1"/>
+                                    <field name="unit" required="1"/>
+                                    <field name="price_subtotal" readonly="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- TREE VIEW COST ESTIMATE LINE -->
+    <record id="view_cost_estimate_line_tree" model="ir.ui.view">
+        <field name="name">cost.estimate.line.tree</field>
+        <field name="model">cost.estimate.line</field>
+        <field name="arch" type="xml">
+            <tree >
+                <field name="product_id" required="1"/>
+                <field name="quantity" required="1"/>
+                <field name="unit" required="1"/>
+                <field name="price_subtotal" readonly="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- FORM VIEW COST ESTIMATE LINE -->
+    <record id="view_cost_estimate_line_form" model="ir.ui.view">
+        <field name="name">cost.estimate.line.form</field>
+        <field name="model">cost.estimate.line</field>
+        <field name="arch" type="xml">
+            <form string="Chi tiết dòng dự toán">
+                <sheet>
+                    <group>
+                        <field name="is_from_sale_order" invisible="1"/>
+                        <field name="product_id" readonly="is_from_sale_order"/>
+                        <field name="quantity" readonly="is_from_sale_order"/>
+                        <field name="unit" readonly="is_from_sale_order"/>
+                        <field name="price_subtotal" readonly="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Dòng vật tư">
+                            <field name="material_line_ids" context="{'default_estimate_line_id': active_id}" mode="tree,form">
+                                <tree editable="bottom" view_id="project_material.view_product_material_line_tree"/>
+                                <form view_id="project_material.view_product_material_line_form"/>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ACTION FOR COST ESTIMATE -->
+    <record id="action_cost_estimate" model="ir.actions.act_window">
+        <field name="name">Dự toán chi phí Dự án</field>
+        <field name="res_model">cost.estimate</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- MENU -->
+    <menuitem id="menu_cost_estimate_root" name="Dự toán chi phí" parent="project.menu_main_pm"/>
+    <menuitem id="menu_cost_estimate_main" name="Quản lý dự toán" parent="menu_cost_estimate_root" action="action_cost_estimate"/>
+</odoo>

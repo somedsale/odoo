@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_task_production_report_form" model="ir.ui.view">
+        <field name="name">task.production.report.form</field>
+        <field name="model">project.task</field>
+        <field name="arch" type="xml">
+            <form string="Production Report">
+                <group>
+                    <group>
+                        <field name="quantity_uom"/>
+                        <field name="produced_quantity_uom" readonly="1"/>
+                        <field name="remaining_quantity_uom" readonly="1"/>
+                        <field name="completion_percent" readonly="1" widget="progressbar"/>
+                    </group>
+                    <field name="production_report_ids">
+                        <tree editable="bottom" delete="false">
+                            <field name="report_date"/>
+                            <field name="quantity_done" attrs="{&apos;readonly&apos;: [(&apos;quantity_done_readonly&apos;, &apos;=&apos;, True)]}"/>
+                            <field name="uom_id" readonly="1"/>
+                            <field name="note"/>
+                            <field name="propose"/>
+                        </tree>
+                    </field>
+                </group>
+            </form>
+        </field>
+    </record>
+    <record id="view_task_production_report_tree" model="ir.ui.view">
+        <field name="name">task.production.report.tree</field>
+        <field name="model">project.task</field>
+        <field name="arch" type="xml">
+            <tree string="Production Reports" delete="false" create="false" edit="false">
+                <field name="name"/>
+                <field name="quantity_uom"/>
+                <field name="produced_quantity_uom"/>
+                <field name="remaining_quantity_uom"/>
+            </tree>
+        </field>
+    </record>
+    <record id="action_task_production_report" model="ir.actions.act_window">
+        <field name="name">Task Production Reports</field>
+        <field name="res_model">task.production.report</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Tạo báo cáo sản lượng cho từng nhiệm vụ.
+            </p>
+        </field>
+    </record>
+    <menuitem id="menu_project_production_root" name="Sản lượng" parent="project.menu_main_pm" groups="project.group_project_manager"/>
+    <menuitem id="menu_task_production_report" name="Báo cáo sản lượng" parent="menu_project_production_root" action="action_task_production_report" groups="project.group_project_manager"/>
+</odoo>

@@ -1,0 +1,11 @@
+<odoo>
+  <template id="task_production_message_template">
+    <p><b>📌 Báo cáo sản lượng mới</b></p>
+    <ul>
+      <li><b>Dự án:</b> <t t-esc="project.name"/></li>
+      <li><b>Nhiệm vụ:</b> <a t-att-href="task_url"><t t-esc="task.name"/></a></li>
+      <li><b>Ngày:</b> <t t-esc="report_date"/></li>
+      <li><b>Đạt:</b> <t t-esc="quantity"/> / <t t-esc="task_quantity"/></li>
+    </ul>
+  </template>
+</odoo>

@@ -5,46 +5,43 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 from openpyxl.utils import get_column_letter
 from openpyxl.drawing.image import Image
-from PIL import Image as PILImage # type: ignore
+from PIL import Image as PILImage
 
 class ExportExcelWizard(models.TransientModel):
     _name = 'export.excel.wizard'
     _description = 'Export Excel Wizard'
 
     def export_to_excel(self):
-        # Tạo workbook và worksheet
+        # Initialize workbook and worksheet
         wb = Workbook()
         ws = wb.active
         ws.title = "Báo Giá"
 
-        # Định dạng chung
+        # Define styles
         font_title = Font(name='Times New Roman', size=20, bold=True)
         font_header = Font(name='Times New Roman', size=14, bold=True)
         font_normal = Font(name='Times New Roman', size=14)
         font_company = Font(name='Times New Roman', size=14, bold=True, italic=True)
         font_company_info = Font(name='Times New Roman', size=14, italic=True)
+        font_bold_blue = Font(name='Times New Roman', size=16, bold=True, color='27B1FC')
         align_center = Alignment(horizontal='center', vertical='center', wrap_text=True)
         align_left = Alignment(horizontal='left', vertical='center', wrap_text=True)
         align_right = Alignment(horizontal='right', vertical='center', wrap_text=True)
         border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
         fill_summary = PatternFill(start_color='E6E2D3', end_color='E6E2D3', fill_type='solid')
 
-        # Lấy dữ liệu sale.order
+        # Get sale order data
         sale_orders = self.env['sale.order'].browse(self._context.get('active_ids', []))
-
-        # Biến để theo dõi dòng hiện tại
         current_row = 1
 
         for doc in sale_orders:
-            # Header: Logo và thông tin công ty
+            # Company logo
             company = doc.company_id
             if company.logo:
-                # Chuyển logo từ base64 sang hình ảnh
                 logo_data = base64.b64decode(company.logo)
                 img = PILImage.open(BytesIO(logo_data))
-                img = img.convert('RGB')  # Đảm bảo định dạng RGB
+                img = img.convert('RGB')
                 img_width, img_height = img.size
-                # Điều chỉnh kích thước logo (250px chiều rộng, giữ tỷ lệ)
                 scale = 250 / img_width
                 img = img.resize((250, int(img_height * scale)))
                 img_io = BytesIO()
@@ -52,15 +49,14 @@ class ExportExcelWizard(models.TransientModel):
                 img_io.seek(0)
                 logo = Image(img_io)
                 ws.add_image(logo, 'A1')
-                # Đặt chiều cao hàng cho logo
-                ws.row_dimensions[1].height = int(img_height * scale * 0.75)  # Điều chỉnh hệ số nếu cần
+                ws.row_dimensions[1].height = int(img_height * scale * 0.75)
                 ws.merge_cells(start_row=1, start_column=1, end_row=4, end_column=5)
                 current_row = 5
             else:
                 current_row = 1
 
-            # Thông tin công ty (bên phải)
-            ws.cell(row=1, column=6).value = "Somed Co., Ltd"
+            # Company information
+            ws.cell(row=1, column=6).value = "CÔNG TY TNHH GIẢI PHÁP KỸ THUẬT Y TẾ MIỀN NAM"
             ws.cell(row=1, column=6).font = font_company
             ws.cell(row=1, column=6).alignment = align_right
             ws.merge_cells(start_row=1, start_column=6, end_row=1, end_column=10)
@@ -80,24 +76,23 @@ class ExportExcelWizard(models.TransientModel):
             ws.cell(row=4, column=6).alignment = align_right
             ws.merge_cells(start_row=4, start_column=6, end_row=4, end_column=10)
 
-            # Thêm đường viền dưới header
+            # Bottom border for header
             for col in range(1, 11):
-                cell = ws.cell(row=4, column=col)
-                cell.border = Border(bottom=Side(style='thin'))
+                ws.cell(row=4, column=col).border = Border(bottom=Side(style='thin'))
 
             if not company.logo:
                 current_row = 5
 
-            # Tiêu đề: BẢNG BÁO GIÁ
+            # Title: BẢNG BÁO GIÁ
             ws.cell(row=current_row, column=1).value = "BẢNG BÁO GIÁ"
             ws.cell(row=current_row, column=1).font = font_title
             ws.cell(row=current_row, column=1).alignment = align_center
             ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=10)
             current_row += 1
 
-            # Mã báo giá và dự án
+            # Quotation number and project name
             ws.cell(row=current_row, column=8).value = doc.name
-            ws.cell(row=current_row, column=8).font = Font(name='Times New Roman', size=16, bold=True, color='27B1FC')
+            ws.cell(row=current_row, column=8).font = font_bold_blue
             ws.cell(row=current_row, column=8).alignment = align_right
             if doc.x_project_name:
                 ws.cell(row=current_row, column=1).value = f"Dự án: {doc.x_project_name}"
@@ -105,9 +100,9 @@ class ExportExcelWizard(models.TransientModel):
                 ws.cell(row=current_row, column=1).alignment = align_left
             current_row += 1
 
-            # Thông tin khách hàng và nhân viên
+            # Customer and employee information
             emp = self.env['hr.employee'].search([('user_id', '=', doc.user_id.id)], limit=1)
-            ws.append([""] * 10)  # Dòng trống
+            ws.append([""] * 10)
             current_row += 1
 
             ws.cell(row=current_row, column=1).value = "Khách hàng:"
@@ -127,7 +122,8 @@ class ExportExcelWizard(models.TransientModel):
             ws.cell(row=current_row, column=2).font = font_normal
             ws.cell(row=current_row, column=6).value = "Địa chỉ:"
             ws.cell(row=current_row, column=6).font = font_header
-            ws.cell(row=current_row, column=7).value = "213 Đường TL15, Khu Phố 3C, P.Thạnh Lộc, Q.12, TP HCM"
+            emp_address = (emp.address_id.contact_address or '').replace(emp.address_id.complete_name or '', '').strip() if emp.address_id else ''
+            ws.cell(row=current_row, column=7).value = emp_address or "213 Đường TL15, Khu Phố 3C, P.Thạnh Lộc, Q.12, TP HCM"
             ws.cell(row=current_row, column=7).font = font_normal
             current_row += 1
 
@@ -153,7 +149,7 @@ class ExportExcelWizard(models.TransientModel):
             ws.cell(row=current_row, column=7).font = font_normal
             current_row += 1
 
-            # Dòng trống và giới thiệu
+            # Introduction
             ws.append([""] * 10)
             current_row += 1
             ws.cell(row=current_row, column=1).value = (
@@ -171,7 +167,7 @@ class ExportExcelWizard(models.TransientModel):
             ws.cell(row=current_row, column=1).alignment = align_left
             current_row += 1
 
-            # Bảng sản phẩm
+            # Product table headers
             headers = ["STT", "Sản phẩm"]
             if doc.is_show_ma_sp:
                 headers.append("Mã SP")
@@ -187,36 +183,49 @@ class ExportExcelWizard(models.TransientModel):
                 cell.border = border
             current_row += 1
 
-            # Dữ liệu dòng sản phẩm
-            for index, line in enumerate(doc.order_line, 1):
-                row_data = [
-                    index,
-                    line.product_id.name,
-                ]
-                if doc.is_show_ma_sp:
-                    row_data.append(line.product_id.default_code or '')
-                row_data.extend([
-                    line.x_thongso or '',
-                    line.x_xuatxu or '',
-                    line.product_uom.name,
-                    line.product_uom_qty,
-                ])
-                if doc.is_show_chi_phi_nhan_cong:
-                    row_data.append(line.x_chi_phi_nhan_cong or 0.0)
-                row_data.extend([
-                    line.price_unit,
-                    line.price_subtotal,
-                    line.x_note or ''
-                ])
-                ws.append(row_data)
-                for col in range(1, len(headers) + 1):
-                    cell = ws.cell(row=current_row, column=col)
-                    cell.font = font_normal
-                    cell.alignment = align_center if col != 2 else align_left
-                    cell.border = border
-                current_row += 1
+            # Product lines
+            stt = 0
+            sttLM = 0
+            for line in doc.order_line:
+                if line.display_type != 'line_section':
+                    stt += 1
+                    row_data = [stt, line.product_id.name]
+                    if doc.is_show_ma_sp:
+                        row_data.append(line.product_id.default_code or '')
+                    row_data.extend([
+                        line.x_thongso or '',
+                        line.x_xuatxu or '',
+                        line.product_uom.name,
+                        line.product_uom_qty,
+                    ])
+                    if doc.is_show_chi_phi_nhan_cong:
+                        row_data.append(line.x_chi_phi_nhan_cong or 0.0)
+                    row_data.extend([
+                        line.price_unit,
+                        line.price_subtotal,
+                        line.x_note or ''
+                    ])
+                    ws.append(row_data)
+                    for col in range(1, len(headers) + 1):
+                        cell = ws.cell(row=current_row, column=col)
+                        cell.font = font_normal
+                        cell.alignment = align_center if col != 2 else align_left
+                        cell.border = border
+                    current_row += 1
+                else:
+                    sttLM += 1
+                    roman_num = self.env['sale.order'].int_to_roman(sttLM)
+                    row_data = [roman_num, line.name] + [""] * (len(headers) - 2)
+                    ws.append(row_data)
+                    for col in range(1, len(headers) + 1):
+                        cell = ws.cell(row=current_row, column=col)
+                        cell.font = font_header
+                        cell.alignment = align_center if col == 1 else align_left
+                        cell.border = border
+                        cell.fill = fill_summary
+                    current_row += 1
 
-            # Tổng hợp và thuế
+            # Tax and summary
             tax_details = {}
             for line in doc.order_line:
                 for tax in line.tax_id:
@@ -227,54 +236,51 @@ class ExportExcelWizard(models.TransientModel):
                     }
 
             colspan = 10 if doc.is_show_chi_phi_nhan_cong and doc.is_show_ma_sp else 9 if doc.is_show_chi_phi_nhan_cong or doc.is_show_ma_sp else 8
-            ws.append(["Tổng chưa VAT"] + [""] * (colspan - 1) + [doc.amount_untaxed, ""])
+            ws.append(["Tổng chưa VAT"] + [""] * (colspan - 2) + [doc.amount_untaxed, ""] + [""] * (len(headers) - 2))
             for col in range(1, colspan + 1):
-                ws.cell(row=current_row, column=col).value = "Tổng chưa VAT" if col == 1 else ""
                 ws.cell(row=current_row, column=col).font = font_header
                 ws.cell(row=current_row, column=col).alignment = align_left
                 ws.cell(row=current_row, column=col).fill = fill_summary
                 ws.cell(row=current_row, column=col).border = border
-            ws.cell(row=current_row, column=colspan + 1).value = doc.amount_untaxed
-            ws.cell(row=current_row, column=colspan + 1).font = font_header
-            ws.cell(row=current_row, column=colspan + 1).alignment = align_center
-            ws.cell(row=current_row, column=colspan + 1).border = border
+            ws.cell(row=current_row, column=colspan).value = doc.amount_untaxed
+            ws.cell(row=current_row, column=colspan).font = font_header
+            ws.cell(row=current_row, column=colspan).alignment = align_center
+            ws.cell(row=current_row, column=colspan).border = border
             current_row += 1
 
             for tax_name, details in tax_details.items():
-                ws.append([f"VAT {tax_name}"])
+                ws.append([f"VAT {tax_name}"] + [""] * (colspan - 2) + [details['amount'], ""] + [""] * (len(headers) - 2))
                 for col in range(1, colspan + 1):
-                    ws.cell(row=current_row, column=col).value = f"VAT {tax_name} " if col == 1 else ""
                     ws.cell(row=current_row, column=col).font = font_header
                     ws.cell(row=current_row, column=col).alignment = align_left
                     ws.cell(row=current_row, column=col).fill = fill_summary
                     ws.cell(row=current_row, column=col).border = border
-                ws.cell(row=current_row, column=colspan + 1).value = details['amount']
-                ws.cell(row=current_row, column=colspan + 1).font = font_header
-                ws.cell(row=current_row, column=colspan + 1).alignment = align_center
-                ws.cell(row=current_row, column=colspan + 1).border = border
+                ws.cell(row=current_row, column=colspan).value = details['amount']
+                ws.cell(row=current_row, column=colspan).font = font_header
+                ws.cell(row=current_row, column=colspan).alignment = align_center
+                ws.cell(row=current_row, column=colspan).border = border
                 current_row += 1
 
-            ws.append(["Tổng"] + [""] * (colspan - 1) + [doc.amount_total, ""])
+            ws.append(["Tổng"] + [""] * (colspan - 2) + [doc.amount_total, ""] + [""] * (len(headers) - 2))
             for col in range(1, colspan + 1):
-                ws.cell(row=current_row, column=col).value = "Tổng" if col == 1 else ""
                 ws.cell(row=current_row, column=col).font = font_header
                 ws.cell(row=current_row, column=col).alignment = align_left
                 ws.cell(row=current_row, column=col).fill = fill_summary
                 ws.cell(row=current_row, column=col).border = border
-            ws.cell(row=current_row, column=colspan + 1).value = doc.amount_total
-            ws.cell(row=current_row, column=colspan + 1).font = font_header
-            ws.cell(row=current_row, column=colspan + 1).alignment = align_center
-            ws.cell(row=current_row, column=colspan + 1).border = border
+            ws.cell(row=current_row, column=colspan).value = doc.amount_total
+            ws.cell(row=current_row, column=colspan).font = font_header
+            ws.cell(row=current_row, column=colspan).alignment = align_center
+            ws.cell(row=current_row, column=colspan).border = border
             current_row += 1
 
-            # Số tiền bằng chữ
+            # Amount in words
             ws.append(["Số tiền bằng chữ: " + (doc.number_to_text(doc.amount_total) or "")])
             ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=10)
             ws.cell(row=current_row, column=1).font = font_header
             ws.cell(row=current_row, column=1).alignment = align_center
             current_row += 1
 
-            # Điều kiện thương mại
+            # Commercial conditions
             ws.append([""] * 10)
             current_row += 1
             ws.cell(row=current_row, column=1).value = "Điều kiện thương mại:"
@@ -364,7 +370,7 @@ class ExportExcelWizard(models.TransientModel):
                 current_row += 1
                 line_num += 1
 
-            # Chữ ký
+            # Signatures
             ws.append([""] * 10)
             current_row += 1
             ws.cell(row=current_row, column=1).value = "Xác nhận của khách hàng\n(Ký tên, đóng dấu)"
@@ -382,17 +388,21 @@ class ExportExcelWizard(models.TransientModel):
             ws.cell(row=current_row, column=6).alignment = align_center
             current_row += 1
 
-            # Điều chỉnh độ rộng cột
+            # Adjust column widths
             column_widths = [10, 20, 15, 30, 15, 15, 15, 15, 15, 20]
-            for i, width in enumerate(column_widths, 1):
+            if doc.is_show_ma_sp:
+                column_widths[2] = 15
+            if doc.is_show_chi_phi_nhan_cong:
+                column_widths.insert(7, 15)
+            for i, width in enumerate(column_widths[:len(headers)], 1):
                 ws.column_dimensions[get_column_letter(i)].width = width
 
-        # Lưu file Excel
+        # Save Excel file
         output = BytesIO()
         wb.save(output)
         output.seek(0)
 
-        # Tạo tệp đính kèm
+        # Create attachment
         file_data = base64.b64encode(output.read())
         attachment = self.env['ir.attachment'].create({
             'name': f'sale_order_{doc.name}.xlsx',
