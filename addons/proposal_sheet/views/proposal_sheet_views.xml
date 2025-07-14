@@ -1,0 +1,81 @@
+<odoo>
+    <!-- FORM VIEW -->
+    <record id="view_proposal_sheet_form" model="ir.ui.view">
+        <field name="name">proposal.sheet.form</field>
+        <field name="model">proposal.sheet</field>
+        <field name="arch" type="xml">
+            <form string="Phiếu đề xuất vật tư / chi phí">
+                <field name="show_button_submit" invisible="1"/>
+                <field name="show_button_approve" invisible="1"/>
+                <field name="show_button_done" invisible="1"/>
+
+                <header>
+                    <button name="action_submit" type="object" string="Gửi duyệt" class="btn-primary" invisible="not show_button_submit"/>
+                    <button name="action_approve" type="object" string="Duyệt" class="btn-success" invisible="not show_button_approve"/>
+                    <button name="action_done" type="object" string="Hoàn tất" class="btn-secondary" invisible="not show_button_done"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,done"/>
+                </header>
+
+                <sheet>
+                    <group>
+                        <field name="name" invisible="1"/>
+                        <field name="task_id"/>
+                        <field name="requested_by" readonly="1"/>
+                        <field name="type"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Chi tiết vật tư" invisible="not type == 'material'">
+                            <field name="material_line_ids" invisible="not type == 'material'">
+                                <tree editable="bottom">
+                                    <field name="material_id" required="1"/>
+                                    <field name="quantity"/>
+                                    <field name="unit"/>
+                                    <field name="price_unit"/>
+                                    <field name="description"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Chi tiết chi phí" invisible="not type == 'expense'">
+                            <field name="expense_line_ids" invisible="not type == 'expense'">
+                                <tree editable="bottom">
+                                    <field name="expense_id" required="1"/>
+                                    <field name="quantity"/>
+                                    <field name="unit"/>
+                                    <field name="price_unit"/>
+                                    <field name="description"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- TREE VIEW -->
+    <record id="view_proposal_sheet_tree" model="ir.ui.view">
+        <field name="name">proposal.sheet.tree</field>
+        <field name="model">proposal.sheet</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="task_id"/>
+                <field name="create_date" string="Ngày tạo" readonly="1"/>
+                <field name="requested_by"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-primary="state == 'submitted'" decoration-success="state == 'approved'" decoration-muted="state == 'done'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ACTION -->
+    <record id="action_proposal_sheet" model="ir.actions.act_window">
+        <field name="name">Phiếu đề xuất</field>
+        <field name="res_model">proposal.sheet</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- MENU -->
+    <menuitem id="menu_proposal_sheet_root" name="Phiếu đề xuất" parent="project.menu_main_pm"/>
+    <menuitem id="menu_proposal_sheet" name="Quản lý phiếu đề xuất" parent="menu_proposal_sheet_root" action="action_proposal_sheet"/>
+</odoo>

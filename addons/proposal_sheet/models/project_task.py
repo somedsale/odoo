@@ -33,7 +33,7 @@ class ProjectTask(models.Model):
             task.material_lines_from_estimate = material_lines
 
     approved_material_lines = fields.One2many(
-        comodel_name='material.request.line',
+        comodel_name='proposal.material.line',
         compute='_compute_approved_material_lines',
         string='Vật tư đã duyệt',
         store=False,
@@ -41,7 +41,7 @@ class ProjectTask(models.Model):
 
     def _compute_approved_material_lines(self):
         for task in self:
-            task.approved_material_lines = self.env['material.request.line'].search([
+            task.approved_material_lines = self.env['proposal.material.line'].search([
                 ('request_id.task_id', '=', task.id),
                 ('request_id.state', '=', 'approved')
             ])

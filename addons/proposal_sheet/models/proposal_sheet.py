@@ -1,9 +1,9 @@
 from odoo import models, fields, api
 from odoo.exceptions import UserError
 
-class MaterialRequest(models.Model):
-    _name = 'material.request'
-    _description = 'Đề xuất vật tư'
+class ProposalSheet(models.Model):
+    _name = 'proposal.sheet'
+    _description = 'Phiếu đề xuất'
 
     name = fields.Char(string='Mã đề xuất', default='New', readonly=True)
     task_id = fields.Many2one('project.task', string='Nhiệm vụ', required=True)
@@ -14,12 +14,16 @@ class MaterialRequest(models.Model):
         ('approved', 'Đã duyệt'),
         ('done', 'Hoàn tất'),
     ], default='draft', string='Trạng thái')
-    line_ids = fields.One2many('material.request.line', 'request_id', string='Chi tiết vật tư')
+    type = fields.Selection([
+        ('material', 'Vật tư'),
+        ('expense', 'Chi phí')
+    ], required=True, default='material', string='Loại đề xuất')
+
 
     @api.model
     def create(self, vals):
         if vals.get('name', 'New') == 'New':
-            vals['name'] = self.env['ir.sequence'].next_by_code('material.request') or '/'
+            vals['name'] = self.env['ir.sequence'].next_by_code('proposal.sheet') or '/'
         return super().create(vals)
 
     def action_submit(self):
@@ -64,5 +68,16 @@ class MaterialRequest(models.Model):
     def _compute_show_button_done(self):
         for rec in self:
             rec.show_button_done = rec.state == 'approved'
-    
+    material_line_ids = fields.One2many(
+        'proposal.material.line', 'sheet_id',
+        string="Chi tiết vật tư",
+        domain=[('type', '=', 'material')]
+)
+    expense_line_ids = fields.One2many(
+        'proposal.expense.line', 'sheet_id',
+        string="Chi tiết chi phí",
+        domain=[('type', '=', 'expense')]
+    )
+
+        
     

@@ -5,7 +5,7 @@
         <field name="inherit_id" ref="project.view_task_form2"/>
         <field name="arch" type="xml">
             <xpath expr="//header" position="inside">
-                <button name="%(action_material_request)d" string="Tạo Đề xuất vật tư" context="{'default_task_id': active_id}" type="action" class="btn-primary"/>
+                <button name="%(proposal_sheet.action_proposal_sheet)d" string="Tạo Phiếu đề xuất" context="{'default_task_id': active_id}" type="action" class="btn-primary"/>
             </xpath>
         </field>
     </record>
