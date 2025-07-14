@@ -80,3 +80,27 @@ class SaleOrder(models.Model):
         final_result = " ".join(result).strip()
         final_result = final_result[0].upper() + final_result[1:] + " đồng"
         return final_result
+    def int_to_roman(seft,num):
+        if not isinstance(num, int) or num < 1:
+            return ""
+        val = [
+            (1000, "M"),
+            (900, "CM"),
+            (500, "D"),
+            (400, "CD"),
+            (100, "C"),
+            (90, "XC"),
+            (50, "L"),
+            (40, "XL"),
+            (10, "X"),
+            (9, "IX"),
+            (5, "V"),
+            (4, "IV"),
+            (1, "I")
+        ]
+        result = ""
+        for (arabic, roman) in val:
+            while num >= arabic:
+                result += roman
+                num -= arabic
+        return result
