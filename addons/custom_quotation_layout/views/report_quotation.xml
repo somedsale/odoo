@@ -94,15 +94,15 @@
                     <table class="table" style="font-family: &apos;Times New Roman&apos;, Times, serif !important; color:#000 !important;border-dark border-2;">
                         <tbody>
                             <tr class="table-bordered border-dark border-2" style="height:auto; ">
-                                <th style="width:90px !important;border-right: 1px solid black;">STT</th>
+                                <th style="width:50px !important;border-right: 1px solid black;">STT</th>
                                 <th style="width:150px !important;border-right: 1px solid black;">Sản phẩm</th>
                                 <t t-if="doc.is_show_ma_sp">
                                     <th style="width:100px !important;border-right: 1px solid black;">Mã SP</th>
                                 </t>
-                                <th style="width:400px !important;border-right: 1px solid black;">Thông số</th>
+                                <th style="width:380px !important;border-right: 1px solid black;">Thông số</th>
                                 <th style="width:100px !important;border-right: 1px solid black;">Xuất xứ</th>
-                                <th style="width:100px !important;border-right: 1px solid black;">Đơn vị</th>
-                                <th style="width:120px !important;border-right: 1px solid black;">Khối lượng</th>
+                                <th style="width:70px !important;border-right: 1px solid black;">Đơn vị</th>
+                                <th style="width:100px !important;border-right: 1px solid black;">Khối lượng</th>
                                 <t t-if="doc.is_show_chi_phi_nhan_cong">
                                     <th style="width:100px !important;border-right: 1px solid black;">Chi phí nhân công</th>
                                 </t>
@@ -111,7 +111,9 @@
                                 <th style="min-width:100px !important;border-right: 1px solid black;">Ghi chú</th>
                             </tr>
                             <t t-set="stt" t-value="0"/>
+                            <t t-set="sttLM" t-value="0"/>
                             <t t-foreach="doc.order_line" t-as="line">
+                                <t t-if="line.display_type != 'line_section'">
                                 <t t-set="stt" t-value="stt + 1"/>
                                 <tr class="table-bordered border-dark border-2; height:auto; ">
                                     <td class="text-center" style="border-left: 2px solid black;">
@@ -154,6 +156,26 @@
                                         <span t-field="line.x_note"/>
                                     </td>
                                 </tr>
+                                </t>
+                                <t t-else="">
+                                <t t-set="sttLM" t-value="sttLM + 1"/>
+                                
+                                    <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
+                                        <td>
+                                            <span t-esc="doc.int_to_roman(sttLM)"/>
+                                        </td>
+                                        <t t-if="doc.is_show_chi_phi_nhan_cong">
+                                            <td colspan="10" style="white-space:nowrap; text-align: center;vertical-align: middle;">
+                                                <span t-field="line.name"/>
+                                            </td>
+                                        </t>
+                                        <t t-else="">
+                                            <td colspan="9" style="white-space:nowrap; text-align: left;vertical-align: middle;">
+                                                <span t-field="line.name"/>
+                                            </td>
+                                        </t>
+                                    </tr>
+                                </t>
                             </t>
                             <t t-set="tax_details" t-value="{}"/>
                             <t t-foreach="doc.order_line" t-as="line">
@@ -164,11 +186,11 @@
                             </t>
                             <t t-if="doc.is_show_chi_phi_nhan_cong and doc.is_show_ma_sp">
                                 <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
-                                    <td colspan="9" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng chưa VAT</td><!-- <td></td> -->
+                                    <td colspan="9" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng chưa VAT</td><!-- <td  style="white-space:nowrap;"></td> -->
                                     <td>
                                         <span t-field="doc.amount_untaxed"/>
                                     </td>
-                                    <td></td>
+                                    <td  style="white-space:nowrap;"></td>
                                 </tr>
                                 <t t-foreach="tax_details.items()" t-as="item">
                                     <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
@@ -178,7 +200,7 @@
                                         <td style="white-space:nowrap;">
                                             <t t-esc="&apos;%s đ&apos; % &apos;{:,.0f}&apos;.format(item[1][&apos;amount&apos;])"/>
                                         </td>
-                                        <td></td>
+                                        <td  style="white-space:nowrap;"></td>
                                     </tr>
                                 </t> --&gt;
                                 <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
@@ -186,16 +208,16 @@
                                     <td>
                                         <span t-field="doc.amount_total"/>
                                     </td>
-                                    <td></td>
+                                    <td  style="white-space:nowrap;"></td>
                                 </tr>
                             </t>
                             <t t-elif="doc.is_show_chi_phi_nhan_cong or doc.is_show_ma_sp">
                                 <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
-                                    <td colspan="8" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng chưa VAT</td><!-- <td></td> -->
+                                    <td colspan="8" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng chưa VAT</td><!-- <td  style="white-space:nowrap;"></td> -->
                                     <td>
                                         <span t-field="doc.amount_untaxed"/>
                                     </td>
-                                    <td></td>
+                                    <td  style="white-space:nowrap;"></td>
                                 </tr>
                                 <t t-foreach="tax_details.items()" t-as="item">
                                     <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
@@ -205,7 +227,7 @@
                                         <td style="white-space:nowrap;">
                                             <t t-esc="&apos;%s đ&apos; % &apos;{:,.0f}&apos;.format(item[1][&apos;amount&apos;])"/>
                                         </td>
-                                        <td></td>
+                                        <td  style="white-space:nowrap;"></td>
                                     </tr>
                                 </t>
                                 <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
@@ -213,16 +235,16 @@
                                     <td>
                                         <span t-field="doc.amount_total"/>
                                     </td>
-                                    <td></td>
+                                    <td  style="white-space:nowrap;"></td>
                                 </tr>
                             </t>
                             <t t-else="">
                                 <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
-                                    <td colspan="7" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng chưa VAT</td><!-- <td></td> -->
+                                    <td colspan="7" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng chưa VAT</td><!-- <td  style="white-space:nowrap;"></td> -->
                                     <td>
                                         <span t-field="doc.amount_untaxed"/>
                                     </td>
-                                    <td></td>
+                                    <td  style="white-space:nowrap;"></td>
                                 </tr>
                                 <t t-foreach="tax_details.items()" t-as="item">
                                     <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
@@ -232,7 +254,7 @@
                                         <td style="white-space:nowrap;">
                                             <t t-esc="&apos;%s đ&apos; % &apos;{:,.0f}&apos;.format(item[1][&apos;amount&apos;])"/>
                                         </td>
-                                        <td></td>
+                                        <td  style="white-space:nowrap;"></td>
                                     </tr>
                                 </t>
                                 <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
@@ -240,7 +262,7 @@
                                     <td>
                                         <span t-field="doc.amount_total"/>
                                     </td>
-                                    <td></td>
+                                    <td  style="white-space:nowrap;"></td>
                                 </tr>
                             </t>
                         </tbody>
