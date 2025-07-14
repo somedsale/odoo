@@ -116,7 +116,7 @@
                                 <t t-if="line.display_type != 'line_section'">
                                 <t t-set="stt" t-value="stt + 1"/>
                                 <tr class="table-bordered border-dark border-2; height:auto; ">
-                                    <td class="text-center" style="border-left: 2px solid black; text-align: center;">
+                                    <td class="text-center" style="border-left: 2px solid black;">
                                         <span t-esc="stt"/>
                                     </td>
                                     <td>
@@ -161,7 +161,7 @@
                                 <t t-set="sttLM" t-value="sttLM + 1"/>
                                 
                                     <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
-                                        <td>
+                                        <td class="text-center" style="border-left: 2px solid black;">
                                             <span t-esc="doc.int_to_roman(sttLM)"/>
                                         </td>
                                         <t t-if="doc.is_show_chi_phi_nhan_cong">
