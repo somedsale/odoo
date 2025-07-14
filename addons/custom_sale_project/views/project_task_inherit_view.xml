@@ -1,0 +1,78 @@
+<!-- views/project_task_inherit_view.xml -->
+<odoo>
+    <record id="view_project_task_form_inherit_report" model="ir.ui.view">
+        <field name="name">project.task.form.inherit.report</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/notebook" position="inside">
+                <page string="Thi công">
+                    <group>
+                        <field name="quantity_uom"/>
+                        <field name="produced_quantity_uom" readonly="1"/>
+                        <field name="remaining_quantity_uom" readonly="1"/>
+                        <field name="completion_percent" readonly="1" widget="progressbar"/>
+                    </group>
+                    <field name="production_report_ids">
+                        <tree editable="bottom" delete="false">
+                            <field name="report_date"/>
+                            <field name="quantity_done" attrs="{&apos;readonly&apos;: [(&apos;quantity_done_readonly&apos;, &apos;=&apos;, True)]}"/>
+                            <field name="uom_id" readonly="1"/>
+                            <field name="note"/>
+                            <field name="propose"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+            <xpath expr="//page[@name=&apos;page_timesheets&apos;]" position="replace"/>
+            <xpath expr="//page[@name=&apos;task_dependencies&apos;]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//page[@name=&apos;extra_info&apos;]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_project_task_kanban_inherit_progress" model="ir.ui.view">
+        <field name="name">project.task.kanban.progress.bar</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name=&apos;user_ids&apos;]" position="before">
+                <field name="completion_percent"/>
+                <field name="quantity"/>
+                <field name="deadline_status"/>
+                <field name="date_deadline"/>
+            </xpath>
+            <xpath expr="//div[@class=&apos;oe_kanban_content&apos;]" position="inside">
+                <t t-if="record.date_deadline.raw_value">
+                    <t t-set="deadline_date" t-value="new Date(record.date_deadline.raw_value)"/>
+                    <t t-set="deadline_str" t-value="deadline_date.toLocaleString(&apos;vi-VN&apos;, { hour: &apos;2-digit&apos;, minute: &apos;2-digit&apos;, day: &apos;2-digit&apos;, month: &apos;2-digit&apos;, year: &apos;numeric&apos; })"/>
+                    <div t-if="record.deadline_status.raw_value == &apos;overdue&apos;" style="color: red; font-weight: bold; font-size: 12px;">
+        ⏰ Quá hạn (hạn: <t t-esc="deadline_str"/>)
+    </div>
+                    <div t-if="record.deadline_status.raw_value == &apos;upcoming&apos;" style="color: orange; font-size: 12px;">
+        ⚠️ Sắp hết hạn (hạn: <t t-esc="deadline_str"/>)
+    </div>
+                    <div t-if="record.deadline_status.raw_value == &apos;ontrack&apos;" style="color: green; font-size: 12px;">
+        ✅ Còn thời gian (hạn: <t t-esc="deadline_str"/>)
+    </div>
+                </t>
+                <t t-set="percent" t-value="record.completion_percent.raw_value"/>
+                <t t-set="color">
+                    <t t-if="percent &lt; 30">#f44336</t><!-- Đỏ -->
+                    <t t-elif="percent &lt;= 70">#ff9800</t><!-- Cam -->
+                    <t t-else="">#4caf50</t><!-- Xanh -->
+                </t>
+                <div class="oe_kanban_progressbar" style="margin-top: 8px;">
+                    <div style="width: 100%; height: 10px; background-color: #e0e0e0; border-radius: 5px; overflow: hidden;">
+                        <div t-att-style="&apos;width: &apos; + percent + &apos;%&apos; + &apos;; height: 100%; background-color: &apos; + color + &apos;; transition: width 0.3s;&apos;"/>
+                    </div>
+                    <div style="font-size: 11px; color: #555; margin-top: 2px;">
+                        <t t-esc="percent"/>%
+    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
