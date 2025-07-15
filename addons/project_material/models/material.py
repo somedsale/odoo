@@ -9,6 +9,7 @@ class ProjectMaterial(models.Model):
     description = fields.Text(string='Mô tả')
     unit = fields.Many2one('uom.uom', string='Đơn vị', required=True)
     category_id = fields.Many2one('material.category', string='Danh mục')
+    price_unit = fields.Float(string='Đơn giá', digits=(16, 0), default=0.0)
 
     @api.model
     def create(self, vals):

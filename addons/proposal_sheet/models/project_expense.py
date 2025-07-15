@@ -6,3 +6,4 @@ class ProjectExpense(models.Model):
 
     name = fields.Char(string='Tên chi phí', required=True)
     default_unit = fields.Many2one('uom.uom', string='Đơn vị mặc định')
+    price_unit = fields.Float(string='Đơn giá', digits='Product Price', default=0.0)

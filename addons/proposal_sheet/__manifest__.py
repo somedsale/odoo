@@ -3,7 +3,7 @@
     'version': '1.0',
     'category': 'Project',
     'summary': 'Quản lý phiếu đề xuất vật tư/chi phí từ nhiệm vụ',
-    'depends': ['project', 'product', 'project_material', 'cost_estimate'],
+    'depends': ['project', 'product', 'project_material', 'cost_estimate','uom', 'mail'],
     'data': [
         'security/ir.model.access.csv',
         'data/ir_sequence_data.xml',

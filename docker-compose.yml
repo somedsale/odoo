@@ -36,6 +36,7 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@example.com # ⚡ đổi thành email bạn muốn
       PGADMIN_DEFAULT_PASSWORD: admin123 # ⚡ đổi thành password bạn muốn
+      PGADMIN_CONFIG_SESSION_EXPIRATION_TIME: 604800
     ports:
       - "5050:80" # Truy cập pgadmin qua http://localhost:5050
     depends_on:

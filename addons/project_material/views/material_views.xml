@@ -8,6 +8,7 @@
                 <field name="code" readonly="1"/>
                 <field name="unit" widget="selection" options="{'no_create': True}" string="Đơn vị"/>
                 <field name="category_id"/>
+                <field name ="price_unit"/>
             </tree>
         </field>
     </record>
@@ -23,6 +24,7 @@
                         <field name="description"/>
                         <field name="unit" options="{'no_create': True}" string="Đơn vị"/>
                         <field name="category_id"/>
+                        <field name ="price_unit"/>
                     </group>
                 </sheet>
             </form>
