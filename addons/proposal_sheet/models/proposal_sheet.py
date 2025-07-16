@@ -11,6 +11,7 @@ class ProposalSheet(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
     name = fields.Char(string='Mã Đề Xuất', default='New', readonly=True, copy=False)
+    project_id = fields.Many2one('project.project', string='Dự án', required=True, tracking=True)
     task_id = fields.Many2one('project.task', string='Nhiệm Vụ', required=True, tracking=True)
     requested_by = fields.Many2one('res.users', string='Người Đề Xuất', default=lambda self: self.env.user, readonly=True, tracking=True)
     state = fields.Selection([
@@ -137,3 +138,34 @@ class ProposalSheet(models.Model):
                     node.getparent().remove(node)
             res['arch'] = etree.tostring(doc, encoding='unicode')
         return res
+    @api.model
+    def default_get(self, fields):
+        res = super().default_get(fields)
+        task_id = self.env.context.get('default_task_id')
+        if task_id:
+            task = self.env['project.task'].browse(task_id)
+            res['task_id'] = task.id
+            res['project_id'] = task.project_id.id
+        return res
+    
+    is_task_locked = fields.Boolean(compute='_compute_lock_fields')
+    is_project_locked = fields.Boolean(compute='_compute_lock_fields')
+
+    @api.depends_context('from_task')
+    def _compute_lock_fields(self):
+        for rec in self:
+            is_from_task = self.env.context.get('from_task')
+            rec.is_task_locked = is_from_task
+            rec.is_project_locked = is_from_task
+    @api.onchange('task_id')
+    def _onchange_task_id(self):
+        if self.task_id and not self.project_id:
+            self.project_id = self.task_id.project_id.id
+
+    @api.onchange('project_id')
+    def _onchange_project_id(self):
+        if not self.env.context.get('from_task'):
+            self.task_id = False
+        return {'domain': {'task_id': [('project_id', '=', self.project_id.id)]}}
+
+    

@@ -1,6 +1,8 @@
 # models/project_task.py
 
 from odoo import models, fields,api
+import logging
+_logger = logging.getLogger(__name__)
 
 class ProjectTask(models.Model):
     _inherit = 'project.task'
@@ -42,8 +44,8 @@ class ProjectTask(models.Model):
     def _compute_approved_material_lines(self):
         for task in self:
             task.approved_material_lines = self.env['proposal.material.line'].search([
-                ('request_id.task_id', '=', task.id),
-                ('request_id.state', '=', 'approved')
+                ('sheet_id.task_id', '=', task.id),
+                ('sheet_id.state', '=', 'approved')
             ])
 
 
