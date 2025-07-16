@@ -8,6 +8,11 @@ class ProjectConfig(models.Model):
         comodel_name='res.users',
         string='Default Project Manager',
     )
+    default_boss_id = fields.Many2one(
+        comodel_name='res.users',
+        string='Default Boss',  # Boss mặc định
+        required=True
+    )
 
     @api.constrains('id')
     def _check_one_record(self):
@@ -27,3 +32,7 @@ class ProjectConfig(models.Model):
             'target': 'current',
             'view_id': self.env.ref('custom_sale_project.project_config_view_form').id,
         }
+    @api.model
+    def get_default_boss(self):
+        config = self.search([], limit=1)
+        return config.default_boss_id.id if config else False

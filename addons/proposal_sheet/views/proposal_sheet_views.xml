@@ -6,16 +6,20 @@
         <field name="arch" type="xml">
             <form string="Phiếu Đề Xuất">
                 <field name="show_button_submit" invisible="1"/>
-                <field name="show_button_approve" invisible="1"/>
+                <field name="show_button_manager_approve" invisible="1"/>
+                <field name="show_button_boss_approve" invisible="1"/>
                 <field name="show_button_done" invisible="1"/>
+                <field name="show_button_reject" invisible="1"/>
                 <field name="is_type_readonly" invisible="1"/>
-                <field name="is_project_locked" invisible="1"/>
-                <field name="is_task_locked" invisible="1"/>
                 <header>
                     <button name="action_submit" type="object" string="Gửi Duyệt" class="btn-primary" invisible="show_button_submit == False"/>
-                    <button name="action_approve" type="object" string="Duyệt" class="btn-success" invisible="show_button_approve == False"/>
+                    <button name="action_manager_approve" type="object" string="Quản Lý Duyệt" class="btn-success" invisible="show_button_manager_approve == False"/>
+                    <button name="action_boss_approve" type="object" string="Sếp Duyệt" class="btn-success" invisible="show_button_boss_approve == False"/>
                     <button name="action_done" type="object" string="Hoàn Tất" class="btn-secondary" invisible="show_button_done == False"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,done"/>
+                    <button name="%(action_proposal_reject_wizard)d" type="action" string="Từ Chối" class="btn-danger" invisible="show_button_reject == False"/>
+                    <!-- <button name="action_reset_to_draft" type="object" string="Reset về Nháp" class="btn-secondary" attrs="{'invisible': [('state','!=','rejected')]}"/> -->
+
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,waiting_boss,approved,done,rejected"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -25,8 +29,8 @@
                     </div>
                     <group>
                         <group>
-                            <field name="project_id" options="{'no_create': True}" readonly="is_project_locked"/>
-                            <field name="task_id" options="{'no_create': True}" readonly="is_task_locked"/>
+                            <field name="project_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False)" force_save="context.get('from_task', False)"/>
+                            <field name="task_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False)" force_save="context.get('from_task', False)" domain="[('project_id', '=', project_id)]"/>
                             <field name="requested_by" readonly="1"/>
                         </group>
                         <group>
