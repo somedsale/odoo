@@ -29,9 +29,9 @@
                     </div>
                     <group>
                         <group>
-                            <field name="project_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False)" force_save="context.get('from_task', False)"/>
-                            <field name="task_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False)" force_save="context.get('from_task', False)" domain="[('project_id', '=', project_id)]"/>
-                            <field name="requested_by" readonly="1"/>
+                            <field name="project_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft' " force_save="context.get('from_task', False)"/>
+                            <field name="task_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft'" force_save="context.get('from_task', False)" domain="[('project_id', '=', project_id)]"/>
+                            <field name="requested_by" readonly="1" options="{'no_open':True}"/>
                         </group>
                         <group>
                             <field name="type" widget="radio" readonly="is_type_readonly"/>
@@ -40,7 +40,7 @@
                     </group>
                     <notebook>
                         <page string="Chi Tiết Vật Tư" invisible="type != 'material'">
-                            <field name="material_line_ids" context="{'default_type': 'material'}">
+                            <field name="material_line_ids" context="{'default_type': 'material'}" readonly="state !='draft'">
                                 <tree editable="bottom">
                                     <field name="material_id" required="1" />
                                     <field name="quantity" required="1"/>
@@ -51,7 +51,7 @@
                             </field>
                         </page>
                         <page string="Chi Tiết Chi Phí" invisible="type != 'expense'">
-                            <field name="expense_line_ids" context="{'default_type': 'expense'}">
+                            <field name="expense_line_ids" context="{'default_type': 'expense'}" readonly="state !='draft'">
                                 <tree editable="bottom">
                                     <field name="expense_id" required="1" />
                                     <field name="quantity" required="1"/>

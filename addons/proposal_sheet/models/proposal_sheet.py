@@ -74,6 +74,11 @@ class ProposalSheet(models.Model):
                 "Không thể thay đổi loại đề xuất khi đã có dòng vật tư hoặc chi phí."
             )
         return super().write(vals)
+    def unlink(self):
+        for rec in self:
+            if rec.state != 'draft':
+                raise UserError("Không thể xóa khi phiếu không ở trạng thái Nháp.")
+        return super().unlink()
 
     @api.constrains('material_line_ids', 'expense_line_ids', 'type')
     def _check_lines(self):
