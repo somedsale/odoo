@@ -17,6 +17,7 @@
                     <button name="action_boss_approve" type="object" string="Sếp Duyệt" class="btn-success" invisible="show_button_boss_approve == False"/>
                     <button name="action_done" type="object" string="Hoàn Tất" class="btn-secondary" invisible="show_button_done == False"/>
                     <button name="%(action_proposal_reject_wizard)d" type="action" string="Từ Chối" class="btn-danger" invisible="show_button_reject == False"/>
+                    <button name="action_load_from_estimate" type="object" string="Lấy từ Dự toán" invisible="state !='draft'"/>
                     <!-- <button name="action_reset_to_draft" type="object" string="Reset về Nháp" class="btn-secondary" attrs="{'invisible': [('state','!=','rejected')]}"/> -->
 
                     <field name="state" widget="statusbar" statusbar_visible="draft,submitted,waiting_boss,approved,done,rejected"/>

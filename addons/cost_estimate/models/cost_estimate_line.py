@@ -8,7 +8,7 @@ class CostEstimateLine(models.Model):
     _description = 'Chi tiết dự toán'
 
     cost_estimate_id = fields.Many2one('cost.estimate', string='Dự toán', ondelete='cascade', required=True)
-    product_id = fields.Many2one('product.product', string='Sản phẩm', ondelete='restrict', required=True)
+    product_id = fields.Many2one('product.template', string='Sản phẩm', ondelete='restrict', required=True)
     quantity = fields.Float('Số lượng', default=1.0, required=True)
     unit = fields.Many2one('uom.uom', string='Đơn vị')
     price_subtotal = fields.Float(
@@ -47,6 +47,3 @@ class CostEstimateLine(models.Model):
         else:
             self.unit = False
     task_id = fields.Many2one('project.task', string='Nhiệm vụ')
-
-
-

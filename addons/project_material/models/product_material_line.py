@@ -6,7 +6,7 @@ class ProductMaterialLine(models.Model):
     _name = 'product.material.line'
     _description = 'Product Material Line'
 
-    product_id = fields.Many2one('product.product', string='Sản phẩm', ondelete='restrict')
+    product_id = fields.Many2one('product.template', string='Sản phẩm', ondelete='restrict')
     material_id = fields.Many2one('project.material', string='Vật tư', required=True)
     quantity = fields.Float(string='Số lượng', default=1.0)
     unit = fields.Many2one('uom.uom', string='Đơn vị', required=True)

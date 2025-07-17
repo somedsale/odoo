@@ -68,12 +68,14 @@ class ProposalSheet(models.Model):
         return super().create(vals)
 
     def write(self, vals):
-        _logger.info("Writing ProposalSheet with vals: %s", vals)
-        if 'type' in vals and (self.material_line_ids or self.expense_line_ids):
-            raise ValidationError(
-                "Không thể thay đổi loại đề xuất khi đã có dòng vật tư hoặc chi phí."
-            )
-        return super().write(vals)
+        for rec in self:
+            # Chỉ kiểm tra nếu trong vals có type VÀ nó khác type hiện tại
+            if 'type' in vals and vals['type'] != rec.type:
+                if rec.material_line_ids or rec.expense_line_ids:
+                    raise ValidationError(
+                        "Không thể thay đổi loại đề xuất khi đã có dòng vật tư hoặc chi phí."
+                    )
+        return super(ProposalSheet, self).write(vals)
     def unlink(self):
         for rec in self:
             if rec.state != 'draft':
@@ -82,11 +84,9 @@ class ProposalSheet(models.Model):
 
     @api.constrains('material_line_ids', 'expense_line_ids', 'type')
     def _check_lines(self):
+        if self.env.context.get('skip_check_lines'):
+            return
         for rec in self:
-            if rec.type == 'material' and not rec.material_line_ids:
-                raise ValidationError("Phiếu đề xuất vật tư phải có ít nhất một dòng vật tư.")
-            if rec.type == 'expense' and not rec.expense_line_ids:
-                raise ValidationError("Phiếu đề xuất chi phí phải có ít nhất một dòng chi phí.")
             for line in rec.material_line_ids:
                 if line.type != 'material':
                     raise ValidationError("Dòng vật tư có loại không hợp lệ.")
@@ -102,6 +102,12 @@ class ProposalSheet(models.Model):
         self.message_post(body='Phiếu đề xuất đã được gửi duyệt.')
 
     def action_submit(self):
+        self.ensure_one()
+    # Kiểm tra bắt buộc có dòng trước khi submit
+        if self.type == 'material' and not self.material_line_ids:
+            raise ValidationError("Phiếu đề xuất vật tư phải có ít nhất một dòng vật tư trước khi gửi duyệt.")
+        if self.type == 'expense' and not self.expense_line_ids:
+            raise ValidationError("Phiếu đề xuất chi phí phải có ít nhất một dòng chi phí trước khi gửi duyệt.")        
         if self.state != 'draft':
             raise UserError("Chỉ phiếu ở trạng thái nháp mới được gửi duyệt.")
         self.state = 'submitted'
@@ -198,3 +204,40 @@ class ProposalSheet(models.Model):
         default=lambda self: self.env['project.config'].get_default_boss() if self.env['project.config'].search([]) else False,
         readonly=True
     )
+    # estimate_line_id = fields.Many2one('cost.estimate.line', string='Nguồn từ dự toán')
+    def action_load_from_estimate(self):
+        self.ensure_one()
+
+        if not self.task_id:
+            raise ValidationError("Vui lòng chọn Nhiệm vụ trước khi tải vật tư.")
+
+        # Lấy tất cả dòng dự toán theo task
+        estimate_lines = self.env['cost.estimate.line'].search([('task_id', '=', self.task_id.id)])
+        if not estimate_lines:
+            raise ValidationError("Không tìm thấy dòng dự toán nào cho Nhiệm vụ này.")
+
+        material_lines = []
+
+        for line in estimate_lines:
+            if not line.material_line_ids:
+                continue  # bỏ qua nếu dòng dự toán này không có chi tiết vật tư
+
+            for material_line in line.material_line_ids:
+                material_lines.append((0, 0, {
+                    'material_id': material_line.material_id.id,
+                    'quantity': material_line.quantity,
+                    'unit': material_line.unit.id,
+                    'price_unit': material_line.price_unit or 0.0,
+                    'description': f"Từ dự toán: {material_line.material_id.display_name}",
+                }))
+
+        if not material_lines:
+            raise ValidationError("Không tìm thấy chi tiết vật tư nào trong dự toán cho Nhiệm vụ này.")
+
+        # Gán vào phiếu đề xuất
+        self.material_line_ids = [(5, 0, 0)] + material_lines
+        self.expense_line_ids = [(5, 0, 0)]
+        self.type = 'material'
+
+
+
