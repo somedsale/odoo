@@ -208,36 +208,69 @@ class ProposalSheet(models.Model):
     def action_load_from_estimate(self):
         self.ensure_one()
 
-        if not self.task_id:
-            raise ValidationError("Vui lòng chọn Nhiệm vụ trước khi tải vật tư.")
+        if not self.type:
+            raise ValidationError("Vui lòng chọn Loại đề xuất trước khi tải dữ liệu.")
 
-        # Lấy tất cả dòng dự toán theo task
-        estimate_lines = self.env['cost.estimate.line'].search([('task_id', '=', self.task_id.id)])
-        if not estimate_lines:
-            raise ValidationError("Không tìm thấy dòng dự toán nào cho Nhiệm vụ này.")
+        # Xóa dữ liệu cũ trước khi load
+        self.material_line_ids = [(5, 0, 0)]
+        self.expense_line_ids = [(5, 0, 0)]
 
         material_lines = []
+        expense_lines = []
 
-        for line in estimate_lines:
-            if not line.material_line_ids:
-                continue  # bỏ qua nếu dòng dự toán này không có chi tiết vật tư
+        if self.type == 'material':
+            if not self.task_id:
+                raise ValidationError("Phiếu loại Vật tư bắt buộc phải chọn Nhiệm vụ.")
 
-            for material_line in line.material_line_ids:
-                material_lines.append((0, 0, {
-                    'material_id': material_line.material_id.id,
-                    'quantity': material_line.quantity,
-                    'unit': material_line.unit.id,
-                    'price_unit': material_line.price_unit or 0.0,
-                    'description': f"Từ dự toán: {material_line.material_id.display_name}",
+            # Lấy tất cả dòng dự toán của task cho vật tư
+            estimate_lines = self.env['cost.estimate.line'].search([
+                ('task_id', '=', self.task_id.id),
+                ('product_id.detailed_type', 'in', ['consu', 'product'])
+            ])
+            if not estimate_lines:
+                raise ValidationError("Không tìm thấy vật tư nào trong dự toán cho Nhiệm vụ này.")
+
+            for line in estimate_lines:
+                for material_line in line.material_line_ids:
+                    material_lines.append((0, 0, {
+                        'material_id': material_line.material_id.id,
+                        'quantity': material_line.quantity,
+                        'unit': material_line.unit.id,
+                        'price_unit': material_line.price_unit or 0.0,
+                        'description': f"Từ dự toán: {material_line.material_id.display_name}",
+                    }))
+
+            if not material_lines:
+                raise ValidationError("Không tìm thấy chi tiết vật tư nào trong dự toán cho Nhiệm vụ này.")
+            self.material_line_ids = material_lines
+
+        elif self.type == 'expense':
+    # Lấy tất cả chi phí (service) theo dự án
+            estimate_lines = self.env['cost.estimate.line'].search([
+                ('cost_estimate_id.project_id', '=', self.project_id.id),
+                ('product_id.detailed_type', '=', 'service')
+            ])
+            if not estimate_lines:
+                raise ValidationError("Không tìm thấy chi phí nào trong dự toán của Dự án này.")
+
+            for line in estimate_lines:
+                expense = self.env['project.expense'].search([('name', '=', line.product_id.display_name)], limit=1)
+                if not expense:
+                    expense = self.env['project.expense'].create({
+                        'name': line.product_id.display_name,
+                        'default_unit': line.product_id.uom_id.id,
+                        'price_unit': line.price_subtotal or 0.0
+                    })
+
+                expense_lines.append((0, 0, {
+                    'expense_id': expense.id,
+                    'quantity': 1.0,
+                    'unit': expense.default_unit.id,
+                    'price_unit': line.price_subtotal or 0.0,
+                    'description': f"Từ dự toán: {line.product_id.display_name}",
                 }))
 
-        if not material_lines:
-            raise ValidationError("Không tìm thấy chi tiết vật tư nào trong dự toán cho Nhiệm vụ này.")
-
-        # Gán vào phiếu đề xuất
-        self.material_line_ids = [(5, 0, 0)] + material_lines
-        self.expense_line_ids = [(5, 0, 0)]
-        self.type = 'material'
+            self.expense_line_ids = expense_lines
 
 
 

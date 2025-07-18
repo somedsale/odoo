@@ -29,13 +29,8 @@
                     </group>
                     <notebook>
                         <page string="Chi tiết dòng dự toán">
-                            <field name="line_ids" editable="bottom" options="{'no_open': True}">
-                                <tree>
-                                    <field name="product_id" required="1"/>
-                                    <field name="quantity" required="1"/>
-                                    <field name="unit" required="1"/>
-                                    <field name="price_subtotal" readonly="1"/>
-                                </tree>
+                            <field name="line_ids" editable="bottom" context="{'default_cost_estimate_id': active_id}" options="{'no_open': True}">
+                                <tree view_id="view_cost_estimate_line_tree"/>
                             </field>
                         </page>
                     </notebook>
@@ -49,15 +44,15 @@
         <field name="name">cost.estimate.line.tree</field>
         <field name="model">cost.estimate.line</field>
         <field name="arch" type="xml">
-            <tree >
+            <tree>
                 <field name="product_id" required="1"/>
                 <field name="quantity" required="1"/>
                 <field name="unit" required="1"/>
+                <field name="price_unit" readonly="1"/>
                 <field name="price_subtotal" readonly="1"/>
             </tree>
         </field>
     </record>
-
     <!-- FORM VIEW COST ESTIMATE LINE -->
     <record id="view_cost_estimate_line_form" model="ir.ui.view">
         <field name="name">cost.estimate.line.form</field>
@@ -67,16 +62,39 @@
                 <sheet>
                     <group>
                         <field name="is_from_sale_order" invisible="1"/>
+                        <field name="product_type" invisible="1"/>
                         <field name="product_id" readonly="is_from_sale_order"/>
                         <field name="quantity" readonly="is_from_sale_order"/>
                         <field name="unit" readonly="is_from_sale_order"/>
+                        <field name="price_unit" />
                         <field name="price_subtotal" readonly="1"/>
                     </group>
                     <notebook>
-                        <page string="Dòng vật tư">
+                        <page string="Dòng vật tư" invisible="product_type == 'service'">
                             <field name="material_line_ids" context="{'default_estimate_line_id': active_id}" mode="tree,form">
                                 <tree editable="bottom" view_id="project_material.view_product_material_line_tree"/>
                                 <form view_id="project_material.view_product_material_line_form"/>
+                            </field>
+                        </page>
+
+                        <page string="Chi phí khác" invisible="product_type != 'service'">
+                            <field name="expense_line_ids" context="{'default_estimate_line_id': active_id}" mode="tree,form">
+                                <tree editable="bottom">
+                                    <field name="expense_id" options="{'no_create': False}"/>
+                                    <field name="quantity"/>
+                                    <field name="unit"/>
+                                    <field name="price_unit"/>
+                                    <field name="price_total" readonly="1"/>
+                                </tree>
+                                <form>
+                                    <group>
+                                        <field name="expense_id" options="{'no_create': False}"/>
+                                        <field name="quantity"/>
+                                        <field name="unit"/>
+                                        <field name="price_unit"/>
+                                        <field name="price_total" readonly="1"/>
+                                    </group>
+                                </form>
                             </field>
                         </page>
                     </notebook>
