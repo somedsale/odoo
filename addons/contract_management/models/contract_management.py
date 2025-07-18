@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
 from odoo.exceptions import UserError
+import logging
+
+_logger = logging.getLogger(__name__)
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
@@ -28,22 +31,22 @@ class ContractManagement(models.Model):
     _description = 'Contract Management'
     _inherit = ['mail.thread', 'mail.activity.mixin']  # Enable chatter for tracking
 
-    name = fields.Char(string='Contract Name', required=True)
-    sale_order_id = fields.Many2one('sale.order', string='Sale Order', required=True)
-    partner_id = fields.Many2one('res.partner', string='Customer', required=True)
+    name = fields.Char(string='Tên hợp đồng', required=True)
+    sale_order_id = fields.Many2one('sale.order', string='Đơn hàng', required=True)
+    partner_id = fields.Many2one('res.partner', string='Khách hàng', required=True)
     stage = fields.Selection([
         ('negotiating', 'Đang thương thảo hợp đồng'),
         ('preparing', 'Chuẩn bị thực hiện'),
         ('executing', 'Đang thực hiện'),
         ('completed', 'Hoàn thành'),
         ('canceled', 'Đã hủy'),
-    ], string='Stage', default='negotiating', required=True, tracking=True)
-    project_id = fields.Many2one('project.project', string='Project', readonly=True)
-    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company)
-    planned_start_date = fields.Date(string='Planned Start Date', tracking=True)
-    planned_end_date = fields.Date(string='Planned End Date', tracking=True)
-    description = fields.Text(string='Description', tracking=True)
-    attachment_ids = fields.Many2many('ir.attachment', string='Attachments', tracking=True)
+    ], string='Giai đoạn', default='negotiating', required=True, tracking=True)
+    project_id = fields.Many2one('project.project', string='Dự án', readonly=True)
+    company_id = fields.Many2one('res.company', string='Công ty', default=lambda self: self.env.company)
+    planned_start_date = fields.Date(string='Ngày bắt dầu', tracking=True)
+    planned_end_date = fields.Date(string='Ngày kết thúc', tracking=True)
+    description = fields.Text(string='Mô tả', tracking=True)
+    attachment_ids = fields.Many2many('ir.attachment', string='Tài liệu', tracking=True)
 
     @api.model
     def _get_next_stage(self, current_stage):
@@ -81,6 +84,7 @@ class ContractManagement(models.Model):
                         'partner_id': contract.partner_id.id,
                         'company_id': contract.company_id.id,
                         'allow_timesheets': False,  # Optional: Disable timesheets if not needed
+                        'allow_billable': True,  # Optional: Disable billing if not needed
                         'type_ids': [(6, 0, task_stages.ids)],  # Assign task stages to project
                         'date_start': contract.planned_start_date,  # Sync planned start date
                         'date': contract.planned_end_date,  # Sync planned end date
@@ -89,6 +93,9 @@ class ContractManagement(models.Model):
                     config = self.env['project.config'].search([], limit=1)
                     if config and config.default_project_manager_id:
                         project_vals['user_id'] = config.default_project_manager_id.id
+                        _logger.info(f"Using Default Project Manager: {config.default_project_manager_id.name}")
+                    else:
+                        _logger.info("No Project Manager assigned")
                     
                     # Tạo dự án
                     project = self.env['project.project'].create(project_vals)

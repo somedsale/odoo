@@ -8,6 +8,7 @@
         'views/project_task_inherit_view.xml',
         'views/task_production_report_views.xml',
         'views/task_production_message_template.xml', 
+        'views/project_project_view.xml',
     ],
     'installable': True,
     'auto_install': False,

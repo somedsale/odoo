@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo><!-- Inherit Project Form View -->
+    <record id="view_project_form_inherit" model="ir.ui.view">
+        <field name="name">project.project.form.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="completion_percent" widget="progressbar" readonly="1" string="Tiến độ (%)"/>
+            </field>
+            <field name="partner_id" position="attributes">
+                <attribute name="invisible">0</attribute><!-- Ensure it is not hidden -->
+            </field>
+        </field>
+    </record>
+</odoo>

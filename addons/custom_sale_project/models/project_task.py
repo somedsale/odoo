@@ -4,7 +4,7 @@ from datetime import date, timedelta, datetime
 from odoo.exceptions import UserError
 
 class ProjectTask(models.Model):
-    _inherit = 'project.task'
+    _inherit = ['project.task']
     name = fields.Char(string='Nhiệm vụ', required=True)
     quantity = fields.Float(string='Quantity', default=0.0)
     uom_id = fields.Many2one('uom.uom', string='Unit of Measure')
@@ -22,12 +22,12 @@ class ProjectTask(models.Model):
     remaining_quantity_uom= fields.Char(
         string='Sản lượng còn lại', compute='_compute_produced_quantity', store=True, readonly=True)
     completion_percent = fields.Float(
-        string='Tiến độ (%)', compute='_compute_produced_quantity', store=True)
+        string='Tiến độ (%)', compute='_compute_produced_quantity', store=True, digits=(16, 2), default=0.0, tracking=True)
     deadline_status = fields.Selection([
         ('overdue', 'Quá hạn'),
         ('upcoming', 'Sắp hết hạn'),
         ('ontrack', 'Còn thời gian')
-    ], string="Trạng thái Deadline", compute="_compute_deadline_status", store=True)
+    ], string="Trạng thái Deadline", compute="_compute_deadline_status", store=True, tracking=True)
 
     @api.depends('quantity', 'uom_id')
     def _compute_quantity_uom(self):
