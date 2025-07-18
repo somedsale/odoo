@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo><!-- Contract Form View -->
+    <record id="view_contract_management_form" model="ir.ui.view">
+        <field name="name">contract.management.form</field>
+        <field name="model">contract.management</field>
+        <field name="arch" type="xml">
+            <form string="Contract">
+                <header>
+                    <button name="action_next_stage" string="Chuyển giai đoạn" type="object" class="btn-primary" invisible="stage in (&apos;completed&apos;, &apos;canceled&apos;)"/>
+                    <button name="action_cancel" string="Hủy hợp đồng" type="object" class="btn-danger" invisible="stage in (&apos;completed&apos;, &apos;canceled&apos;)"/>
+                    <field name="stage" widget="statusbar" decoration-info="stage == &apos;negotiating&apos;" decoration-warning="stage == &apos;preparing&apos;" decoration-primary="stage == &apos;executing&apos;" decoration-success="stage == &apos;completed&apos;" statusbar_visible="negotiating,preparing,executing,completed,canceled"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h2>
+                            <field name="name"/>
+                        </h2>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="sale_order_id" options="{&apos;no_create&apos;: True}" readonly="1"/>
+                            <field name="partner_id" options="{&apos;no_create&apos;: True}" readonly="1"/>
+                            <field name="project_id" readonly="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="planned_start_date"/>
+                            <field name="planned_end_date"/>
+                            <field name="description" placeholder="Enter contract description..."/>
+                            <field name="attachment_ids" widget="many2many_binary" string="Attachments"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record><!-- Contract Tree View -->
+    <record id="view_contract_management_tree" model="ir.ui.view">
+        <field name="name">contract.management.tree</field>
+        <field name="model">contract.management</field>
+        <field name="arch" type="xml">
+            <tree string="Contracts">
+                <field name="name"/>
+                <field name="sale_order_id"/>
+                <field name="partner_id"/>
+                <field name="project_id"/>
+                <field name="stage" widget="badge" decoration-info="stage == &apos;negotiating&apos;" decoration-warning="stage == &apos;preparing&apos;" decoration-primary="stage == &apos;executing&apos;" decoration-success="stage == &apos;completed&apos;"/>
+            </tree>
+        </field>
+    </record><!-- Action for Contract Menu -->
+    <record id="action_contract_management" model="ir.actions.act_window">
+        <field name="name">Hợp đồng</field>
+        <field name="res_model">contract.management</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">Click to create a new contract.</p>
+        </field>
+    </record><!-- Menu Item -->
+    <menuitem id="menu_contract_management_root" name="Hợp đồng" sequence="10" parent="sale.sale_menu_root"/>
+    <menuitem id="menu_contract_management" name="Hợp đồng" action="action_contract_management" parent="menu_contract_management_root" sequence="10"/>
+</odoo>

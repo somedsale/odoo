@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Task Stages -->
+    <record id="task_type_new_order" model="project.task.type">
+        <field name="name">Đơn đặt hàng mới</field>
+        <field name="sequence">1</field>
+    </record>
+    <record id="task_type_purchase" model="project.task.type">
+        <field name="name">Mua Hàng</field>
+        <field name="sequence">2</field>
+    </record>
+    <record id="task_type_production" model="project.task.type">
+        <field name="name">Sản xuất</field>
+        <field name="sequence">3</field>
+    </record>
+    <record id="task_type_delivery" model="project.task.type">
+        <field name="name">Giao hàng</field>
+        <field name="sequence">4</field>
+    </record>
+    <record id="task_type_installation" model="project.task.type">
+        <field name="name">Lắp đặt</field>
+        <field name="sequence">5</field>
+    </record>
+    <record id="task_type_acceptance" model="project.task.type">
+        <field name="name">Nghiệm thu</field>
+        <field name="sequence">6</field>
+    </record>
+    <record id="task_type_completed" model="project.task.type">
+        <field name="name">Hoàn thành</field>
+        <field name="sequence">7</field>
+    </record>
+
+    <!-- Project Stages -->
+    <record id="project_stage_completed" model="project.project.stage">
+        <field name="name">Hoàn tất</field>
+        <field name="sequence">10</field>
+        <field name="fold">True</field> <!-- Mark as closed stage -->
+    </record>
+    <record id="project_stage_canceled" model="project.project.stage">
+        <field name="name">Đã hủy</field>
+        <field name="sequence">11</field>
+        <field name="fold">True</field> <!-- Mark as closed stage -->
+    </record>
+</odoo>
