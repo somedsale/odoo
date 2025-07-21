@@ -31,6 +31,9 @@
             <xpath expr="//page[@name=&apos;extra_info&apos;]" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
+            <field name="date_deadline" position="after">
+                <field name="deadline_status" readonly="1" widget="badge" decoration-danger="deadline_status == &apos;overdue&apos;" decoration-warning="deadline_status == &apos;upcoming&apos;" decoration-success="deadline_status == &apos;ontrack&apos;"/>
+            </field>
         </field>
     </record>
     <record id="view_project_task_kanban_inherit_progress" model="ir.ui.view">

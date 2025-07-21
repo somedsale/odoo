@@ -3,11 +3,12 @@ from odoo.exceptions import ValidationError
 from datetime import date
 
 class TaskProductionReport(models.Model):
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _name = 'task.production.report'
     _description = 'Task Daily Production Report'
     _order = 'report_date desc'
-    note = fields.Text(string='Khó khăn - vướng mắc')
-    propose = fields.Text(string='Đề xuất')
+    note = fields.Text(string='Khó khăn - vướng mắc', tracking=True)
+    propose = fields.Text(string='Đề xuất', tracking=True)
     uom_id = fields.Many2one('uom.uom', string='Đơn vị tính',related='task_id.uom_id', required=True)
     task_id = fields.Many2one(
         'project.task', 
@@ -60,6 +61,7 @@ class TaskProductionReport(models.Model):
         res = super().write(vals)
         for rec in self:
             rec._validate_quantity_limit()
+            rec._notify_project_manager()
         return res
 
     # Luôn chặn xoá
@@ -104,12 +106,10 @@ class TaskProductionReport(models.Model):
             if manager and manager.partner_id:
                 task.message_subscribe(partner_ids=[manager.partner_id.id])
                 message_body = f"""
-                    📌 Báo cáo sản lượng mới
-
-                    Dự án: {project.name}
-                    Người thực hiện: {user_id.name}
-                    Nhiệm vụ: {task.name}
-                    Ngày: {rec.report_date}
+                    📌 Báo cáo sản lượng mới\nDự án: {project.name}\n
+                    Người thực hiện: {user_id.name}\n
+                    Nhiệm vụ: {task.name}\n
+                    Ngày: {rec.report_date}\n
                     Đạt: {rec.quantity_done} / {task.quantity}
                 """
                 task.message_post(
