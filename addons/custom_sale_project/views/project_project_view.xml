@@ -12,5 +12,34 @@
                 <attribute name="invisible">0</attribute><!-- Ensure it is not hidden -->
             </field>
         </field>
+    </record><!-- Inherit Project Kanban View -->
+    <record id="view_project_kanban_inherit" model="ir.ui.view">
+        <field name="name">project.project.kanban.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@class=&apos;o_kanban_card_content mw-100&apos;]" position="inside">
+                <field name="completion_percent" invisible="1"/>
+                <field name="deadline_status" widget="badge" options="{&apos;decoration&apos;: {&apos;overdue&apos;: &apos;danger&apos;, &apos;upcoming&apos;: &apos;warning&apos;, &apos;ontrack&apos;: &apos;success&apos;}}"
+                    decoration-success="deadline_status == &apos;ontrack&apos;"
+                    decoration-warning="deadline_status == &apos;upcoming&apos;"
+                    decoration-danger="deadline_status == &apos;overdue&apos;"
+                />
+                <t t-set="percent" t-value="record.completion_percent.raw_value or record.completion_percent.value"/>
+                <t t-set="color">
+                    <t t-if="percent &lt; 30">#f44336</t><!-- Đỏ -->
+                    <t t-elif="percent &lt;= 70">#ff9800</t><!-- Cam -->
+                    <t t-else="">#4caf50</t><!-- Xanh -->
+                </t>
+                <div class="oe_kanban_progressbar" style="margin-top: 8px;">
+                    <div style="width: 80%; height: 10px; background-color: #e0e0e0; border-radius: 5px; overflow: hidden;">
+                        <div t-att-style="&apos;width: &apos; + percent + &apos;%&apos; + &apos;; height: 100%; background-color: &apos; + color + &apos;; transition: width 0.3s;&apos;"/>
+                    </div>
+                    <div style="font-size: 11px; color: #555; margin-top: 2px;">
+                        <t t-esc="percent"/>%
+    </div>
+                </div>
+            </xpath>
+        </field>
     </record>
 </odoo>
