@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_proposal_sheet_all,access_proposal_sheet_all,model_proposal_sheet,,1,1,1,1
+access_proposal_material_line_all,access_proposal_material_line_all,model_proposal_material_line,,1,1,1,1
+access_proposal_expense_line_all,access_proposal_expense_line_all,model_proposal_expense_line,,1,1,1,1
+
+access_proposal_sheet_employee,Proposal Sheet Employee,model_proposal_sheet,proposal_sheet.group_proposal_employee,1,1,1,0
+access_proposal_sheet_manager,Proposal Sheet Manager,model_proposal_sheet,proposal_sheet.group_proposal_manager,1,1,1,1
+access_proposal_sheet_boss,Proposal Sheet Boss,model_proposal_sheet,proposal_sheet.group_proposal_boss,1,1,1,1
+access_proposal_reject_wizard_all,access_proposal_reject_wizard_all,model_proposal_reject_wizard,,1,1,1,1

@@ -1,0 +1,25 @@
+<odoo>
+    <!-- Tạo category riêng -->
+    <record id="module_category_proposal" model="ir.module.category">
+        <field name="name">Proposal Management</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <!-- Group Nhân viên -->
+    <record id="group_proposal_employee" model="res.groups">
+        <field name="name">Proposal Employee</field>
+        <field name="category_id" ref="module_category_proposal"/>
+    </record>
+
+    <!-- Group Manager -->
+    <record id="group_proposal_manager" model="res.groups">
+        <field name="name">Proposal Manager</field>
+        <field name="category_id" ref="module_category_proposal"/>
+    </record>
+
+    <!-- Group Boss -->
+    <record id="group_proposal_boss" model="res.groups">
+        <field name="name">Proposal Boss</field>
+        <field name="category_id" ref="module_category_proposal"/>
+    </record>
+</odoo>

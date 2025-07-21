@@ -1,0 +1,12 @@
+<odoo>
+    <record id="view_task_form_inherit_material" model="ir.ui.view">
+        <field name="name">project.task.form.inherit.material</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="%(proposal_sheet.action_proposal_sheet_create_form)d" string="Tạo Phiếu Đề Xuất" type="action" class="btn-primary" context="{'default_task_id': active_id, 'default_project_id': project_id, 'from_task': True}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,3 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_cost_estimate,access_cost_estimate,model_cost_estimate,,1,1,1,1
 access_cost_estimate_line,access_cost_estimate_line,model_cost_estimate_line,,1,1,1,1
+access_project_expense_user,access_project_expense_user,model_project_expense,base.group_user,1,1,1,0
+access_project_expense_line_user,access.project.expense.line.user,model_project_expense_line,,1,1,1,1

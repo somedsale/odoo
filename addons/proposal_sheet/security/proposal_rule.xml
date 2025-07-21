@@ -1,0 +1,25 @@
+<odoo>
+    <!-- Nhân viên: Chỉ thấy phiếu của mình -->
+    <record id="rule_proposal_own" model="ir.rule">
+        <field name="name">Proposal: Own Records</field>
+        <field name="model_id" ref="model_proposal_sheet"/>
+        <field name="groups" eval="[(4, ref('proposal_sheet.group_proposal_employee'))]"/>
+        <field name="domain_force">[('requested_by', '=', user.id)]</field>
+    </record>
+
+    <!-- Manager: Xem tất cả -->
+    <record id="rule_proposal_manager_all" model="ir.rule">
+        <field name="name">Proposal: Manager See All</field>
+        <field name="model_id" ref="model_proposal_sheet"/>
+        <field name="groups" eval="[(4, ref('proposal_sheet.group_proposal_manager'))]"/>
+        <field name="domain_force">[(1,'=',1)]</field>
+    </record>
+
+    <!-- Boss: Xem tất cả -->
+    <record id="rule_proposal_boss_all" model="ir.rule">
+        <field name="name">Proposal: Boss See All</field>
+        <field name="model_id" ref="model_proposal_sheet"/>
+        <field name="groups" eval="[(4, ref('proposal_sheet.group_proposal_boss'))]"/>
+        <field name="domain_force">[(1,'=',1)]</field>
+    </record>
+</odoo>
