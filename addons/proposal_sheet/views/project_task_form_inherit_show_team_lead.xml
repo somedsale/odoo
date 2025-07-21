@@ -10,6 +10,9 @@
             <xpath expr="//field[@name='tag_ids']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
+            <xpath expr="//field[@name='milestone_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
         </field>
     </record>
     <record id="view_project_project_form_inherit_hide_tags_label" model="ir.ui.view">

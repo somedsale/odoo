@@ -119,7 +119,7 @@ class ContractManagement(models.Model):
                     ], limit=1)
                     if not default_stage:
                         raise UserError("Default task stage 'Đơn đặt hàng mới' not found for the project.")
-
+                    product_task_map = {}
                     for line in contract.sale_order_id.order_line:
                         if line.product_id.product_tmpl_id.type == 'consu':  # Ensure product exists
                             task_vals = {
@@ -134,10 +134,11 @@ class ContractManagement(models.Model):
                                 'user_ids': [(6, 0, [config.default_project_manager_id.id])]
                             }
                             task = self.env['project.task'].create(task_vals)
-                    product_task_map = {}
+                            product_task_map[line.product_id.id] = task.id 
+                    
                     # Tạo nhiệm vụ cho các sản phẩm tiêu dùng trong giai đoạn "Đơn đặt hàng mới"
 
-                    product_task_map[line.product_id.id] = task.id 
+                    
                     if not contract.sale_order_id.cost_estimate_id:
                         # Tạo dự toán
                         budget_vals = {
