@@ -1,4 +1,5 @@
-from odoo import models, fields, api
+from markupsafe import Markup
+from odoo import models, fields, api,_
 from odoo.exceptions import UserError, ValidationError
 from lxml import etree
 import logging
@@ -96,22 +97,54 @@ class ProposalSheet(models.Model):
 
     def action_submit(self):
         self.ensure_one()
-        if self.state != 'draft':
-            raise UserError("Chỉ phiếu ở trạng thái nháp mới được gửi duyệt.")
-        self.state = 'submitted'
-        self.message_post(body='Phiếu đề xuất đã được gửi duyệt.')
 
-    def action_submit(self):
-        self.ensure_one()
-    # Kiểm tra bắt buộc có dòng trước khi submit
+        # 1. Kiểm tra bắt buộc có dòng trước khi submit
         if self.type == 'material' and not self.material_line_ids:
-            raise ValidationError("Phiếu đề xuất vật tư phải có ít nhất một dòng vật tư trước khi gửi duyệt.")
+            raise ValidationError(_("Phiếu đề xuất vật tư phải có ít nhất một dòng vật tư trước khi gửi duyệt."))
         if self.type == 'expense' and not self.expense_line_ids:
-            raise ValidationError("Phiếu đề xuất chi phí phải có ít nhất một dòng chi phí trước khi gửi duyệt.")        
+            raise ValidationError(_("Phiếu đề xuất chi phí phải có ít nhất một dòng chi phí trước khi gửi duyệt."))
+
+        # 2. Kiểm tra trạng thái
         if self.state != 'draft':
-            raise UserError("Chỉ phiếu ở trạng thái nháp mới được gửi duyệt.")
+            raise UserError(_("Chỉ phiếu ở trạng thái nháp mới được gửi duyệt."))
+
+        # 3. Đổi trạng thái
         self.state = 'submitted'
-        self.message_post(body="Phiếu đề xuất đã được gửi duyệt.")
+        _logger.info(">>> Proposal %s chuyển sang trạng thái 'submitted'", self.name)
+
+        # 4. Lấy cấu hình Project
+        config = self.env['project.config'].search([], limit=1)
+        if not config:
+            raise UserError(_("Chưa cấu hình Project Config để lấy Boss/Quản lý."))
+
+        # 5. Xác định partner_ids (Boss & Quản lý)
+        partner_ids = []
+        if config.default_project_manager_id:
+            partner_ids.append(config.default_project_manager_id.partner_id.id)
+        if config.default_boss_id:
+            partner_ids.append(config.default_boss_id.partner_id.id)
+        _logger.info(">>> Boss & Manager partner_ids: %s", partner_ids)
+
+        # 6. Thêm họ vào followers (nếu chưa có)
+        existing_followers = self.message_partner_ids.ids
+        new_partner_ids = [pid for pid in partner_ids if pid not in existing_followers]
+        if new_partner_ids:
+            self.message_subscribe(partner_ids=new_partner_ids)
+            _logger.info(">>> Added new followers: %s", new_partner_ids)
+        else:
+            _logger.info(">>> No new followers added (already subscribed).")
+
+
+        # 7. Gửi thông báo vào Chatter và Discuss
+        self.message_post(
+             body=Markup('<p>Phiếu đề xuất <strong>%s</strong> đã được gửi duyệt bởi <em>%s</em>.</p>') % (
+        self.name, self.create_uid.name),
+            message_type="comment",
+            subtype_xmlid="mail.mt_comment",
+            partner_ids=partner_ids
+        )
+        _logger.info(">>> Notification sent to partner_ids: %s", partner_ids)
+        return True
 
     def action_manager_approve(self):
         if self.state != 'submitted':

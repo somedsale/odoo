@@ -32,7 +32,7 @@
                         <group>
                             <field name="project_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft' " force_save="context.get('from_task', False)"/>
                             <field name="task_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft'" force_save="context.get('from_task', False)" domain="[('project_id', '=', project_id)]"/>
-                            <field name="requested_by" readonly="1" options="{'no_open':True}"/>
+                            <field name="requested_by" widget="many2one_avatar_user" readonly="1" options="{'no_open':True}"/>
                         </group>
                         <group>
                             <field name="type" widget="radio" readonly="is_type_readonly"/>
