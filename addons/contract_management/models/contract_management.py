@@ -77,10 +77,13 @@ class ContractManagement(models.Model):
                             task_stages |= stage
                         except ValueError:
                             raise UserError(f"Task stage {ref} not found. Please ensure all task stages are defined.")
-
+                    if contract.sale_order_id.x_project_name:
+                        name_project = contract.sale_order_id.x_project_name + ' - ' + contract.sale_order_id.name
+                    else:
+                        name_project = contract.sale_order_id.name
                     # Create project when stage is 'Đang thực hiện'
                     project_vals = {
-                        'name': f'Project for {contract.name}',
+                        'name': f'{name_project} - {contract.name}',
                         'partner_id': contract.partner_id.id,
                         'company_id': contract.company_id.id,
                         'allow_timesheets': False,  # Optional: Disable timesheets if not needed
@@ -130,7 +133,32 @@ class ContractManagement(models.Model):
                                 'description': line.name,  # Use sale order line description
                                 'user_ids': [(6, 0, [config.default_project_manager_id.id])]
                             }
-                            self.env['project.task'].create(task_vals)
+                            task = self.env['project.task'].create(task_vals)
+                    product_task_map = {}
+                    # Tạo nhiệm vụ cho các sản phẩm tiêu dùng trong giai đoạn "Đơn đặt hàng mới"
+
+                    product_task_map[line.product_id.id] = task.id 
+                    if not contract.sale_order_id.cost_estimate_id:
+                        # Tạo dự toán
+                        budget_vals = {
+                            'name': f'Dự toán cho {name_project}',
+                            'sale_order_id': contract.sale_order_id.id,
+                            'project_id': project.id,
+                            # 'currency_id': order.currency_id.id,
+                            'line_ids': [
+                                (0, 0, {
+                                    'product_id': line.product_id.id,
+                                    'unit': line.product_uom.id,
+                                    'quantity': line.product_uom_qty,
+                                    'sale_order_line_id': line.id,
+                                    'task_id': product_task_map.get(line.product_id.id),
+                                })
+                                for line in contract.sale_order_id.order_line
+                                if line.product_id
+                            ],
+                        }
+                        cost_estimate = self.env['cost.estimate'].create(budget_vals)
+                        contract.sale_order_id.cost_estimate_id = cost_estimate.id                        
 
     def action_cancel(self):
         for contract in self:

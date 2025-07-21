@@ -11,7 +11,6 @@ class ProjectConfig(models.Model):
     default_boss_id = fields.Many2one(
         comodel_name='res.users',
         string='Default Boss',  # Boss mặc định
-        required=True
     )
 
     @api.constrains('id')

@@ -1,7 +1,7 @@
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
 from datetime import date
-
+from markupsafe import Markup
 class TaskProductionReport(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _name = 'task.production.report'
@@ -105,13 +105,19 @@ class TaskProductionReport(models.Model):
 
             if manager and manager.partner_id:
                 task.message_subscribe(partner_ids=[manager.partner_id.id])
-                message_body = f"""
-                    📌 Báo cáo sản lượng mới\nDự án: {project.name}\n
-                    Người thực hiện: {user_id.name}\n
-                    Nhiệm vụ: {task.name}\n
-                    Ngày: {rec.report_date}\n
-                    Đạt: {rec.quantity_done} / {task.quantity}
-                """
+                message_body = Markup('<ul>' \
+                '<li>Báo cáo sản lượng mới đã được tạo cho nhiệm vụ <strong>{}</strong> trong dự án <strong>{}</strong>.</li>' \
+                '<li>Ngày báo cáo: <strong>{}</strong></li>' \
+                '<li>Người báo cáo: <strong>{}</strong></li>' \
+                '<li>Sản lượng đạt được: <strong>{}</strong> <strong>{}</strong></li>' \
+                '</ul>'.format(
+                    task.name, 
+                    project.name, 
+                    rec.report_date.strftime('%d-%m-%Y'), 
+                    self.env.user.name,
+                    rec.quantity_done ,
+                    (rec.uom_id.name or '')
+                ))
                 task.message_post(
                     body=message_body,
                     partner_ids=[manager.partner_id.id],
