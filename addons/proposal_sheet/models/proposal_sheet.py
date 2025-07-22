@@ -10,6 +10,7 @@ class ProposalSheet(models.Model):
     _name = 'proposal.sheet'
     _description = 'Phiếu Đề Xuất'
     _inherit = ['mail.thread', 'mail.activity.mixin']
+    _order = "create_date desc"
 
     name = fields.Char(string='Mã Đề Xuất', default='New', readonly=True, copy=False)
     project_id = fields.Many2one('project.project', string='Dự án', required=True, tracking=True)
@@ -17,12 +18,13 @@ class ProposalSheet(models.Model):
     requested_by = fields.Many2one('res.users', string='Người Đề Xuất', default=lambda self: self.env.user, readonly=True, tracking=True)
     state = fields.Selection([
     ('draft', 'Nháp'),
-    ('submitted', 'Để Trình'),
-    ('waiting_boss', 'Đã Trình'),
-    ('approved', 'Đã Phê Duyệt'),
-    ('done', 'Hoàn Tất'),
-    ('rejected', 'Bị Từ Chối'),
-], default='draft', string='Trạng Thái', tracking=True)
+    ('submitted', 'Đang xem xét'),
+    ('reviewed', 'Đang phê duyệt'),
+    ('approved', 'Đã duyệt'),
+    ('done', 'Hoàn tất'),
+    ('rejected', 'Bị từ chối'),
+    ('canceled', 'Đã hủy')
+], default='draft', string='Trạng thái', tracking=True)
     type = fields.Selection([
         ('material', 'Vật Tư'),
         ('expense', 'Chi Phí'),
@@ -39,11 +41,23 @@ class ProposalSheet(models.Model):
         domain=[('type', '=', 'expense')],
         copy=True
     )
+    amount_total = fields.Float(string='Tổng Thành Tiền', compute='_compute_amount_total', store=True)
+    @api.depends('type', 'material_line_ids.price_total', 'expense_line_ids.price_total')
+    def _compute_amount_total(self):
+        for sheet in self:
+            if sheet.type == 'material':
+                sheet.amount_total = sum(line.price_total for line in sheet.material_line_ids)
+            elif sheet.type == 'expense':
+                sheet.amount_total = sum(line.price_total for line in sheet.expense_line_ids)
+            else:
+                sheet.amount_total = 0.0
     show_button_submit = fields.Boolean(compute='_compute_show_buttons')
     show_button_manager_approve = fields.Boolean(compute='_compute_show_buttons')
     show_button_boss_approve = fields.Boolean(compute='_compute_show_buttons')
     show_button_done = fields.Boolean(compute='_compute_show_buttons')
     show_button_reject = fields.Boolean(compute='_compute_show_buttons')
+    show_button_cancel = fields.Boolean(compute='_compute_show_buttons')
+    show_button_reset_draft = fields.Boolean(compute='_compute_show_buttons')
     is_type_readonly = fields.Boolean(compute='_compute_is_type_readonly', store=False)
 
     @api.model
@@ -148,17 +162,16 @@ class ProposalSheet(models.Model):
 
     def action_manager_approve(self):
         if self.state != 'submitted':
-            raise UserError("Chỉ phiếu đang Để Trình mới được duyệt.")
-        if self.task_id.project_id.user_id != self.env.user:
-            raise UserError("Bạn không phải là Quản lý dự án.")
-        self.state = 'waiting_boss'
-        self.message_post(body="Quản lý đã duyệt. Phiếu được chuyển lên Sếp.")
+            raise UserError("Chỉ phiếu đang xem xét mới được duyệt.")
+        self.state = 'reviewed'
+        approver_name = self.env.user.name
+        self.message_post(
+        body=Markup(f"Phiếu đã được duyệt bởi <strong>{approver_name}</strong>. Chuyển lên Sếp.")
+)
 
     def action_boss_approve(self):
-        if self.state != 'waiting_boss':
-            raise UserError("Chỉ phiếu đang Đã Trình mới được duyệt.")
-        if self.approver_boss_id != self.env.user:
-            raise UserError("Bạn không phải là Sếp.")
+        if self.state != 'reviewed':
+            raise UserError("Chỉ phiếu đang phê duyệt mới được.")
         self.state = 'approved'
         self.message_post(body="Sếp đã phê duyệt phiếu đề xuất.")
 
@@ -173,19 +186,29 @@ class ProposalSheet(models.Model):
             raise UserError("Chỉ phiếu bị từ chối mới được reset về nháp.")
         self.state = 'draft'
         self.message_post(body="Phiếu được reset về Nháp.")
+    def action_cancel(self):
+        for rec in self:
+            if rec.state in ['done', 'canceled']:
+                raise UserError("Không thể hủy phiếu đã hoàn tất hoặc đã hủy.")
+            rec.state = 'canceled'
+            rec.message_post(body="Phiếu đã được hủy.")
 
 
     @api.depends('state', 'task_id.project_id.user_id', 'approver_boss_id')
     def _compute_show_buttons(self):
         for rec in self:
+            is_creator = rec.requested_by == self.env.user
             is_team_lead = rec.task_id.project_id.user_id == self.env.user if rec.task_id.project_id else False
             is_boss = rec.approver_boss_id == self.env.user if rec.approver_boss_id else False
-
-            rec.show_button_submit = rec.state == 'draft'
-            rec.show_button_manager_approve = rec.state == 'submitted' and is_team_lead
-            rec.show_button_boss_approve = rec.state == 'waiting_boss' and is_boss
-            rec.show_button_done = rec.state == 'approved'
-            rec.show_button_reject = rec.state in ['submitted', 'waiting_boss'] and (is_team_lead or is_boss)
+            rec.show_button_submit = rec.state == 'draft' and is_creator
+            rec.show_button_manager_approve = rec.state == 'submitted' and (is_team_lead )
+            rec.show_button_boss_approve = rec.state == 'reviewed' and (is_boss )
+            rec.show_button_done = rec.state == 'approved' and (is_creator )
+            rec.show_button_reject = rec.state in ['submitted', 'reviewed'] and (is_team_lead or is_boss )
+            rec.show_button_cancel = rec.state in ['draft', 'submitted'] and (is_creator)
+            rec.show_button_reset_draft = rec.state in ['rejected'] and (is_creator)
+    
+    
 
     @api.depends('material_line_ids', 'expense_line_ids')
     def _compute_is_type_readonly(self):
@@ -304,6 +327,5 @@ class ProposalSheet(models.Model):
                 }))
 
             self.expense_line_ids = expense_lines
-
 
 

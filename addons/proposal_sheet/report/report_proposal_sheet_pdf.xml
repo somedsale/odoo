@@ -1,0 +1,5 @@
+<odoo>
+    <data>
+        <report id="report_proposal_sheet_pdf" model="proposal.sheet" string="Phiếu Đề Xuất" report_type="qweb-pdf" name="proposal_sheet.report_proposal_sheet_template" file="proposal_sheet.report_proposal_sheet_template" print_report_name="'Phiếu_Đề_Xuất_' + object.name" />
+    </data>
+</odoo>
