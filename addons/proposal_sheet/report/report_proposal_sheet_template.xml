@@ -1,0 +1,95 @@
+<odoo>
+    <template id="report_proposal_sheet_template">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <main class="o_main">
+                    <div class="page">
+                        <h2 style="text-align:center;">Phiếu Đề Xuất</h2>
+                        <t t-foreach="docs" t-as="object" t-foreach-index="idx">
+                            <p>
+                                <strong>Mã Phiếu:</strong>
+                                <t t-esc="object.name or 'N/A'"/>
+                            </p>
+                            <p>
+                                <strong>Dự Án:</strong>
+                                <t t-esc="object.project_id.display_name or 'N/A'"/>
+                            </p>
+                            <p>
+                                <strong>Người Yêu Cầu:</strong>
+                                <t t-esc="object.requested_by.name or 'N/A'"/>
+                            </p>
+                            <p>
+                                <strong>Ngày:</strong>
+                                <t t-esc="object.create_date.strftime('%d/%m/%Y') if object.create_date else 'N/A'"/>
+                            </p>
+
+                            <table class="table table-sm mt32">
+                                <thead>
+                                    <tr>
+                                        <th>STT</th>
+                                        <th>Tên Vật Tư/Chi Phí</th>
+                                        <th>Số Lượng</th>
+                                        <th>Đơn Giá</th>
+                                        <th>Thành Tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-if="object.type == 'material'">
+                                        <t t-foreach="object.material_line_ids" t-as="line" t-foreach-index="i">
+                                            <tr>
+                                                <td>
+                                                    <t t-esc="(i or 0) + 1"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="line.material_id.name or 'N/A'"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="line.quantity"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="line.price_unit"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="line.price_total"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                    <t t-if="object.type == 'expense'">
+                                        <t t-foreach="object.expense_line_ids" t-as="line" t-foreach-index="i">
+                                            <tr>
+                                                <td>
+                                                    <t t-esc="(i or 0) + 1"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="line.expense_id.name or 'N/A'"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="line.quantity"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="line.price_unit"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="line.price_total"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                </tbody>
+                            </table>
+                            <p style="text-align:right;">
+                                <strong>Tổng tiền:</strong>
+                                <t t-esc="object.amount_total"/>
+                            </p>
+
+                            <t t-if="(idx or 0) + 1 &lt; len(docs)">
+                                <div style="page-break-before: always;"></div>
+                            </t>
+                        </t>
+                    </div>
+                </main>
+            </t>
+        </t>
+    </template>
+</odoo>

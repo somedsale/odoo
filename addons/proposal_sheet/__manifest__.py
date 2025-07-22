@@ -9,6 +9,8 @@
         'security/proposal_rule.xml',
         'security/ir.model.access.csv',
         'data/ir_sequence_data.xml',
+        'report/report_proposal_sheet_pdf.xml',          # file khai báo <report>
+        'report/report_proposal_sheet_template.xml',     # file chứa QWeb template
         'views/proposal_reject_wizard_views.xml',
         'views/proposal_sheet_views.xml',
         'views/task_inherit_view.xml',
