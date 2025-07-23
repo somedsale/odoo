@@ -42,6 +42,7 @@ class ProposalSheet(models.Model):
         copy=True
     )
     amount_total = fields.Float(string='Tổng Thành Tiền', compute='_compute_amount_total', store=True)
+    take_note = fields.Text(string='Ghi Chú', tracking=True)
     @api.depends('type', 'material_line_ids.price_total', 'expense_line_ids.price_total')
     def _compute_amount_total(self):
         for sheet in self:
@@ -59,6 +60,7 @@ class ProposalSheet(models.Model):
     show_button_cancel = fields.Boolean(compute='_compute_show_buttons')
     show_button_reset_draft = fields.Boolean(compute='_compute_show_buttons')
     is_type_readonly = fields.Boolean(compute='_compute_is_type_readonly', store=False)
+    
 
     @api.model
     def create(self, vals):
@@ -80,7 +82,8 @@ class ProposalSheet(models.Model):
             raise ValidationError("Nhiệm vụ là bắt buộc.")
         if vals.get('name', 'New') == 'New':
             vals['name'] = self.env['ir.sequence'].next_by_code('proposal.sheet') or 'PROP/00000'
-        return super().create(vals)
+        record = super().create(vals) 
+        return record
 
     def write(self, vals):
         for rec in self:
@@ -89,8 +92,9 @@ class ProposalSheet(models.Model):
                 if rec.material_line_ids or rec.expense_line_ids:
                     raise ValidationError(
                         "Không thể thay đổi loại đề xuất khi đã có dòng vật tư hoặc chi phí."
-                    )
-        return super(ProposalSheet, self).write(vals)
+                    )           
+        res = super(ProposalSheet, self).write(vals)
+        return res
     def unlink(self):
         for rec in self:
             if rec.state != 'draft':
@@ -327,5 +331,15 @@ class ProposalSheet(models.Model):
                 }))
 
             self.expense_line_ids = expense_lines
+    def action_view_pdf(self):
+        self.ensure_one()
+        filename = f"Phieu_De_Xuat_{self.name}.pdf"
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/report/pdf/proposal_sheet.report_proposal_sheet_template/{self.id}?filename={filename}',
+            'target': 'new',
+        }
+
+    
 
 

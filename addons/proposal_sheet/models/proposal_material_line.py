@@ -94,4 +94,5 @@ class ProposalMaterialLine(models.Model):
     def _compute_price_total(self):
         for line in self:
             line.price_total = line.quantity * line.price_unit
+
     

@@ -1,7 +1,4 @@
 <odoo>
-    <!-- Báo cáo gốc -->
-    <report id="report_proposal_sheet_pdf" model="proposal.sheet" string="In PDF" report_type="qweb-pdf" name="proposal_sheet.report_proposal_sheet_template" file="proposal_sheet.report_proposal_sheet_template" print_report_name="'Phieu_De_Xuat_' + object.name" />
-
     <!-- Hành động để hiển thị báo cáo trong menu Action -->
     <record id="action_report_proposal_sheet_pdf" model="ir.actions.report">
         <field name="name">In PDF</field>
@@ -11,5 +8,13 @@
         <field name="print_report_name">'Phieu_De_Xuat_' + object.name</field>
         <field name="binding_model_id" ref="model_proposal_sheet"/>
         <field name="binding_type">report</field>
+    </record>
+    <record id="action_view_pdf_proposal" model="ir.actions.server">
+        <field name="name">Xem trước PDF</field>
+        <field name="model_id" ref="model_proposal_sheet"/>
+        <field name="binding_model_id" ref="model_proposal_sheet"/>
+        <field name="binding_type">action</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_view_pdf()</field>
     </record>
 </odoo>
