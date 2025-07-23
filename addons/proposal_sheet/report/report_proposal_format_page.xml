@@ -1,0 +1,13 @@
+<odoo>
+    <record id="paperformat_proposal_sheet" model="report.paperformat">
+        <field name="name">Proposal Sheet Format</field>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">30</field>
+        <field name="margin_bottom">20</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_spacing">25</field>
+        <field name="dpi">90</field>
+    </record>
+</odoo>

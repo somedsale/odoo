@@ -8,6 +8,7 @@
         <field name="print_report_name">'Phieu_De_Xuat_' + object.name</field>
         <field name="binding_model_id" ref="model_proposal_sheet"/>
         <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_proposal_sheet"/>
     </record>
     <record id="action_view_pdf_proposal" model="ir.actions.server">
         <field name="name">Xem trước PDF</field>
