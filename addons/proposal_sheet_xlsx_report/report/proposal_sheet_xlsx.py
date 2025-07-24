@@ -7,6 +7,9 @@ class ProposalSheetXlsx(models.AbstractModel):
     _inherit = 'report.report_xlsx.abstract'
 
     def generate_xlsx_report(self, workbook, data, proposals):
+
+        PAPER_SIZE = 11  # Đổi 9 cho A4, 11 cho A5
+        LANDSCAPE = True  # True = Nằm ngang, False = Dọc
         # ====== Định dạng ======
         title_format = workbook.add_format({
             'bold': True, 'align': 'center', 'valign': 'vcenter',
@@ -36,6 +39,14 @@ class ProposalSheetXlsx(models.AbstractModel):
             sheet.set_row(0, 30)  # Dòng đầu tiên
             sheet.set_row(1, 30)  # Dòng thứ hai
             sheet.hide_gridlines(2)
+            sheet.set_paper(PAPER_SIZE)
+            if LANDSCAPE:
+                sheet.set_landscape()
+            else:
+                sheet.set_portrait()
+            sheet.fit_to_pages(1, 1)
+            sheet.center_horizontally()
+            sheet.set_margins(left=0.3, right=0.3, top=0.3, bottom=0.3)
 
             # ====== Logo công ty ======
             if company.logo:
@@ -65,10 +76,10 @@ class ProposalSheetXlsx(models.AbstractModel):
             row += 1
 
             # Dòng 2: Dùng cho sản phẩm, hạng mục: ......... | Thuộc công trình/hợp đồng/báo giá: ......
-            sheet.merge_range(row, 0,row, 1, 'Dùng cho sản phẩm, hạng mục:', header_format)
+            sheet.merge_range(row, 0,row, 1, 'Dùng cho sản phẩm:', header_format)
             sheet.merge_range(row, 2, row, 7, proposal.task_id.name or '', info_format_left)
             row += 1
-            sheet.merge_range(row, 0,row, 1, 'Thuộc công trình/hợp đồng/báo giá:', header_format)
+            sheet.merge_range(row, 0,row, 1, 'Thuộc dự án:', header_format)
             sheet.merge_range(row, 2, row, 7, proposal.project_id.name or '', info_format_left)
             row += 2
 

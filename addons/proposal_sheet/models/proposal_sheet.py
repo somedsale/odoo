@@ -112,6 +112,49 @@ class ProposalSheet(models.Model):
             for line in rec.expense_line_ids:
                 if line.type != 'expense':
                     raise ValidationError("Dòng chi phí có loại không hợp lệ.")
+                
+    def _send_notification(self, message, partner_ids=None):
+        """
+        Gửi thông báo vào Chatter + Discuss.
+        :param message: Nội dung thông báo (HTML)
+        :param partner_ids: Danh sách partner_id nhận thông báo (list[int])
+        """
+        self.ensure_one()
+
+        if partner_ids is None:
+            partner_ids = []
+
+        # Đảm bảo tất cả partner_ids đều là follower
+        existing_followers = self.message_partner_ids.ids
+        new_partners = [pid for pid in partner_ids if pid not in existing_followers]
+        if new_partners:
+            self.message_subscribe(partner_ids=new_partners)
+
+        # Post vào Chatter và gửi Discuss
+        self.message_post(
+            body=Markup(message),
+            message_type="comment",
+            subtype_xmlid="mail.mt_comment",
+            partner_ids=partner_ids
+        )
+    def _get_approval_partners(self, include_manager=True, include_boss=True):
+        """
+        Trả về danh sách partner_ids của PM và Boss theo cấu hình Project.
+        :param include_manager: Có lấy PM không
+        :param include_boss: Có lấy Boss không
+        :return: list partner_ids
+        """
+        config = self.env['project.config'].search([], limit=1)
+        if not config:
+            raise UserError(_("Chưa cấu hình Project Config để lấy Boss/Quản lý."))
+
+        partner_ids = []
+        if include_manager and config.default_project_manager_id:
+            partner_ids.append(config.default_project_manager_id.partner_id.id)
+        if include_boss and config.default_boss_id:
+            partner_ids.append(config.default_boss_id.partner_id.id)
+
+        return partner_ids
 
     def action_submit(self):
         self.ensure_one()
@@ -130,38 +173,9 @@ class ProposalSheet(models.Model):
         self.state = 'submitted'
         _logger.info(">>> Proposal %s chuyển sang trạng thái 'submitted'", self.name)
 
-        # 4. Lấy cấu hình Project
-        config = self.env['project.config'].search([], limit=1)
-        if not config:
-            raise UserError(_("Chưa cấu hình Project Config để lấy Boss/Quản lý."))
-
-        # 5. Xác định partner_ids (Boss & Quản lý)
-        partner_ids = []
-        if config.default_project_manager_id:
-            partner_ids.append(config.default_project_manager_id.partner_id.id)
-        if config.default_boss_id:
-            partner_ids.append(config.default_boss_id.partner_id.id)
-        _logger.info(">>> Boss & Manager partner_ids: %s", partner_ids)
-
-        # 6. Thêm họ vào followers (nếu chưa có)
-        existing_followers = self.message_partner_ids.ids
-        new_partner_ids = [pid for pid in partner_ids if pid not in existing_followers]
-        if new_partner_ids:
-            self.message_subscribe(partner_ids=new_partner_ids)
-            _logger.info(">>> Added new followers: %s", new_partner_ids)
-        else:
-            _logger.info(">>> No new followers added (already subscribed).")
-
-
-        # 7. Gửi thông báo vào Chatter và Discuss
-        self.message_post(
-             body=Markup('<p>Phiếu đề xuất <strong>%s</strong> đã được gửi duyệt bởi <em>%s</em>.</p>') % (
-        self.name, self.create_uid.name),
-            message_type="comment",
-            subtype_xmlid="mail.mt_comment",
-            partner_ids=partner_ids
-        )
-        _logger.info(">>> Notification sent to partner_ids: %s", partner_ids)
+        partner_ids = self._get_approval_partners(include_manager=True, include_boss=True)
+        message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được gửi duyệt bởi <em>{self.env.user.name}</em>.</p>"
+        self._send_notification(message, partner_ids)
         return True
 
     def action_manager_approve(self):
@@ -169,15 +183,18 @@ class ProposalSheet(models.Model):
             raise UserError("Chỉ phiếu đang xem xét mới được duyệt.")
         self.state = 'reviewed'
         approver_name = self.env.user.name
-        self.message_post(
-        body=Markup(f"Phiếu đã được duyệt bởi <strong>{approver_name}</strong>. Chuyển lên Sếp.")
-)
+        message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được duyệt bởi <em>{approver_name}</em>.</p>"
+        partner_ids = self._get_approval_partners(include_manager=False, include_boss=True)
+        self._send_notification(message, partner_ids)
+
 
     def action_boss_approve(self):
         if self.state != 'reviewed':
             raise UserError("Chỉ phiếu đang phê duyệt mới được.")
         self.state = 'approved'
-        self.message_post(body="Sếp đã phê duyệt phiếu đề xuất.")
+        message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được duyệt bởi <em>{self.env.user.name}</em>.</p>"
+        partner_ids = self._get_approval_partners(include_manager=False, include_boss=True)
+        self._send_notification(message, partner_ids)
 
     def action_done(self):
         if self.state != 'approved':
@@ -339,7 +356,3 @@ class ProposalSheet(models.Model):
             'url': f'/report/pdf/proposal_sheet.report_proposal_sheet_template/{self.id}?filename={filename}',
             'target': 'new',
         }
-
-    
-
-
