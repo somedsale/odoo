@@ -10,22 +10,32 @@ class ProposalSheetXlsx(models.AbstractModel):
         # ====== Định dạng ======
         title_format = workbook.add_format({
             'bold': True, 'align': 'center', 'valign': 'vcenter',
-            'font_size': 14, 'bg_color': '#D9EDF7'
+            'font_size': 24, 'font_name': 'Times New Roman',
         })
         header_format = workbook.add_format({
-            'bold': True, 'align': 'center', 'valign': 'vcenter',
-            'bg_color': '#27B1FC', 'border': 1
+            'bold': True, 'align': 'left', 'valign': 'vcenter', 'font_name': 'Times New Roman','font_size': 13
         })
-        normal_center = workbook.add_format({'align': 'center', 'valign': 'vcenter', 'border': 1})
-        normal_left = workbook.add_format({'align': 'left', 'valign': 'vcenter', 'border': 1})
-        money_format = workbook.add_format({'num_format': '#,##0', 'align': 'right', 'border': 1})
+        info_format_left = workbook.add_format({'align': 'left', 'valign': 'vcenter', 'font_name': 'Times New Roman','font_size': 13})
+        info_format_right = workbook.add_format({'align': 'right', 'valign': 'vcenter', 'font_name': 'Times New Roman','font_size': 13})
+
+        # Chỉ cho bảng có border
+        table_header_format = workbook.add_format({
+            'bold': True, 'align': 'center', 'valign': 'vcenter', 'border': 1, 'color': '#000000', 'bg_color': '#DDEBF7',
+            'font_name': 'Times New Roman', 'font_size': 13
+        })
+        table_center = workbook.add_format({'align': 'center', 'valign': 'vcenter', 'border': 1, 'font_name': 'Times New Roman', 'font_size': 13})
+        table_left = workbook.add_format({'align': 'left', 'valign': 'vcenter', 'border': 1, 'font_name': 'Times New Roman', 'font_size': 13})
+        table_money = workbook.add_format({'num_format': '#,##0', 'align': 'right', 'border': 1, 'font_name': 'Times New Roman', 'font_size': 13})
 
         # Lấy company
         company = proposals[0].company_id if hasattr(proposals[0], 'company_id') else self.env.company
 
         for proposal in proposals:
             sheet = workbook.add_worksheet(proposal.name[:31])
-            sheet.set_column('A:H', 18)  # Set độ rộng cột
+            sheet.set_column('A:I', 15)  # Set độ rộng cột
+            sheet.set_row(0, 30)  # Dòng đầu tiên
+            sheet.set_row(1, 30)  # Dòng thứ hai
+            sheet.hide_gridlines(2)
 
             # ====== Logo công ty ======
             if company.logo:
@@ -33,48 +43,105 @@ class ProposalSheetXlsx(models.AbstractModel):
                 image_file = BytesIO(image_data)
                 sheet.insert_image('A1', 'logo.png', {
                     'image_data': image_file,
-                    'x_scale': 4, 'y_scale': 4
+                    'x_scale': 1.2, 'y_scale': 1.2
                 })
 
             # ====== Tiêu đề ======
-            sheet.merge_range('C1:H2', 'PHIẾU ĐỀ XUẤT VẬT TƯ / CHI PHÍ', title_format)
+            title_text = 'PHIẾU ĐỀ XUẤT VẬT TƯ' if proposal.type == 'material' else 'PHIẾU ĐỀ XUẤT CHI PHÍ'
+            sheet.merge_range('A1:H2', title_text, title_format)
 
             # ====== Thông tin chung ======
+            sheet.merge_range('G3:H3', f"Số: {proposal.name or ''}", info_format_right)
+
             row = 4
-            sheet.write(row, 0, 'Mã phiếu', header_format)
-            sheet.write(row, 1, proposal.name or '', normal_left)
-            sheet.write(row, 2, 'Ngày', header_format)
-            sheet.write(row, 3, str(proposal.create_date.date()), normal_center)
-            sheet.write(row, 4, 'Người đề xuất', header_format)
-            sheet.write(row, 5, proposal.create_uid.name or '', normal_left)
+            # Dòng 1: CBNV | ..........     PHÒNG BAN: ..........
+            sheet.write(row, 0, 'CBNV:', header_format)
+            sheet.merge_range(row, 1, row, 3, proposal.requested_by.name or '', info_format_left)
+            department_name = ''
+            if proposal.requested_by and proposal.requested_by.employee_id and proposal.requested_by.employee_id.department_id:
+                department_name = proposal.requested_by.employee_id.department_id.name
+            sheet.write(row, 4, 'PHÒNG BAN:', header_format)
+            sheet.merge_range(row, 5, row, 7, department_name, info_format_left)
+            row += 1
+
+            # Dòng 2: Dùng cho sản phẩm, hạng mục: ......... | Thuộc công trình/hợp đồng/báo giá: ......
+            sheet.merge_range(row, 0,row, 1, 'Dùng cho sản phẩm, hạng mục:', header_format)
+            sheet.merge_range(row, 2, row, 7, proposal.task_id.name or '', info_format_left)
+            row += 1
+            sheet.merge_range(row, 0,row, 1, 'Thuộc công trình/hợp đồng/báo giá:', header_format)
+            sheet.merge_range(row, 2, row, 7, proposal.project_id.name or '', info_format_left)
             row += 2
 
             # ====== Header bảng ======
-            headers = ['STT', 'Tên vật tư / Chi phí', 'Đơn vị', 'Số lượng', 'Đơn giá', 'Thành tiền', 'NCC đề xuất', 'Ghi chú']
-            for col, head in enumerate(headers):
-                sheet.write(row, col, head, header_format)
+            if proposal.type == 'material':
+                headers = ['STT', 'Tên vật tư', 'Đơn vị', 'Số lượng', 'Đơn giá', 'Thành tiền', 'NCC đề xuất', 'Ghi chú']
+                for col, head in enumerate(headers):
+                    sheet.write(row, col, head, table_header_format)
+            else:  # expense
+                base_headers = ['STT', 'Tên chi phí', 'Đơn vị', 'Số lượng', 'Đơn giá', 'Thành tiền']
+                for col, head in enumerate(base_headers):
+                    sheet.write(row, col, head, table_header_format)
+                sheet.merge_range(row, 6, row, 7, 'Ghi chú', table_header_format)  
+        row += 1
+
+        # ====== Dòng chi tiết ======
+        lines = proposal.material_line_ids if proposal.type == 'material' else proposal.expense_line_ids
+
+        for idx, line in enumerate(lines, start=1):
+            sheet.write(row, 0, idx, table_center)
+
+            if proposal.type == 'material':
+                sheet.write(row, 1, line.material_id.name or '', table_left)
+                sheet.write(row, 2, line.unit.name or '', table_center)
+                sheet.write(row, 3, line.quantity or 0, table_center)
+                sheet.write(row, 4, line.price_unit or 0, table_money)
+                sheet.write(row, 5, line.price_total or 0, table_money)
+                sheet.write(row, 6, line.proposed_supplier or '', table_left)
+                sheet.write(row, 7, line.description or '', table_left)
+            else:  # expense
+                sheet.write(row, 1, line.expense_id.name or '', table_left)
+                sheet.write(row, 2, line.unit.name or '', table_center)
+                sheet.write(row, 3, line.quantity or 0, table_center)
+                sheet.write(row, 4, line.price_unit or 0, table_money)
+                sheet.write(row, 5, line.price_total or 0, table_money)
+                sheet.merge_range(row, 6, row, 7, line.description or '', table_left)
+
             row += 1
 
-            # ====== Dòng chi tiết ======
-            lines = proposal.material_line_ids if proposal.type == 'material' else proposal.expense_line_ids
-            for idx, line in enumerate(lines, start=1):
-                sheet.write(row, 0, idx, normal_center)
-                name = line.material_id.name if proposal.type == 'material' else line.expense_id.name
-                sheet.write(row, 1, name, normal_left)
-                sheet.write(row, 2, line.unit.name or '', normal_center)
-                sheet.write(row, 3, line.quantity or 0, normal_center)
-                sheet.write(row, 4, line.price_unit or 0, money_format)
-                sheet.write(row, 5, line.price_total or 0, money_format)
-                sheet.write(row, 6, line.proposed_supplier or '', normal_left)
-                sheet.write(row, 7, line.description or '', normal_left)
-                row += 1
+        # ====== Tổng cộng ======
+        sheet.merge_range(row, 0, row, 4, 'Tổng cộng', table_header_format)
+        sheet.merge_range(row, 5, row, 7, proposal.amount_total or 0, table_money)
+        row += 1
 
-            # ====== Tổng cộng ======
-            sheet.merge_range(row, 0, row, 4, 'Tổng cộng', header_format)
-            sheet.write(row, 5, proposal.amount_total or 0, money_format)
+        # ====== Ghi chú ======
+        sheet.write(row, 0, 'Ghi chú:', header_format)
+        sheet.merge_range(row, 1, row, 7, proposal.take_note or '', info_format_left)
 
             # ====== Chỗ ký tên ======
-            row += 3
-            sheet.write(row, 1, 'Người đề xuất', normal_center)
-            sheet.write(row, 3, 'Người duyệt', normal_center)
-            sheet.write(row, 5, 'Người thực hiện', normal_center)
+        row += 3
+        signature_format = workbook.add_format({
+            'align': 'center', 'valign': 'vcenter', 'bold': True, 'font_name': 'Times New Roman', 'font_size': 11
+        })
+        signature_note_format = workbook.add_format({
+            'align': 'center', 'valign': 'vcenter', 'italic': True, 'font_name': 'Times New Roman', 'font_size': 11
+        })
+
+        # Hàng ngày tháng
+        sheet.merge_range(row, 0, row, 1, '...../...../ 2025', signature_format)
+        sheet.merge_range(row, 2, row, 3, '...../...../ 2025', signature_format)
+        sheet.merge_range(row, 4, row, 5, '...../...../ 2025', signature_format)
+        sheet.merge_range(row, 6, row, 7, '...../...../ 2025', signature_format)
+        row += 1
+
+        # Hàng chức danh
+        sheet.merge_range(row, 0, row, 1, 'NGƯỜI ĐỀ XUẤT', signature_format)
+        sheet.merge_range(row, 2, row, 3, 'TRƯỞNG BỘ PHẬN', signature_format)
+        sheet.merge_range(row, 4, row, 5, 'KẾ TOÁN TỔNG HỢP', signature_format)
+        sheet.merge_range(row, 6, row, 7, 'GIÁM ĐỐC', signature_format)
+        row += 1
+
+        # Hàng chữ ký
+        sheet.merge_range(row, 0, row, 1, '(Ký, họ tên)', signature_note_format)
+        sheet.merge_range(row, 2, row, 3, '(Ký, họ tên)', signature_note_format)
+        sheet.merge_range(row, 4, row, 5, '(Ký, họ tên)', signature_note_format)
+        sheet.merge_range(row, 6, row, 7, '(Ký, họ tên)', signature_note_format)

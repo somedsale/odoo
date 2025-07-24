@@ -33,8 +33,9 @@
                         table.general_information {
                             width: 100%;
                             border: none;
-                            font-size: 14px;
+                            font-size: 16px;
                             margin-bottom: 15px;
+                            font-family: "Times New Roman", serif;
                         }
                         table.general_information td {
                             width: 50%;
@@ -47,10 +48,9 @@
                             margin: 4px 0;
                             line-height: 1.4;
                         }
-                        table.general_information strong {
+                        table.general_information .label {
                             font-weight: bold !important; /* Đảm bảo nhãn đậm */
                             color: #000 !important;
-                            display: inline-block;      
                         }
                         table.general_information .info-value {
                             font-weight: normal; /* Giữ giá trị không đậm */
@@ -66,30 +66,30 @@
                     <!-- Hàm format tiền -->
                     <t t-set="format_vnd" t-value="lambda amount: ('{:,.0f}'.format(amount)).replace(',', '.') + ' ₫'"/>
 
-                    <h2 style="text-align:center; padding: 10px 0;font-weight: bold;">PHIẾU ĐỀ XUẤT</h2>
+                    <h1 style="text-align:center; padding: 10px 0;font-weight: bold">PHIẾU ĐỀ XUẤT</h1>
 
                     <t t-foreach="enumerate(docs)" t-as="doc_with_index">
                         <t t-set="idx" t-value="doc_with_index[0]"/>
                         <t t-set="o" t-value="doc_with_index[1]"/>
 
-                        <table class="general_information" style="width:100%; margin-bottom:15px; border:none;border-color: white; border-style: none; outline: none; border-collapse: collapse;">
+                        <table class="general_information" style="width:100%; margin-bottom:15px; border:none; border-collapse: collapse;border-color: white;">
                             <tr>
                                 <!-- Cột trái -->
-                                <td style="width:50%; vertical-align:top;background-color:white !important;border:none !important;">
+                                <td style ="width:50%; vertical-align:top;background-color:white !important;border:none !important;">
                                     <p>
-                                        <strong>Mã Phiếu:</strong>
+                                        <span class="label">Mã Phiếu:</span>
                                         <span class="info-value">
                                             <t t-esc="o.name or 'N/A'"/>
                                         </span>
                                     </p>
                                     <p>
-                                        <strong>Dự Án:</strong>
+                                        <span class="label">Dự Án:</span>
                                         <span class="info-value">
                                             <t t-esc="o.project_id.display_name or ''"/>
                                         </span>
                                     </p>
                                     <p>
-                                        <strong>Sản phẩm:</strong>
+                                        <span class="label">Sản phẩm:</span>
                                         <span class="info-value">
                                             <t t-esc="o.task_id.name if o.task_id else ''"/>
                                         </span>
@@ -99,13 +99,13 @@
                                 <!-- Cột phải -->
                                 <td style="width:50%; vertical-align:top;background-color:white !important;border:none !important;">
                                     <p>
-                                        <strong>Người đề xuất:</strong>
+                                        <span class="label">Người đề xuất:</span>
                                         <span class="info-value">
                                             <t t-esc="o.requested_by.name or ''"/>
                                         </span>
                                     </p>
                                     <p>
-                                        <strong>Phòng ban:</strong>
+                                        <span class="label">Phòng ban:</span>
                                         <span class="info-value">
                                             <t t-esc="o.requested_by.employee_id.department_id.name if o.requested_by.employee_id and o.requested_by.employee_id.department_id else 'N/A'"/>
                                         </span>
@@ -154,10 +154,10 @@
                                             <td class="text-center">
                                                 <t t-esc="line.quantity"/>
                                             </td>
-                                            <td class="text-start">
+                                            <td class="text-end">
                                                 <t t-esc="format_vnd(line.price_unit)"/>
                                             </td>
-                                            <td class="text-start">
+                                            <td class="text-end">
                                                 <t t-esc="format_vnd(line.price_total)"/>
                                             </td>
                                             <td>
@@ -188,10 +188,10 @@
                                             <td class="text-center">
                                                 <t t-esc="line.quantity"/>
                                             </td>
-                                            <td class="text-start">
+                                            <td class="text-end">
                                                 <t t-esc="format_vnd(line.price_unit)"/>
                                             </td>
-                                            <td class="text-start">
+                                            <td class="text-end">
                                                 <t t-esc="format_vnd(line.price_total)"/>
                                             </td>
                                             <td style="background-color: white !important;">
@@ -206,7 +206,7 @@
                                     <td colspan="5" class="text-left">
                                         <strong>Tổng:</strong>
                                     </td>
-                                    <td class="text-start">
+                                    <td class="text-end">
                                         <t t-esc="format_vnd(o.amount_total)"/>
                                     </td>
                                     <td style="background-color: white !important;" colspan="2"></td>
@@ -215,7 +215,7 @@
                         </table>
 
                         <!-- Ghi chú -->
-                        <div style="margin-top: 15px;font-size: 14px;">
+                        <div style="margin-top: 15px;font-size: 16px;">
                             <p>
                                 <strong style="font-weight: bold !important;">Ghi chú:</strong>
                                 <span class="info-value">
@@ -225,7 +225,7 @@
                         </div>
 
                         <!-- Chữ ký -->
-                        <div class="signature" style="margin-top:50px;border:none">
+                        <div class="signature" style="margin-top:50px;border:none;font-size:16px;">
                             <table style="width:100%; text-align:center; border-color: white; border-style: none; outline: none; border-collapse: collapse;">
                                 <tr style ="border:none">
                                     <td>
