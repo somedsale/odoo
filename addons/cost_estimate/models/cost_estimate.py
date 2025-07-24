@@ -3,6 +3,7 @@ from odoo import models, fields, api
 class CostEstimate(models.Model):
     _name = 'cost.estimate'
     _description = 'Dự toán chi phí Dự án'
+    _order = "create_date desc"
 
     name = fields.Char('Tên dự toán', required=True, default='New')
     project_id = fields.Many2one('project.project', string='Dự án', ondelete='restrict')

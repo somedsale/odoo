@@ -19,6 +19,7 @@ services:
       pip install Pillow &&
       pip install openpyxl &&
       pip install xlrd &&
+      pip install xlsxwriter &&
       /usr/bin/odoo --config /etc/odoo/odoo.conf
       "
   db:

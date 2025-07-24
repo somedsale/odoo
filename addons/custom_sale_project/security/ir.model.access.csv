@@ -1,5 +1,6 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_project_config,project.config.access,model_project_config,project.group_project_manager,1,1,1,0
+access_project_config_admin,project.config.admin,model_project_config,project.group_project_manager,1,1,1,1
+access_project_config_user,project.config.user,model_project_config,project.group_project_user,1,0,0,0
 access_task_production_report_user,access.task.production.report.user,model_task_production_report,base.group_user,1,1,1,1
 access_project_task_user,project.task.user,model_project_task,project.group_project_user,1,0,0,0
 access_project_task_admin,project.task.admin,model_project_task,project.group_project_manager,1,1,1,1

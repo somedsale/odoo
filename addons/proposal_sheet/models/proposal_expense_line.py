@@ -14,7 +14,8 @@ class ProposalExpenseLine(models.Model):
     expense_id = fields.Many2one('project.expense', string='Chi Phí', required=True)
     quantity = fields.Float(string='Số Lượng', default=1.0, digits='Product Unit of Measure')
     unit = fields.Many2one('uom.uom', string='Đơn Vị', required=True)
-    price_unit = fields.Float(string='Số Tiền', digits='Product Price', required=True)
+    price_unit = fields.Float(string='Đơn giá', digits='Product Price', required=True)
+    price_total = fields.Float(string='Thành tiền', compute='_compute_price_total', store=True)
     description = fields.Text(string='Ghi Chú')
     type = fields.Selection([('expense', 'Chi Phí')], default='expense', required=True, readonly=True)
 
@@ -97,3 +98,7 @@ class ProposalExpenseLine(models.Model):
     def unarchive(self):
         self.write({'active': True})
         self.message_post(body='Dòng chi phí đã được khôi phục.')
+    @api.depends('quantity', 'price_unit')
+    def _compute_price_total(self):
+        for line in self:
+            line.price_total = line.quantity * line.price_unit

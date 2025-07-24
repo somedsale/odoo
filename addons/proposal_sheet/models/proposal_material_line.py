@@ -15,6 +15,8 @@ class ProposalMaterialLine(models.Model):
     quantity = fields.Float(string='Số Lượng', default=1.0, digits='Product Unit of Measure')
     unit = fields.Many2one('uom.uom', string='Đơn Vị', required=True)
     price_unit = fields.Float(string='Đơn Giá', digits='Product Price')
+    price_total = fields.Float(string='Thành tiền', compute='_compute_price_total', store=True)
+    proposed_supplier = fields.Char(string='NCC Đề Xuất')
     description = fields.Text(string='Ghi Chú')
     type = fields.Selection([('material', 'Vật Tư')], default='material', required=True, readonly=True)
 
@@ -88,3 +90,9 @@ class ProposalMaterialLine(models.Model):
     def unarchive(self):
         self.write({'active': True})
         self.message_post(body='Dòng vật tư đã được khôi phục.')
+    @api.depends('quantity', 'price_unit')
+    def _compute_price_total(self):
+        for line in self:
+            line.price_total = line.quantity * line.price_unit
+
+    

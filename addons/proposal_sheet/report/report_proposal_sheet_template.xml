@@ -1,0 +1,284 @@
+<odoo>
+    <template id="report_proposal_sheet_template">
+        <t t-call="web.external_layout">
+            <main class="o_main">
+                <div style="font-family:'Times New Roman', serif;" class="page">
+
+                    <!-- CSS cho bảng -->
+                    <style>
+                        table.report-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            border: 1px solid black;
+                            font-size: 16px;
+                        }
+                        table.report-table th,
+                        table.report-table td {
+                            border: 1px solid black;
+                            padding: 6px;
+                            vertical-align: middle !important;
+                        }
+                        table.report-table th {
+                            background: #f2f2f2;
+                            text-align: center;
+                            font-weight: bold;
+                        }
+                        table.report-table td.text-center {
+                            text-align: center;
+                        }
+                        table.report-table td.text-left {
+                            text-align: left;
+                        }
+
+                        table.general_information {
+                            width: 100%;
+                            border: none;
+                            font-size: 16px;
+                            margin-bottom: 15px;
+                            font-family: "Times New Roman", serif;
+                        }
+                        table.general_information td {
+                            width: 50%;
+                            vertical-align: top;
+                            padding: 5px 10px;
+                            background-color: white;
+                            border: none;
+                        }
+                        table.general_information p {
+                            margin: 4px 0;
+                            line-height: 1.4;
+                        }
+                        table.general_information .label {
+                            font-weight: bold !important; /* Đảm bảo nhãn đậm */
+                            color: #000 !important;
+                        }
+                        table.general_information .info-value {
+                            font-weight: normal; /* Giữ giá trị không đậm */
+                            margin-left: 4px; /* Tạo khoảng cách với nhãn */
+                            color: #000 !important;
+                        }         
+                        .signature table tr td{
+                           border: none !important;
+                           padding: 5px 10px;
+                        }
+                    </style>
+
+                    <!-- Hàm format tiền -->
+                    <t t-set="format_vnd" t-value="lambda amount: ('{:,.0f}'.format(amount)).replace(',', '.') + ' ₫'"/>
+
+                    <h1 style="text-align:center; padding: 10px 0;font-weight: bold">PHIẾU ĐỀ XUẤT</h1>
+
+                    <t t-foreach="enumerate(docs)" t-as="doc_with_index">
+                        <t t-set="idx" t-value="doc_with_index[0]"/>
+                        <t t-set="o" t-value="doc_with_index[1]"/>
+
+                        <table class="general_information" style="width:100%; margin-bottom:15px; border:none; border-collapse: collapse;border-color: white;">
+                            <tr>
+                                <!-- Cột trái -->
+                                <td style ="width:50%; vertical-align:top;background-color:white !important;border:none !important;">
+                                    <p>
+                                        <span class="label">Mã Phiếu:</span>
+                                        <span class="info-value">
+                                            <t t-esc="o.name or 'N/A'"/>
+                                        </span>
+                                    </p>
+                                    <p>
+                                        <span class="label">Dự Án:</span>
+                                        <span class="info-value">
+                                            <t t-esc="o.project_id.display_name or ''"/>
+                                        </span>
+                                    </p>
+                                    <p>
+                                        <span class="label">Sản phẩm:</span>
+                                        <span class="info-value">
+                                            <t t-esc="o.task_id.name if o.task_id else ''"/>
+                                        </span>
+                                    </p>
+                                </td>
+
+                                <!-- Cột phải -->
+                                <td style="width:50%; vertical-align:top;background-color:white !important;border:none !important;">
+                                    <p>
+                                        <span class="label">Người đề xuất:</span>
+                                        <span class="info-value">
+                                            <t t-esc="o.requested_by.name or ''"/>
+                                        </span>
+                                    </p>
+                                    <p>
+                                        <span class="label">Phòng ban:</span>
+                                        <span class="info-value">
+                                            <t t-esc="o.requested_by.employee_id.department_id.name if o.requested_by.employee_id and o.requested_by.employee_id.department_id else 'N/A'"/>
+                                        </span>
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Bảng chi tiết -->
+                        <table class="report-table">
+                            <thead style ="background-color:#27B1FC !important">
+                                <tr class="table-bordered border-dark border-2" style="color:#000 !important;font-weight: bold;">
+                                    <th>STT</th>
+                                    <t t-if="o.type == 'material'">
+                                        <th>Vật Tư</th>
+                                    </t>
+                                    <t t-if="o.type == 'expense'">
+                                        <th>Chi Phí</th>
+                                    </t>
+                                    <th>Đơn Vị</th>
+                                    <th>Số Lượng</th>
+                                    <th>Đơn Giá</th>
+                                    <th>Thành Tiền</th>
+                                    <t t-if="o.type == 'material'">
+                                        <th>NCC Đề Xuất</th>
+                                    </t>
+                                    <th>Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Vật tư -->
+                                <t t-if="o.type == 'material'">
+                                    <t t-foreach="enumerate(o.material_line_ids)" t-as="line_with_index">
+                                        <t t-set="i" t-value="line_with_index[0]"/>
+                                        <t t-set="line" t-value="line_with_index[1]"/>
+                                        <tr class="table-bordered border-dark border-2">
+                                            <td class="text-center">
+                                                <t t-esc="i + 1"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="line.material_id.name"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <t t-esc="line.unit.name"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <t t-esc="line.quantity"/>
+                                            </td>
+                                            <td class="text-end">
+                                                <t t-esc="format_vnd(line.price_unit)"/>
+                                            </td>
+                                            <td class="text-end">
+                                                <t t-esc="format_vnd(line.price_total)"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="line.proposed_supplier"/>
+                                            </td>
+                                            <td style="background-color: white !important;">
+                                                <t t-esc="line.description"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </t>
+
+                                <!-- Chi phí -->
+                                <t t-if="o.type == 'expense'">
+                                    <t t-foreach="enumerate(o.expense_line_ids)" t-as="line_with_index">
+                                        <t t-set="i" t-value="line_with_index[0]"/>
+                                        <t t-set="line" t-value="line_with_index[1]"/>
+                                        <tr class="table-bordered border-dark border-2">
+                                            <td class="text-center">
+                                                <t t-esc="i + 1"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="line.expense_id.name"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="line.unit.name"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <t t-esc="line.quantity"/>
+                                            </td>
+                                            <td class="text-end">
+                                                <t t-esc="format_vnd(line.price_unit)"/>
+                                            </td>
+                                            <td class="text-end">
+                                                <t t-esc="format_vnd(line.price_total)"/>
+                                            </td>
+                                            <td style="background-color: white !important;">
+                                                <t t-esc="line.description"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </t>
+
+                                <!-- Tổng -->
+                                <tr class="table-bordered border-dark border-2" style="color:#000 !important;font-weight: bold;">
+                                    <td colspan="5" class="text-left">
+                                        <strong>Tổng:</strong>
+                                    </td>
+                                    <td class="text-end">
+                                        <t t-esc="format_vnd(o.amount_total)"/>
+                                    </td>
+                                    <td style="background-color: white !important;" colspan="2"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Ghi chú -->
+                        <div style="margin-top: 15px;font-size: 16px;">
+                            <p>
+                                <strong style="font-weight: bold !important;">Ghi chú:</strong>
+                                <span class="info-value">
+                                    <t t-esc="o.take_note or ''"/>
+                                </span>
+                            </p>
+                        </div>
+
+                        <!-- Chữ ký -->
+                        <div class="signature" style="margin-top:50px;border:none;font-size:16px;">
+                            <table style="width:100%; text-align:center; border-color: white; border-style: none; outline: none; border-collapse: collapse;">
+                                <tr style ="border:none">
+                                    <td>
+                                        <t t-esc="datetime.date.today().strftime('%d/%m/%Y')"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="datetime.date.today().strftime('%d/%m/%Y')"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="datetime.date.today().strftime('%d/%m/%Y')"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="datetime.date.today().strftime('%d/%m/%Y')"/>
+                                    </td>
+                                </tr>
+                                <tr style ="border:none">
+                                    <td>
+                                        <strong>NGƯỜI ĐỀ XUẤT</strong>
+                                    </td>
+                                    <td>
+                                        <strong>TRƯỞNG BỘ PHẬN</strong>
+                                    </td>
+                                    <td>
+                                        <strong>KẾ TOÁN TỔNG HỢP</strong>
+                                    </td>
+                                    <td>
+                                        <strong>GIÁM ĐỐC</strong>
+                                    </td>
+                                </tr>
+                                <tr style ="border:none">
+                                    <td>
+                                        <em>(Ký, họ tên)</em>
+                                    </td>
+                                    <td>
+                                        <em>(Ký, họ tên)</em>
+                                    </td>
+                                    <td>
+                                        <em>(Ký, họ tên)</em>
+                                    </td>
+                                    <td>
+                                        <em>(Ký, họ tên)</em>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Ngắt trang -->
+                        <t t-if="(idx + 1) &lt; len(docs)">
+                            <div style="page-break-before: always;"></div>
+                        </t>
+                    </t>
+                </div>
+            </main>
+        </t>
+    </template>
+</odoo>
