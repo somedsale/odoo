@@ -34,7 +34,7 @@
     <record id="project_stage_completed" model="project.project.stage">
         <field name="name">Hoàn tất</field>
         <field name="sequence">10</field>
-        <field name="fold">True</field> <!-- Mark as closed stage -->
+        <field name="fold">False</field> <!-- Mark as closed stage -->
     </record>
     <record id="project_stage_canceled" model="project.project.stage">
         <field name="name">Đã hủy</field>

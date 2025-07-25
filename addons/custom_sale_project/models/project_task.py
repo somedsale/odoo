@@ -28,7 +28,12 @@ class ProjectTask(models.Model):
         ('upcoming', 'Sắp hết hạn'),
         ('ontrack', 'Còn thời gian')
     ], string="Trạng thái Deadline", compute="_compute_deadline_status", store=True, tracking=True)
+    can_edit = fields.Boolean(compute='_compute_can_edit')
 
+    @api.depends()
+    def _compute_can_edit(self):
+        for rec in self:
+            rec.can_edit = self.env.user.has_group('project.group_project_manager')
     @api.depends('quantity', 'uom_id')
     def _compute_quantity_uom(self):
         for task in self:

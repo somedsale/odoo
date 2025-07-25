@@ -19,6 +19,7 @@
                     <group>
                         <group>
                             <field name="sale_order_id" options="{&apos;no_create&apos;: True}" readonly="1"/>
+                            <field name="num_contract" required="1"/>
                             <field name="partner_id" options="{&apos;no_create&apos;: True}" readonly="1"/>
                             <field name="project_id" readonly="1"/>
                             <field name="company_id" groups="base.group_multi_company"/>
@@ -45,9 +46,10 @@
         <field name="arch" type="xml">
             <tree string="Contracts">
                 <field name="name"/>
+                <field name="num_contract"/>
                 <field name="sale_order_id"/>
-                <field name="partner_id"/>
                 <field name="project_id"/>
+                <field name="partner_id"/>
                 <field name="stage" widget="badge" decoration-info="stage == &apos;negotiating&apos;" decoration-warning="stage == &apos;preparing&apos;" decoration-primary="stage == &apos;executing&apos;" decoration-success="stage == &apos;completed&apos;"/>
             </tree>
         </field>
