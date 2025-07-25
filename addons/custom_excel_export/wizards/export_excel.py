@@ -214,6 +214,7 @@ class ExportExcelWizard(models.TransientModel):
                     current_row += 1
                 else:
                     sttLM += 1
+                    stt = 0
                     roman_num = self.env['sale.order'].int_to_roman(sttLM)
                     row_data = [roman_num, line.name] + [""] * (len(headers) - 2)
                     ws.append(row_data)

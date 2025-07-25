@@ -108,7 +108,7 @@
                                 </t>
                                 <th style="min-width:100px !important;border-right: 1px solid black;">Đơn giá</th>
                                 <th style="min-width:100px !important;border-right: 1px solid black;">Thành tiền</th>
-                                <th style="min-width:100px !important;border-right: 1px solid black;">Ghi chú</th>
+                                <th style="min-width:80px !important;border-right: 1px solid black;">Ghi chú</th>
                             </tr>
                             <t t-set="stt" t-value="0"/>
                             <t t-set="sttLM" t-value="0"/>
@@ -146,21 +146,21 @@
                                             <span t-field="line.x_chi_phi_nhan_cong" t-field-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;currency_field&quot;: &quot;currency_id&quot;}"/>
                                         </td>
                                     </t>
-                                    <td>
+                                    <td style="text-align: right !important;">
                                         <span t-field="line.formatted_price"/>
                                     </td>
-                                    <td>
+                                    <td style="text-align: right !important;">
                                         <span t-field="line.price_subtotal"/>
                                     </td>
-                                    <td style="border-right: 2px solid black;">
+                                    <td style="border-center: 2px solid black;">
                                         <span t-field="line.x_note"/>
                                     </td>
                                 </tr>
                                 </t>
                                 <t t-else="">
                                 <t t-set="sttLM" t-value="sttLM + 1"/>
-                                
-                                    <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
+                                <t t-set="stt" t-value="0"/>
+                                    <tr class="table-bordered border-dark border" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
                                         <td class="text-center" style="border-left: 2px solid black;">
                                             <span t-esc="doc.int_to_roman(sttLM)"/>
                                         </td>
@@ -187,7 +187,7 @@
                             <t t-if="doc.is_show_chi_phi_nhan_cong and doc.is_show_ma_sp">
                                 <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
                                     <td colspan="9" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng chưa VAT</td><!-- <td  style="white-space:nowrap;"></td> -->
-                                    <td>
+                                    <td style="white-space:nowrap; text-align: right;">
                                         <span t-field="doc.amount_untaxed"/>
                                     </td>
                                     <td  style="white-space:nowrap;"></td>
@@ -197,7 +197,7 @@
                                         <td colspan="9" style="white-space:nowrap; text-align: left;vertical-align: middle;">
                                             <t t-esc="&apos;VAT %s&apos; % item[0]"/>
                                         </td>
-                                        <td style="white-space:nowrap;">
+                                        <td style="white-space:nowrap; text-align: right;">
                                             <t t-esc="&apos;%s đ&apos; % &apos;{:,.0f}&apos;.format(item[1][&apos;amount&apos;])"/>
                                         </td>
                                         <td  style="white-space:nowrap;"></td>
@@ -205,7 +205,7 @@
                                 </t> --&gt;
                                 <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
                                     <td colspan="9" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng</td>
-                                    <td>
+                                    <td style="white-space:nowrap; text-align: right;">
                                         <span t-field="doc.amount_total"/>
                                     </td>
                                     <td  style="white-space:nowrap;"></td>
@@ -214,7 +214,7 @@
                             <t t-elif="doc.is_show_chi_phi_nhan_cong or doc.is_show_ma_sp">
                                 <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
                                     <td colspan="8" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng chưa VAT</td><!-- <td  style="white-space:nowrap;"></td> -->
-                                    <td>
+                                    <td style="white-space:nowrap; text-align: right;">
                                         <span t-field="doc.amount_untaxed"/>
                                     </td>
                                     <td  style="white-space:nowrap;"></td>
@@ -224,7 +224,7 @@
                                         <td colspan="8" style="white-space:nowrap; text-align: left;vertical-align: middle;">
                                             <t t-esc="&apos;VAT %s&apos; % item[0]"/>
                                         </td>
-                                        <td style="white-space:nowrap;">
+                                        <td style="white-space:nowrap; text-align: right;">
                                             <t t-esc="&apos;%s đ&apos; % &apos;{:,.0f}&apos;.format(item[1][&apos;amount&apos;])"/>
                                         </td>
                                         <td  style="white-space:nowrap;"></td>
@@ -232,7 +232,7 @@
                                 </t>
                                 <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
                                     <td colspan="8" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng</td>
-                                    <td>
+                                    <td style="white-space:nowrap; text-align: right;">
                                         <span t-field="doc.amount_total"/>
                                     </td>
                                     <td  style="white-space:nowrap;"></td>
@@ -241,7 +241,7 @@
                             <t t-else="">
                                 <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
                                     <td colspan="7" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng chưa VAT</td><!-- <td  style="white-space:nowrap;"></td> -->
-                                    <td>
+                                    <td style="white-space:nowrap; text-align: right;">
                                         <span t-field="doc.amount_untaxed"/>
                                     </td>
                                     <td  style="white-space:nowrap;"></td>
@@ -251,7 +251,7 @@
                                         <td colspan="7" style="white-space:nowrap; text-align: left;vertical-align: middle;">
                                             <t t-esc="&apos;VAT %s&apos; % item[0]"/>
                                         </td>
-                                        <td style="white-space:nowrap;">
+                                        <td style="white-space:nowrap; text-align: right;">
                                             <t t-esc="&apos;%s đ&apos; % &apos;{:,.0f}&apos;.format(item[1][&apos;amount&apos;])"/>
                                         </td>
                                         <td  style="white-space:nowrap;"></td>
@@ -259,7 +259,7 @@
                                 </t>
                                 <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
                                     <td colspan="7" style="white-space:nowrap; text-align: left;vertical-align: middle;">Tổng</td>
-                                    <td>
+                                    <td style="white-space:nowrap; text-align: right;">
                                         <span t-field="doc.amount_total"/>
                                     </td>
                                     <td  style="white-space:nowrap;"></td>
@@ -271,7 +271,7 @@
                 <div style="page-break-inside: avoid;">
                     <div style="text-align: center; font-weight: bold; margin-top: 10px;">
                         Số tiền bằng chữ: <span>
-                            <t t-esc="doc.number_to_text(doc.amount_total)"/>
+                            <t t-esc="doc.amount_to_text_vi(doc.amount_total)"/>
                         </span>
                     </div>
                 </div>

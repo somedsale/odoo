@@ -47,6 +47,6 @@
             </p>
         </field>
     </record>
-    <menuitem id="menu_project_production_root" name="Sản lượng" parent="project.menu_main_pm" groups="project.group_project_manager"/>
-    <menuitem id="menu_task_production_report" name="Báo cáo sản lượng" parent="menu_project_production_root" action="action_task_production_report" groups="project.group_project_manager"/>
+    <!-- <menuitem id="menu_project_production_root" name="Sản lượng" parent="project.menu_main_pm" groups="project.group_project_manager"/>
+    <menuitem id="menu_task_production_report" name="Báo cáo sản lượng" parent="menu_project_production_root" action="action_task_production_report" groups="project.group_project_manager"/> -->
 </odoo>

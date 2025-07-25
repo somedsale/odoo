@@ -16,7 +16,7 @@ class SaleOrder(models.Model):
             if not order.contract_id:
                 # Create contract when sale order is confirmed
                 contract_vals = {
-                    'name': f'Contract for {order.name}',
+                    'name': f'Hợp đồng cho đơn hàng {order.name}',
                     'sale_order_id': order.id,
                     'partner_id': order.partner_id.id,
                     'stage': 'negotiating',
@@ -32,6 +32,7 @@ class ContractManagement(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']  # Enable chatter for tracking
 
     name = fields.Char(string='Tên hợp đồng', required=True)
+    num_contract = fields.Char(string='Số hợp đồng', required=True)
     sale_order_id = fields.Many2one('sale.order', string='Đơn hàng', required=True)
     partner_id = fields.Many2one('res.partner', string='Khách hàng', required=True)
     stage = fields.Selection([
@@ -40,13 +41,13 @@ class ContractManagement(models.Model):
         ('executing', 'Đang thực hiện'),
         ('completed', 'Hoàn thành'),
         ('canceled', 'Đã hủy'),
-    ], string='Giai đoạn', default='negotiating', required=True, tracking=True)
+    ], string='Giai đoạn', default='negotiating', required=True)
     project_id = fields.Many2one('project.project', string='Dự án', readonly=True)
     company_id = fields.Many2one('res.company', string='Công ty', default=lambda self: self.env.company)
-    planned_start_date = fields.Date(string='Ngày bắt dầu', tracking=True)
-    planned_end_date = fields.Date(string='Ngày kết thúc', tracking=True)
-    description = fields.Text(string='Mô tả', tracking=True)
-    attachment_ids = fields.Many2many('ir.attachment', string='Tài liệu', tracking=True)
+    planned_start_date = fields.Date(string='Ngày bắt dầu')
+    planned_end_date = fields.Date(string='Ngày kết thúc')
+    description = fields.Text(string='Mô tả')
+    attachment_ids = fields.Many2many('ir.attachment', string='Tài liệu')
 
     @api.model
     def _get_next_stage(self, current_stage):
@@ -83,11 +84,11 @@ class ContractManagement(models.Model):
                         name_project = contract.sale_order_id.name
                     # Create project when stage is 'Đang thực hiện'
                     project_vals = {
-                        'name': f'{name_project} - {contract.name}',
+                        'name': f'{name_project}',
                         'partner_id': contract.partner_id.id,
                         'company_id': contract.company_id.id,
                         'allow_timesheets': False,  # Optional: Disable timesheets if not needed
-                        'allow_billable': True,  # Optional: Disable billing if not needed
+                        'allow_billable': False,  # Optional: Disable billing if not needed  # Optional: Disable billing if not needed
                         'type_ids': [(6, 0, task_stages.ids)],  # Assign task stages to project
                         'date_start': contract.planned_start_date,  # Sync planned start date
                         'date': contract.planned_end_date,  # Sync planned end date
@@ -129,7 +130,7 @@ class ContractManagement(models.Model):
                                 'quantity': line.product_uom_qty,
                                 'uom_id': line.product_uom.id,
                                 'stage_id': default_stage.id,
-                                'allow_billable': True,
+                                'allow_billable': False,  # Optional: Disable billing if not needed
                                 'description': line.name,  # Use sale order line description
                                 'user_ids': [(6, 0, [config.default_project_manager_id.id])]
                             }

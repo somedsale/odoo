@@ -20,14 +20,11 @@
         <field name="arch" type="xml">
             <xpath expr="//div[@class=&apos;o_kanban_card_content mw-100&apos;]" position="inside">
                 <field name="completion_percent" invisible="1"/>
-                <field name="deadline_status" widget="badge" options="{&apos;decoration&apos;: {&apos;overdue&apos;: &apos;danger&apos;, &apos;upcoming&apos;: &apos;warning&apos;, &apos;ontrack&apos;: &apos;success&apos;}}"
-                    decoration-success="deadline_status == &apos;ontrack&apos;"
-                    decoration-warning="deadline_status == &apos;upcoming&apos;"
-                    decoration-danger="deadline_status == &apos;overdue&apos;"
-                />
-                <t t-set="percent" t-value="record.completion_percent.raw_value or record.completion_percent.value"/>
+                <field name="deadline_status" widget="badge" options="{&apos;decoration&apos;: {&apos;overdue&apos;: &apos;danger&apos;, &apos;upcoming&apos;: &apos;warning&apos;, &apos;ontrack&apos;: &apos;success&apos;}}" decoration-success="deadline_status == &apos;ontrack&apos;" decoration-warning="deadline_status == &apos;upcoming&apos;" decoration-danger="deadline_status == &apos;overdue&apos;"/>
+                <t t-set="percent" t-value="record.completion_percent.raw_value"/>
                 <t t-set="color">
-                    <t t-if="percent &lt; 30">#f44336</t><!-- Đỏ -->
+                    <t t-if="percent == 0">#9e9e9e</t><!-- Xám -->
+                    <t t-elif="percent &lt; 30">#f44336</t><!-- Đỏ -->
                     <t t-elif="percent &lt;= 70">#ff9800</t><!-- Cam -->
                     <t t-else="">#4caf50</t><!-- Xanh -->
                 </t>

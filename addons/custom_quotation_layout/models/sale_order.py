@@ -29,57 +29,71 @@ class SaleOrder(models.Model):
     #             res.x_hr_address = emp.work_location
     #             res.x_hr_phone = emp.work_phone
     #     return res
-    def number_to_text(self, number):
-        """
-        Chuyển đổi số thành chữ tiếng Việt.
-        :param number: Số cần chuyển đổi (integer hoặc float)
-        :return: Chuỗi chữ tiếng Việt
-        """
-        def convert_less_than_one_thousand(number):
-            units = ["", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"]
-            teens = ["mười", "mười một", "mười hai", "mười ba", "mười bốn", "mười lăm", 
-                     "mười sáu", "mười bảy", "mười tám", "mười chín"]
-            tens = ["", "", "hai mươi", "ba mươi", "bốn mươi", "năm mươi", 
-                    "sáu mươi", "bảy mươi", "tám mươi", "chín mươi"]
+    def amount_to_text_vi(self,number):
+        number = int(round(number))
 
-            result = ""
-            if number >= 100:
-                result += units[number // 100] + " trăm"
-                number %= 100
-                if number > 0:
-                    result += " "
-            if number >= 20:
-                result += tens[number // 10]
-                number %= 10
-                if number > 0:
-                    result += " " + units[number]
-            elif number >= 10:
-                result += teens[number - 10]
+        units = ["", "nghìn", "triệu", "tỷ", "nghìn tỷ", "triệu tỷ"]
+        num_text = ["không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"]
+
+        def read_three_digits(number, show_zero_hundred):
+            hundred = number // 100
+            ten = (number % 100) // 10
+            unit = number % 10
+            words = ""
+
+            if hundred != 0:
+                words += num_text[hundred] + " trăm"
+            elif show_zero_hundred:
+                words += "không trăm"
+
+            if ten == 0:
+                if unit != 0:
+                    if hundred != 0:
+                        words += " linh " + num_text[unit]
+                    else:
+                        words += num_text[unit]
+            elif ten == 1:
+                words += " mười"
+                if unit == 1:
+                    words += " một"
+                elif unit == 5:
+                    words += " lăm"
+                elif unit != 0:
+                    words += " " + num_text[unit]
             else:
-                result += units[number]
-            return result.strip()
+                words += " " + num_text[ten] + " mươi"
+                if unit == 1:
+                    words += " mốt"
+                elif unit == 5:
+                    words += " lăm"
+                elif unit != 0:
+                    words += " " + num_text[unit]
 
-        if not number:
+            return words.strip()
+
+        def split_number(number):
+            parts = []
+            while number > 0:
+                parts.insert(0, number % 1000)
+                number //= 1000
+            return parts
+
+        if number == 0:
             return "Không đồng"
 
-        units = ["", "nghìn", "triệu", "tỷ"]
-        result = []
-        i = 0
-        number = int(number)
+        parts = split_number(number)
+        word_parts = []
+        for i in range(len(parts)):
+            n = parts[i]
+            if n != 0:
+                show_zero_hundred = (i != 0 and parts[i] < 100)
+                words = read_three_digits(n, show_zero_hundred)
+                unit = units[len(parts) - i - 1]
+                word_parts.append(words + (" " + unit if unit else ""))
 
-        while number > 0:
-            part = number % 1000
-            if part > 0:
-                text = convert_less_than_one_thousand(part)
-                if i > 0:
-                    text += " " + units[i]
-                result.insert(0, text)
-            number //= 1000
-            i += 1
+        final = " ".join(word_parts).strip().capitalize() + " đồng"
+        return final
 
-        final_result = " ".join(result).strip()
-        final_result = final_result[0].upper() + final_result[1:] + " đồng"
-        return final_result
     def int_to_roman(seft,num):
         if not isinstance(num, int) or num < 1:
             return ""
