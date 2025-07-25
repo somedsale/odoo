@@ -38,7 +38,7 @@
                             <field name="take_note" placeholder="Ghi chú về phiếu đề xuất" readonly="state != 'draft'"/>
                         </group>
                         <group>
-                            <field name="type" widget="radio" readonly="is_type_readonly"/>
+                            <field name="type" widget="selection" readonly="is_type_readonly"/>
                             <field name="create_date" string="Ngày Tạo" readonly="1"/>
                             <field name="amount_total" readonly="1" />
                         </group>
