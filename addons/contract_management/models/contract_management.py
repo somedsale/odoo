@@ -32,7 +32,7 @@ class ContractManagement(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']  # Enable chatter for tracking
 
     name = fields.Char(string='Tên hợp đồng', required=True)
-    num_contract = fields.Char(string='Số hợp đồng', required=True)
+    num_contract = fields.Char(string='Số hợp đồng')
     sale_order_id = fields.Many2one('sale.order', string='Đơn hàng', required=True)
     partner_id = fields.Many2one('res.partner', string='Khách hàng', required=True)
     stage = fields.Selection([
@@ -94,10 +94,10 @@ class ContractManagement(models.Model):
                         'date': contract.planned_end_date,  # Sync planned end date
                         'description': contract.description,  # Sync description
                     }
-                    config = self.env['project.config'].search([], limit=1)
-                    if config and config.default_project_manager_id:
-                        project_vals['user_id'] = config.default_project_manager_id.id
-                        _logger.info(f"Using Default Project Manager: {config.default_project_manager_id.name}")
+                    manager_id = self.env['hr.department'].get_manager_id_by_name('Kế hoạch - Sản xuất')
+                    if manager_id:
+                        project_vals['user_id'] = manager_id.user_id.id
+                        _logger.info(f"Project Manager assigned: {manager_id}")
                     else:
                         _logger.info("No Project Manager assigned")
                     
@@ -132,7 +132,7 @@ class ContractManagement(models.Model):
                                 'stage_id': default_stage.id,
                                 'allow_billable': False,  # Optional: Disable billing if not needed
                                 'description': line.name,  # Use sale order line description
-                                'user_ids': [(6, 0, [config.default_project_manager_id.id])]
+                                'user_ids': [(6, 0, [manager_id.user_id.id])] if manager_id.user_id.id else [],
                             }
                             task = self.env['project.task'].create(task_vals)
                             product_task_map[line.product_id.id] = task.id 

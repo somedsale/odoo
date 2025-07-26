@@ -9,7 +9,7 @@
     """,
     'category': 'Sales',
     'author': 'Your Name',
-    'depends': ['sale', 'project'],
+    'depends': ['sale', 'project','hr', 'custom_department_manager'],  # Added custom_department_manager dependency
     'data': [
         'security/ir.model.access.csv',
         'views/contract_management_views.xml',
