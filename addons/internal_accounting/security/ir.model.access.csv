@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_internal_payment_accounting,internal.payment.accounting,model_internal_payment,internal_accounting.group_internal_accounting,1,1,1,1
+access_internal_payment_accounting_manager,internal.payment.accounting,model_internal_payment,internal_accounting.group_internal_accounting_manager,1,1,1,1
