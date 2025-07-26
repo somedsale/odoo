@@ -10,6 +10,7 @@
                 <field name="show_button_boss_approve" invisible="1"/>
                 <field name="show_button_done" invisible="1"/>
                 <field name="show_button_reject" invisible="1"/>
+                <field name="show_button_accounting_approve" invisible="1"/>
                 <field name="show_button_cancel" invisible="1"/>
                 <field name="show_button_reset_draft" invisible="1"/>
                 <field name="is_type_readonly" invisible="1"/>
@@ -18,11 +19,12 @@
                     <button name="action_manager_approve" type="object" string="Quản Lý Duyệt" class="btn-success" invisible="show_button_manager_approve == False"/>
                     <button name="action_boss_approve" type="object" string="Sếp Duyệt" class="btn-success" invisible="show_button_boss_approve == False"/>
                     <button name="action_done" type="object" string="Hoàn Tất" class="btn-secondary" invisible="show_button_done == False"/>
+                    <button name="action_accounting_approve" type="object" string="Kế Toán Duyệt" class="btn-info" invisible="not show_button_accounting_approve"/>
                     <button name="%(action_proposal_reject_wizard)d" type="action" string="Từ Chối" class="btn-danger" invisible="show_button_reject == False"/>
                     <button name="action_cancel" type="object" string="Hủy Phiếu" class="btn-warning" invisible="show_button_cancel == False"/>
                     <button name="action_reset_to_draft" type="object" string="Reset về Nháp" class="btn-secondary" invisible="show_button_reset_draft == False"/>
                     <button name="action_load_from_estimate" type="object" string="Lấy từ Dự toán" invisible="state != 'draft'"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,reviewed,approved,done,rejected,canceled"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,reviewed_manager,reviewed_accounting,approved,waiting_accounting_paid,done,rejected,canceled"/>
                 </header>
                 <sheet>
                     <div class="oe_title">

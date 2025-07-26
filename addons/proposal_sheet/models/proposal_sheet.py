@@ -19,8 +19,10 @@ class ProposalSheet(models.Model):
     state = fields.Selection([
     ('draft', 'Nháp'),
     ('submitted', 'Đang xem xét'),
-    ('reviewed', 'Đang phê duyệt'),
-    ('approved', 'Đã duyệt'),
+    ('reviewed_manager', 'Đang phê duyệt (QL)'),
+    ('reviewed_accounting', 'Đang phê duyệt (KT)'),
+    ('approved', 'Đã duyệt (Sếp)'),
+    ('waiting_accounting_paid', 'Chờ chi tiền (KT)'),
     ('done', 'Hoàn tất'),
     ('rejected', 'Bị từ chối'),
     ('canceled', 'Đã hủy')
@@ -54,6 +56,7 @@ class ProposalSheet(models.Model):
                 sheet.amount_total = 0.0
     show_button_submit = fields.Boolean(compute='_compute_show_buttons')
     show_button_manager_approve = fields.Boolean(compute='_compute_show_buttons')
+    show_button_accounting_approve = fields.Boolean(compute='_compute_show_buttons')
     show_button_boss_approve = fields.Boolean(compute='_compute_show_buttons')
     show_button_done = fields.Boolean(compute='_compute_show_buttons')
     show_button_reject = fields.Boolean(compute='_compute_show_buttons')
@@ -181,7 +184,7 @@ class ProposalSheet(models.Model):
     def action_manager_approve(self):
         if self.state != 'submitted':
             raise UserError("Chỉ phiếu đang xem xét mới được duyệt.")
-        self.state = 'reviewed'
+        self.state = 'reviewed_manager'
         approver_name = self.env.user.name
         message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được duyệt bởi <em>{approver_name}</em>.</p>"
         partner_ids = self._get_approval_partners(include_manager=False, include_boss=True)
@@ -202,6 +205,12 @@ class ProposalSheet(models.Model):
         self.state = 'done'
         self.message_post(body="Phiếu đề xuất đã hoàn tất.")
 
+    def action_accounting_approve(self):
+        if self.state != 'reviewed_manager':
+            raise UserError("Chỉ phiếu đã được Quản lý duyệt mới được Kế toán duyệt.")
+        self.state = 'reviewed_accounting'
+        self.message_post(body="Kế toán đã duyệt phiếu đề xuất.")
+
     def action_reset_to_draft(self):
         if self.state != 'rejected':
             raise UserError("Chỉ phiếu bị từ chối mới được reset về nháp.")
@@ -219,15 +228,20 @@ class ProposalSheet(models.Model):
     def _compute_show_buttons(self):
         for rec in self:
             is_creator = rec.requested_by == self.env.user
-            is_team_lead = rec.task_id.project_id.user_id == self.env.user if rec.task_id.project_id else False
+            is_manager = rec.task_id.project_id.user_id == self.env.user if rec.task_id.project_id else False
+            is_accounting = self.env.user.has_group('internal_accounting.group_internal_accounting')  # KT
             is_boss = rec.approver_boss_id == self.env.user if rec.approver_boss_id else False
+
             rec.show_button_submit = rec.state == 'draft' and is_creator
-            rec.show_button_manager_approve = rec.state == 'submitted' and (is_team_lead )
-            rec.show_button_boss_approve = rec.state == 'reviewed' and (is_boss )
-            rec.show_button_done = rec.state == 'approved' and (is_creator )
-            rec.show_button_reject = rec.state in ['submitted', 'reviewed'] and (is_team_lead or is_boss )
-            rec.show_button_cancel = rec.state in ['draft', 'submitted'] and (is_creator)
-            rec.show_button_reset_draft = rec.state in ['rejected'] and (is_creator)
+            rec.show_button_manager_approve = rec.state == 'submitted' and is_manager
+            rec.show_button_accounting_approve = rec.state == 'reviewed_manager' and is_accounting
+            rec.show_button_boss_approve = rec.state == 'reviewed_accounting' and is_boss
+            rec.show_button_done = rec.state == 'approved' and is_accounting  # KT chi xong
+            rec.show_button_reject = rec.state in ['submitted', 'reviewed_manager', 'reviewed_accounting', 'approved'] \
+                                    and (is_manager or is_accounting or is_boss)
+            rec.show_button_cancel = rec.state in ['draft', 'submitted'] and is_creator
+            rec.show_button_reset_draft = rec.state == 'rejected' and is_creator
+
     
     
 
