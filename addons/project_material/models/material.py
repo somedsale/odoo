@@ -26,4 +26,9 @@ class ProjectMaterial(models.Model):
             sequence = self.env['ir.sequence'].next_by_code('project.material.code') or '000'
             # Tạo mã theo quy tắc: Mã danh mục + Số sequence
             vals['code'] = f"{category_code}{sequence}"
+        vendor_id = vals.get('vendor_id')
+        if vendor_id:
+            vendor = self.env['res.partner'].browse(vendor_id)
+            if vendor and vendor.supplier_rank == 0:
+                vendor.supplier_rank = 1  
         return super(ProjectMaterial, self).create(vals)

@@ -5,21 +5,6 @@ from io import BytesIO
 class ProposalSheetXlsx(models.AbstractModel):
     _name = 'report.proposal_sheet_xlsx_report.proposal_sheet_xlsx'
     _inherit = 'report.report_xlsx.abstract'
-    def get_report_filename(self, report):
-        """Tùy chỉnh tên file Excel"""
-        proposals = report  # Đối tượng proposals được truyền vào
-        if proposals:
-            proposal = proposals[0]  # Lấy bản ghi đầu tiên
-            # Tạo tên file động
-            file_name = f"PhieuDeXuat_{proposal.name or 'NoName'}_{proposal.type or 'unknown'}"
-            # Có thể thêm ngày tháng hoặc các thông tin khác
-            from datetime import datetime
-            date_str = datetime.now().strftime('%Y%m%d')
-            file_name = f"{file_name}_{date_str}.xlsx"
-        else:
-            file_name = "PhieuDeXuat.xlsx"  # Tên mặc định nếu không có dữ liệu
-        return file_name
-
     def generate_xlsx_report(self, workbook, data, proposals):
 
         PAPER_SIZE = 11  # Đổi 9 cho A4, 11 cho A5

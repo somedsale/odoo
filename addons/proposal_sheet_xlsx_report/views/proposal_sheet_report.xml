@@ -8,5 +8,6 @@
         <field name="binding_model_id" ref="proposal_sheet.model_proposal_sheet"/>
         <!-- Thay bằng ID model -->
         <field name="binding_type">report</field>
+        <field name="print_report_name">'PhieuDeXuat_' + (object.name or 'NoName') + '_' + (object.type or 'unknown') + '_' + time.strftime('%Y%m%d') + '.xlsx'</field>
     </record>
 </odoo>

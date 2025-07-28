@@ -1,0 +1,15 @@
+<odoo>
+    <data>
+        <record id="action_cost_estimate_export_xlsx" model="ir.actions.report">
+            <field name="name">Xuất Excel Dự Toán</field>
+            <field name="model">cost.estimate</field>
+            <field name="report_type">xlsx</field>
+            <field name="report_name">cost_estimate_xlsx_report.cost_estimate_xlsx</field>
+            <field name="binding_model_id" ref="cost_estimate.model_cost_estimate"/>
+            <field name="binding_type">report</field>
+            <field name="print_report_name">
+        'DuToan_' + (object.name or 'NoName') + '_' + time.strftime('%Y%m%d') 
+            </field>
+        </record>
+    </data>
+</odoo>
