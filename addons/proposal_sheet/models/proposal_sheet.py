@@ -11,22 +11,24 @@ class ProposalSheet(models.Model):
     _description = 'Phiếu Đề Xuất'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = "create_date desc"
-
+    department_id = fields.Many2one('hr.department', string='Phòng Ban')
+    manager_id = fields.Many2one('hr.employee', string='Người Quản Lý', compute='_compute_manager_id')
+    director_user_id = fields.Many2one('res.users', string="Giám Đốc", default=lambda self: self._default_director_user(), readonly=True)
     name = fields.Char(string='Mã Đề Xuất', default='New', readonly=True, copy=False)
     project_id = fields.Many2one('project.project', string='Dự án', required=True, tracking=True)
     task_id = fields.Many2one('project.task', string='Nhiệm Vụ', required=True, tracking=True)
     requested_by = fields.Many2one('res.users', string='Người Đề Xuất', default=lambda self: self.env.user, readonly=True, tracking=True)
     state = fields.Selection([
-    ('draft', 'Nháp'),
-    ('submitted', 'Đang xem xét'),
-    ('reviewed_manager', 'Đang phê duyệt (QL)'),
-    ('reviewed_accounting', 'Đang phê duyệt (KT)'),
-    ('approved', 'Đã duyệt (Sếp)'),
-    ('waiting_accounting_paid', 'Chờ chi tiền (KT)'),
-    ('done', 'Hoàn tất'),
-    ('rejected', 'Bị từ chối'),
-    ('canceled', 'Đã hủy')
-], default='draft', string='Trạng thái', tracking=True)
+        ('draft', 'Nháp'),
+        ('reviewed_manager', 'Đang phê duyệt (QL)'),
+        ('reviewed_accounting', 'Đang phê duyệt (KT)'),
+        ('approved', 'Đang phê duyệt (Sếp)'),
+        ('waiting_accounting_paid', 'Chờ chi tiền (KT)'),
+        ('done', 'Hoàn tất'),
+        ('rejected', 'Bị từ chối'),
+        ('canceled', 'Đã hủy'),
+    ], string="Trạng thái", default='draft', tracking=True)
+
     type = fields.Selection([
         ('material', 'Vật Tư'),
         ('expense', 'Chi Phí'),
@@ -45,6 +47,15 @@ class ProposalSheet(models.Model):
     )
     amount_total = fields.Float(string='Tổng Thành Tiền', compute='_compute_amount_total', store=True)
     take_note = fields.Text(string='Ghi Chú', tracking=True)
+    @api.model
+    def _default_director_user(self):
+        group = self.env.ref('custom_director_role.group_director')  # đổi lại module ID cho đúng
+        users = self.env['res.users'].search([('groups_id', 'in', group.id)], limit=1)
+        return users.id if users else False
+    @api.depends('department_id')
+    def _compute_manager_id(self):
+        for record in self:
+            record.manager_id = record.department_id.manager_id if record.department_id else False
     @api.depends('type', 'material_line_ids.price_total', 'expense_line_ids.price_total')
     def _compute_amount_total(self):
         for sheet in self:
@@ -58,6 +69,7 @@ class ProposalSheet(models.Model):
     show_button_manager_approve = fields.Boolean(compute='_compute_show_buttons')
     show_button_accounting_approve = fields.Boolean(compute='_compute_show_buttons')
     show_button_boss_approve = fields.Boolean(compute='_compute_show_buttons')
+    show_button_waiting_accounting_paid = fields.Boolean(compute='_compute_show_buttons')
     show_button_done = fields.Boolean(compute='_compute_show_buttons')
     show_button_reject = fields.Boolean(compute='_compute_show_buttons')
     show_button_cancel = fields.Boolean(compute='_compute_show_buttons')
@@ -126,7 +138,8 @@ class ProposalSheet(models.Model):
 
         if partner_ids is None:
             partner_ids = []
-
+        for rec in self:
+            rec.message_follower_ids.sudo().unlink()
         # Đảm bảo tất cả partner_ids đều là follower
         existing_followers = self.message_partner_ids.ids
         new_partners = [pid for pid in partner_ids if pid not in existing_followers]
@@ -140,23 +153,26 @@ class ProposalSheet(models.Model):
             subtype_xmlid="mail.mt_comment",
             partner_ids=partner_ids
         )
-    def _get_approval_partners(self, include_manager=True, include_boss=True):
+    def _get_approval_partners(self, include_manager, include_boss, include_accounting):
         """
         Trả về danh sách partner_ids của PM và Boss theo cấu hình Project.
         :param include_manager: Có lấy PM không
         :param include_boss: Có lấy Boss không
         :return: list partner_ids
         """
-        config = self.env['project.config'].search([], limit=1)
-        if not config:
-            raise UserError(_("Chưa cấu hình Project Config để lấy Boss/Quản lý."))
-
         partner_ids = []
-        if include_manager and config.default_project_manager_id:
-            partner_ids.append(config.default_project_manager_id.partner_id.id)
-        if include_boss and config.default_boss_id:
-            partner_ids.append(config.default_boss_id.partner_id.id)
-
+        partner_ids.append(self.requested_by.partner_id.id)  # Người đề xuất luôn nhận thông báo
+        for rec in self:
+            if include_manager and rec.department_id:
+                partner_ids.append(rec.manager_id.user_id.partner_id.id)
+            if include_boss and rec.director_user_id:
+                partner_ids.append(rec.director_user_id.partner_id.id)
+            # Kế toán: tìm tất cả người dùng thuộc nhóm kế toán
+            accounting_group = self.env.ref('internal_accounting.group_internal_accounting')  # group kế toán mặc định
+            accounting_users = accounting_group.users
+            if include_accounting and accounting_users:
+                # Lấy partner_id của tất cả người dùng trong nhóm kế toán
+                partner_ids.extend(user.partner_id.id for user in accounting_users if user.partner_id.id not in partner_ids)
         return partner_ids
 
     def action_submit(self):
@@ -173,76 +189,110 @@ class ProposalSheet(models.Model):
             raise UserError(_("Chỉ phiếu ở trạng thái nháp mới được gửi duyệt."))
 
         # 3. Đổi trạng thái
-        self.state = 'submitted'
-        _logger.info(">>> Proposal %s chuyển sang trạng thái 'submitted'", self.name)
+        self.state = 'reviewed_manager'
+        _logger.info(">>> Proposal %s chuyển sang trạng thái 'reviewed_manager'", self.name)
 
-        partner_ids = self._get_approval_partners(include_manager=True, include_boss=True)
+        partner_ids = self._get_approval_partners(include_manager=True, include_boss=False, include_accounting=False)
         message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được gửi duyệt bởi <em>{self.env.user.name}</em>.</p>"
         self._send_notification(message, partner_ids)
-        return True
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
 
     def action_manager_approve(self):
-        if self.state != 'submitted':
+        if self.state != 'reviewed_manager':
             raise UserError("Chỉ phiếu đang xem xét mới được duyệt.")
-        self.state = 'reviewed_manager'
+        self.state = 'reviewed_accounting'
         approver_name = self.env.user.name
         message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được duyệt bởi <em>{approver_name}</em>.</p>"
-        partner_ids = self._get_approval_partners(include_manager=False, include_boss=True)
+        partner_ids = self._get_approval_partners(include_manager=False, include_boss=False, include_accounting=True)
         self._send_notification(message, partner_ids)
 
 
     def action_boss_approve(self):
-        if self.state != 'reviewed':
+        if self.state != 'approved':
             raise UserError("Chỉ phiếu đang phê duyệt mới được.")
-        self.state = 'approved'
+        self.state = 'waiting_accounting_paid'
         message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được duyệt bởi <em>{self.env.user.name}</em>.</p>"
-        partner_ids = self._get_approval_partners(include_manager=False, include_boss=True)
+        partner_ids = self._get_approval_partners(include_manager=False, include_boss=False, include_accounting=True)
         self._send_notification(message, partner_ids)
 
     def action_done(self):
-        if self.state != 'approved':
+        if self.state != 'waiting_accounting_paid':
             raise UserError("Chỉ phiếu đã phê duyệt mới được hoàn tất.")
         self.state = 'done'
         self.message_post(body="Phiếu đề xuất đã hoàn tất.")
-
+    def action_waiting_accounting_paid(self):
+        if self.state != 'approved':
+            raise UserError("Chỉ phiếu đã phê duyệt mới được hoàn tất.")
+        self.state = 'waiting_accounting_paid'
+        message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> chờ chi tiền.</p>"        
+        partner_ids = self._get_approval_partners(include_manager=False, include_boss=False, include_accounting=False)
+        self._send_notification(message, partner_ids)
     def action_accounting_approve(self):
-        if self.state != 'reviewed_manager':
+        if self.state != 'reviewed_accounting':
             raise UserError("Chỉ phiếu đã được Quản lý duyệt mới được Kế toán duyệt.")
-        self.state = 'reviewed_accounting'
-        self.message_post(body="Kế toán đã duyệt phiếu đề xuất.")
-
+        self.state = 'approved'
+        message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được duyệt bởi <em>{self.env.user.name}</em>.</p>"        
+        partner_ids = self._get_approval_partners(include_manager=False, include_boss=True, include_accounting=False)
+        # Gửi thông báo đến giám đốc
+        self._send_notification(message, partner_ids)
     def action_reset_to_draft(self):
         if self.state != 'rejected':
             raise UserError("Chỉ phiếu bị từ chối mới được reset về nháp.")
         self.state = 'draft'
         self.message_post(body="Phiếu được reset về Nháp.")
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
     def action_cancel(self):
         for rec in self:
             if rec.state in ['done', 'canceled']:
                 raise UserError("Không thể hủy phiếu đã hoàn tất hoặc đã hủy.")
             rec.state = 'canceled'
+            
             rec.message_post(body="Phiếu đã được hủy.")
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
+            
+            
+        
 
-
-    @api.depends('state', 'task_id.project_id.user_id', 'approver_boss_id')
+    @api.depends('state', 'task_id.project_id.user_id')
     def _compute_show_buttons(self):
         for rec in self:
             is_creator = rec.requested_by == self.env.user
-            is_manager = rec.task_id.project_id.user_id == self.env.user if rec.task_id.project_id else False
+            is_manager = rec.manager_id.user_id == self.env.user
             is_accounting = self.env.user.has_group('internal_accounting.group_internal_accounting')  # KT
-            is_boss = rec.approver_boss_id == self.env.user if rec.approver_boss_id else False
+            is_boss = rec.director_user_id == self.env.user
 
+            # rec.show_button_submit = rec.state == 'draft' and is_creator
+            # rec.show_button_manager_approve = rec.state == 'submitted' and is_manager
+            # rec.show_button_accounting_approve = rec.state == 'reviewed_manager' and is_accounting
+            # rec.show_button_boss_approve = rec.state == 'reviewed_accounting' and is_boss
+            # rec.show_button_done = rec.state == 'approved' and is_accounting  # KT chi xong
+            # rec.show_button_reject = rec.state in ['submitted', 'reviewed_manager', 'reviewed_accounting', 'approved'] \
+            #                         and (is_manager or is_accounting or is_boss)
+            # rec.show_button_cancel = rec.state in ['draft', 'submitted'] and is_creator
+            # rec.show_button_reset_draft = rec.state == 'rejected' and is_creator
+            
             rec.show_button_submit = rec.state == 'draft' and is_creator
-            rec.show_button_manager_approve = rec.state == 'submitted' and is_manager
-            rec.show_button_accounting_approve = rec.state == 'reviewed_manager' and is_accounting
-            rec.show_button_boss_approve = rec.state == 'reviewed_accounting' and is_boss
-            rec.show_button_done = rec.state == 'approved' and is_accounting  # KT chi xong
-            rec.show_button_reject = rec.state in ['submitted', 'reviewed_manager', 'reviewed_accounting', 'approved'] \
-                                    and (is_manager or is_accounting or is_boss)
-            rec.show_button_cancel = rec.state in ['draft', 'submitted'] and is_creator
+            rec.show_button_manager_approve = rec.state == 'reviewed_manager' and is_manager
+            rec.show_button_accounting_approve = rec.state == 'reviewed_accounting' and is_accounting
+            rec.show_button_boss_approve = rec.state == 'approved' and is_boss
+            rec.show_button_waiting_accounting_paid = rec.state == 'waiting_accounting_paid' and is_accounting
+            rec.show_button_done = rec.state == 'done' and is_accounting
+            rec.show_button_reject = (
+                (rec.state == 'reviewed_manager' and is_manager) or
+                (rec.state == 'reviewed_accounting' and is_accounting) or
+                (rec.state == 'approved' and is_boss)
+            )
+            rec.show_button_cancel = rec.state in ['draft'] and is_creator
             rec.show_button_reset_draft = rec.state == 'rejected' and is_creator
-
-    
     
 
     @api.depends('material_line_ids', 'expense_line_ids')
@@ -289,10 +339,9 @@ class ProposalSheet(models.Model):
         if not self.env.context.get('from_task'):
             self.task_id = False
         return {'domain': {'task_id': [('project_id', '=', self.project_id.id)]}}
-
     approver_boss_id = fields.Many2one(
         'res.users', string="Người Duyệt Cuối",
-        default=lambda self: self.env['project.config'].get_default_boss() if self.env['project.config'].search([]) else False,
+        default=lambda self: self.env['hr.department'].get_manager_id_by_name('Administration').user_id.id if self.env['hr.department'].get_manager_id_by_name('Administration') else False,
         readonly=True
     )
     # estimate_line_id = fields.Many2one('cost.estimate.line', string='Nguồn từ dự toán')
