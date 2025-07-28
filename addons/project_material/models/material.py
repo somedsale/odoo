@@ -10,6 +10,11 @@ class ProjectMaterial(models.Model):
     unit = fields.Many2one('uom.uom', string='Đơn vị', required=True)
     category_id = fields.Many2one('material.category', string='Danh mục')
     price_unit = fields.Float(string='Đơn giá', digits=(16, 0), default=0.0)
+    vendor_id = fields.Many2one(
+    'res.partner',
+    string='Nhà Cung Cấp',
+    domain=[('supplier_rank', '>', 0)]
+)
 
     @api.model
     def create(self, vals):

@@ -54,7 +54,7 @@
                                     <field name="unit" />
                                     <field name="price_unit"/>
                                     <field name="price_total" readonly="1"/>
-                                    <field name="proposed_supplier" placeholder="Nhà cung cấp đề xuất"/>
+                                    <field name="vendor_id" placeholder="Nhà cung cấp đề xuất"/>
                                     <field name="description"/>
                                 </tree>
                             </field>

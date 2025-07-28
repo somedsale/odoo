@@ -5,6 +5,20 @@ from io import BytesIO
 class ProposalSheetXlsx(models.AbstractModel):
     _name = 'report.proposal_sheet_xlsx_report.proposal_sheet_xlsx'
     _inherit = 'report.report_xlsx.abstract'
+    def get_report_filename(self, report):
+        """Tùy chỉnh tên file Excel"""
+        proposals = report  # Đối tượng proposals được truyền vào
+        if proposals:
+            proposal = proposals[0]  # Lấy bản ghi đầu tiên
+            # Tạo tên file động
+            file_name = f"PhieuDeXuat_{proposal.name or 'NoName'}_{proposal.type or 'unknown'}"
+            # Có thể thêm ngày tháng hoặc các thông tin khác
+            from datetime import datetime
+            date_str = datetime.now().strftime('%Y%m%d')
+            file_name = f"{file_name}_{date_str}.xlsx"
+        else:
+            file_name = "PhieuDeXuat.xlsx"  # Tên mặc định nếu không có dữ liệu
+        return file_name
 
     def generate_xlsx_report(self, workbook, data, proposals):
 
@@ -107,7 +121,7 @@ class ProposalSheetXlsx(models.AbstractModel):
                 sheet.write(row, 3, line.quantity or 0, table_center)
                 sheet.write(row, 4, line.price_unit or 0, table_money)
                 sheet.write(row, 5, line.price_total or 0, table_money)
-                sheet.write(row, 6, line.proposed_supplier or '', table_left)
+                sheet.write(row, 6, line.vendor_id.name or '', table_left)
                 sheet.write(row, 7, line.description or '', table_left)
             else:  # expense
                 sheet.write(row, 1, line.expense_id.name or '', table_left)
@@ -156,3 +170,10 @@ class ProposalSheetXlsx(models.AbstractModel):
         sheet.merge_range(row, 2, row, 3, '(Ký, họ tên)', signature_note_format)
         sheet.merge_range(row, 4, row, 5, '(Ký, họ tên)', signature_note_format)
         sheet.merge_range(row, 6, row, 7, '(Ký, họ tên)', signature_note_format)
+
+    def get_report_filename(self, docids, data):
+        records = self.env['proposal.sheet'].browse(docids)
+        if len(records) == 1:
+            return f"PhieuDeXuat_{records.name or 'Unknown'}"
+        else:
+            return "PhieuDeXuat_TongHop"

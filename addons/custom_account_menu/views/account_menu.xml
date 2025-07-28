@@ -1,0 +1,127 @@
+<odoo>
+    <!-- Menu Gốc -->
+    <menuitem id="menu_accounting_custom_root" name="Kế Toán" sequence="1"/>
+
+    <!-- ================= PHÂN NHÓM CHÍNH ================= -->
+    <menuitem id="menu_accounting_operations" name="Nghiệp Vụ" parent="menu_accounting_custom_root" sequence="10"/>
+    <menuitem id="menu_accounting_reporting" name="Báo Cáo" parent="menu_accounting_custom_root" sequence="20"/>
+    <menuitem id="menu_accounting_config" name="Cấu Hình" parent="menu_accounting_custom_root" sequence="99"/>
+
+    <!-- ================= NGHIỆP VỤ ================= -->
+    <!-- Bút Toán -->
+    <record id="action_account_moves" model="ir.actions.act_window">
+        <field name="name">Bút Toán</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="menu_journal_entries" name="Bút Toán" parent="menu_accounting_operations" action="action_account_moves" sequence="1"/>
+
+    <!-- Chi Tiết Bút Toán -->
+    <record id="action_account_move_lines" model="ir.actions.act_window">
+        <field name="name">Chi Tiết Bút Toán</field>
+        <field name="res_model">account.move.line</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="menu_journal_items" name="Chi Tiết Bút Toán" parent="menu_accounting_operations" action="action_account_move_lines" sequence="2"/>
+
+    <!-- Thanh Toán -->
+    <record id="action_account_payments" model="ir.actions.act_window">
+        <field name="name">Thanh Toán</field>
+        <field name="res_model">account.payment</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="menu_account_payments" name="Thanh Toán" parent="menu_accounting_operations" action="action_account_payments" sequence="3"/>
+
+    <!-- Sao Kê Ngân Hàng -->
+    <record id="action_account_bank_statements" model="ir.actions.act_window">
+        <field name="name">Sao Kê Ngân Hàng</field>
+        <field name="res_model">account.bank.statement</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="menu_account_bank_statements" name="Sao Kê Ngân Hàng" parent="menu_accounting_operations" action="action_account_bank_statements" sequence="4"/>
+
+
+
+    <!-- ================= BÁO CÁO ================= -->
+    <!-- Sơ Đồ Tài Khoản -->
+    <record id="action_account_accounts" model="ir.actions.act_window">
+        <field name="name">Sơ Đồ Tài Khoản</field>
+        <field name="res_model">account.account</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="menu_chart_of_accounts" name="Sơ Đồ Tài Khoản" parent="menu_accounting_reporting" action="action_account_accounts"/>
+
+    <!-- ================= CẤU HÌNH ================= -->
+    <!-- Nhật Ký -->
+    <record id="action_account_journals" model="ir.actions.act_window">
+        <field name="name">Nhật Ký</field>
+        <field name="res_model">account.journal</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="menu_account_journals" name="Nhật Ký" parent="menu_accounting_config" action="action_account_journals"/>
+
+    <!-- Thuế -->
+    <record id="action_account_taxes" model="ir.actions.act_window">
+        <field name="name">Thuế</field>
+        <field name="res_model">account.tax</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="menu_account_taxes" name="Thuế" parent="menu_accounting_config" action="action_account_taxes"/>
+
+    <!-- Nhóm Thuế -->
+    <record id="action_account_tax_groups" model="ir.actions.act_window">
+        <field name="name">Nhóm Thuế</field>
+        <field name="res_model">account.tax.group</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="menu_account_tax_groups" name="Nhóm Thuế" parent="menu_accounting_config" action="action_account_tax_groups"/>
+
+    <!-- Điều Khoản Thanh Toán -->
+    <record id="action_account_payment_terms" model="ir.actions.act_window">
+        <field name="name">Điều Khoản Thanh Toán</field>
+        <field name="res_model">account.payment.term</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="menu_account_payment_terms" name="Điều Khoản Thanh Toán" parent="menu_accounting_config" action="action_account_payment_terms"/>
+
+    <!-- Nhóm Tài Khoản -->
+    <record id="action_account_groups" model="ir.actions.act_window">
+        <field name="name">Nhóm Tài Khoản</field>
+        <field name="res_model">account.group</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="menu_account_groups" name="Nhóm Tài Khoản" parent="menu_accounting_config" action="action_account_groups"/>
+
+
+    <!-- Điều Khoản Giao Hàng (Incoterms) -->
+    <record id="action_account_incoterms" model="ir.actions.act_window">
+        <field name="name">Điều Khoản Giao Hàng</field>
+        <field name="res_model">account.incoterms</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="menu_account_incoterms" name="Điều Khoản Giao Hàng" parent="menu_accounting_config" action="action_account_incoterms"/>
+
+    <!-- Mô Hình Đối Soát -->
+    <record id="action_account_reconcile_models" model="ir.actions.act_window">
+        <field name="name">Mô Hình Đối Soát</field>
+        <field name="res_model">account.reconcile.model</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="menu_account_reconcile_models" name="Mô Hình Đối Soát" parent="menu_accounting_config" action="action_account_reconcile_models"/>
+
+    <!-- Tài Khoản Phân Tích -->
+    <record id="action_analytic_accounts" model="ir.actions.act_window">
+        <field name="name">Tài Khoản Phân Tích</field>
+        <field name="res_model">account.analytic.account</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="menu_analytic_accounts" name="Tài Khoản Phân Tích" parent="menu_accounting_config" action="action_analytic_accounts"/>
+    <record id="action_proposal_for_accounting" model="ir.actions.act_window">
+        <field name="name">Phiếu Đề Xuất (Kế Toán)</field>
+        <field name="res_model">proposal.sheet</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('state', 'in', ['reviewed_manager', 'approved', 'done'])]</field>
+    </record>
+    <menuitem id="menu_proposal_for_accounting" name="Phiếu Đề Xuất" parent="menu_accounting_config" action="action_proposal_for_accounting" sequence="20"/>
+
+</odoo>

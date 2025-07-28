@@ -16,15 +16,22 @@ class ProductMaterialLine(models.Model):
         compute='_compute_price_total',
         store=True,
         digits=(16, 0)
+    ) 
+    vendor_id = fields.Many2one(
+        'res.partner',
+        string='Nhà cung cấp',
+        domain=[('supplier_rank', '>', 0)]
     )
     @api.onchange('material_id')
     def _onchange_material_id(self):
         if self.material_id:
             self.unit = self.material_id.unit
             self.price_unit = self.material_id.price_unit or 0.0
+            self.vendor_id = self.material_id.vendor_id
         else:
             self.unit = False
             self.price_unit = 0.0
+            self.vendor_id = False
 
     @api.depends('price_unit', 'quantity')
     def _compute_price_total(self):

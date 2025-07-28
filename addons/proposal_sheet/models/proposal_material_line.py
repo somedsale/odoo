@@ -16,7 +16,11 @@ class ProposalMaterialLine(models.Model):
     unit = fields.Many2one('uom.uom', string='Đơn Vị', required=True)
     price_unit = fields.Float(string='Đơn Giá', digits='Product Price')
     price_total = fields.Float(string='Thành tiền', compute='_compute_price_total', store=True)
-    proposed_supplier = fields.Char(string='NCC Đề Xuất')
+    vendor_id = fields.Many2one(
+    'res.partner',
+    string='Nhà Cung Cấp Đề Xuất',
+    domain=[('supplier_rank', '>', 0)]
+)
     description = fields.Text(string='Ghi Chú')
     type = fields.Selection([('material', 'Vật Tư')], default='material', required=True, readonly=True)
 
@@ -31,10 +35,12 @@ class ProposalMaterialLine(models.Model):
                     }
                 }
             self.unit = self.material_id.unit
-            self.price_unit = self.material_id.price_unit or 0.0
+            self.price_unit = self.material_id.price_unit 
+            self.vendor_id = self.material_id.vendor_id
         else:
             self.unit = False
             self.price_unit = 0.0
+            self.vendor_id = False
 
     @api.model
     def create(self, vals):
