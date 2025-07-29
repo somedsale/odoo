@@ -5,7 +5,6 @@ from io import BytesIO
 class ProposalSheetXlsx(models.AbstractModel):
     _name = 'report.proposal_sheet_xlsx_report.proposal_sheet_xlsx'
     _inherit = 'report.report_xlsx.abstract'
-
     def generate_xlsx_report(self, workbook, data, proposals):
 
         PAPER_SIZE = 11  # Đổi 9 cho A4, 11 cho A5
@@ -107,7 +106,7 @@ class ProposalSheetXlsx(models.AbstractModel):
                 sheet.write(row, 3, line.quantity or 0, table_center)
                 sheet.write(row, 4, line.price_unit or 0, table_money)
                 sheet.write(row, 5, line.price_total or 0, table_money)
-                sheet.write(row, 6, line.proposed_supplier or '', table_left)
+                sheet.write(row, 6, line.vendor_id.name or '', table_left)
                 sheet.write(row, 7, line.description or '', table_left)
             else:  # expense
                 sheet.write(row, 1, line.expense_id.name or '', table_left)
@@ -156,3 +155,10 @@ class ProposalSheetXlsx(models.AbstractModel):
         sheet.merge_range(row, 2, row, 3, '(Ký, họ tên)', signature_note_format)
         sheet.merge_range(row, 4, row, 5, '(Ký, họ tên)', signature_note_format)
         sheet.merge_range(row, 6, row, 7, '(Ký, họ tên)', signature_note_format)
+
+    def get_report_filename(self, docids, data):
+        records = self.env['proposal.sheet'].browse(docids)
+        if len(records) == 1:
+            return f"PhieuDeXuat_{records.name or 'Unknown'}"
+        else:
+            return "PhieuDeXuat_TongHop"

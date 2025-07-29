@@ -9,6 +9,7 @@
                 <field name="unit" widget="selection" options="{'no_create': True}" required="1" width="15%"/>
                 <field name="price_unit" required="1" width="20%"/>
                 <field name="price_total" readonly="1" width="20%"/>
+                <field name="vendor_id" placeholder="Nhà cung cấp" width="30%"/>
             </tree>
         </field>
     </record>
@@ -24,6 +25,7 @@
                     <field name="unit" required="1"/>
                     <field name="price_unit" required="1"/>
                     <field name="price_total" readonly="1"/>
+                    <field name="vendor_id" placeholder="Nhà cung cấp"/>
                 </group>
             </form>
         </field>

@@ -42,3 +42,29 @@ class ProjectExpenseLine(models.Model):
                 rec.id, rec.quantity, rec.price_unit
             )
             rec.price_total = rec.price_unit * rec.quantity
+
+    @api.onchange('product_id')
+    def _onchange_product_id(self):
+        if self.product_id:
+            if self.product_id.type == 'service':
+                self.type = 'other'
+                return {
+                    'domain': {
+                        'type': [('value', '=', 'other')],
+                    }
+                }
+            else:
+                # Gợi ý tự động chọn nếu có "nhân công" hoặc "máy"
+                name = (self.product_id.name or '').lower()
+                if 'nhân công' in name:
+                    self.type = 'labor'
+                elif 'máy' in name:
+                    self.type = 'equipment'
+                else:
+                    self.type = False  # hoặc chọn mặc định
+
+                return {
+                    'domain': {
+                        'type': [('value', 'in', ['labor', 'equipment'])],
+                    }
+                }

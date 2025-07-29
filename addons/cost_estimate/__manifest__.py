@@ -5,6 +5,7 @@
     'category': 'Project',
     'depends': ['project', 'sale', 'project_material'],
     'data': [
+        'data/cost_estimate_sequence.xml',
         'security/ir.model.access.csv',
         'views/cost_estimate_views.xml',
     ],

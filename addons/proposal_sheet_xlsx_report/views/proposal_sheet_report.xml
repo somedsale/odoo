@@ -4,9 +4,10 @@
         <field name="model">proposal.sheet</field>
         <field name="report_type">xlsx</field>
         <field name="report_name">proposal_sheet_xlsx_report.proposal_sheet_xlsx</field>
-        <field name="report_file">proposal_sheet_xlsx_report.proposal_sheet_xlsx</field>
+        <!-- <field name="report_file">proposal_sheet_xlsx_report.proposal_sheet_xlsx</field> -->
         <field name="binding_model_id" ref="proposal_sheet.model_proposal_sheet"/>
         <!-- Thay bằng ID model -->
         <field name="binding_type">report</field>
+        <field name="print_report_name">'PhieuDeXuat_' + (object.name or 'NoName') + '_' + (object.type or 'unknown') + '_' + time.strftime('%Y%m%d') + '.xlsx'</field>
     </record>
 </odoo>

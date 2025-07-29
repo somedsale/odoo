@@ -5,6 +5,8 @@ class CostEstimate(models.Model):
     _description = 'Dự toán chi phí Dự án'
     _order = "create_date desc"
 
+    code = fields.Char('Mã dự toán', required=True, copy=False, readonly=True,
+         help='Mã định danh duy nhất của dự toán chi phí',default='New')
     name = fields.Char('Tên dự toán', required=True, default='New')
     project_id = fields.Many2one('project.project', string='Dự án', ondelete='restrict')
     sale_order_id = fields.Many2one('sale.order', string='Đơn hàng', ondelete='restrict')
@@ -20,3 +22,8 @@ class CostEstimate(models.Model):
     def _compute_total_cost(self):
         for rec in self:
             rec.total_cost = sum(line.price_subtotal for line in rec.line_ids)
+    @api.model
+    def create(self, vals):
+        if not vals.get('code'):
+            vals['code'] = self.env['ir.sequence'].next_by_code('cost.estimate.code') or '/'
+        return super().create(vals)

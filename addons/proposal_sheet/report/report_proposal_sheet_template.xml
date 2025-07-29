@@ -161,7 +161,7 @@
                                                 <t t-esc="format_vnd(line.price_total)"/>
                                             </td>
                                             <td>
-                                                <t t-esc="line.proposed_supplier"/>
+                                                <t t-esc="line.vendor_id.name"/>
                                             </td>
                                             <td style="background-color: white !important;">
                                                 <t t-esc="line.description"/>
