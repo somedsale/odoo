@@ -10,14 +10,8 @@
         <!-- Menu nhiệm vụ của tôi -->
         <menuitem id="menu_project_user_tasks" name="Nhiệm vụ của tôi" parent="menu_main_pm_user" sequence="10" action="project.action_view_my_task" groups="project.group_project_user"/>
         <!-- ACTION -->
-        <record id="action_proposal_sheet" model="ir.actions.act_window">
-            <field name="name">Phiếu Đề Xuất</field>
-            <field name="res_model">proposal.sheet</field>
-            <field name="view_mode">tree,form</field>
-            <field name="search_view_id" ref="proposal_sheet.view_proposal_sheet_search"/>
-        </record>
         <!-- MENU Phiếu Đề Xuất -->
         <menuitem id="menu_proposal_sheet_root" name="Phiếu Đề Xuất" parent="menu_main_pm_user" sequence="20" groups="project.group_project_user"/>
-        <menuitem id="menu_proposal_sheet" name="Quản Lý Phiếu Đề Xuất" parent="menu_proposal_sheet_root" action="action_proposal_sheet" sequence="10" groups="project.group_project_user"/>
+        <menuitem id="menu_proposal_sheet" name="Quản Lý Phiếu Đề Xuất" parent="menu_proposal_sheet_root" action="proposal_sheet.action_proposal_sheet_user" sequence="10" groups="project.group_project_user"/>
     </data>
 </odoo>
