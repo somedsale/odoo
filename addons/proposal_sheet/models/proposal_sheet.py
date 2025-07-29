@@ -11,7 +11,7 @@ class ProposalSheet(models.Model):
     _description = 'Phiếu Đề Xuất'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = "create_date desc"
-    department_id = fields.Many2one('hr.department', string='Phòng Ban')
+    department_id = fields.Many2one('hr.department', string='Phòng Ban', required=True)
     manager_id = fields.Many2one('hr.employee', string='Người Quản Lý', compute='_compute_manager_id')
     director_user_id = fields.Many2one('res.users', string="Giám Đốc", default=lambda self: self._default_director_user(), readonly=True)
     name = fields.Char(string='Mã Đề Xuất', default='New', readonly=True, copy=False)
@@ -189,12 +189,20 @@ class ProposalSheet(models.Model):
             raise UserError(_("Chỉ phiếu ở trạng thái nháp mới được gửi duyệt."))
 
         # 3. Đổi trạng thái
-        self.state = 'reviewed_manager'
-        _logger.info(">>> Proposal %s chuyển sang trạng thái 'reviewed_manager'", self.name)
+        if self.manager_id.user_id == self.env.user:
+            self.state = 'reviewed_accounting'
+            _logger.info(">>> Proposal %s chuyển sang trạng thái 'reviewed_accounting'", self.name)
 
-        partner_ids = self._get_approval_partners(include_manager=True, include_boss=False, include_accounting=False)
-        message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được gửi duyệt bởi <em>{self.env.user.name}</em>.</p>"
-        self._send_notification(message, partner_ids)
+            partner_ids = self._get_approval_partners(include_manager=False, include_boss=False, include_accounting=True)
+            message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được gửi duyệt bởi <em>{self.env.user.name}</em>.</p>"
+            self._send_notification(message, partner_ids)
+        else:
+            self.state = 'reviewed_manager'
+            _logger.info(">>> Proposal %s chuyển sang trạng thái 'reviewed_manager'", self.name)
+
+            partner_ids = self._get_approval_partners(include_manager=True, include_boss=False, include_accounting=False)
+            message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được gửi duyệt bởi <em>{self.env.user.name}</em>.</p>"
+            self._send_notification(message, partner_ids)
         return {
             'type': 'ir.actions.client',
             'tag': 'reload',
