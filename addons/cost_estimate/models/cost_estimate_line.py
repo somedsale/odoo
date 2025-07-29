@@ -29,6 +29,28 @@ class CostEstimateLine(models.Model):
         'estimate_line_id',
         string='Dòng chi phí khác'
 )
+    labor_expense_line_ids = fields.One2many(
+    'project.expense.line',
+    compute='_compute_labor_expense_lines',
+    string='Chi phí nhân công',
+    store=False
+)
+    equipment_expense_line_ids = fields.One2many(
+    'project.expense.line',
+    compute='_compute_equipment_expense_lines',
+    string='Chi phí máy móc',
+    store=False
+)
+    @api.depends('expense_line_ids')
+    def _compute_labor_expense_lines(self):
+        for line in self:
+            line.labor_expense_line_ids = line.expense_line_ids.filtered(lambda e: e.expense_id.type == 'labor')
+
+    @api.depends('expense_line_ids')
+    def _compute_equipment_expense_lines(self):
+        for line in self:
+            line.equipment_expense_line_ids = line.expense_line_ids.filtered(lambda e: e.expense_id.type == 'equipment')
+
     sale_order_line_id = fields.Many2one('sale.order.line', string="Dòng báo giá gốc")
     is_from_sale_order = fields.Boolean(string='Từ báo giá', compute='_compute_is_from_sale_order')
     task_id = fields.Many2one('project.task', string='Nhiệm vụ')
