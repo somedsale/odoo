@@ -14,4 +14,4 @@ class ProposalRejectWizard(models.TransientModel):
         if proposal:
             proposal.state = 'rejected'
             proposal.message_post(body=f'Phiếu đề xuất bị từ chối. Lý do: {self.reason}')
-        return {'type': 'ir.actions.act_window_close'}
+        return {'type': 'ir.actions.act_window_close','tag': 'reload'}

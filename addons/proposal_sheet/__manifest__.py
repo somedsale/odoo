@@ -5,7 +5,7 @@
     'summary': 'Quản lý phiếu đề xuất vật tư/chi phí từ nhiệm vụ',
     'depends': ['project', 'product', 'project_material', 'cost_estimate','uom', 'mail'],
     'data': [
-        'security/security.xml',
+        # 'security/security.xml',
         'security/proposal_rule.xml',
         'security/ir.model.access.csv',
         'data/ir_sequence_data.xml',

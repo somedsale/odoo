@@ -1,25 +1,38 @@
 <odoo>
-    <!-- Nhân viên: Chỉ thấy phiếu của mình -->
-    <record id="rule_proposal_own" model="ir.rule">
-        <field name="name">Proposal: Own Records</field>
-        <field name="model_id" ref="model_proposal_sheet"/>
-        <field name="groups" eval="[(4, ref('proposal_sheet.group_proposal_employee'))]"/>
-        <field name="domain_force">[('requested_by', '=', user.id)]</field>
-    </record>
+<record id="rule_proposal_creator" model="ir.rule">
+    <field name="name">Proposal Creator: Only Own Records</field>
+    <field name="model_id" ref="model_proposal_sheet"/>
+    <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    <field name="domain_force">[('requested_by', '=', user.id)]</field>
+    <field name="perm_read" eval="True"/>
+    <field name="perm_write" eval="True"/>
+    <field name="perm_create" eval="True"/>
+    <field name="perm_unlink" eval="False"/>
+</record>
 
-    <!-- Manager: Xem tất cả -->
-    <record id="rule_proposal_manager_all" model="ir.rule">
-        <field name="name">Proposal: Manager See All</field>
-        <field name="model_id" ref="model_proposal_sheet"/>
-        <field name="groups" eval="[(4, ref('proposal_sheet.group_proposal_manager'))]"/>
-        <field name="domain_force">[(1,'=',1)]</field>
-    </record>
+<record id="rule_proposal_manager" model="ir.rule">
+    <field name="name">Proposal Manager: Department Records</field>
+    <field name="model_id" ref="model_proposal_sheet"/>
+    <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    <field name="domain_force">[('department_id.manager_id.user_id', '=', user.id)]</field>
+    <field name="perm_read" eval="True"/>
+    <field name="perm_write" eval="True"/>
+    <field name="perm_create" eval="True"/>
+    <field name="perm_unlink" eval="False"/>
+</record>
 
-    <!-- Boss: Xem tất cả -->
-    <record id="rule_proposal_boss_all" model="ir.rule">
-        <field name="name">Proposal: Boss See All</field>
-        <field name="model_id" ref="model_proposal_sheet"/>
-        <field name="groups" eval="[(4, ref('proposal_sheet.group_proposal_boss'))]"/>
-        <field name="domain_force">[(1,'=',1)]</field>
-    </record>
+        <!-- Kế toán và giám đốc thấy tất cả -->
+        <record id="rule_proposal_sheet_all" model="ir.rule">
+            <field name="name">Proposal Sheet - Accounting and Director</field>
+            <field name="model_id" ref="model_proposal_sheet"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[
+                (4, ref('account.group_account_manager')),
+                (4, ref('base.group_system'))
+            ]"/>
+                <field name="perm_read" eval="True"/>
+    <field name="perm_write" eval="True"/>
+    <field name="perm_create" eval="True"/>
+    <field name="perm_unlink" eval="False"/>
+        </record>
 </odoo>
