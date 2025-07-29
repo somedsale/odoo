@@ -30,27 +30,15 @@ class CostEstimateLine(models.Model):
         string='Dòng chi phí khác'
 )
     labor_expense_line_ids = fields.One2many(
-    'project.expense.line',
-    compute='_compute_labor_expense_lines',
-    string='Chi phí nhân công',
-    store=False
+    'project.expense.line', 'estimate_line_id',
+    string="Chi phí nhân công",
+    domain=[('type', '=', 'labor')]
 )
     equipment_expense_line_ids = fields.One2many(
-    'project.expense.line',
-    compute='_compute_equipment_expense_lines',
-    string='Chi phí máy móc',
-    store=False
-)
-    @api.depends('expense_line_ids')
-    def _compute_labor_expense_lines(self):
-        for line in self:
-            line.labor_expense_line_ids = line.expense_line_ids.filtered(lambda e: e.expense_id.type == 'labor')
-
-    @api.depends('expense_line_ids')
-    def _compute_equipment_expense_lines(self):
-        for line in self:
-            line.equipment_expense_line_ids = line.expense_line_ids.filtered(lambda e: e.expense_id.type == 'equipment')
-
+        'project.expense.line', 'estimate_line_id',
+        string="Chi phí máy móc",
+        domain=[('type', '=', 'equipment')]
+    )
     sale_order_line_id = fields.Many2one('sale.order.line', string="Dòng báo giá gốc")
     is_from_sale_order = fields.Boolean(string='Từ báo giá', compute='_compute_is_from_sale_order')
     task_id = fields.Many2one('project.task', string='Nhiệm vụ')
@@ -61,18 +49,22 @@ class CostEstimateLine(models.Model):
         for line in self:
             line.is_from_sale_order = bool(line.sale_order_line_id)
 
-    @api.depends('material_line_ids.price_total', 'expense_line_ids.price_total', 'quantity', 'price_unit', 'product_id.detailed_type')
+    @api.depends('material_line_ids.price_total', 'expense_line_ids.price_total', 'quantity', 'price_unit', 'product_id.detailed_type', 'labor_expense_line_ids.price_total',
+    'equipment_expense_line_ids.price_total')
     def _compute_price_subtotal(self):
         for rec in self:
             if rec.product_id.detailed_type == 'service':
-                total_expense = sum(line.price_total for line in rec.expense_line_ids)
+                total_expense = sum(line.price_total for line in rec.expense_line_ids.filtered(lambda x: x.type == 'other'))
                 rec.price_unit = total_expense
-                rec.price_subtotal = total_expense or (rec.price_unit * rec.quantity)
+                rec.price_subtotal = total_expense * rec.quantity if total_expense else rec.price_unit * rec.quantity
                 
             else:
                 total_material = sum(line.price_total for line in rec.material_line_ids)
-                rec.price_unit = total_material
-                rec.price_subtotal = total_material * rec.quantity if total_material else rec.price_unit * rec.quantity
+                total_labor = sum(line.price_total for line in rec.labor_expense_line_ids.filtered(lambda x: x.type == 'labor'))
+                total_equipment = sum(line.price_total for line in rec.equipment_expense_line_ids.filtered(lambda x: x.type == 'equipment'))
+                total_all = total_material + total_labor + total_equipment
+                rec.price_unit = total_all
+                rec.price_subtotal = total_all * rec.quantity if total_all else rec.price_unit * rec.quantity
     
 
     @api.onchange('product_id')
