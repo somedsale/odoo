@@ -73,14 +73,33 @@
         <field name="arch" type="xml">
             <form string="Chi tiết dòng dự toán">
                 <sheet>
-                    <group>
-                        <field name="is_from_sale_order" invisible="1"/>
-                        <field name="product_type" invisible="1"/>
-                        <field name="product_id" context="{'no_default_code': True}" readonly="is_from_sale_order"/>
-                        <field name="quantity" readonly="is_from_sale_order"/>
-                        <field name="unit" readonly="is_from_sale_order"/>
-                        <field name="price_unit" string="Giá VT trên 1 sản phẩm" readonly="1"/>
-                        <field name="price_subtotal" readonly="1"/>
+                    <group col="2" invisible="product_type == 'service'">
+                        <group string="Thông tin dự toán">
+                            <field name="is_from_sale_order" invisible="1"/>
+                            <field name="product_type" invisible="1"/>
+                            <field name="product_id" context="{'no_default_code': True}" readonly="is_from_sale_order"/>
+                            <field name="quantity" readonly="is_from_sale_order"/>
+                            <field name="unit" readonly="is_from_sale_order"/>
+                            <field name="price_unit" string="Giá thành trên 1 sản phẩm" readonly="1"/>
+                            <field name="price_subtotal" readonly="1"/>
+                        </group>
+
+                        <group string="Phân loại chi phí">
+                            <field name="material_total_cost" readonly="1"/>
+                            <field name="labor_total_cost" readonly="1"/>
+                            <field name="equipment_total_cost" readonly="1"/>
+                        </group>
+                    </group>
+                    <group col="2" invisible="product_type != 'service'">
+                        <group string="Thông tin dự toán">
+                            <field name="is_from_sale_order" invisible="1"/>
+                            <field name="product_type" invisible="1"/>
+                            <field name="product_id" context="{'no_default_code': True}" readonly="is_from_sale_order"/>
+                            <field name="quantity" readonly="is_from_sale_order"/>
+                            <field name="unit" readonly="is_from_sale_order"/>
+                            <field name="price_unit" string="Đơn giá" readonly="1"/>
+                            <field name="price_subtotal" readonly="1"/>
+                        </group>
                     </group>
                     <notebook>
                         <page string="Chi phí sản xuất" invisible="product_type == 'service'">

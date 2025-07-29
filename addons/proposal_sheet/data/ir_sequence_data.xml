@@ -2,7 +2,7 @@
     <record id="seq_proposal_sheet" model="ir.sequence">
         <field name="name">Mã Phiếu Đề Xuất</field>
         <field name="code">proposal.sheet</field>
-        <field name="prefix">PS/%(year)s/</field>
+        <field name="prefix">PDX/%(year)s/</field>
         <field name="padding">4</field>
     </record>
 </odoo>
