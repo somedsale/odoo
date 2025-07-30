@@ -168,7 +168,7 @@ class ProposalSheet(models.Model):
             if include_boss and rec.director_user_id:
                 partner_ids.append(rec.director_user_id.partner_id.id)
             # Kế toán: tìm tất cả người dùng thuộc nhóm kế toán
-            accounting_group = self.env.ref('internal_accounting.group_internal_accounting')  # group kế toán mặc định
+            accounting_group = self.env.ref('account.group_account_manager')  # group kế toán mặc định
             accounting_users = accounting_group.users
             if include_accounting and accounting_users:
                 # Lấy partner_id của tất cả người dùng trong nhóm kế toán
@@ -219,9 +219,25 @@ class ProposalSheet(models.Model):
 
 
     def action_boss_approve(self):
-        if self.state != 'approved':
-            raise UserError("Chỉ phiếu đang phê duyệt mới được.")
+        for record in self:
+            if record.state != 'approved':
+                raise UserError("Chỉ phiếu đang ở trạng thái đang phê duyệt mới được gửi kế toán.")
+
+            existing = self.env['account.payment.request'].search([
+                ('proposal_sheet_id', '=', record.id)
+            ], limit=1)
+            if existing:
+                raise ValidationError("Phiếu này đã tạo yêu cầu chi tiền rồi.")
+            self.env['account.payment.request'].create({
+                'proposal_sheet_id': record.id,
+                'amount': record.amount_total,
+                'date': record.create_date,
+                # 'journal_id': record.journal_id.id,
+            })
         self.state = 'waiting_accounting_paid'
+
+         
+            
         message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được duyệt bởi <em>{self.env.user.name}</em>.</p>"
         partner_ids = self._get_approval_partners(include_manager=False, include_boss=False, include_accounting=True)
         self._send_notification(message, partner_ids)
@@ -232,7 +248,7 @@ class ProposalSheet(models.Model):
         self.state = 'done'
         self.message_post(body="Phiếu đề xuất đã hoàn tất.")
     def action_waiting_accounting_paid(self):
-        if self.state != 'approved':
+        if self.state != 'waiting_accounting_paid':
             raise UserError("Chỉ phiếu đã phê duyệt mới được hoàn tất.")
         self.state = 'waiting_accounting_paid'
         message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> chờ chi tiền.</p>"        
@@ -275,7 +291,7 @@ class ProposalSheet(models.Model):
         for rec in self:
             is_creator = rec.requested_by == self.env.user
             is_manager = rec.manager_id.user_id == self.env.user
-            is_accounting = self.env.user.has_group('internal_accounting.group_internal_accounting')  # KT
+            is_accounting = self.env.user.has_group('account.group_account_manager')  # KT
             is_boss = rec.director_user_id == self.env.user
 
             # rec.show_button_submit = rec.state == 'draft' and is_creator
