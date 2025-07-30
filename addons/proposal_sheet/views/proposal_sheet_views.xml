@@ -46,7 +46,7 @@
                         </group>
                         <group>
                             <field name="department_id" options="{'no_create': True,'no_open':True}" readonly="state !='draft'"/>
-                            <field name="manager_id" widget="many2one_avatar_user"  options="{'no_create': True,'no_open':True}" readonly="1"/>                           
+                            <field name="manager_id" widget="many2one_avatar_user" options="{'no_create': True,'no_open':True}" readonly="1"/>
                             <field name="type" widget="selection" readonly="is_type_readonly"/>
                             <field name="create_date" string="Ngày Tạo" readonly="1"/>
                             <field name="amount_total" readonly="1" />
@@ -133,7 +133,7 @@
         <field name="res_model">proposal.sheet</field>
         <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="view_proposal_sheet_search"/>
-        <field name="domain">[('state', 'in', ['reviewed_manager','reviewed_accounting', 'approved', 'done','rejected'])]</field>
+        <field name="domain">[('state', 'in', ['draft', 'reviewed_manager','reviewed_accounting', 'approved', 'waiting_accounting_paid', 'done','rejected','canceled'])]</field>
     </record>
 
     <record id="action_proposal_sheet_create_form" model="ir.actions.act_window">
@@ -142,6 +142,12 @@
         <field name="view_mode">form</field>
         <field name="view_id" ref="view_proposal_sheet_form"/>
         <field name="target">current</field>
+    </record>
+    <record id="action_proposal_for_accounting" model="ir.actions.act_window">
+        <field name="name">Phiếu Đề Xuất (Kế Toán)</field>
+        <field name="res_model">proposal.sheet</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('state', 'in', ['reviewed_manager', 'approved', 'done'])]</field>
     </record>
 
     <!-- MENU -->

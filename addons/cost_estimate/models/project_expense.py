@@ -1,4 +1,4 @@
-from odoo import models, fields
+from odoo import models, fields,api
 
 class ProjectExpense(models.Model):
     _name = 'project.expense'
@@ -10,5 +10,11 @@ class ProjectExpense(models.Model):
     ('labor', 'Chi phí nhân công'),
     ('equipment', 'Chi phí máy móc'),
     ('other', 'Chi phí khác'),
-], default='other')
+], default='other', string='Loại chi phí', required=True)
     price_unit = fields.Float(string='Đơn giá', digits='Product Price', default=0.0)
+    @api.model
+    def default_get(self, fields):
+        res = super().default_get(fields)
+        if self.env.context.get('default_type'):
+            res['type'] = self.env.context['default_type']
+        return res

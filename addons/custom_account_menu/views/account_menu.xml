@@ -116,12 +116,5 @@
         <field name="view_mode">tree,form</field>
     </record>
     <menuitem id="menu_analytic_accounts" name="Tài Khoản Phân Tích" parent="menu_accounting_config" action="action_analytic_accounts"/>
-    <record id="action_proposal_for_accounting" model="ir.actions.act_window">
-        <field name="name">Phiếu Đề Xuất (Kế Toán)</field>
-        <field name="res_model">proposal.sheet</field>
-        <field name="view_mode">tree,form</field>
-        <field name="domain">[('state', 'in', ['reviewed_manager', 'approved', 'done'])]</field>
-    </record>
-    <menuitem id="menu_proposal_for_accounting" name="Phiếu Đề Xuất" parent="menu_accounting_config" action="action_proposal_for_accounting" sequence="20"/>
-
+    <menuitem id="menu_proposal_for_accounting" name="Phiếu Đề Xuất" parent="menu_accounting_config" action="proposal_sheet.action_proposal_for_accounting" sequence="20"/>
 </odoo>
