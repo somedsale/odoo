@@ -10,7 +10,13 @@ class AccountingPaymentRequest(models.Model):
     journal_id = fields.Many2one('account.journal', string="Nhật ký", domain="[('type', 'in', ['cash', 'bank'])]")
     project_id = fields.Many2one('project.project', string="Dự án")
     is_confirmed = fields.Boolean(string="Đã chi", default=False)
-
+    stage = fields.Selection([
+        ('draft', 'Nháp'),
+        ('confirmed', 'Xác nhận'),
+        ('post', 'Đã vào sổ'),
+        ('cancelled', 'Hủy'),
+        ('done', 'Hoàn tất'),
+    ], default='draft')
 
     def button_confirm_payment(self):
         for rec in self:
