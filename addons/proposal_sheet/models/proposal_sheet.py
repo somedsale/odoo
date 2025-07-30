@@ -222,38 +222,40 @@ class ProposalSheet(models.Model):
         for record in self:
             if record.state != 'approved':
                 raise UserError("Chỉ phiếu đang ở trạng thái đang phê duyệt mới được gửi kế toán.")
-
-            existing = self.env['account.payment.request'].search([
-                ('proposal_sheet_id', '=', record.id)
-            ], limit=1)
-            if existing:
-                raise ValidationError("Phiếu này đã tạo yêu cầu chi tiền rồi.")
-            self.env['account.payment.request'].create({
-                'proposal_sheet_id': record.id,
-                'amount': record.amount_total,
-                'date': record.create_date,
-                # 'journal_id': record.journal_id.id,
-            })
         self.state = 'waiting_accounting_paid'
-
-         
-            
+        # Gửi thông báo đến kế toán
         message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được duyệt bởi <em>{self.env.user.name}</em>.</p>"
         partner_ids = self._get_approval_partners(include_manager=False, include_boss=False, include_accounting=True)
         self._send_notification(message, partner_ids)
 
-    def action_done(self):
-        if self.state != 'waiting_accounting_paid':
-            raise UserError("Chỉ phiếu đã phê duyệt mới được hoàn tất.")
-        self.state = 'done'
-        self.message_post(body="Phiếu đề xuất đã hoàn tất.")
     def action_waiting_accounting_paid(self):
         if self.state != 'waiting_accounting_paid':
             raise UserError("Chỉ phiếu đã phê duyệt mới được hoàn tất.")
-        self.state = 'waiting_accounting_paid'
-        message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> chờ chi tiền.</p>"        
-        partner_ids = self._get_approval_partners(include_manager=False, include_boss=False, include_accounting=False)
-        self._send_notification(message, partner_ids)
+        # Chuyển sang trạng thái chờ kế toán chi tiền
+        payment_request = self.env['account.payment.request'].search([('proposal_sheet_id', '=', self.id)], limit=1)
+        for record in self:
+            existing = payment_request
+            if not existing:
+                payment_request= self.env['account.payment.request'].create({
+                    'proposal_sheet_id': record.id,
+                    'total': record.amount_total,
+                    'date': record.create_date,
+                    'project_id': record.project_id.id,
+                    # 'journal_id': record.journal_id.id,
+                })
+        
+        # self.state = 'waiting_accounting_paid'
+        # message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> chờ chi tiền.</p>"        
+        # partner_ids = self._get_approval_partners(include_manager=False, include_boss=False, include_accounting=False)
+        # self._send_notification(message, partner_ids)
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Payment Request',
+            'res_model': 'account.payment.request',
+            'view_mode': 'form',
+            'res_id': payment_request.id,
+            'target': 'current',  # hoặc 'new' nếu muốn mở trong popup
+        }
     def action_accounting_approve(self):
         if self.state != 'reviewed_accounting':
             raise UserError("Chỉ phiếu đã được Quản lý duyệt mới được Kế toán duyệt.")
