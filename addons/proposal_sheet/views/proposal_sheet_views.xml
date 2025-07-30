@@ -128,14 +128,30 @@
     </record>
 
     <!-- ACTION -->
+    <!-- MENU project manager -->
     <record id="action_proposal_sheet" model="ir.actions.act_window">
         <field name="name">Phiếu Đề Xuất</field>
         <field name="res_model">proposal.sheet</field>
         <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="view_proposal_sheet_search"/>
-        <field name="domain">[('state', 'in', ['draft', 'reviewed_manager','reviewed_accounting', 'approved', 'waiting_accounting_paid', 'done','rejected','canceled'])]</field>
+        <field name="domain">[('state', 'in', ['reviewed_manager','reviewed_accounting', 'approved', 'waiting_accounting_paid', 'done','rejected'])]</field>
     </record>
+    <!-- MENU proposal sheet user -->
+    <record id="action_proposal_sheet_user" model="ir.actions.act_window">
+        <field name="name">Phiếu Đề Xuất</field>
+        <field name="res_model">proposal.sheet</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_proposal_sheet_search"/>
+        <field name="domain">[('state', 'in', ['draft', 'reviewed_manager','reviewed_accounting', 'approved', 'waiting_accounting_paid', 'done','rejected','canceled'])]</field>
 
+    </record>
+    <!-- MENU Kế Toán -->
+    <record id="action_proposal_for_accounting" model="ir.actions.act_window">
+        <field name="name">Phiếu Đề Xuất (Kế Toán)</field>
+        <field name="res_model">proposal.sheet</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('state', 'in', ['reviewed_manager','reviewed_accounting', 'approved', 'waiting_accounting_paid', 'done','rejected'])]</field>
+    </record>
     <record id="action_proposal_sheet_create_form" model="ir.actions.act_window">
         <field name="name">Tạo Phiếu Đề Xuất</field>
         <field name="res_model">proposal.sheet</field>
