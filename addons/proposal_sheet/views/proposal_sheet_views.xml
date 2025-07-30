@@ -20,7 +20,7 @@
                     <button name="action_manager_approve" type="object" string="Quản Lý Duyệt" class="btn-success" invisible="show_button_manager_approve == False"/>
                     <button name="action_boss_approve" type="object" string="Sếp Duyệt" class="btn-success" invisible="show_button_boss_approve == False"/>
                     <button name="action_waiting_accounting_paid" type="object" string="Chi Tiền" class="btn-info" invisible="show_button_waiting_accounting_paid == False"/>
-                    <button name="action_done" type="object" string="Hoàn Tất" class="btn-secondary" invisible="show_button_done == False"/>
+                    <!-- <button name="action_done" type="object" string="Hoàn Tất" class="btn-secondary" invisible="show_button_done == False"/> -->
                     <button name="action_accounting_approve" type="object" string="Kế Toán Duyệt" class="btn-info" invisible="not show_button_accounting_approve"/>
                     <button name="%(action_proposal_reject_wizard)d" type="action" string="Từ Chối" class="btn-danger" invisible="show_button_reject == False"/>
                     <button name="action_cancel" type="object" string="Hủy Phiếu" class="btn-warning" invisible="show_button_cancel == False"/>
@@ -150,6 +150,7 @@
         <field name="name">Phiếu Đề Xuất (Kế Toán)</field>
         <field name="res_model">proposal.sheet</field>
         <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_proposal_sheet_search"/>
         <field name="domain">[('state', 'in', ['reviewed_manager','reviewed_accounting', 'approved', 'waiting_accounting_paid', 'done','rejected'])]</field>
     </record>
     <record id="action_proposal_sheet_create_form" model="ir.actions.act_window">
@@ -159,6 +160,7 @@
         <field name="view_id" ref="view_proposal_sheet_form"/>
         <field name="target">current</field>
     </record>
+
     <!-- MENU -->
     <menuitem id="menu_proposal_sheet_root" name="Phiếu Đề Xuất" parent="project.menu_main_pm" sequence="10"/>
     <menuitem id="menu_proposal_sheet" name="Quản Lý Phiếu Đề Xuất" parent="menu_proposal_sheet_root" action="action_proposal_sheet" sequence="10"/>
