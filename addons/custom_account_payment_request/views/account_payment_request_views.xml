@@ -5,10 +5,11 @@
         <field name="arch" type="xml">
             <tree create="false">
                 <field name="proposal_sheet_id"/>
-                <field name="amount"/>
+                <field name="total_display"  readonly="1"/>
                 <field name="date"/>
                 <field name="journal_id"/>
-                <field name="is_confirmed"/>
+
+                <!-- <field name="is_confirmed"/> -->
             </tree>
         </field>
     </record>
@@ -19,19 +20,20 @@
         <field name="arch" type="xml">
             <form string="Yêu cầu chi tiền" create="false">
                 <header>
-                    <button name="button_confirm_payment" string="Xác nhận chi" type="object" class="btn-primary" invisible ="is_confirmed"/>
+                    <button name="button_confirm_payment" string="Xác nhận chi" type="object" class="btn-primary"/>
+                    <field name="stage" widget="statusbar" statusbar_visible="draft,confirmed,post,cancelled,done"/>
                 </header>
                 <sheet>
                     <group col="2" name="Thông tin">
                         <group>
                             <field name="proposal_sheet_id" readonly="1"/>
-                            <field name="amount" readonly="1"/>
+                            <field name="total_display" readonly="1"/>
                             <field name="date" readonly="1"/>
                         </group>
                         <group>
                             <field name="project_id" readonly="1"/>
                             <field name="journal_id" readonly="1"/>
-                            <field name="is_confirmed" readonly ="is_confirmed"/>
+                            <!-- <field name="is_confirmed" readonly ="is_confirmed"/> -->
                         </group>
                     </group>
                 </sheet>

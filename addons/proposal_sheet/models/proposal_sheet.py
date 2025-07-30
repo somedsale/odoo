@@ -238,8 +238,9 @@ class ProposalSheet(models.Model):
             if not existing:
                 payment_request= self.env['account.payment.request'].create({
                     'proposal_sheet_id': record.id,
-                    'amount': record.amount_total,
+                    'total': record.amount_total,
                     'date': record.create_date,
+                    'project_id': record.project_id.id,
                     # 'journal_id': record.journal_id.id,
                 })
         
