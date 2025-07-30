@@ -23,16 +23,24 @@ class ProjectExpenseLine(models.Model):
         ondelete='cascade',
         required=True
     )
+    type = fields.Selection([
+    ('labor', 'Nhân công'),
+    ('equipment', 'Máy móc'),
+    ('other', 'Chi phí khác')
+], string="Loại chi phí", default=lambda self: self.env.context.get('default_type'), store=True)
 
     @api.onchange('expense_id')
     def _onchange_expense_id(self):
-        _logger.info("Onchange triggered: expense_id=%s", self.expense_id)
+        
         if self.expense_id and self.expense_id.id:
             self.unit = self.expense_id.default_unit
+            # Ưu tiên default_type từ context, nếu không có thì lấy từ expense_id
+            self.type =  self.expense_id.type 
             self.price_unit = self.expense_id.price_unit or 0.0
         else:
             self.unit = False
             self.price_unit = 0.0
+            self.type = 'other'
 
     @api.depends('price_unit', 'quantity')
     def _compute_price_total(self):
@@ -43,28 +51,11 @@ class ProjectExpenseLine(models.Model):
             )
             rec.price_total = rec.price_unit * rec.quantity
 
-    @api.onchange('product_id')
-    def _onchange_product_id(self):
-        if self.product_id:
-            if self.product_id.type == 'service':
-                self.type = 'other'
-                return {
-                    'domain': {
-                        'type': [('value', '=', 'other')],
-                    }
-                }
-            else:
-                # Gợi ý tự động chọn nếu có "nhân công" hoặc "máy"
-                name = (self.product_id.name or '').lower()
-                if 'nhân công' in name:
-                    self.type = 'labor'
-                elif 'máy' in name:
-                    self.type = 'equipment'
-                else:
-                    self.type = False  # hoặc chọn mặc định
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if not vals.get('type') and vals.get('expense_id'):
+                expense = self.env['project.expense'].browse(vals['expense_id'])
+                vals['type'] = expense.type
+        return super().create(vals_list)
 
-                return {
-                    'domain': {
-                        'type': [('value', 'in', ['labor', 'equipment'])],
-                    }
-                }
