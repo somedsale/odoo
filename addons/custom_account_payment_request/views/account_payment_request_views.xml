@@ -5,7 +5,7 @@
         <field name="arch" type="xml">
             <tree js_class="o_list_renderer_with_summary" create="false">
                 <header>
-                <button name="action_confirm" string="Xác nhận" type="object" class="btn-primary" display="always"/>
+                    <button name="action_confirm" string="Xác nhận" type="object" class="btn-primary" display="always"/>
                 </header>
                 <field name="currency_id" optional="hide"/>
                 <field name="code" string="Mã phiếu chi"/>
@@ -66,27 +66,62 @@
         <field name="name">account.payment.request.kanban</field>
         <field name="model">account.payment.request</field>
         <field name="arch" type="xml">
-            <kanban class="o_kanban_dashboard">
+            <kanban class="o_kanban_example" create="false">
+                <field name="stage"/>
+                <field name="project_id"/>
+                <field name="date"/>
+                <field name="total"/>
+                <field name="currency_id"/>
+
                 <templates>
-                    <div class="row">
-                        <div class="col">
-                            <strong>Đã chi:</strong>
-                            <span>123</span>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click o_kanban_record">
+                            <div class="o_kanban_details">
+                                <strong>
+                                    <field name="proposal_sheet_id"/>
+                                </strong>
+                                <div>
+                                    <span>Ngày:</span>
+                                    <field name="date"/>
+                                </div>
+                                <div>
+                                    <span>Dự án:</span>
+                                    <field name="project_id"/>
+                                </div>
+                                <div>
+                                    <span>Số tiền:</span>
+                                    <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                </div>
+                                <div>
+                                    <span>Trạng thái:</span>
+                                    <field name="stage" widget="badge"/>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col">
-                            <strong>Chưa chi:</strong>
-                            <span>123</span>
-                        </div>
-                    </div>
+                    </t>
                 </templates>
             </kanban>
+        </field>
+    </record>
+    <record id="view_account_payment_request_search" model="ir.ui.view">
+        <field name="name">account.payment.request.search</field>
+        <field name="model">account.payment.request</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm yêu cầu chi tiền">
+                <filter string="Đã xác nhận" name="confirmed" domain="[('stage','=','confirmed')]" />
+                <searchpanel>
+                    <field name="project_id" string="Dự án" />
+                    <field name="stage" string="Trạng thái" icon="fa-bullseye" select="multi"/>
+                </searchpanel>
+            </search>
         </field>
     </record>
     <record id="action_account_payment_request" model="ir.actions.act_window">
         <field name="name">Yêu cầu chi tiền</field>
         <field name="res_model">account.payment.request</field>
-        <field name="view_mode">tree,form</field>
-        <field name="view_id" ref="view_account_payment_request_tree"/>
+        <field name="view_mode">tree,form,kanban</field>
+        <field name="context">{}</field>
+        <field name="search_view_id" ref="view_account_payment_request_search"/>
     </record>
 
     <menuitem id="menu_accounting_payment_request" name="Yêu cầu chi tiền" parent="custom_account_menu.menu_accounting_custom_root" action="action_account_payment_request"/>
