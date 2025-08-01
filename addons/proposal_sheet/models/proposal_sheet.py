@@ -241,6 +241,7 @@ class ProposalSheet(models.Model):
                     'total': record.amount_total,
                     'date': record.create_date,
                     'project_id': record.project_id.id,
+                    'proposal_person_id': record.requested_by.id,
                     # 'journal_id': record.journal_id.id,
                 })
         
