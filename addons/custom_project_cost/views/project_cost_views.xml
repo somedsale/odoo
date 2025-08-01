@@ -1,0 +1,62 @@
+<odoo>
+    <!-- Tree View -->
+    <record id="view_project_cost_summary_tree" model="ir.ui.view">
+        <field name="name">custom.project.cost.tree</field>
+        <field name="model">custom.project.cost</field>
+        <field name="arch" type="xml">
+            <tree string="Chi phí Dự án" create="false" delete="false">
+                <field name="project_id"/>
+                <field name="cost_not_spent" widget="monetary"/>
+                <field name="cost_spent" widget="monetary"/>
+                <field name="cost_total" widget="monetary"/>
+                <field name="currency_id" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_project_cost_summary_form" model="ir.ui.view">
+        <field name="name">custom.project.cost.form</field>
+        <field name="model">custom.project.cost</field>
+        <field name="arch" type="xml">
+            <form string="Chi phí Dự án">
+                <sheet>
+                    <group>
+                        <field name="project_id" readonly="1"/>
+                        <field name="cost_not_spent" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        <field name="cost_spent" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        <field name="cost_total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    </group>
+                    <notebook>
+                        <page string="Chi phí chi tiết">
+                            <field name="account_payment_request_ids">
+                                <tree create="false" delete="false">
+                                    <field name="code"/>
+                                    <field name="proposal_sheet_id"/>
+                                    <field name="date"/>
+                                    <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="status_expense" widget="badge"/>
+                                    <field name="note"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_project_cost_summary" model="ir.actions.act_window">
+        <field name="name">Chi phí Dự án</field>
+        <field name="res_model">custom.project.cost</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_project_cost_root" name="Chi phí Dự án" sequence="50" parent="custom_account_menu.menu_accounting_custom_root"/>
+    <menuitem id="menu_project_cost_summary"
+              name="Tổng hợp Chi phí"
+              parent="menu_project_cost_root"
+              action="action_project_cost_summary"/>
+</odoo>
