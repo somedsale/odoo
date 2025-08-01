@@ -1,34 +1,91 @@
-from odoo import models, fields, api
-
+from odoo import models, fields, api,http
+from odoo.exceptions import UserError
+from odoo.http import request
 class AccountingPaymentRequest(models.Model):
     _name = 'account.payment.request'
     _description = 'Yêu cầu chi tiền kế toán'
-
+    _inherit = ['mail.thread', 'mail.activity.mixin']
+    code = fields.Char(string="Mã phiếu chi", required=True, copy=False, readonly=True, default=lambda self: self.env['ir.sequence'].next_by_code('account.payment.request'))
     proposal_sheet_id = fields.Many2one('proposal.sheet', string="Phiếu đề xuất", required=True)
     total = fields.Float(string="Số tiền", required=True)
-    date = fields.Date(string="Ngày chi", default=fields.Date.today)
+    date = fields.Date(string="Ngày đề xuất", default=fields.Date.today)
+    date_payment = fields.Date(string="Ngày thanh toán", required=True)
     journal_id = fields.Many2one('account.journal', string="Nhật ký", domain="[('type', 'in', ['cash', 'bank'])]")
     project_id = fields.Many2one('project.project', string="Dự án")
     is_confirmed = fields.Boolean(string="Đã chi", default=False)
-    total_display = fields.Char(string="Số tiền", compute="_compute_total_display")
-
-    @api.depends('total')
-    def _compute_total_display(self):
-        for rec in self:
-            rec.total_display = "{:,.2f} ₫".format(rec.total or 0.0)  
-    stage = fields.Selection([
+    receive_person = fields.Many2one('res.partner', string="Người nhận tiền", required=True)
+    currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
+    payment_type = fields.Selection([
+        ('cash', 'Tiền mặt'),
+        ('bank', 'Chuyển khoản'),
+        ('other', 'Khác')
+    ], string="Loại thanh toán", default='cash')
+    bankids = fields.Many2one('res.partner.bank', string="Tài khoản ngân hàng" , domain="[('partner_id', '=', receive_person)]")
+    note = fields.Text(string="Ghi chú")
+    state = fields.Selection([
         ('draft', 'Nháp'),
         ('confirmed', 'Xác nhận'),
         ('post', 'Đã vào sổ'),
         ('cancelled', 'Hủy'),
         ('done', 'Hoàn tất'),
     ], default='draft')
+    status_expense = fields.Selection([
+        ('not yet', 'Chưa chi'),
+        ('paid', 'Đã chi'),
+    ], default='not yet')
     @api.depends('journal_id')
-    def _compute_currency_id(self):
-        for pay in self:
-            pay.currency_id = pay.journal_id.currency_id or pay.journal_id.company_id.currency_id
+    def _compute_proposal_sheet_id(self):
+        for rec in self:
+            if rec.proposal_sheet_id and rec.proposal_sheet_id.journal_id:
+                rec.journal_id = rec.proposal_sheet_id.journal_id
+            else:
+                rec.journal_id = False
     def button_confirm_payment(self):
         for rec in self:
             if not rec.is_confirmed:
                 rec.is_confirmed = True
                 rec.proposal_sheet_id.state = 'done'
+    def action_confirm(self):
+        for rec in self:
+            if rec.state == 'draft':
+                rec.state = 'confirmed'
+    def action_post(self):
+        for rec in self:
+            if rec.state == 'confirmed':
+                rec.state = 'post'
+                # Logic to post the payment request to the accounting system
+                # This could involve creating journal entries, etc.
+    def action_cancel(self):
+        for rec in self:
+            if rec.state in ['draft', 'confirmed']:
+                rec.state = 'cancelled'
+            elif rec.state == 'post':
+                raise UserError("Không thể hủy yêu cầu chi tiền đã vào sổ.")
+            elif rec.state == 'done':
+                raise UserError("Không thể hủy yêu cầu chi tiền đã hoàn tất.")
+    def action_payment_request(self):
+        for rec in self:
+            if rec.state == 'post':
+                rec.state = 'done'
+                # Logic to mark the payment request as done
+                # This could involve updating related records, etc.
+                rec.proposal_sheet_id.state = 'done'
+                rec.status_expense = 'paid'
+                rec.message_post(body="Yêu cầu chi tiền đã hoàn tất.")
+
+
+            else:
+                raise UserError("Yêu cầu chi tiền chỉ có thể được đánh dấu là đã hoàn tất khi ở trạng thái đã vào sổ.")
+class PaymentRequestController(http.Controller):
+    @http.route('/payment_request/statistics', type='json', auth='user')
+    def get_statistics(self):
+        domain = [('state', '!=', 'draft')]  # lọc các bản ghi hợp lệ
+        records = request.env['account.payment.request'].search(domain)
+
+        spent = sum(rec.amount for rec in records if rec.state in ['approved', 'done'])
+        not_spent = sum(rec.amount for rec in records if rec.state == 'submitted')
+
+        return {
+            'spent': spent,
+            'not_spent': not_spent,
+        }
