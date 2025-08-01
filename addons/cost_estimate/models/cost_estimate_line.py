@@ -43,6 +43,8 @@ class CostEstimateLine(models.Model):
     is_from_sale_order = fields.Boolean(string='Từ báo giá', compute='_compute_is_from_sale_order')
     task_id = fields.Many2one('project.task', string='Nhiệm vụ')
     product_type = fields.Selection(related='product_id.detailed_type', store=True)
+    currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
+
 
     @api.depends('sale_order_line_id')
     def _compute_is_from_sale_order(self):
