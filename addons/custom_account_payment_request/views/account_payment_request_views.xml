@@ -67,7 +67,7 @@
         <field name="model">account.payment.request</field>
         <field name="arch" type="xml">
             <kanban class="o_kanban_example" create="false">
-                <field name="stage"/>
+                <field name="state"/>
                 <field name="project_id"/>
                 <field name="date"/>
                 <field name="total"/>
@@ -94,7 +94,7 @@
                                 </div>
                                 <div>
                                     <span>Trạng thái:</span>
-                                    <field name="stage" widget="badge"/>
+                                    <field name="state" widget="badge"/>
                                 </div>
                             </div>
                         </div>
@@ -108,10 +108,10 @@
         <field name="model">account.payment.request</field>
         <field name="arch" type="xml">
             <search string="Tìm kiếm yêu cầu chi tiền">
-                <filter string="Đã xác nhận" name="confirmed" domain="[('stage','=','confirmed')]" />
+                <filter string="Đã xác nhận" name="confirmed" domain="[('state','=','confirmed')]" />
                 <searchpanel>
                     <field name="project_id" string="Dự án" />
-                    <field name="stage" string="Trạng thái" icon="fa-bullseye" select="multi"/>
+                    <field name="state" string="Trạng thái" icon="fa-bullseye" select="multi"/>
                 </searchpanel>
             </search>
         </field>
