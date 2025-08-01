@@ -7,6 +7,7 @@ class AccountingPaymentRequest(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     code = fields.Char(string="Mã phiếu chi", required=True, copy=False, readonly=True, default=lambda self: self.env['ir.sequence'].next_by_code('account.payment.request'))
     proposal_sheet_id = fields.Many2one('proposal.sheet', string="Phiếu đề xuất", required=True)
+    proposal_person_id = fields.Many2one('res.users', string="Người đề xuất", default=lambda self: self.env.user)
     total = fields.Float(string="Số tiền", required=True)
     date = fields.Date(string="Ngày đề xuất", default=fields.Date.today)
     date_payment = fields.Date(string="Ngày thanh toán", required=True)
@@ -14,6 +15,7 @@ class AccountingPaymentRequest(models.Model):
     project_id = fields.Many2one('project.project', string="Dự án")
     is_confirmed = fields.Boolean(string="Đã chi", default=False)
     receive_person = fields.Many2one('res.partner', string="Người nhận tiền", required=True)
+    payment_person = fields.Many2one('res.partner', string="Người tạo chi", required=True)
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
     payment_type = fields.Selection([
         ('cash', 'Tiền mặt'),
@@ -71,6 +73,7 @@ class AccountingPaymentRequest(models.Model):
                 # This could involve updating related records, etc.
                 rec.proposal_sheet_id.state = 'done'
                 rec.status_expense = 'paid'
+                rec.payment_person = self.env.user.partner_id
                 rec.message_post(body="Yêu cầu chi tiền đã hoàn tất.")
 
 
