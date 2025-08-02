@@ -9,7 +9,7 @@
                 <field name="proposal_sheet_id" string="Phiếu đề xuất"/>
                 <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="1"/>
                 <field name="date"/>
-                <field name="state" widget="badge" decoration-muted="state == 'draft'" decoration-primary="state == 'confirmed'" decoration-info="state == 'post'" decoration-success="state == 'done'"/>
+                <field name="state" widget="badge" decoration-muted="state == 'draft'" decoration-primary="state == 'confirmed'" decoration-success="state == 'done'"/>
                 <field name="status_expense" widget="badge" string="Trạng thái chi tiền" decoration-danger="status_expense == 'not yet'" decoration-success="status_expense == 'paid'"/>
 
             </tree>
@@ -19,14 +19,14 @@
         <field name="name">account.payment.request.form</field>
         <field name="model">account.payment.request</field>
         <field name="arch" type="xml">
-            <form string="Yêu cầu chi tiền" create="false">
+            <form string="Phiếu chi" create="false">
                 <field name="status_expense" invisible="1"/>
                 <header>
                     <button name="action_confirm" string="Xác nhận" type="object" class="btn-primary" invisible="state != &apos;draft&apos;"/>
-                    <button name="action_post" string="Vào sổ bút toán" type="object" class="btn-success" invisible="state != &apos;confirmed&apos;"/>
-                    <button name="action_payment_request" string="Ghi nhận thanh toán" type="object" class="btn-success" invisible="state != &apos;post&apos;"/>
+                    <!-- <button name="action_post" string="Vào sổ bút toán" type="object" class="btn-success" invisible="state != &apos;confirmed&apos;"/> -->
+                    <button name="action_payment_request" string="Ghi nhận thanh toán" type="object" class="btn-success" invisible="state != &apos;confirmed&apos;"/>
                     <!-- <button name="action_cancel" string="Hủy" type="object" class="btn-danger" invisible="state != &apos;draft&apos;"/> -->
-                    <field name="state" widget="statusbar" statusbar_visible="confirmed,post,done"/>
+                    <field name="state" widget="statusbar" statusbar_visible="confirmed,done"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -101,23 +101,24 @@
         <field name="name">account.payment.request.search</field>
         <field name="model">account.payment.request</field>
         <field name="arch" type="xml">
-            <search string="Tìm kiếm yêu cầu chi tiền">
+            <search string="Tìm kiếm phiếu chi">
                 <filter string="Đã xác nhận" name="confirmed" domain="[('state','=','confirmed')]" />
                 <searchpanel>
                     <field name="project_id" string="Dự án" />
                     <field name="state" string="Trạng thái" icon="fa-bullseye" select="multi"/>
+                    <field name="status_expense" string="Trạng thái chi" icon="fa-bullseye" select="multi"/>
                 </searchpanel>
             </search>
         </field>
     </record>
     <record id="action_account_payment_request" model="ir.actions.act_window">
-        <field name="name">Yêu cầu chi tiền</field>
+        <field name="name">Phiếu chi</field>
         <field name="res_model">account.payment.request</field>
         <field name="view_mode">tree,form,kanban</field>
         <field name="context">{}</field>
         <field name="search_view_id" ref="view_account_payment_request_search"/>
     </record>
 
-    <menuitem id="menu_accounting_payment_request" name="Yêu cầu chi tiền" parent="custom_account_menu.menu_accounting_custom_root" action="action_account_payment_request"/>
+    <menuitem id="menu_accounting_payment_request" name="Phiếu chi" parent="custom_account_menu.menu_accounting_custom_root" action="action_account_payment_request"/>
 
 </odoo>

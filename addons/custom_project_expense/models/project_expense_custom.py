@@ -1,7 +1,7 @@
 from odoo import models, fields, api
 
-class ProjectExpense(models.Model):
-    _name = 'project.expense'
+class ProjectExpenseCustom(models.Model):
+    _name = 'project.expense.custom'
     _description = 'Chi phí dự án'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
@@ -10,28 +10,57 @@ class ProjectExpense(models.Model):
     total_spent = fields.Float(string="Tổng đã chi", compute='_compute_costs', store=True)
     total_not_spent = fields.Float(string="Tổng chưa chi", compute='_compute_costs', store=True)
     currency_id = fields.Many2one('res.currency', string="Tiền tệ", default=lambda self: self.env.company.currency_id)
-    payment_request_ids = fields.One2many('account.payment.request', 'project_id', string="Yêu cầu chi tiền", readonly=True)
-
-    @api.depends('payment_request_ids.total', 'payment_request_ids.state', 'payment_request_ids.status_expense')
+    payment_request_ids = fields.One2many(
+        'account.payment.request',
+        'project_id',
+        string="Yêu cầu chi tiền",
+        compute="_compute_payment_requests",
+        store=False  # hoặc không khai báo store
+    )
+    
+    @api.depends('project_id')
+    def _compute_payment_requests(self):
+        for record in self:
+            if record.project_id:
+                record.payment_request_ids = self.env['account.payment.request'].search([
+                    ('project_id', '=', record.project_id.id)
+                ])
+            else:
+                record.payment_request_ids = self.env['account.payment.request']
+    @api.depends('project_id')
     def _compute_costs(self):
         for record in self:
-            payment_requests = record.payment_request_ids
-            total_not_spent = sum(pr.total for pr in payment_requests if pr.status_expense != 'not yet' )
-            total_spent = sum(pr.total for pr in payment_requests if pr.status_expense == 'paid')
-            total_cost = total_not_spent + total_spent
+            if not record.project_id:
+                record.total_cost = 0.0
+                record.total_spent = 0.0
+                record.total_not_spent = 0.0
+                continue
+
+            payment_requests = self.env['account.payment.request'].search([
+                ('project_id', '=', record.project_id.id)
+            ])
+            total_spent = 0.0
+            total_not_spent = 0.0
+            for pr in payment_requests:
+                if pr.status_expense == 'paid':
+                    total_spent += pr.total
+                elif pr.status_expense == 'not yet':
+                    total_not_spent += pr.total
+            total_cost = total_spent + total_not_spent
+
             record.total_cost = total_cost
             record.total_spent = total_spent
             record.total_not_spent = total_not_spent
 
+
     @api.model
     def create_or_update_expense(self, project_id):
         expense = self.search([('project_id', '=', project_id)], limit=1)
-        # if not expense:
-        #     self.create({
-        #         'project_id': project_id,
-        #     })
-        # else:
-        if expense:
+        if not expense:
+            self.create({
+                'project_id': project_id,
+            })
+        else:
             expense._compute_costs()
 
     @api.model
