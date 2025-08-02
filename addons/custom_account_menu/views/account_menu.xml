@@ -3,8 +3,8 @@
     <menuitem id="menu_accounting_custom_root" name="Kế Toán" sequence="1" groups="account.group_account_manager"/>
 
     <!-- ================= PHÂN NHÓM CHÍNH ================= -->
-    <menuitem id="menu_accounting_operations" name="Nghiệp Vụ" parent="menu_accounting_custom_root" sequence="10"/>
-    <menuitem id="menu_accounting_reporting" name="Báo Cáo" parent="menu_accounting_custom_root" sequence="20"/>
+    <!-- <menuitem id="menu_accounting_operations" name="Nghiệp Vụ" parent="menu_accounting_custom_root" sequence="10"/> -->
+    <menuitem id="menu_accounting_reporting" name="Báo Cáo" parent="menu_accounting_custom_root" sequence="80"/>
     <menuitem id="menu_accounting_config" name="Cấu Hình" parent="menu_accounting_custom_root" sequence="99"/>
 
     <!-- ================= NGHIỆP VỤ ================= -->
@@ -14,7 +14,7 @@
         <field name="res_model">account.move</field>
         <field name="view_mode">tree,form</field>
     </record>
-    <menuitem id="menu_journal_entries" name="Bút Toán" parent="menu_accounting_operations" action="action_account_moves" sequence="1"/>
+    <!-- <menuitem id="menu_journal_entries" name="Bút Toán" parent="menu_accounting_operations" action="action_account_moves" sequence="1"/> -->
 
     <!-- Chi Tiết Bút Toán -->
     <record id="action_account_move_lines" model="ir.actions.act_window">
@@ -22,7 +22,7 @@
         <field name="res_model">account.move.line</field>
         <field name="view_mode">tree,form</field>
     </record>
-    <menuitem id="menu_journal_items" name="Chi Tiết Bút Toán" parent="menu_accounting_operations" action="action_account_move_lines" sequence="2"/>
+    <!-- <menuitem id="menu_journal_items" name="Chi Tiết Bút Toán" parent="menu_accounting_operations" action="action_account_move_lines" sequence="2"/> -->
 
     <!-- Thanh Toán -->
     <record id="action_account_payments" model="ir.actions.act_window">
@@ -30,7 +30,7 @@
         <field name="res_model">account.payment</field>
         <field name="view_mode">tree,form</field>
     </record>
-    <menuitem id="menu_account_payments" name="Thanh Toán" parent="menu_accounting_operations" action="action_account_payments" sequence="3"/>
+    <!-- <menuitem id="menu_account_payments" name="Thanh Toán" parent="menu_accounting_operations" action="action_account_payments" sequence="3"/> -->
 
     <!-- Sao Kê Ngân Hàng -->
     <record id="action_account_bank_statements" model="ir.actions.act_window">
@@ -38,7 +38,7 @@
         <field name="res_model">account.bank.statement</field>
         <field name="view_mode">tree,form</field>
     </record>
-    <menuitem id="menu_account_bank_statements" name="Sao Kê Ngân Hàng" parent="menu_accounting_operations" action="action_account_bank_statements" sequence="4"/>
+    <!-- <menuitem id="menu_account_bank_statements" name="Sao Kê Ngân Hàng" parent="menu_accounting_operations" action="action_account_bank_statements" sequence="4"/> -->
 
 
 

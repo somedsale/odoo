@@ -5,7 +5,7 @@ class ProjectExpenseController(http.Controller):
     @http.route('/project_expense/statistics', type='json', auth='user')
     def get_statistics(self):
         domain = [('project_id', '!=', False)]
-        records = request.env['project.expense'].search(domain)
+        records = request.env['project.expense.custom'].search(domain)
 
         stats = []
         for record in records:

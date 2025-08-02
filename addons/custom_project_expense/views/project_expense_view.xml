@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Tree View -->
-    <record id="project_expense_tree_view" model="ir.ui.view">
-        <field name="name">project.expense.tree</field>
-        <field name="model">project.expense</field>
+    <record id="project_expense_custom_tree_view" model="ir.ui.view">
+        <field name="name">project.expense.custom.tree</field>
+        <field name="model">project.expense.custom</field>
         <field name="arch" type="xml">
             <tree string="Chi phí dự án">
                 <field name="project_id"/>
-                <field name="total_cost" widget="monetary"/>
-                <field name="total_spent" widget="monetary"/>
-                <field name="total_not_spent" widget="monetary"/>
+                <field name="total_spent" sum="Tổng đã chi" widget="monetary"/>
+                <field name="total_not_spent" sum="Tổng chưa chi" widget="monetary"/>
+                <field name="total_cost" sum="Tổng chi phí" widget="monetary"/>
                 <field name="currency_id" invisible="1" optional="hide"/>
             </tree>
         </field>
     </record>
 
     <!-- Form View -->
-    <record id="project_expense_form_view" model="ir.ui.view">
-        <field name="name">project.expense.form</field>
-        <field name="model">project.expense</field>
+    <record id="project_expense_custom_form_view" model="ir.ui.view">
+        <field name="name">project.expense.custom.form</field>
+        <field name="model">project.expense.custom</field>
         <field name="arch" type="xml">
             <form string="Chi phí dự án">
                 <sheet>
@@ -29,22 +29,21 @@
                         <field name="total_spent" widget="monetary"/>
                         <field name="total_not_spent" widget="monetary"/>
                     </group>
-                    <notebook>
-                        <page string="Yêu cầu chi tiền">
-                            <field name="payment_request_ids" widget="one2many_list">
-                                <tree>
-                                    <field name="code"/>
-                                    <field name="proposal_sheet_id"/>
-                                    <field name="proposal_person_id"/>
-                                    <field name="date"/>
-                                    <field name="date_payment"/>
-                                    <field name="total" widget="monetary"/>
-                                    <field name="status_expense"/>
-                                    <field name="state"/>
-                                </tree>
-                            </field>
-                        </page>
-                    </notebook>
+
+                    <field name="payment_request_ids">
+                        <tree create="false" edit="false" delete="false">
+                            <field name="code"/>
+                            <field name="proposal_sheet_id"/>
+                            <field name="proposal_person_id" widget ="many2one_avatar_user"/>
+                            <field name="date"/>
+                            <field name="date_payment"/>
+                            <field name="total" widget="monetary" sum="Tổng cộng"/>
+                            <field name="status_expense" string="Trạng thái chi" widget="badge" decoration-danger="status_expense == 'not yet'" decoration-success="status_expense=='paid'"/>
+                            <field name="currency_id" optional="hide"/>
+                            <!-- <field name="state" widget="badge"/> -->
+                        </tree>
+                    </field>
+
                 </sheet>
             </form>
         </field>
@@ -53,7 +52,7 @@
     <!-- Action -->
     <record id="action_project_expense" model="ir.actions.act_window">
         <field name="name">Chi phí dự án</field>
-        <field name="res_model">project.expense</field>
+        <field name="res_model">project.expense.custom</field>
         <field name="view_mode">tree,form</field>
         <field name="help" type="html">
             <p class="oe_view_nocontent_create">

@@ -10,12 +10,12 @@ class AccountingPaymentRequest(models.Model):
     proposal_person_id = fields.Many2one('res.users', string="Người đề xuất", default=lambda self: self.env.user)
     total = fields.Float(string="Số tiền", required=True)
     date = fields.Date(string="Ngày đề xuất", default=fields.Date.today)
-    date_payment = fields.Date(string="Ngày thanh toán", required=True)
+    date_payment = fields.Date(string="Ngày thanh toán")
     journal_id = fields.Many2one('account.journal', string="Nhật ký", domain="[('type', 'in', ['cash', 'bank'])]")
     project_id = fields.Many2one('project.project', string="Dự án")
     is_confirmed = fields.Boolean(string="Đã chi", default=False)
-    receive_person = fields.Many2one('res.partner', string="Người nhận tiền", required=True)
-    payment_person = fields.Many2one('res.partner', string="Người tạo chi", required=True)
+    receive_person = fields.Many2one('res.partner', string="Người nhận tiền")
+    payment_person = fields.Many2one('res.partner', string="Người tạo chi")
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
     payment_type = fields.Selection([
         ('cash', 'Tiền mặt'),
@@ -67,16 +67,18 @@ class AccountingPaymentRequest(models.Model):
                 raise UserError("Không thể hủy yêu cầu chi tiền đã hoàn tất.")
     def action_payment_request(self):
         for rec in self:
-            if rec.state == 'post':
+            if rec.state == 'confirmed':
                 rec.state = 'done'
                 # Logic to mark the payment request as done
                 # This could involve updating related records, etc.
                 rec.proposal_sheet_id.state = 'done'
                 rec.status_expense = 'paid'
                 rec.payment_person = self.env.user.partner_id
+                rec.date_payment = fields.Datetime.now()
                 rec.message_post(body="Yêu cầu chi tiền đã hoàn tất.")
-
-
+                expense = self.env['project.expense.custom'].search([('project_id', '=', rec.project_id.id)], limit=1)
+                if expense:
+                    expense._compute_costs()
             else:
                 raise UserError("Yêu cầu chi tiền chỉ có thể được đánh dấu là đã hoàn tất khi ở trạng thái đã vào sổ.")
 class PaymentRequestController(http.Controller):
