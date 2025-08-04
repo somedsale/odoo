@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="sale_report_template">
+        <t t-call="web.html_container">
+            <div class="page">
+                <h2>Sale Quotation Report</h2>
+
+                <!-- Week Table -->
+                <h3>Current Week</h3>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Period</th>
+                            <th>Number of Quotations</th>
+                            <th>Total Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><t t-esc="week_data['period']"/></td>
+                            <td><t t-esc="week_data['count']"/></td>
+                            <td><t t-esc="week_data['total_amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Month Table -->
+                <h3>Current Month</h3>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Period</th>
+                            <th>Number of Quotations</th>
+                            <th>Total Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><t t-esc="month_data['period']"/></td>
+                            <td><t t-esc="month_data['count']"/></td>
+                            <td><t t-esc="month_data['total_amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Quarter Table -->
+                <h3>Current Quarter</h3>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Period</th>
+                            <th>Number of Quotations</th>
+                            <th>Total Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><t t-esc="quarter_data['period']"/></td>
+                            <td><t t-esc="quarter_data['count']"/></td>
+                            <td><t t-esc="quarter_data['total_amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Selected Sale Orders Table -->
+                <t t-if="selected_orders_data">
+                    <h3>Selected Sale Orders</h3>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Order Number</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Total Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="selected_orders_data" t-as="order">
+                                <tr>
+                                    <td><t t-esc="order['name']"/></td>
+                                    <td><t t-esc="order['partner_name']"/></td>
+                                    <td><t t-esc="order['date_order']"/></td>
+                                    <td><t t-esc="order['amount_total']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <record id="action_sale_report_pdf" model="ir.actions.report">
+        <field name="name">Sale Quotation Report (PDF)</field>
+        <field name="model">sale.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_sale_report.sale_report_template</field>
+        <field name="print_report_name">'Sale Quotation Report'</field>
+    </record>
+
+    <record id="action_sale_report_html" model="ir.actions.report">
+        <field name="name">Sale Quotation Report (HTML)</field>
+        <field name="model">sale.report.wizard</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">custom_sale_report.sale_report_template</field>
+        <field name="print_report_name">'Sale Quotation Report'</field>
+    </record>
+</odoo>
