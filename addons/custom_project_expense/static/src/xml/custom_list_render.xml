@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="custom_project_expense.ListRenderer" t-inherit="web.ListRenderer" t-inherit-mode="extension" owl="1">
+        <xpath expr="//table" position="before">
+            <t t-if="props.list.resModel === 'project.expense.custom'">
+
+                <!-- Lấy ký hiệu tiền tệ từ bản ghi đầu tiên nếu có -->
+                <t t-set="currencySymbol" t-value="props.list.records.length &gt; 0 &amp;&amp; props.list.records[0].data.currency_id ? props.list.records[0].data.currency_id[1] : ''"/>
+
+                <!-- Tính tổng các giá trị -->
+                <t t-set="totalCost" t-value="props.list.records.reduce((sum, r) =&gt; sum + (r.data.total_cost || 0), 0)"/>
+                <t t-set="totalSpent" t-value="props.list.records.reduce((sum, r) =&gt; sum + (r.data.total_spent || 0), 0)"/>
+                <t t-set="totalNotSpent" t-value="props.list.records.reduce((sum, r) =&gt; sum + (r.data.total_not_spent || 0), 0)"/>
+
+                <div class="o_expense_statusbar d-flex w-100 align-items-stretch">
+
+                    <!-- Step 1: Tổng chi phí -->
+                    <div class="o_expense_card o_arrow_button flex-grow-1 d-flex flex-column p-3 border-bottom text-center">
+                        <span class="h2 m-0 text-primary">
+                            <t t-esc="totalCost.toLocaleString()"/>
+                            <t t-esc="currencySymbol"/>
+                        </span>
+                        <b class="mx-2">Tổng chi phí</b>
+                    </div>
+                    <div class="o_expense_card o_arrow_button flex-grow-0 d-flex align-items-center justify-content-center border-bottom px-2">
+                        <i class="fa fa-angle-right fa-3x"/>
+                    </div>
+
+                    <!-- Step 2: Tổng đã chi -->
+                    <div class="o_expense_card o_arrow_button flex-grow-1 d-flex flex-column p-3 border-bottom text-center">
+                        <span class="h2 m-0 text-primary">
+                            <t t-esc="totalSpent.toLocaleString()"/>
+                            <t t-esc="currencySymbol"/>
+                        </span>
+                        <b class="mx-2">Tổng đã chi</b>
+                    </div>
+                    <div class="o_expense_card o_arrow_button flex-grow-0 d-flex align-items-center justify-content-center border-bottom px-2">
+                        <i class="fa fa-angle-right fa-3x"/>
+                    </div>
+
+                    <!-- Step 3: Tổng chưa chi -->
+                    <div class="o_expense_card o_arrow_button_current flex-grow-1 d-flex flex-column p-3 border-bottom text-center">
+                        <span class="h2 m-0 text-primary">
+                            <t t-esc="totalNotSpent.toLocaleString()"/>
+                            <t t-esc="currencySymbol"/>
+                        </span>
+                        <b class="mx-2">Tổng chưa chi</b>
+                    </div>
+
+                </div>
+
+            </t>
+        </xpath>
+    </t>
+</templates>
