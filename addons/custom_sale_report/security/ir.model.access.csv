@@ -1,2 +1,6 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_sale_report_wizard,sale.report.wizard,model_sale_report_wizard,,1,1,1,1
+access_sale_contract_custom,sale.contract.custom,model_sale_contract_custom,,1,1,1,1
+access_sale_contract_negotiate,sale.contract.negotiate,model_sale_contract_negotiate,,1,1,1,1
+access_project_prosect,project.prosect,model_project_prosect,,1,1,1,1
+access_sale_report_history,sale.report.history,model_sale_report_history,,1,1,1,1

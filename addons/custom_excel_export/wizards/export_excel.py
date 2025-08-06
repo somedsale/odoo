@@ -275,7 +275,7 @@ class ExportExcelWizard(models.TransientModel):
             current_row += 1
 
             # Amount in words
-            ws.append(["Số tiền bằng chữ: " + (doc.number_to_text(doc.amount_total) or "")])
+            ws.append(["Số tiền bằng chữ: " + (doc.amount_to_text_vi(doc.amount_total) or "")])
             ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=10)
             ws.cell(row=current_row, column=1).font = font_header
             ws.cell(row=current_row, column=1).alignment = align_center
