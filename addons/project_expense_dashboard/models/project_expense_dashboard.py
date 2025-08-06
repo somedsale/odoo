@@ -19,18 +19,21 @@ class ProjectExpenseDashboard(models.Model):
     )
     total_estimate = fields.Float(string="Tổng dự toán", compute="_compute_total_estimate", store=True)
     total_actual = fields.Float(string="Tổng chi thực tế", compute="_compute_total_actual", store=True)
-    progress = fields.Float(string="Tỷ lệ chi tiêu (%)", compute="_compute_progress", store=True)
+    progress = fields.Float( compute="_compute_progress", store=True)
     currency_id = fields.Many2one('res.currency', string="Tiền tệ", default=lambda self: self.env.company.currency_id, readonly=True)
     payment_request_count = fields.Integer(
-    string="Số phiếu chi",
     compute="_compute_payment_request_count",
-    store=False
 )
 
     @api.depends('project_id')
     def _compute_payment_request_count(self):
         for record in self:
-            record.payment_request_count = self.env['account.payment.request'].search_count([('project_id', '=', record.project_id.id)])
+            if record.project_id:
+                record.payment_request_count = self.env['account.payment.request'].search_count([
+                    ('project_id', '=', record.project_id.id)
+                ])
+            else:
+                record.payment_request_count = 0
 
 
     @api.depends('cost_estimate_id')
@@ -49,6 +52,11 @@ class ProjectExpenseDashboard(models.Model):
                 record.total_actual = sum(line['total'] for line in total)
             else:
                 record.total_actual = 0.0
+    @api.depends('project_id','cost_estimate_id')
+    def _compute_progess(self):
+        for record in self:
+            if record.project_id and record.cost_estimate_id:
+                record.progress = (record.total_actual / record.total_estimate) * 100
             
     @api.onchange('project_id')
     def _onchange_project_id(self):
@@ -68,38 +76,13 @@ class ProjectExpenseDashboard(models.Model):
                 record.progress = (record.total_actual / record.total_estimate) * 100
             else:
                 record.progress = 0.0
-
-    def action_view_cost_estimate(self):
-        """Hành động để xem chi tiết dự toán"""
-        self.ensure_one()
-        if self.cost_estimate_id:
-            return {
-                'type': 'ir.actions.act_window',
-                'res_model': 'cost.estimate',
-                'view_mode': 'form',
-                'res_id': self.cost_estimate_id.id,
-                'target': 'current',
-            }
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': 'Không có dự toán',
-                'message': 'Không tìm thấy dự toán cho dự án này.',
-                'type': 'warning',
-            }
-        }
     def action_view_payment_requests(self):
-        self.ensure_one()
-        return {
-            'type': 'ir.actions.act_window',
-            'name': 'Phiếu chi của dự án',
-            'res_model': 'account.payment.request',
-            'view_mode': 'tree,form',
-            'domain': [
-                ('project_id', '=', self.project_id.id),
-                ('state', '=', 'done')
-            ],
-            'context': {'default_project_id': self.project_id.id},
-            'target': 'new',
-        }
+            self.ensure_one()
+            return self.env.ref('custom_account_payment_request.action_account_payment_request_without_searchpanel').read()[0] | {
+                'domain': [
+                    ('project_id', '=', self.project_id.id),
+                    ('state', '=', 'done')
+                ],
+                'context': {'default_project_id': self.project_id.id},
+                'target': 'new',
+            }

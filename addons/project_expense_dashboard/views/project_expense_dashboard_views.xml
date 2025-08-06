@@ -20,25 +20,33 @@
         <field name="arch" type="xml">
             <form>
                 <sheet>
-                    <group>
-                        <group>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_payment_requests" type="object" class="oe_stat_button" icon="fa-book">
+                            <span class="o_stat_value">
+                                <field string ="Phiếu đã chi" name="payment_request_count" widget="statinfo"/>
+                            </span>
+                        </button>
+                    </div>
+                    <group col="2">
+                        <group string="Thông tin">
                             <field name="project_id"/>
                             <field name="cost_estimate_id"/>
                             <field name ="currency_id" invisible ="1"/>
                         </group>
-                        <group>
+                        <group string="Chi phí">
                             <field name="total_estimate" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                             <field name="total_actual" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                            <field name="progress" widget="progressbar"/>
+                            <field name="progress" widget="percentpie" options="{
+                                'max_value': 100,
+                                'color': 'green',
+                                'display_text': true,
+                                'thresholds': [
+                                    {'value': 30, 'color': 'red'},
+                                    {'value': 70, 'color': 'orange'},
+                                    {'value': 90, 'color': 'green'}
+                                ]
+                            }" />
                         </group>
-                        <div class="oe_button_box" name="button_box">
-                            <field name="payment_request_count" widget="statinfo"/>
-                            <button name="action_view_payment_requests" type="object" class="oe_stat_button" icon="fa-file-alt">
-                                <div>
-                                    <span class="o_stat_text">Phiếu chi của dự án</span>
-                                </div>
-                            </button>
-                        </div>
                     </group>
                     <field name="cost_estimate_line_ids">
                         <tree create="false" edit="false" delete="false">
@@ -56,7 +64,7 @@
     </record>
 
     <record id="action_project_expense_dashboard" model="ir.actions.act_window">
-        <field name="name">Bảng điều khiển chi phí dự án</field>
+        <field name="name">Quản lí chi phí dự án</field>
         <field name="res_model">project.expense.dashboard</field>
         <field name="view_mode">tree,form</field>
         <field name="help" type="html">
@@ -65,6 +73,5 @@
             </p>
         </field>
     </record>
-
-    <menuitem id="menu_project_expense_dashboard" name="Bảng điều khiển chi phí" parent="custom_account_menu.menu_accounting_custom_root" action="action_project_expense_dashboard" sequence="10"/>
+    <menuitem id="menu_project_expense_dashboard" name="Quản lí dự án" parent="custom_account_menu.menu_accounting_custom_root" action="action_project_expense_dashboard" sequence="10"/>
 </odoo>

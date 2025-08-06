@@ -6,6 +6,11 @@
         'security/ir.model.access.csv',
         'views/project_expense_dashboard_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'project_expense_dashboard/static/src/css/label_readonly.css',
+        ],
+    },
     'installable': True,
     'application': True,
 }
