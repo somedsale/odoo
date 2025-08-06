@@ -2,93 +2,143 @@
 <odoo>
     <template id="sale_report_template">
         <t t-call="web.html_container">
-            <div class="page">
-                <h2>Sale Quotation Report</h2>
+            <div class="page" style="font-family: Times New Roman, sans-serif; font-size: 14px; color: #333; padding: 20px;">
+                <div style="text-align: left; margin-bottom: 20px;">
+                    <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id" alt="Company Logo" style="max-width: 160px;"/>
+                </div>
+                <h2 style="text-align: center; color: #2c3e50;">Báo cáo Phòng Kinh doanh</h2>
+                <h3 style="text-align: left; color: #34495e;">Báo cáo hàng tuần</h3>
 
                 <!-- Week Table -->
-                <h3>Current Week</h3>
-                <table class="table table-bordered">
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
                     <thead>
                         <tr>
-                            <th>Period</th>
-                            <th>Number of Quotations</th>
-                            <th>Total Amount</th>
+                            <th style="width: 40%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px; text-align: center;">Nội dung</th>
+                            <th style="width: 30%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px; text-align: center;">Mô tả chi tiết</th>
+                            <th style="width: 30%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px; text-align: center;">Giá trị trước thuế</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><t t-esc="week_data['period']"/></td>
-                            <td><t t-esc="week_data['count']"/></td>
-                            <td><t t-esc="week_data['total_amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                            <td style="width: 40%; border: 1px solid #ccc; padding: 8px;"><t t-esc="week_data['period']"/></td>
+                            <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: center"><t t-esc="week_data['count']"/></td>
+                            <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right;">
+                                <t t-esc="week_data['total_amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #ccc; padding: 8px;"><t t-esc="month_data['period']"/></td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: center"><t t-esc="month_data['count']"/></td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: right;">
+                                <t t-esc="month_data['total_amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #ccc; padding: 8px;"><t t-esc="quarter_data['period']"/></td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: center"><t t-esc="quarter_data['count']"/></td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: right;">
+                                <t t-esc="quarter_data['total_amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
 
-                <!-- Month Table -->
-                <h3>Current Month</h3>
-                <table class="table table-bordered">
+                <!-- Contracts -->
+                <h3 style="color: #34495e; margin-top: 30px;">HD Đang triển khai</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
                     <thead>
                         <tr>
-                            <th>Period</th>
-                            <th>Number of Quotations</th>
-                            <th>Total Amount</th>
+                            <th style="width: 40%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Mô tả</th>
+                            <th style="width: 30%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Giá trị trước thuế</th>
+                            <th style="width: 30%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Ghi chú</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><t t-esc="month_data['period']"/></td>
-                            <td><t t-esc="month_data['count']"/></td>
-                            <td><t t-esc="month_data['total_amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <!-- Quarter Table -->
-                <h3>Current Quarter</h3>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Period</th>
-                            <th>Number of Quotations</th>
-                            <th>Total Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><t t-esc="quarter_data['period']"/></td>
-                            <td><t t-esc="quarter_data['count']"/></td>
-                            <td><t t-esc="quarter_data['total_amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <!-- Selected Sale Orders Table -->
-                <t t-if="selected_orders_data">
-                    <h3>Selected Sale Orders</h3>
-                    <table class="table table-bordered">
-                        <thead>
+                        <t t-foreach="contracts" t-as="contract">
                             <tr>
-                                <th>Order Number</th>
-                                <th>Customer</th>
-                                <th>Date</th>
-                                <th>Total Amount</th>
+                                <td style="width: 40%; border: 1px solid #ccc; padding: 8px;"><t t-esc="contract.name"/></td>
+                                <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right;">
+                                    <t t-esc="contract.total_amount" t-options="{'widget': 'monetary', 'display_currency': contract.currency_id}"/>
+                                </td>
+                                <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right"><t t-esc="contract.note or ''"/></td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <t t-foreach="selected_orders_data" t-as="order">
-                                <tr>
-                                    <td><t t-esc="order['name']"/></td>
-                                    <td><t t-esc="order['partner_name']"/></td>
-                                    <td><t t-esc="order['date_order']"/></td>
-                                    <td><t t-esc="order['amount_total']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
-                                </tr>
-                            </t>
-                        </tbody>
-                    </table>
-                </t>
+                        </t>
+                        <t t-if="not contracts">
+                            <tr>
+                                <td colspan="3" style="border: 1px solid #ccc; padding: 8px; text-align: center; color: #888;">Không có hợp đồng nào.</td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <!-- Negotiated Contracts -->
+                <h3 style="color: #34495e; margin-top: 30px;">Số HD đã trình ký, thương thảo và gửi đi</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Mô tả</th>
+                            <th style="width: 30%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Giá trị trước thuế</th>
+                            <th style="width: 30%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="contract_negotiations" t-as="contract">
+                            <tr>
+                                <td style="width: 40%; border: 1px solid #ccc; padding: 8px;"><t t-esc="contract.name"/></td>
+                                <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right;">
+                                    <t t-esc="contract.total_amount" t-options="{'widget': 'monetary', 'display_currency': contract.currency_id}"/>
+                                </td>
+                                <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right"><t t-esc="contract.note or ''"/></td>
+                            </tr>
+                        </t>
+                        <t t-if="not contract_negotiations">
+                            <tr>
+                                <td colspan="3" style="border: 1px solid #ccc; padding: 8px; text-align: center; color: #888;">Không có hợp đồng nào.</td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <!-- Project Prospects -->
+                <h3 style="color: #34495e; margin-top: 30px;">Dự án có triển vọng</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Mô tả</th>
+                            <th style="width: 30%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Giá trị trước thuế</th>
+                            <th style="width: 30%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="project_prospects" t-as="project_prospect">
+                            <tr>
+                                <td style="width: 40%; border: 1px solid #ccc; padding: 8px;"><t t-esc="project_prospect.name"/></td>
+                                <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right;">
+                                    <t t-esc="project_prospect.total_amount" t-options="{'widget': 'monetary', 'display_currency': project_prospect.currency_id}"/>
+                                </td>
+                                <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right"><t t-esc="project_prospect.note or ''"/></td>
+                            </tr>
+                        </t>
+                        <t t-if="not project_prospects">
+                            <tr>
+                                <td colspan="3" style="border: 1px solid #ccc; padding: 8px; text-align: center; color: #888;">Không có dự án triển vọng nào.</td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <!-- Business Plan -->
+                <div style="margin-top: 40px;">
+                    <h3 style="text-align: left; color: #34495e;">Triển khai kế hoạch kinh doanh</h3>
+
+                    <div style="white-space: pre-line; border: 1px solid #ccc; padding: 10px; background-color: #fafafa;">
+                        <t t-esc="business_plan or 'Chưa có nội dung kế hoạch.'"/>
+                    </div>
+                </div>
             </div>
         </t>
     </template>
+
 
     <record id="action_sale_report_pdf" model="ir.actions.report">
         <field name="name">Sale Quotation Report (PDF)</field>
@@ -104,5 +154,21 @@
         <field name="report_type">qweb-html</field>
         <field name="report_name">custom_sale_report.sale_report_template</field>
         <field name="print_report_name">'Sale Quotation Report'</field>
+    </record>
+
+    <record id="action_sale_report_history_pdf" model="ir.actions.report">
+        <field name="name">Sale Report History (PDF)</field>
+        <field name="model">sale.report.history</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_sale_report.sale_report_template</field>
+        <field name="print_report_name">'Sale Report History'</field>
+    </record>
+
+    <record id="action_sale_report_history_html" model="ir.actions.report">
+        <field name="name">Sale Report History (HTML)</field>
+        <field name="model">sale.report.history</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">custom_sale_report.sale_report_template</field>
+        <field name="print_report_name">'Sale Report History'</field>
     </record>
 </odoo>

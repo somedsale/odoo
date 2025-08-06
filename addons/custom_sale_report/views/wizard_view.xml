@@ -6,12 +6,44 @@
         <field name="arch" type="xml">
             <form string="Generate Sale Report">
                 <group>
-                    <p>Click below to generate or preview a report for the current week, month, and quarter.</p>
-                    <field name="sale_order_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                    <field name="week_start_date" widget="date" string="Chọn ngày trong tuần báo cáo"/>
+                    <field name="business_plan" widget="text" string="Kế hoạch kinh doanh"/>
                 </group>
+                <notebook string="Generate Report">
+                    <page string="HD Đang triển khai">
+                        <field name="contract_ids" widget="many2many">
+                            <tree editable="bottom" >
+                                <field name="name"/>
+                                <field name="total_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="note"/>
+                                <field name="currency_id" invisible="1" optional="hide"/>
+                            </tree>
+                        </field>
+                    </page>
+                    <page string="Số HD đã trình ký, thương thảo và gửi đi">
+                        <field name="contract_negotiation_ids" widget="many2many">
+                            <tree editable="bottom">
+                                <field name="name"/>
+                                <field name="total_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="note"/>
+                                <field name="currency_id" invisible="1" optional="hide"/>
+                            </tree>
+                        </field>
+                    </page>
+                    <page string="Dự án triển vọng">
+                        <field name="project_prospect_ids" widget="many2many">
+                            <tree editable="bottom">
+                                <field name="name"/>
+                                <field name="total_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="note"/>
+                                <field name="currency_id" invisible="1" optional="hide"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
                 <footer>
-                    <button name="preview_report" string="Preview" type="object" class="btn-primary"/>
-                    <button name="generate_report" string="Generate PDF" type="object" class="btn-primary"/>
+                    <button name="preview_report" string="Xem báo cáo" type="object" class="btn-primary"/>
+                    <!-- <button name="generate_report" string="Generate PDF" type="object" class="btn-primary"/> -->
                     <button string="Cancel" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
@@ -19,11 +51,11 @@
     </record>
 
     <record id="action_sale_report_wizard" model="ir.actions.act_window">
-        <field name="name">Generate Sale Report</field>
+        <field name="name">Tạo báo cáo</field>
         <field name="res_model">sale.report.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>
 
-    <menuitem id="menu_sale_report" name="Sale Quotation Report" parent="sale.sale_menu_root" action="action_sale_report_wizard" sequence="100" groups="sales_team.group_sale_manager"/>
+    <menuitem id="menu_sale_report_weekly" name="Báo cáo hàng tuần" parent="sale.menu_sale_report" action="action_sale_report_wizard" sequence="100" groups="sales_team.group_sale_manager"/>
 </odoo>

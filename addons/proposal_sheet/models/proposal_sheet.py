@@ -296,17 +296,6 @@ class ProposalSheet(models.Model):
             is_manager = rec.manager_id.user_id == self.env.user
             is_accounting = self.env.user.has_group('account.group_account_manager')  # KT
             is_boss = rec.director_user_id == self.env.user
-
-            # rec.show_button_submit = rec.state == 'draft' and is_creator
-            # rec.show_button_manager_approve = rec.state == 'submitted' and is_manager
-            # rec.show_button_accounting_approve = rec.state == 'reviewed_manager' and is_accounting
-            # rec.show_button_boss_approve = rec.state == 'reviewed_accounting' and is_boss
-            # rec.show_button_done = rec.state == 'approved' and is_accounting  # KT chi xong
-            # rec.show_button_reject = rec.state in ['submitted', 'reviewed_manager', 'reviewed_accounting', 'approved'] \
-            #                         and (is_manager or is_accounting or is_boss)
-            # rec.show_button_cancel = rec.state in ['draft', 'submitted'] and is_creator
-            # rec.show_button_reset_draft = rec.state == 'rejected' and is_creator
-            
             rec.show_button_submit = rec.state == 'draft' and is_creator
             rec.show_button_manager_approve = rec.state == 'reviewed_manager' and is_manager
             rec.show_button_accounting_approve = rec.state == 'reviewed_accounting' and is_accounting

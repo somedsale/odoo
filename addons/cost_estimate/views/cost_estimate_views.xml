@@ -12,7 +12,8 @@
                 <field name="name"/>
                 <field name="sale_order_id"/>
                 <field name="project_id"/>
-                <field name="total_cost"/>
+                <field name="total_cost" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="currency_id" optional="hide"/>
             </tree>
         </field>
     </record>
@@ -23,7 +24,18 @@
         <field name="model">cost.estimate</field>
         <field name="priority" eval="5"/>
         <field name="arch" type="xml">
+
             <form string="Dự toán chi phí Dự án">
+                <field name="show_button_submit" invisible="1"/>
+                <field name="show_button_approve" invisible="1"/>
+                <field name="show_button_cancel" invisible="1"/>
+                <header>
+                    <button name="action_submit" type="object" string="Gửi duyệt" invisible="show_button_submit == False" class="oe_highlight"/>
+                    <button name="action_approve" type="object" string="Duyệt" invisible="show_button_approve == False" class="oe_highlight"/>
+                    <button name="action_cancel" type="object" string="Hủy" invisible="show_button_cancel == False" class="oe_highlight"/>
+                    <button name="action_draft" type="object" string="Trở về nháp" invisible="show_button_cancel == True" class="oe_highlight"/>
+                    <field name="state" widget="statusbar" statusbar_visible="submitted,approved"/>
+                </header>
                 <sheet>
                     <div class="oe_title">
                         <h1>
@@ -34,7 +46,8 @@
                         <group>
                             <field name="code" readonly="1"/>
                             <field name="project_id" readonly="1"/>
-                            <field name="total_cost" readonly="1"/>
+                            <field name="total_cost" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="currency_id" invisible="1" optional="hide"/>
                         </group>
                         <group>
                             <field name="create_date" string="Ngày tạo" readonly="1"/>
@@ -84,6 +97,7 @@
                             <field name="unit" readonly="is_from_sale_order"/>
                             <field name="price_unit" string="Giá thành trên 1 sản phẩm" readonly="1"/>
                             <field name="price_subtotal" readonly="1"/>
+                            <field name="currency_id" invisible="1" optional="hide"/>
                         </group>
 
                         <group string="Phân loại chi phí">

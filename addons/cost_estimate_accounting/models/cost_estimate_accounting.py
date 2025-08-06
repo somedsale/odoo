@@ -21,7 +21,7 @@ class CostEstimateAccounting(models.Model):
 
     @api.model
     def load_cost_estimate_data(self):
-        estimates = self.env['cost.estimate'].search([])
+        estimates = self.env['cost.estimate'].search([('state', '=', 'approved')])
         for estimate in estimates:
             # Chỉ tạo nếu chưa tồn tại dòng tương ứng
             if not self.search([('cost_estimate_id', '=', estimate.id)]):

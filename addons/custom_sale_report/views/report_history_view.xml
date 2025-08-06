@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sale_report_history_tree" model="ir.ui.view">
+        <field name="name">sale.report.history.tree</field>
+        <field name="model">sale.report.history</field>
+        <field name="arch" type="xml">
+            <tree string="Sale Report History">
+                <field name="create_date" string="Ngày báo cáo"/>
+                <field name="week_start_date" string="Ngày bắt đầu tuần báo cáo"/>
+                <button name="action_view_report" string="Xem báo cáo" type="object" class="btn-primary" icon="fa-eye"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_sale_report_history_form" model="ir.ui.view">
+        <field name="name">sale.report.history.form</field>
+        <field name="model">sale.report.history</field>
+        <field name="arch" type="xml">
+            <form string="Chi tiết báo cáo">
+                <sheet>
+                    <group>
+                        <field name="create_date" string="Ngày báo cáo" readonly="1"/>
+                        <field name="week_start_date" string="Ngày bắt đầu trong tuần" readonly="1"/>
+                        <field name="week_count" string="Số báo giá trong tuần" readonly="1"/>
+                        <field name="week_amount" string="Giá trị báo giá trong tuần" options="{'widget': 'monetary', 'currency_field': 'currency_id'}" readonly="1"/>
+                        <field name="month_count" string="Số báo giá trong tháng" readonly="1"/>
+                        <field name="month_amount" string="Giá trị báo giá trong tháng" options="{'widget': 'monetary', 'currency_field': 'currency_id'}" readonly="1"/>
+                        <field name="quarter_count" string="Số báo giá trong quý" readonly="1"/>
+                        <field name="quarter_amount" string="Giá trị báo giá trong quý" options="{'widget': 'monetary', 'currency_field': 'currency_id'}" readonly="1"/>
+                        <!-- <field name="year_count" string="Year Quotations" readonly="1"/>
+                        <field name="year_amount" string="Year Total Amount" options="{'widget': 'monetary', 'currency_field': 'currency_id'}" readonly="1"/> -->
+                        <!-- <field name="contract_ids" string="Contracts" widget="many2many_tags" readonly="1"/> -->
+                        <field name="business_plan" string="Business Plan" readonly="1"/>
+                        <field name="currency_id" string="Currency" readonly="1" invisible="1" optional="hide"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_view_report" string="Xem báo cáo" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_sale_report_history" model="ir.actions.act_window">
+        <field name="name">Lịch sử báo cáo</field>
+        <field name="res_model">sale.report.history</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_sale_report_history" name="Lịch sử báo cáo" parent="sale.menu_sale_report" action="action_sale_report_history" sequence="110" groups="sales_team.group_sale_manager"/>
+</odoo>
