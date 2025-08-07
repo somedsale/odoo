@@ -21,8 +21,44 @@ class ProposalMaterialLine(models.Model):
     string='Nhà Cung Cấp Đề Xuất',
     domain=[('supplier_rank', '>', 0)]
 )
+    estimate_price_unit = fields.Float(
+    string='Giá Dự Toán',
+    compute='_compute_estimate_price_unit',
+    store=False,
+    readonly=True
+)
+    estimate_price_total = fields.Float(string='Giá Dự Toán', compute='_compute_estimate_price_total', store=False, readonly=True)
     description = fields.Text(string='Ghi Chú')
     type = fields.Selection([('material', 'Vật Tư')], default='material', required=True, readonly=True)
+
+    @api.depends('quantity', 'estimate_price_unit')
+    def _compute_estimate_price_total(self):
+        for line in self:
+            line.estimate_price_total = line.quantity * line.estimate_price_unit
+    @api.depends('material_id', 'sheet_id.project_id')
+    def _compute_estimate_price_unit(self):
+        for line in self:
+            estimate_price = 0.0
+            if line.material_id and line.sheet_id and line.sheet_id.project_id:
+                # Lấy các dòng cost estimate thuộc dự án đó
+                estimate_lines = self.env['cost.estimate.line'].search([
+                    ('project_id', '=', line.sheet_id.project_id.id)
+                ])
+                matched_line = None
+                for est_line in estimate_lines:
+                    # Tìm trong từng dòng material_line_ids có chứa material_id giống nhau
+                    matched_line = est_line.material_line_ids.filtered(
+                        lambda m: m.material_id.id == line.material_id.id
+                    )
+                    if matched_line:
+                        break  # chỉ lấy dòng đầu tiên khớp
+
+                if matched_line:
+                    estimate_price = matched_line[0].price_unit  # hoặc .price_total tùy nhu cầu
+
+            line.estimate_price_unit = estimate_price
+
+
 
     @api.onchange('material_id')
     def _onchange_material_id(self):
@@ -88,6 +124,13 @@ class ProposalMaterialLine(models.Model):
         for line in self:
             if line.quantity <= 0:
                 raise ValidationError("Số lượng vật tư phải lớn hơn 0.")
+    @api.constrains('price_unit','estimate_price_unit')
+    def _check_price_unit(self):
+        for line in self:
+            if line.price_unit <= 0:
+                raise ValidationError("Giá vật tư phải lớn hơn 0.")
+            if line.price_unit > line.estimate_price_unit:
+                raise ValidationError("Giá đề xuất không được lớn hơn dự toán")
 
     def archive(self):
         self.write({'active': False})

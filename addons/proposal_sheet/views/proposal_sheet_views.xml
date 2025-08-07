@@ -57,8 +57,10 @@
                                     <field name="material_id" required="1" />
                                     <field name="quantity" required="1"/>
                                     <field name="unit" />
-                                    <field name="price_unit"/>
-                                    <field name="price_total" readonly="1"/>
+                                    <field name="estimate_price_unit" string="Giá dự toán" readonly="1"/>
+                                    <field name="price_unit" string="Giá đề xuất"/>
+                                    <field name="estimate_price_total" string="Tổng giá dự toán" readonly="1"/>
+                                    <field name="price_total" string="Tổng giá đề xuất" readonly="1"/>
                                     <field name="vendor_id" placeholder="Nhà cung cấp đề xuất"/>
                                     <field name="description"/>
                                 </tree>

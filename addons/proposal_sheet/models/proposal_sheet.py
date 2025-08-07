@@ -393,7 +393,7 @@ class ProposalSheet(models.Model):
                         'quantity': material_line.quantity,
                         'unit': material_line.unit.id,
                         'price_unit': material_line.price_unit or 0.0,
-                        'description': f"Từ dự toán: {material_line.material_id.display_name}",
+                        'vendor_id': material_line.vendor_id.id
                     }))
 
             if not material_lines:

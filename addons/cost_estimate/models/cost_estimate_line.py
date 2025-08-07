@@ -19,6 +19,7 @@ class CostEstimateLine(models.Model):
         store=True,
         digits=(16, 0)
     )
+    project_id = fields.Many2one('project.project', string='Dự án', related='cost_estimate_id.project_id', store=True)
     material_line_ids = fields.One2many(
         'product.material.line',
         'estimate_line_id',

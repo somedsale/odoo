@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_project_expense_dashboard_tree" model="ir.ui.view">
+        <field name="name">project.expense.dashboard.tree</field>
+        <field name="model">project.expense.dashboard</field>
+        <field name="arch" type="xml">
+            <tree create="false" edit="false" delete="false">
+                <field name="project_id"/>
+                <field name="total_estimate" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="total_actual" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="progress" widget="progressbar"/>
+                <field name ="currency_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_project_expense_dashboard_form" model="ir.ui.view">
+        <field name="name">project.expense.dashboard.form</field>
+        <field name="model">project.expense.dashboard</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false" delete="false">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_payment_requests" type="object" class="oe_stat_button" icon="fa-book">
+                            <span class="o_stat_value">
+                                <field string ="Phiếu đã chi" name="payment_request_count" widget="statinfo"/>
+                            </span>
+                        </button>
+                    </div>
+                    <group col="2">
+                        <group string="Thông tin">
+                            <field name="project_id" readonly="1"/>
+                            <field name="cost_estimate_id" readonly ="1"/>
+                            <field name ="currency_id" invisible ="1"/>
+                        </group>
+                        <group string="Chi phí">
+                            <field name="total_estimate" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_actual" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="progress" widget="percentpie" string="% Thực tế" />
+                        </group>
+                    </group>
+                    <field name="cost_estimate_line_ids">
+                        <tree create="false" edit="false" delete="false">
+                            <field name="product_id"/>
+                            <field name="quantity"/>
+                            <field name="unit"/>
+                            <field name="price_unit" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="price_subtotal" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
+                            <field name ="currency_id" optional="hide"/>
+                        </tree>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_project_expense_dashboard" model="ir.actions.act_window">
+        <field name="name">Quản lí chi phí dự án</field>
+        <field name="res_model">project.expense.dashboard</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Nhấn để tạo mới một báo cáo chi phí dự án.
+            </p>
+        </field>
+    </record>
+    <menuitem id="menu_project_expense_dashboard" name="Quản lí dự án" parent="custom_account_menu.menu_accounting_custom_root" action="action_project_expense_dashboard" sequence="10"/>
+</odoo>

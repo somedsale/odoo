@@ -79,6 +79,8 @@ class AccountingPaymentRequest(models.Model):
                 expense = self.env['project.expense.custom'].search([('project_id', '=', rec.project_id.id)], limit=1)
                 if expense:
                     expense._compute_costs()
+                dashboard = self.env['project.expense.dashboard'].search([('project_id', '=', rec.project_id.id)])
+                dashboard._compute_total_actual()
             else:
                 raise UserError("Yêu cầu chi tiền chỉ có thể được đánh dấu là đã hoàn tất khi ở trạng thái đã vào sổ.")
 class PaymentRequestController(http.Controller):

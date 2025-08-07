@@ -4,7 +4,7 @@
         <field name="name">cost.estimate.accounting.tree</field>
         <field name="model">cost.estimate.accounting</field>
         <field name="arch" type="xml">
-            <tree string="Dự toán kế toán" create="false" edit="false" delete="false">
+            <tree string="Dự toán kế toán" create="false" edit="false" delete="false" js_class="cost_estimate_accounting_list_renderer">
                 <field name="code"/>
                 <field name="name"/>
                 <field name="project_id"/>
@@ -25,11 +25,6 @@
                             <field name="cost_estimate_id" readonly="1"/>
                         </h1>
                     </div>
-                    <!-- <group>
-                        <field name="cost_estimate_id"/>
-                        <field name="total_cost" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="1"/>
-                        <field name ="currency_id" invisible="1"/>
-                    </group> -->
                     <field name="line_ids">
                         <tree create="false" edit="false" delete="false">
                             <field name="product_id"/>

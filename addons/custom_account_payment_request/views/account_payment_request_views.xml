@@ -7,6 +7,7 @@
                 <field name="currency_id" optional="hide"/>
                 <field name="code" string="Mã phiếu chi"/>
                 <field name="proposal_sheet_id" string="Phiếu đề xuất"/>
+                <field name ="project_id" string="Dự án"/>
                 <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="1"/>
                 <field name="date"/>
                 <field name="state" widget="badge" decoration-muted="state == 'draft'" decoration-primary="state == 'confirmed'" decoration-success="state == 'done'"/>
@@ -111,12 +112,27 @@
             </search>
         </field>
     </record>
+    <record id="view_account_payment_request_search_no_panel" model="ir.ui.view">
+        <field name="name">account.payment.request.search.no.panel</field>
+        <field name="model">account.payment.request</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm">
+                <!-- chỉ để ô tìm kiếm -->
+            </search>
+        </field>
+    </record>
     <record id="action_account_payment_request" model="ir.actions.act_window">
         <field name="name">Phiếu chi</field>
         <field name="res_model">account.payment.request</field>
         <field name="view_mode">tree,form,kanban</field>
         <field name="context">{}</field>
         <field name="search_view_id" ref="view_account_payment_request_search"/>
+    </record>
+    <record id="action_account_payment_request_without_searchpanel" model="ir.actions.act_window">
+        <field name="name">Phiếu chi</field>
+        <field name="res_model">account.payment.request</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_account_payment_request_search_no_panel"/>
     </record>
 
     <menuitem id="menu_accounting_payment_request" name="Phiếu chi" parent="custom_account_menu.menu_accounting_custom_root" action="action_account_payment_request"/>
