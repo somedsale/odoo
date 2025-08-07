@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Form View -->
+        <record id="view_account_receipt_form" model="ir.ui.view">
+            <field name="name">account.receipt.form</field>
+            <field name="model">account.receipt</field>
+            <field name="arch" type="xml">
+                <form string="Phiếu Thu Kế Toán">
+                    <header>
+                        <button name="action_post" type="object" string="Ghi sổ" class="oe_highlight" invisible="state != 'draft'"/>
+                        <button name="action_cancel" type="object" string="Hủy" invisible="state == 'cancel'"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,posted,cancel"/>
+                    </header>
+                    <sheet>
+                        <group col="2">
+                            <group>
+                            <field name="name"/>
+                            <field name="date"/>
+                            <field name="partner_id"/>
+                            <field name="amount" widget="monetary"/>
+                            <field name="currency_id" invisible="1" optional="hide"/>
+                            <field name="x_payment_method_id"/>
+                            <field name="note"/>
+                            </group>
+                        <group>
+                            <field name="project_id"/>
+                        </group>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree View -->
+        <record id="view_account_receipt_tree" model="ir.ui.view">
+            <field name="name">account.receipt.tree</field>
+            <field name="model">account.receipt</field>
+            <field name="arch" type="xml">
+                <tree string="Phiếu Thu Kế Toán">
+                    <field name="name"/>
+                    <field name="date"/>
+                    <field name="partner_id"/>
+                    <field name="amount" widget="monetary"/>
+                    <field name="currency_id" invisible="1" optional="hide"/>
+                    <field name="x_payment_method_id"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record id="action_account_receipt" model="ir.actions.act_window">
+            <field name="name">Phiếu Thu Kế Toán</field>
+            <field name="res_model">account.receipt</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <!-- Menu -->
+        <menuitem id="menu_account_receipt_root" name="Phiếu Thu Kế Toán" parent="custom_account_menu.menu_accounting_custom_root" sequence="20"/>
+        <menuitem id="menu_account_receipt" name="Phiếu Thu" parent="menu_account_receipt_root" action="action_account_receipt"/>
+    </data>
+</odoo>
