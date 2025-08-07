@@ -160,7 +160,11 @@ class ContractManagement(models.Model):
                             ],
                         }
                         cost_estimate = self.env['cost.estimate'].create(budget_vals)
-                        contract.sale_order_id.cost_estimate_id = cost_estimate.id                        
+                        contract.sale_order_id.cost_estimate_id = cost_estimate.id
+                        self.env['project.expense.dashboard'].create({
+                                'project_id': project.id,
+                                'cost_estimate_id': cost_estimate.id,
+                            })                        
 
     def action_cancel(self):
         for contract in self:

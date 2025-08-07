@@ -30,34 +30,30 @@ class ProjectExpenseDashboard(models.Model):
         for record in self:
             if record.project_id:
                 record.payment_request_count = self.env['account.payment.request'].search_count([
-                    ('project_id', '=', record.project_id.id)
+                    ('project_id', '=', record.project_id.id),
+                    ('state', '=', 'done')
                 ])
             else:
                 record.payment_request_count = 0
 
 
-    @api.depends('cost_estimate_id')
+    @api.depends('cost_estimate_id','cost_estimate_id.total_cost')
     def _compute_total_estimate(self):
         for record in self:
             record.total_estimate = record.cost_estimate_id.total_cost if record.cost_estimate_id and hasattr(record.cost_estimate_id, 'total_cost') else 0.0
 
     @api.depends('project_id')
     def _compute_total_actual(self):
+        ProjectRequest = self.env['account.payment.request']
         for record in self:
             if record.project_id:
-                total = self.env['account.payment.request'].search_read(
-                    [('project_id', '=', record.project_id.id), ('state', '=', 'done')],
-                    ['total']
-                )
-                record.total_actual = sum(line['total'] for line in total)
+                payments = ProjectRequest.search([
+                    ('project_id', '=', record.project_id.id),
+                    ('state', '=', 'done')
+                ])
+                record.total_actual = sum(p.total for p in payments)
             else:
-                record.total_actual = 0.0
-    @api.depends('project_id','cost_estimate_id')
-    def _compute_progess(self):
-        for record in self:
-            if record.project_id and record.cost_estimate_id:
-                record.progress = (record.total_actual / record.total_estimate) * 100
-            
+                record.total_actual = 0.0         
     @api.onchange('project_id')
     def _onchange_project_id(self):
         if self.project_id:
