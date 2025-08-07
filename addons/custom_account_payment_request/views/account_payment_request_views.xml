@@ -3,7 +3,7 @@
         <field name="name">account.payment.request.tree</field>
         <field name="model">account.payment.request</field>
         <field name="arch" type="xml">
-            <tree js_class="o_list_renderer_with_summary" create="false">
+            <tree >
                 <field name="currency_id" optional="hide"/>
                 <field name="code" string="Mã phiếu chi"/>
                 <field name="proposal_sheet_id" string="Phiếu đề xuất"/>
@@ -12,7 +12,6 @@
                 <field name="date"/>
                 <field name="state" widget="badge" decoration-muted="state == 'draft'" decoration-primary="state == 'confirmed'" decoration-success="state == 'done'"/>
                 <field name="status_expense" widget="badge" string="Trạng thái chi tiền" decoration-danger="status_expense == 'not yet'" decoration-success="status_expense == 'paid'"/>
-
             </tree>
         </field>
     </record>
@@ -20,7 +19,7 @@
         <field name="name">account.payment.request.form</field>
         <field name="model">account.payment.request</field>
         <field name="arch" type="xml">
-            <form string="Phiếu chi" create="false">
+            <form string="Phiếu chi">
                 <field name="status_expense" invisible="1"/>
                 <header>
                     <button name="action_confirm" string="Xác nhận" type="object" class="btn-primary" invisible="state != &apos;draft&apos;"/>

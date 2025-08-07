@@ -13,6 +13,7 @@
                 <field name="sale_order_id"/>
                 <field name="project_id"/>
                 <field name="total_cost" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name ="state" optional="hide" widget="badge" decoration-muted="state == 'draft'" decoration-primary="state == 'summitted'" decoration-success="state == 'approved'"/>
                 <field name="currency_id" optional="hide"/>
             </tree>
         </field>
@@ -29,11 +30,12 @@
                 <field name="show_button_submit" invisible="1"/>
                 <field name="show_button_approve" invisible="1"/>
                 <field name="show_button_cancel" invisible="1"/>
+                <field name="show_button_draft" invisible="1"/>
                 <header>
                     <button name="action_submit" type="object" string="Gửi duyệt" invisible="show_button_submit == False" class="oe_highlight"/>
                     <button name="action_approve" type="object" string="Duyệt" invisible="show_button_approve == False" class="oe_highlight"/>
-                    <button name="action_cancel" type="object" string="Hủy" invisible="show_button_cancel == False" class="oe_highlight"/>
-                    <button name="action_draft" type="object" string="Trở về nháp" invisible="show_button_cancel == True" class="oe_highlight"/>
+                    <button name="action_cancel" type="object" string="Hủy" invisible="show_button_cancel == False" class="oe_highlight" confirm="Bạn có chắc muốn hủy không?" />
+                    <button name="action_draft" type="object" string="Trở về nháp" invisible="show_button_draft == False" class="oe_highlight" confirm="Chắc chắn muốn chuyển thành nháp?" />
                     <field name="state" widget="statusbar" statusbar_visible="submitted,approved"/>
                 </header>
                 <sheet>
@@ -52,12 +54,11 @@
                         <group>
                             <field name="create_date" string="Ngày tạo" readonly="1"/>
                             <field name="sale_order_id" readonly="1"/>
-
                         </group>
                     </group>
                     <notebook>
                         <page string="Chi tiết dòng dự toán">
-                            <field name="line_ids" editable="bottom" context="{'default_cost_estimate_id': active_id}" options="{'no_open': True}">
+                            <field name="line_ids" editable="bottom" context="{'default_cost_estimate_id': active_id}" options="{'no_open': True}" readonly="state == 'approved'">
                                 <tree view_id="view_cost_estimate_line_tree"/>
                             </field>
                         </page>

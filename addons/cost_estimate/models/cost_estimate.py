@@ -17,6 +17,7 @@ class CostEstimate(models.Model):
     show_button_submit = fields.Boolean(compute='_compute_show_button')
     show_button_approve = fields.Boolean(compute='_compute_show_button')
     show_button_cancel = fields.Boolean(compute='_compute_show_button')
+    show_button_draft = fields.Boolean(compute='_compute_show_button')
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
     total_cost = fields.Float(
         string='Tổng chi phí',
@@ -35,8 +36,9 @@ class CostEstimate(models.Model):
     def _compute_show_button(self):
         for rec in self:
             is_creator = rec.requested_by == self.env.user
-            is_director = rec.director_user_id.user_id == self.env.user
+            is_director = rec.director_user_id == self.env.user
             rec.show_button_submit = rec.state == 'draft'
+            rec.show_button_draft = rec.state == 'approved' and is_director
             rec.show_button_approve = rec.state == 'submitted' and is_director
             rec.show_button_cancel = rec.state in ['draft', 'submitted'] and is_creator
 
@@ -62,6 +64,10 @@ class CostEstimate(models.Model):
             rec.state = 'approved'
             cost_estimate_accounting = self.env['cost.estimate.accounting'].create({'cost_estimate_id': rec.id})
             cost_estimate_accounting.load_cost_estimate_data()
+            self.env['project.expense.dashboard'].create({
+                            'project_id': rec.project_id.id,
+                            'cost_estimate_id':  rec.id,
+            })   
             self.message_post(
                 body=Markup(
                     '<p>Dự toán chi phí <strong>{}</strong> đã được phê duyệt.</p>'
