@@ -6,7 +6,7 @@ class AccountReceipt(models.Model):
     _description = 'Phiếu Thu Kế Toán'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    name = fields.Char(string='Số phiếu thu', required=True, readonly=True, default=lambda self: self.env['ir.sequence'].next_by_code('account.receipt'))
+    name = fields.Char(string='Số phiếu thu', required=True, readonly=True, default="new")
     date = fields.Date(string='Ngày thu', required=True, default=fields.Date.today)
     project_id = fields.Many2one('project.project', string='Dự án')
     partner_id = fields.Many2one('res.partner', string='Khách hàng', required=True)

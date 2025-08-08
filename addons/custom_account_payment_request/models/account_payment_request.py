@@ -5,7 +5,7 @@ class AccountingPaymentRequest(models.Model):
     _name = 'account.payment.request'
     _description = 'Yêu cầu chi tiền kế toán'
     _inherit = ['mail.thread', 'mail.activity.mixin']
-    code = fields.Char(string="Mã phiếu chi", required=True, copy=False, readonly=True, default=lambda self: self.env['ir.sequence'].next_by_code('account.payment.request'))
+    name = fields.Char(string="Mã phiếu chi", required=True, copy=False, readonly=True, default=lambda self: self.env['ir.sequence'].next_by_code('account.payment.request'))
     proposal_sheet_id = fields.Many2one('proposal.sheet', string="Phiếu đề xuất", required=True)
     proposal_person_id = fields.Many2one('res.users', string="Người đề xuất", default=lambda self: self.env.user)
     total = fields.Float(string="Số tiền", required=True)

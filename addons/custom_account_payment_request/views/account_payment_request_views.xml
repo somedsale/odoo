@@ -5,7 +5,7 @@
         <field name="arch" type="xml">
             <tree >
                 <field name="currency_id" optional="hide"/>
-                <field name="code" string="Mã phiếu chi"/>
+                <field name="name" string="Mã phiếu chi"/>
                 <field name="proposal_sheet_id" string="Phiếu đề xuất"/>
                 <field name ="project_id" string="Dự án"/>
                 <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="1"/>
@@ -31,7 +31,7 @@
                 <sheet>
                     <div class="oe_title">
                         <h1>
-                            <field name="code" readonly="1"/>
+                            <field name="name" readonly="1"/>
                         </h1>
                     </div>
                     <group col="2" name="Thông tin">
