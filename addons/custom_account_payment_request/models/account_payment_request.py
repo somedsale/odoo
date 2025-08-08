@@ -81,6 +81,15 @@ class AccountingPaymentRequest(models.Model):
                     expense._compute_costs()
                 dashboard = self.env['project.expense.dashboard'].search([('project_id', '=', rec.project_id.id)])
                 dashboard._compute_total_actual()
+                self.env['project.cash.flow'].create({
+                        'project_id': rec.project_id.id,
+                        'partner_id': rec.project_id.partner_id.id if rec.project_id.partner_id else False,
+                        'type': 'out',
+                        'amount': rec.total,
+                        'currency_id': rec.currency_id.id if rec.currency_id else self.env.company.currency_id.id,
+                        'date': rec.date_payment or fields.Date.today(),
+                        'account_payment_id': rec.id
+                    })
             else:
                 raise UserError("Yêu cầu chi tiền chỉ có thể được đánh dấu là đã hoàn tất khi ở trạng thái đã vào sổ.")
 class PaymentRequestController(http.Controller):

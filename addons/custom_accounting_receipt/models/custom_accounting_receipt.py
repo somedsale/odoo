@@ -27,7 +27,19 @@ class AccountReceipt(models.Model):
         return super(AccountReceipt, self).create(vals)
 
     def action_post(self):
-        self.write({'state': 'posted'})
+        for receipt in self:
+            # Chỉ tạo dòng tiền nếu có dự án
+            if receipt.project_id:
+                self.env['project.cash.flow'].create({
+                    'project_id': receipt.project_id.id,
+                    'partner_id': receipt.partner_id.id,
+                    'type': 'in',
+                    'amount': receipt.amount,
+                    'currency_id': receipt.currency_id.id,
+                    'receipt_id': receipt.id,
+                    'date': receipt.date,
+                })
+            receipt.write({'state': 'posted'})
         return True
 
     def action_cancel(self):

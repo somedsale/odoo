@@ -62,5 +62,5 @@
         </field>
     </record>
 
-    <menuitem id="menu_project_payment_schedule_root" name="Thanh toán dự án" parent="project.menu_project_config" action="action_project_payment_schedule"/>
+    <menuitem id="menu_project_payment_schedule_root" name="Thanh toán dự án" parent="custom_account_menu.menu_accounting_project" action="action_project_payment_schedule"/>
 </odoo>

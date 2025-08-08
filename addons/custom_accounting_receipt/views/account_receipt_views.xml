@@ -15,17 +15,17 @@
                     <sheet>
                         <group col="2">
                             <group>
-                            <field name="name"/>
-                            <field name="date"/>
-                            <field name="partner_id"/>
-                            <field name="amount" widget="monetary"/>
-                            <field name="currency_id" invisible="1" optional="hide"/>
-                            <field name="x_payment_method_id"/>
-                            <field name="note"/>
+                                <field name="name"/>
+                                <field name="date"/>
+                                <field name="partner_id"/>
+                                <field name="amount" widget="monetary"/>
+                                <field name="currency_id" invisible="1" optional="hide"/>
+                                <field name="x_payment_method_id"/>
+                                <field name="note"/>
                             </group>
-                        <group>
-                            <field name="project_id"/>
-                        </group>
+                            <group>
+                                <field name="project_id"/>
+                            </group>
                         </group>
                     </sheet>
                     <div class="oe_chatter">
@@ -61,7 +61,6 @@
             <field name="view_mode">tree,form</field>
         </record>
         <!-- Menu -->
-        <menuitem id="menu_account_receipt_root" name="Phiếu Thu Kế Toán" parent="custom_account_menu.menu_accounting_custom_root" sequence="20"/>
-        <menuitem id="menu_account_receipt" name="Phiếu Thu" parent="menu_account_receipt_root" action="action_account_receipt"/>
+        <menuitem id="menu_account_receipt" name="Phiếu Thu" parent="custom_account_menu.menu_accounting_vouchers" action="action_account_receipt"/>
     </data>
 </odoo>

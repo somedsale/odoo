@@ -9,8 +9,9 @@ bao gồm dòng tiền thực tế liên quan đến các đối tác và chứn
     'author': 'Your Company',
     'website': 'https://yourcompany.com',
     'category': 'Accounting/Project',
-    'depends': ['base', 'account', 'project'],
+    'depends': ['base', 'account', 'project','custom_accounting_receipt'],
     'data': [
+        'data/ir_sequence_data.xml',
         'security/ir.model.access.csv',
         'views/project_cash_flow_views.xml',
     ],
