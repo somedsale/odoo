@@ -54,7 +54,9 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <t t-set="sum_total_amount" t-value="0"/>
                         <t t-foreach="contracts" t-as="contract">
+                            <t t-set="sum_total_amount" t-value="sum_total_amount + contract.total_amount"/>
                             <tr>
                                 <td style="width: 40%; border: 1px solid #ccc; padding: 8px;"><t t-esc="contract.name"/></td>
                                 <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right;">
@@ -63,6 +65,12 @@
                                 <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right"><t t-esc="contract.note or ''"/></td>
                             </tr>
                         </t>
+                        <tr>
+                            <td colspan="2" style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">Tổng cộng</td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
+                                <t t-esc="sum_total_amount" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                        </tr>
                         <t t-if="not contracts">
                             <tr>
                                 <td colspan="3" style="border: 1px solid #ccc; padding: 8px; text-align: center; color: #888;">Không có hợp đồng nào.</td>
@@ -82,7 +90,9 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <t t-set="sum_total_amount" t-value="0"/>
                         <t t-foreach="contract_negotiations" t-as="contract">
+                            <t t-set="sum_total_amount" t-value="sum_total_amount + contract.total_amount"/>
                             <tr>
                                 <td style="width: 40%; border: 1px solid #ccc; padding: 8px;"><t t-esc="contract.name"/></td>
                                 <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right;">
@@ -91,6 +101,12 @@
                                 <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right"><t t-esc="contract.note or ''"/></td>
                             </tr>
                         </t>
+                        <tr>
+                            <td colspan="2" style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">Tổng cộng</td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
+                                <t t-esc="sum_total_amount" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                        </tr>
                         <t t-if="not contract_negotiations">
                             <tr>
                                 <td colspan="3" style="border: 1px solid #ccc; padding: 8px; text-align: center; color: #888;">Không có hợp đồng nào.</td>
@@ -110,7 +126,9 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <t t-set="sum_total_amount" t-value="0"/>
                         <t t-foreach="project_prospects" t-as="project_prospect">
+                            <t t-set="sum_total_amount" t-value="sum_total_amount + project_prospect.total_amount"/>
                             <tr>
                                 <td style="width: 40%; border: 1px solid #ccc; padding: 8px;"><t t-esc="project_prospect.name"/></td>
                                 <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right;">
@@ -119,6 +137,12 @@
                                 <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right"><t t-esc="project_prospect.note or ''"/></td>
                             </tr>
                         </t>
+                        <tr>
+                            <td colspan="2" style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">Tổng cộng</td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
+                                <t t-esc="sum_total_amount" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                        </tr>
                         <t t-if="not project_prospects">
                             <tr>
                                 <td colspan="3" style="border: 1px solid #ccc; padding: 8px; text-align: center; color: #888;">Không có dự án triển vọng nào.</td>
@@ -135,6 +159,7 @@
                         <t t-esc="business_plan or 'Chưa có nội dung kế hoạch.'"/>
                     </div>
                 </div>
+                <div> 
             </div>
         </t>
     </template>
