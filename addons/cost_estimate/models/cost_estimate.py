@@ -62,8 +62,6 @@ class CostEstimate(models.Model):
     def action_approve(self):
         for rec in self:
             rec.state = 'approved'
-            cost_estimate_accounting = self.env['cost.estimate.accounting'].create({'cost_estimate_id': rec.id})
-            cost_estimate_accounting.load_cost_estimate_data()
             self.env['project.expense.dashboard'].create({
                             'project_id': rec.project_id.id,
                             'cost_estimate_id':  rec.id,

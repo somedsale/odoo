@@ -24,6 +24,27 @@ class ProjectExpenseDashboard(models.Model):
     payment_request_count = fields.Integer(
     compute="_compute_payment_request_count",
 )
+    # proposal_material_line_ids = fields.One2many(
+    #     'proposal.material.line',
+    #     compute='_compute_proposal_material_lines',
+    #     string="Vật tư đã chi"
+    # )
+
+    # @api.depends('project_id')
+    # def _compute_proposal_material_lines(self):
+    #     for record in self:
+    #         if not record.project_id:
+    #             record.proposal_material_line_ids = False
+    #             continue
+    #         # Tìm phiếu đề xuất vật tư đã duyệt/hoàn tất trong dự án
+    #         proposal_sheets = self.env['proposal.sheet'].search([
+    #             ('project_id', '=', record.project_id.id),
+    #             ('state', '=',  'done')
+    #         ])
+    #         lines = self.env['proposal.material.line'].search([
+    #             ('sheet_id', 'in', proposal_sheets.ids)
+    #         ])
+    #         record.proposal_material_line_ids = lines
 
     @api.depends('project_id')
     def _compute_payment_request_count(self):

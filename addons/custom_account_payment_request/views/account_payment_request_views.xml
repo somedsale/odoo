@@ -5,7 +5,7 @@
         <field name="arch" type="xml">
             <tree >
                 <field name="currency_id" optional="hide"/>
-                <field name="code" string="Mã phiếu chi"/>
+                <field name="name" string="Mã phiếu chi"/>
                 <field name="proposal_sheet_id" string="Phiếu đề xuất"/>
                 <field name ="project_id" string="Dự án"/>
                 <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="1"/>
@@ -31,7 +31,7 @@
                 <sheet>
                     <div class="oe_title">
                         <h1>
-                            <field name="code" readonly="1"/>
+                            <field name="name" readonly="1"/>
                         </h1>
                     </div>
                     <group col="2" name="Thông tin">
@@ -134,6 +134,6 @@
         <field name="search_view_id" ref="view_account_payment_request_search_no_panel"/>
     </record>
 
-    <menuitem id="menu_accounting_payment_request" name="Phiếu chi" parent="custom_account_menu.menu_accounting_custom_root" action="action_account_payment_request"/>
+    <menuitem id="menu_accounting_payment_request" name="Phiếu chi" parent="custom_account_menu.menu_accounting_vouchers" action="action_account_payment_request"/>
 
 </odoo>

@@ -32,7 +32,7 @@
 
                     <field name="payment_request_ids">
                         <tree create="false" edit="false" delete="false">
-                            <field name="code"/>
+                            <field name="name"/>
                             <field name="proposal_sheet_id"/>
                             <field name="proposal_person_id" widget ="many2one_avatar_user"/>
                             <field name="date"/>
@@ -62,6 +62,6 @@
     </record>
 
     <!-- Menu -->
-    <menuitem id="menu_project_expense_root" name="Chi phí dự án" sequence="10" parent="custom_account_menu.menu_accounting_custom_root"/>
-    <menuitem id="menu_project_expense" name="Danh sách chi phí" parent="menu_project_expense_root" action="action_project_expense" sequence="10"/>
+    <menuitem id="menu_project_expense" name="Chi phí dự án" parent="custom_account_menu.menu_accounting_project" action="action_project_expense" sequence="10"/>
+
 </odoo>

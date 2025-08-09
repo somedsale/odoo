@@ -64,5 +64,5 @@
             </p>
         </field>
     </record>
-    <menuitem id="menu_project_expense_dashboard" name="Quản lí dự án" parent="custom_account_menu.menu_accounting_custom_root" action="action_project_expense_dashboard" sequence="10"/>
+    <menuitem id="menu_project_expense_dashboard" name="Quản lí dự án" parent="custom_account_menu.menu_accounting_project" action="action_project_expense_dashboard" sequence="10"/>
 </odoo>

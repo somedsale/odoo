@@ -6,6 +6,9 @@
     <!-- <menuitem id="menu_accounting_operations" name="Nghiệp Vụ" parent="menu_accounting_custom_root" sequence="10"/> -->
     <menuitem id="menu_accounting_reporting" name="Báo Cáo" parent="menu_accounting_custom_root" sequence="80"/>
     <menuitem id="menu_accounting_config" name="Cấu Hình" parent="menu_accounting_custom_root" sequence="99"/>
+    <menuitem id="menu_accounting_vouchers" name="Các loại phiếu" parent="menu_accounting_custom_root" sequence="1"/>
+    <menuitem id="menu_accounting_project" name="Quản lí dự án" parent="menu_accounting_custom_root" sequence="2"/>
+
 
     <!-- ================= NGHIỆP VỤ ================= -->
     <!-- Bút Toán -->
@@ -117,6 +120,11 @@
     </record>
     <menuitem id="menu_analytic_accounts" name="Tài Khoản Phân Tích" parent="menu_accounting_config" action="action_analytic_accounts"/>
 
-    <menuitem id="menu_proposal_for_accounting" name="Phiếu Đề Xuất" parent="menu_accounting_custom_root" action="proposal_sheet.action_proposal_for_accounting" sequence="20"/>
-
+    <record id="action_account_move" model="ir.actions.act_window">
+        <field name="name">Test</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="menu_acoount_move_test" name="test " parent="menu_accounting_config" action="action_account_move" sequence="1"/>
+    <menuitem id="menu_proposal_for_accounting" name="Phiếu Đề Xuất" parent="menu_accounting_vouchers" action="proposal_sheet.action_proposal_for_accounting" sequence="20"/>
 </odoo>
