@@ -226,7 +226,7 @@ class SaleReport(models.AbstractModel):
         }
         contracts = self.env['sale.contract.custom'].browse(contract_ids)
         contract_negotiations = self.env['sale.contract.negotiate'].browse(contract_negotiation_ids)
-        project_prosects = self.env['project.prosect'].browse(project_prospect_ids)
+        project_prospects = self.env['project.prosect'].browse(project_prospect_ids)
 
         return {
             'week_data': week_data,
@@ -235,7 +235,7 @@ class SaleReport(models.AbstractModel):
             'year_data': year_data,
             'contracts': contracts,
             'contract_negotiations': contract_negotiations,
-            'project_prosects': project_prosects,
+            'project_prospects': project_prospects,
             'business_plan': business_plan,
             'res_company': self.env.company,
         }
