@@ -66,10 +66,11 @@
                             </tr>
                         </t>
                         <tr>
-                            <td colspan="2" style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">Tổng cộng</td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: left; font-weight: bold;">Tổng cộng</td>
                             <td style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
                                 <t t-esc="sum_total_amount" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                             </td>
+                                <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right"></td>
                         </tr>
                         <t t-if="not contracts">
                             <tr>
@@ -102,10 +103,11 @@
                             </tr>
                         </t>
                         <tr>
-                            <td colspan="2" style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">Tổng cộng</td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: left; font-weight: bold;">Tổng cộng</td>
                             <td style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
                                 <t t-esc="sum_total_amount" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                             </td>
+                                <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right"></td>
                         </tr>
                         <t t-if="not contract_negotiations">
                             <tr>
@@ -138,10 +140,11 @@
                             </tr>
                         </t>
                         <tr>
-                            <td colspan="2" style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">Tổng cộng</td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: left; font-weight: bold;">Tổng cộng</td>
                             <td style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
                                 <t t-esc="sum_total_amount" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                             </td>
+                                <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right"></td>
                         </tr>
                         <t t-if="not project_prospects">
                             <tr>
@@ -154,16 +157,13 @@
                 <!-- Business Plan -->
                 <div style="margin-top: 40px;">
                     <h3 style="text-align: left; color: #34495e;">Triển khai kế hoạch kinh doanh</h3>
-
                     <div style="white-space: pre-line; border: 1px solid #ccc; padding: 10px; background-color: #fafafa;">
                         <t t-esc="business_plan or 'Chưa có nội dung kế hoạch.'"/>
                     </div>
                 </div>
-                <div> 
             </div>
         </t>
     </template>
-
 
     <record id="action_sale_report_pdf" model="ir.actions.report">
         <field name="name">Sale Quotation Report (PDF)</field>

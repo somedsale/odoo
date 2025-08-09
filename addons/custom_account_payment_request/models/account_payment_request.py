@@ -6,7 +6,7 @@ class AccountingPaymentRequest(models.Model):
     _description = 'Yêu cầu chi tiền kế toán'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     name = fields.Char(string="Mã phiếu chi", required=True, copy=False, readonly=True, default=lambda self: self.env['ir.sequence'].next_by_code('account.payment.request'))
-    proposal_sheet_id = fields.Many2one('proposal.sheet', string="Phiếu đề xuất", required=True)
+    proposal_sheet_id = fields.Many2one('proposal.sheet', string="Phiếu đề xuất")
     proposal_person_id = fields.Many2one('res.users', string="Người đề xuất", default=lambda self: self.env.user)
     total = fields.Float(string="Số tiền", required=True)
     date = fields.Date(string="Ngày đề xuất", default=fields.Date.today)
@@ -78,7 +78,12 @@ class AccountingPaymentRequest(models.Model):
                 rec.message_post(body="Yêu cầu chi tiền đã hoàn tất.")
                 expense = self.env['project.expense.custom'].search([('project_id', '=', rec.project_id.id)], limit=1)
                 if expense:
-                    expense._compute_costs()
+                    expense._compute_costs()  # Directly recompute costs for the specific project
+                else:
+                    self.env['project.expense.custom'].create({
+                        'project_id': rec.project_id.id,
+                    })  # Create new expense record if it doesn't exist
+
                 dashboard = self.env['project.expense.dashboard'].search([('project_id', '=', rec.project_id.id)])
                 dashboard._compute_total_actual()
                 self.env['project.cash.flow'].create({
