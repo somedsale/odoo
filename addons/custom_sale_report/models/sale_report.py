@@ -181,7 +181,7 @@ class SaleReport(models.AbstractModel):
             ('state', 'in', ['sale', 'done', 'sent']),
         ])
         week_data = {
-            'period': f'Tuần {week_number}: "("{start_of_week.strftime("%d-%m")} - {end_of_week.strftime("%d-%m")}")"',
+            'period': f'Tuần {week_number}: {start_of_week.strftime("%d-%m")} - {end_of_week.strftime("%d-%m")}',
             'count': len(week_sales),
             'total_amount': sum(sale.amount_total for sale in week_sales),
         }
@@ -226,7 +226,7 @@ class SaleReport(models.AbstractModel):
         }
         contracts = self.env['sale.contract.custom'].browse(contract_ids)
         contract_negotiations = self.env['sale.contract.negotiate'].browse(contract_negotiation_ids)
-        project_prosects = self.env['project.prosect'].browse(project_prospect_ids)
+        project_prospects = self.env['project.prosect'].browse(project_prospect_ids)
 
         return {
             'week_data': week_data,
@@ -235,7 +235,7 @@ class SaleReport(models.AbstractModel):
             'year_data': year_data,
             'contracts': contracts,
             'contract_negotiations': contract_negotiations,
-            'project_prosects': project_prosects,
+            'project_prospects': project_prospects,
             'business_plan': business_plan,
             'res_company': self.env.company,
         }
