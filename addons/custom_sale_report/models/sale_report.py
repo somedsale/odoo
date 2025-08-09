@@ -181,7 +181,7 @@ class SaleReport(models.AbstractModel):
             ('state', 'in', ['sale', 'done', 'sent']),
         ])
         week_data = {
-            'period': f'Tuần {week_number}: "("{start_of_week.strftime("%d-%m")} - {end_of_week.strftime("%d-%m")}")"',
+            'period': f'Tuần {week_number}: {start_of_week.strftime("%d-%m")} - {end_of_week.strftime("%d-%m")}',
             'count': len(week_sales),
             'total_amount': sum(sale.amount_total for sale in week_sales),
         }
