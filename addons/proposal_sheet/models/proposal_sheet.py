@@ -16,7 +16,7 @@ class ProposalSheet(models.Model):
     director_user_id = fields.Many2one('res.users', string="Giám Đốc", default=lambda self: self._default_director_user(), readonly=True)
     name = fields.Char(string='Mã Đề Xuất', default='New', readonly=True, copy=False)
     project_id = fields.Many2one('project.project', string='Dự án', required=True, tracking=True)
-    task_id = fields.Many2one('project.task', string='Nhiệm Vụ', required=True, tracking=True)
+    task_id = fields.Many2one('project.task', string='Nhiệm Vụ', tracking=True)
     requested_by = fields.Many2one('res.users', string='Người Đề Xuất', default=lambda self: self.env.user, readonly=True, tracking=True)
     state = fields.Selection([
         ('draft', 'Nháp'),
@@ -92,9 +92,6 @@ class ProposalSheet(models.Model):
             vals['task_id'] = task.id
         if not vals.get('project_id'):
             vals['project_id'] = task.project_id.id
-            
-        if not vals.get('task_id'):
-            raise ValidationError("Nhiệm vụ là bắt buộc.")
         if vals.get('name', 'New') == 'New':
             vals['name'] = self.env['ir.sequence'].next_by_code('proposal.sheet') or 'PROP/00000'
         record = super().create(vals) 
@@ -232,31 +229,28 @@ class ProposalSheet(models.Model):
         if self.state != 'waiting_accounting_paid':
             raise UserError("Chỉ phiếu đã phê duyệt mới được hoàn tất.")
         # Chuyển sang trạng thái chờ kế toán chi tiền
-        payment_request = self.env['account.payment.request'].search([('proposal_sheet_id', '=', self.id)], limit=1)
         for record in self:
-            existing = payment_request
-            if not existing:
-                payment_request= self.env['account.payment.request'].create({
-                    'proposal_sheet_id': record.id,
-                    'total': record.amount_total,
-                    'date': record.create_date,
-                    'project_id': record.project_id.id,
-                    'proposal_person_id': record.requested_by.id,
-                    # 'journal_id': record.journal_id.id,
-                })
+            payment_request = self.env['account.payment.request'].create({
+                'proposal_sheet_id': record.id,
+                # 'total': record.amount_total,
+                'date': record.create_date,
+                'project_id': record.project_id.id,
+                'proposal_person_id': record.requested_by.id,
+                # 'journal_id': record.journal_id.id,
+            })
         
         # self.state = 'waiting_accounting_paid'
         # message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> chờ chi tiền.</p>"        
         # partner_ids = self._get_approval_partners(include_manager=False, include_boss=False, include_accounting=False)
         # self._send_notification(message, partner_ids)
-        return {
-            'type': 'ir.actions.act_window',
-            'name': 'Payment Request',
-            'res_model': 'account.payment.request',
-            'view_mode': 'form',
-            'res_id': payment_request.id,
-            'target': 'current',  # hoặc 'new' nếu muốn mở trong popup
-        }
+            return {
+                'type': 'ir.actions.act_window',
+                'name': 'Payment Request',
+                'res_model': 'account.payment.request',
+                'view_mode': 'form',
+                'res_id': payment_request.id,
+                'target': 'current',  # hoặc 'new' nếu muốn mở trong popup
+            }
     def action_accounting_approve(self):
         if self.state != 'reviewed_accounting':
             raise UserError("Chỉ phiếu đã được Quản lý duyệt mới được Kế toán duyệt.")
@@ -401,31 +395,30 @@ class ProposalSheet(models.Model):
             self.material_line_ids = material_lines
 
         elif self.type == 'expense':
-    # Lấy tất cả chi phí (service) theo dự án
+    # Lấy tất cả dòng dự toán của dự án
             estimate_lines = self.env['cost.estimate.line'].search([
-                ('cost_estimate_id.project_id', '=', self.project_id.id),
-                ('product_id.detailed_type', '=', 'service')
+                ('cost_estimate_id.project_id', '=', self.project_id.id)
             ])
             if not estimate_lines:
                 raise ValidationError("Không tìm thấy chi phí nào trong dự toán của Dự án này.")
 
-            for line in estimate_lines:
-                expense = self.env['project.expense'].search([('name', '=', line.product_id.display_name)], limit=1)
-                if not expense:
-                    expense = self.env['project.expense'].create({
-                        'name': line.product_id.display_name,
-                        'default_unit': line.product_id.uom_id.id,
-                        'price_unit': line.price_subtotal or 0.0
-                    })
+            # Lấy tất cả mapping từ project_expense_line
+            existing_expense_lines = self.env['project.expense.line'].search([
+                ('estimate_line_id', 'in', estimate_lines.ids)
+            ])
+            if not existing_expense_lines:
+                raise ValidationError("Không tìm thấy chi phí trong dự toán.")
 
+            expense_lines = []
+            for mapping in existing_expense_lines:
                 expense_lines.append((0, 0, {
-                    'expense_id': expense.id,
-                    'quantity': 1.0,
-                    'unit': expense.default_unit.id,
-                    'price_unit': line.price_subtotal or 0.0,
-                    'description': f"Từ dự toán: {line.product_id.display_name}",
+                    'expense_id': mapping.expense_id.id,             # expense_id đã mapping sẵn
+                    'quantity': mapping.quantity,             # số lượng lấy luôn từ project_expense_line
+                    'unit': mapping.unit.id or mapping.expense_id.default_unit.id,                         # đơn vị lấy luôn từ project_expense_line
+                    'price_unit': mapping.price_unit,         # giá lấy từ project_expense_line
+                    'type': mapping.expense_id.type,                 # type lấy từ project_expense_line
                 }))
-
+            # Gán vào proposal
             self.expense_line_ids = expense_lines
     def action_view_pdf(self):
         self.ensure_one()
