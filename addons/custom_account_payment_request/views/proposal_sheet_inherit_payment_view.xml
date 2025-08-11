@@ -6,7 +6,7 @@
         <field name="arch" type="xml">
             <!-- Chèn sau thẻ notebook -->
             <xpath expr="//notebook" position="inside">
-                <page string="Phiếu Chi" groups="account.group_account_user,account.group_account_manager" context="{'default_proposal_sheet_id': active_id}">
+                <page string="Phiếu Chi" invisible ="state !='waiting_accounting_paid' and state != 'done' " groups="account.group_account_user,account.group_account_manager" context="{'default_proposal_sheet_id': active_id}">
                     <field name="payment_ids">
                         <tree>
                             <field name="name" />
@@ -23,17 +23,18 @@
                                 <!-- <button name="action_cancel" string="Hủy" type="object" class="btn-danger" invisible="state != &apos;draft&apos;"/> -->
                                 <field name="state" widget="statusbar" statusbar_visible="confirmed,done"/>
                             </header>
-                            <sheet>
+                            <sheet >
                                 <group col = '2'>
                                     <group>
                                         <field name="name"/>
-                                        <field name="date" readonly="state == 'confirmed' or 'done'"/>
+                                        <field name="date" readonly="state =='confirmed' or state =='done'"/>
                                         <field name="currency_id" invisible="1"/>
-                                        <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="state == 'confirmed' or 'done'"/>
+                                        <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="state =='confirmed' or state =='done'"/>
+                                        <field name="payment_person" widget="many2one_avatar_user" readonly="state =='confirmed' or state =='done'"/>
                                     </group>
                                     <group>
-                                        <field name="proposal_sheet_id" readonly="state == 'confirmed' or 'done'"/>
-                                        <field name="proposal_person_id" readonly="state == 'confirmed' or 'done'"/>
+                                        <field name="proposal_sheet_id" readonly="state =='confirmed' or state =='done'"/>
+                                        <field name="proposal_person_id" widget="many2one_avatar_user" readonly="state =='confirmed' or state =='done'"/>
                                         <field name="note"/>
                                     </group>
                                 </group>

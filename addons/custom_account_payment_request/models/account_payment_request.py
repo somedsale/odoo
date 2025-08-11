@@ -82,7 +82,7 @@ class AccountingPaymentRequest(models.Model):
                     total_paid = sum(p.total for p in all_payments if p.state == 'done')
 
                     # Nếu tổng đã chi >= tổng đề xuất -> done
-                    if total_paid >= rec.proposal_sheet_id.total_amount:  # total_amount là field tổng tiền PĐX
+                    if total_paid >= rec.proposal_sheet_id.amount_total:  # total_amount là field tổng tiền PĐX
                         rec.proposal_sheet_id.state = 'done'
                 rec.status_expense = 'paid'
                 rec.payment_person = self.env.user.partner_id
