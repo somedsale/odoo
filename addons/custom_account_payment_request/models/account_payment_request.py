@@ -77,12 +77,11 @@ class AccountingPaymentRequest(models.Model):
                     all_payments = self.env['account.payment.request'].search([
                         ('proposal_sheet_id', '=', rec.proposal_sheet_id.id)
                     ])
-
+                    all_done = all(p.state == 'done' for p in all_payments)
                     # Tổng tiền của các phiếu chi đã done
                     total_paid = sum(p.total for p in all_payments if p.state == 'done')
-
                     # Nếu tổng đã chi >= tổng đề xuất -> done
-                    if total_paid >= rec.proposal_sheet_id.amount_total:  # total_amount là field tổng tiền PĐX
+                    if all_done and total_paid >= rec.proposal_sheet_id.amount_total:  # total_amount là field tổng tiền PĐX
                         rec.proposal_sheet_id.state = 'done'
                 rec.status_expense = 'paid'
                 rec.payment_person = self.env.user.partner_id
