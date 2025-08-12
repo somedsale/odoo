@@ -8,7 +8,6 @@
                 <field name="project_id"/>
                 <field name="total_estimate" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="total_actual" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                <field name="progress" widget="progressbar"/>
                 <field name ="currency_id" optional="hide"/>
             </tree>
         </field>
@@ -36,7 +35,7 @@
                         <group string="Chi phí">
                             <field name="total_estimate" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                             <field name="total_actual" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                            <field name="progress" widget="percentpie" string="% Thực tế" />
+                            <field name="progress" widget="progressbar" string="% Chi trả" />
                         </group>
                     </group>
                     <field name="cost_estimate_line_ids">

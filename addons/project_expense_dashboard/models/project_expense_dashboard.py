@@ -4,6 +4,7 @@ class ProjectExpenseDashboard(models.Model):
     _name = 'project.expense.dashboard'
     _description = 'Dashboard quản lý chi phí dự án'
     _inherit = ['mail.thread', 'mail.activity.mixin']
+    name = fields.Char(string="Tên dashboard", compute="_compute_name", store=True)
 
     project_id = fields.Many2one(
         'project.project',
@@ -24,27 +25,13 @@ class ProjectExpenseDashboard(models.Model):
     payment_request_count = fields.Integer(
     compute="_compute_payment_request_count",
 )
-    # proposal_material_line_ids = fields.One2many(
-    #     'proposal.material.line',
-    #     compute='_compute_proposal_material_lines',
-    #     string="Vật tư đã chi"
-    # )
-
-    # @api.depends('project_id')
-    # def _compute_proposal_material_lines(self):
-    #     for record in self:
-    #         if not record.project_id:
-    #             record.proposal_material_line_ids = False
-    #             continue
-    #         # Tìm phiếu đề xuất vật tư đã duyệt/hoàn tất trong dự án
-    #         proposal_sheets = self.env['proposal.sheet'].search([
-    #             ('project_id', '=', record.project_id.id),
-    #             ('state', '=',  'done')
-    #         ])
-    #         lines = self.env['proposal.material.line'].search([
-    #             ('sheet_id', 'in', proposal_sheets.ids)
-    #         ])
-    #         record.proposal_material_line_ids = lines
+    @api.depends('project_id.name')
+    def _compute_name(self):
+        for rec in self:
+            if rec.project_id:
+                rec.name = f"Chi phí dự án: {rec.project_id.display_name}"
+            else:
+                rec.name = "Chi phí dự án"
 
     @api.depends('project_id')
     def _compute_payment_request_count(self):
@@ -101,5 +88,5 @@ class ProjectExpenseDashboard(models.Model):
                     ('state', '=', 'done')
                 ],
                 'context': {'default_project_id': self.project_id.id},
-                'target': 'new',
+                'target': 'current',
             }

@@ -1,0 +1,13 @@
+<odoo>
+    <record id="view_account_payment_request_form_inherit" model="ir.ui.view">
+        <field name="name">account.payment.request.form.inherit.cost.line</field>
+        <field name="model">account.payment.request</field>
+        <field name="inherit_id" ref="custom_account_payment_request.view_account_payment_request_form"/>
+        <field name="arch" type="xml">
+            <!-- Chèn sau trường project_id -->
+            <xpath expr="//field[@name='project_id']" position="after">
+                <field name="cost_estimate_line_id" string="Hạng mục trong dự toán" domain="[('project_id', '=', project_id)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
