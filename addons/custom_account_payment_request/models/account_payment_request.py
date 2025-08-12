@@ -5,7 +5,7 @@ class AccountingPaymentRequest(models.Model):
     _name = 'account.payment.request'
     _description = 'Yêu cầu chi tiền kế toán'
     _inherit = ['mail.thread', 'mail.activity.mixin']
-    name = fields.Char(string="Mã phiếu chi", required=True, copy=False, readonly=True, default=lambda self: self.env['ir.sequence'].next_by_code('account.payment.request'))
+    name = fields.Char(string="Mã phiếu chi", required=True, copy=False, readonly=True, default='/')
     proposal_sheet_id = fields.Many2one('proposal.sheet', string="Phiếu đề xuất")
     proposal_person_id = fields.Many2one('res.users', string="Người đề xuất", store=True)
     total = fields.Float(string="Số tiền")
@@ -35,6 +35,11 @@ class AccountingPaymentRequest(models.Model):
         ('not yet', 'Chưa chi'),
         ('paid', 'Đã chi'),
     ], default='not yet')
+    @api.model
+    def create(self, vals):
+        if vals.get('name', '/') == '/':
+            vals['name'] = self.env['ir.sequence'].next_by_code('account.payment.request')
+        return super().create(vals)
     
     @api.onchange('proposal_sheet_id')
     def _onchange_proposal_sheet_id(self):

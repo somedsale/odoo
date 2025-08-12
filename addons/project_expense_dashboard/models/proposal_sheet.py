@@ -12,7 +12,7 @@ class ProposalSheet(models.Model):
     @api.onchange('project_id', 'product_id')
     def _onchange_project_product(self):
         """Tự tìm hạng mục trong dự toán khi chọn dự án + sản phẩm"""
-        if self.project_id and self.product_id:
+        if self.project_id:
             line = self.env['cost.estimate.line'].search([
                 ('project_id', '=', self.project_id.id),
             ], limit=1)
