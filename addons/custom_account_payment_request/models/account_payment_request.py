@@ -89,8 +89,8 @@ class AccountingPaymentRequest(models.Model):
                 rec.date_payment = fields.Datetime.now()
                 rec.message_post(body="Yêu cầu chi tiền đã hoàn tất.")
                 expense = self.env['project.expense.custom'].search([('project_id', '=', rec.project_id.id)], limit=1)
-                if expense:
-                    expense._compute_costs()
+                # if expense:
+                #     expense._compute_costs()
                 dashboard = self.env['project.expense.dashboard'].search([('project_id', '=', rec.project_id.id)])
                 dashboard._compute_total_actual()
                 self.env['project.cash.flow'].create({
