@@ -29,9 +29,9 @@ class ProjectExpenseDashboard(models.Model):
     def _compute_name(self):
         for rec in self:
             if rec.project_id:
-                rec.name = f"Chi phí dự án: {rec.project_id.display_name}"
+                rec.name = rec.project_id.display_name
             else:
-                rec.name = "Chi phí dự án"
+                rec.name = ""
 
     @api.depends('project_id')
     def _compute_payment_request_count(self):
