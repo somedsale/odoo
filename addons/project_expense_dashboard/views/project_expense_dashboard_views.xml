@@ -25,12 +25,19 @@
                                 <field string ="Phiếu đã chi" name="payment_request_count" widget="statinfo"/>
                             </span>
                         </button>
+                        <button name="action_view_payment_pending_requests" type="object" class="oe_stat_button" icon="fa-book">
+                            <span class="o_stat_value">
+                                <field string ="Phiếu chưa chi" name="payment_request_pending_count" widget="statinfo"/>
+                            </span>
+                        </button>
                     </div>
                     <group col="2">
                         <group string="Thông tin">
                             <field name="project_id" readonly="1"/>
                             <field name="cost_estimate_id" readonly ="1"/>
                             <field name ="currency_id" invisible ="1"/>
+                            <field name="total_actual_with_item" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_actual_without_item" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                         </group>
                         <group string="Chi phí">
                             <field name="total_estimate" widget="monetary" options="{'currency_field': 'currency_id'}"/>

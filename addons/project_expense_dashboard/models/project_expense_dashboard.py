@@ -25,6 +25,34 @@ class ProjectExpenseDashboard(models.Model):
     payment_request_count = fields.Integer(
     compute="_compute_payment_request_count",
 )
+    payment_request_pending_count = fields.Integer(
+    compute="_compute_payment_request_count",
+)
+    total_actual_with_item = fields.Float(
+    string="Tổng chi có hạng mục",
+    compute="_compute_total_actual_split",
+    store=True
+)
+    total_actual_without_item = fields.Float(
+        string="Tổng chi không hạng mục",
+        compute="_compute_total_actual_split",
+        store=True
+    )
+
+    @api.depends('project_id')
+    def _compute_total_actual_split(self):
+        ProjectRequest = self.env['account.payment.request']
+        for record in self:
+            if record.project_id:
+                payments = ProjectRequest.search([
+                    ('project_id', '=', record.project_id.id),
+                    ('state', '=', 'done')
+                ])
+                record.total_actual_with_item = sum(p.total for p in payments if p.cost_estimate_line_id)
+                record.total_actual_without_item = sum(p.total for p in payments if not p.cost_estimate_line_id)
+            else:
+                record.total_actual_with_item = 0.0
+                record.total_actual_without_item = 0.0
     @api.depends('project_id.name')
     def _compute_name(self):
         for rec in self:
@@ -39,10 +67,15 @@ class ProjectExpenseDashboard(models.Model):
             if record.project_id:
                 record.payment_request_count = self.env['account.payment.request'].search_count([
                     ('project_id', '=', record.project_id.id),
-                    ('state', '=', 'done')
+                    ('status_expense', '=', 'paid')
+                ])
+                record.payment_request_pending_count = self.env['account.payment.request'].search_count([
+                    ('project_id', '=', record.project_id.id),
+                    ('status_expense', '=', 'not yet')
                 ])
             else:
                 record.payment_request_count = 0
+                record.payment_request_pending_count = 0
 
 
     @api.depends('cost_estimate_id','cost_estimate_id.total_cost')
@@ -85,7 +118,17 @@ class ProjectExpenseDashboard(models.Model):
             return self.env.ref('custom_account_payment_request.action_account_payment_request_without_searchpanel').read()[0] | {
                 'domain': [
                     ('project_id', '=', self.project_id.id),
-                    ('state', '=', 'done')
+                    ('status_expense', '=', 'paid')
+                ],
+                'context': {'default_project_id': self.project_id.id},
+                'target': 'current',
+            }
+    def action_view_payment_pending_requests(self):
+            self.ensure_one()
+            return self.env.ref('custom_account_payment_request.action_account_payment_request_without_searchpanel').read()[0] | {
+                'domain': [
+                    ('project_id', '=', self.project_id.id),
+                    ('status_expense', '=', 'not yet')
                 ],
                 'context': {'default_project_id': self.project_id.id},
                 'target': 'current',
