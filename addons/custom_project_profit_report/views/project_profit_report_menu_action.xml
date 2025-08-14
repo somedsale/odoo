@@ -1,0 +1,13 @@
+<odoo>
+    <!-- Report Action -->
+    <record id="action_report_project_profit" model="ir.actions.report">
+        <field name="name">Báo cáo Lợi Nhuận Công Trình</field>
+        <field name="model">project.profit.report</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">custom_project_profit_report.project_profit_template</field>
+        <field name="report_file">project_profit_report_template</field>
+        <field name="binding_model_id" ref="model_project_profit_report"/>
+    </record>
+
+    <menuitem id="menu_report_project_profit" name="Lợi nhuận công trình" parent="custom_account_menu.menu_accounting_reporting" action="action_report_project_profit" sequence="1" />
+</odoo>

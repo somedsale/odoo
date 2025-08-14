@@ -1,0 +1,133 @@
+<odoo>
+    <template id="custom_project_profit_report.project_profit_template">
+        <t t-call="web.html_container">
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&amp;display=swap');
+                /* Table cơ bản đẹp hơn */
+                table.report-table{
+                    width: 100%;
+                    max-width: 100%;
+                    border-collapse: collapse;
+                    font-family: 'Poppins', sans-serif;
+                    font-size: 15px;
+                    border-radius: 10px;
+                    overflow: hidden;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+                    table-layout: auto; 
+                }
+                h1{
+                    font-weight:bold;
+                    padding-top:20px;
+                    font-size:24px;
+                    font-family: 'Poppins', sans-serif;
+                }
+
+                table.report-table th, table.report-table td {
+                    border: 1px solid #ccc;
+                    padding: 6px 8px;
+                    text-align: center;
+                    vertical-align: middle;
+                }
+
+                table.report-table th {
+                    background-color: #6C7AE0;
+                    color: white;
+                    font-weight: bold;
+                }
+
+                /* Hover cả row */
+                table.report-table tr:hover {
+                    background-color: #f0f8ff;
+                }
+
+                /* Canh STT trái */
+                td.stt {
+                    text-align: right;
+                    font-weight: bold;
+                }
+                table.report-table thead th {
+                    position: sticky;
+                    top: 0;
+                }
+                .money {
+                    text-align: right !important;
+                }
+
+                /* Màu dòng chẵn lẻ */
+                table.report-table tbody tr:nth-child(even) {
+                    background-color: #f9f9f9;
+                }
+                @media (max-width: 768px) {
+                    table.report-table th, table.report-table td {
+                        padding: 4px 6px;
+                        font-size: 12px;
+                    }
+
+                    h1 {
+                        font-size: 18px;
+                    }
+            }
+            </style>
+
+            <h1 style="text-align:center; margin-bottom:20px;">BÁO CÁO TỔNG HỢP LÃI LỖ CÁC CÔNG TRÌNH</h1>
+
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2">STT</th>
+                        <th rowspan="2">Dự án</th>
+                        <th rowspan="2">Số HĐ</th>
+                        <th rowspan="2">Doanh thu</th>
+                        <th colspan="5">Chi phí</th>
+                        <th rowspan="2">Lãi / Lỗ</th>
+                    </tr>
+                    <tr>
+                        <th>Vật tư</th>
+                        <th>Nhân công</th>
+                        <th>Máy móc</th>
+                        <th>Sản xuất chung</th>
+                        <th>Tổng chi phí</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-set="counter" t-value="1"/>
+                    <t t-foreach="docs" t-as="doc">
+                        <tr>
+                            <td class="stt">
+                                <t t-esc="counter"/>
+                                <t t-set="counter" t-value="counter + 1"/>
+                            </td>
+                            <td>
+                                <t t-esc="doc['project_id'].name"/>
+                            </td>
+                            <td>
+                                <t t-esc="doc['num_contract']"/>
+                            </td>
+                            <td class="money">
+                                <t t-esc="doc['revenue']"/>
+                            </td>
+                            <td class="money">
+                                <t t-esc="doc['material_cost'] or ''"/>
+                            </td>
+                            <td class="money">
+                                <t t-esc="doc['labor_cost'] or ''"/>
+                            </td>
+                            <td class="money">
+                                <t t-esc="doc['machine_cost'] or ''"/>
+                            </td>
+                            <td class="money">
+                                <t t-esc="doc['other_cost'] or ''"/>
+                            </td>
+                            <td class="money">
+                                <t t-esc="doc['expense']"/>
+                            </td>
+                            <td class="money">
+                                <t t-esc="doc['profit']"/>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </t>
+    </template>
+</odoo>

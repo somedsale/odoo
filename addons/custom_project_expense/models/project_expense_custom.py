@@ -5,7 +5,7 @@ class ProjectExpenseCustom(models.Model):
     _description = 'Chi phí dự án'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = "create_date desc"
-
+    name = fields.Char(string="Tên dự án", related="project_id.name", store=True, readonly=True)
     project_id = fields.Many2one('project.project', string="Dự án", required=True, index=True)
     currency_id = fields.Many2one('res.currency', string="Tiền tệ", default=lambda self: self.env.company.currency_id)
     payment_request_ids = fields.One2many('account.payment.request', 'project_expense_id', string="Yêu cầu chi tiền")
