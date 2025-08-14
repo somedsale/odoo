@@ -3,74 +3,102 @@
         <t t-call="web.html_container">
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&amp;display=swap');
-                /* Table cơ bản đẹp hơn */
+
+                .cards {
+                    display: flex;
+                    gap: 20px;
+                    margin: 20px 0;
+                    font-family: 'Poppins', sans-serif;
+                }
+                h1{
+                    padding-top:20px;
+                    font-weight:bold;
+                    font-family: 'Poppins', sans-serif;
+                }
+                .card {
+                    flex: 1;
+                    background: #fff;
+                    padding: 15px;
+                    border-radius: 10px;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+                    text-align: center;
+                }
+                .card h3 {
+                    font-size: 16px;
+                    color: #666;
+                    margin: 0;
+                }
+                .card p {
+                    font-size: 20px;
+                    font-weight: bold;
+                    margin: 5px 0 0;
+                    color: #2c3e50;
+                }
+
                 table.report-table{
                     width: 100%;
-                    max-width: 100%;
                     border-collapse: collapse;
                     font-family: 'Poppins', sans-serif;
                     font-size: 15px;
                     border-radius: 10px;
                     overflow: hidden;
                     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-                    table-layout: auto; 
                 }
-                h1{
-                    font-weight:bold;
-                    padding-top:20px;
-                    font-size:24px;
-                    font-family: 'Poppins', sans-serif;
-                }
-
                 table.report-table th, table.report-table td {
                     border: 1px solid #ccc;
                     padding: 6px 8px;
                     text-align: center;
                     vertical-align: middle;
                 }
-
                 table.report-table th {
                     background-color: #6C7AE0;
                     color: white;
                     font-weight: bold;
                 }
-
-                /* Hover cả row */
                 table.report-table tr:hover {
                     background-color: #f0f8ff;
                 }
-
-                /* Canh STT trái */
                 td.stt {
                     text-align: right;
                     font-weight: bold;
                 }
-                table.report-table thead th {
-                    position: sticky;
-                    top: 0;
-                }
                 .money {
                     text-align: right !important;
                 }
-
-                /* Màu dòng chẵn lẻ */
                 table.report-table tbody tr:nth-child(even) {
                     background-color: #f9f9f9;
                 }
-                @media (max-width: 768px) {
-                    table.report-table th, table.report-table td {
-                        padding: 4px 6px;
-                        font-size: 12px;
-                    }
-
-                    h1 {
-                        font-size: 18px;
-                    }
-            }
             </style>
 
             <h1 style="text-align:center; margin-bottom:20px;">BÁO CÁO TỔNG HỢP LÃI LỖ CÁC CÔNG TRÌNH</h1>
 
+            <!-- Dashboard Cards -->
+            <div class="cards">
+                <div class="card">
+                    <h3>Tổng số dự án</h3>
+                    <p t-esc="len(docs)"/>
+                </div>
+                <div class="card">
+                    <h3>Tổng doanh thu</h3>
+                    <p>
+                        <t t-esc="'{:,.0f}'.format(sum(d['revenue'] for d in docs)).replace(',', '.')"/>
+                    </p>
+                </div>
+                <div class="card">
+                    <h3>Tổng chi phí</h3>
+                    <p>
+                        <t t-esc="'{:,.0f}'.format(sum(d['expense'] for d in docs)).replace(',', '.')"/>
+                    </p>
+                </div>
+                <div class="card">
+                    <h3>Lãi / Lỗ</h3>
+                    <p>
+                        <t t-esc="'{:,.0f}'.format(sum(d['profit'] for d in docs)).replace(',', '.')"/>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Table Report -->
             <table class="report-table">
                 <thead>
                     <tr>
@@ -104,25 +132,25 @@
                                 <t t-esc="doc['num_contract']"/>
                             </td>
                             <td class="money">
-                                <t t-esc="doc['revenue']"/>
+                                <t t-esc="'{:,.0f}'.format(doc['revenue']).replace(',', '.')"/>
                             </td>
                             <td class="money">
-                                <t t-esc="doc['material_cost'] or ''"/>
+                                <t t-esc="'{:,.0f}'.format(doc['material_cost'] or 0).replace(',', '.')"/>
                             </td>
                             <td class="money">
-                                <t t-esc="doc['labor_cost'] or ''"/>
+                                <t t-esc="'{:,.0f}'.format(doc['labor_cost'] or 0).replace(',', '.')"/>
                             </td>
                             <td class="money">
-                                <t t-esc="doc['machine_cost'] or ''"/>
+                                <t t-esc="'{:,.0f}'.format(doc['machine_cost'] or 0).replace(',', '.')"/>
                             </td>
                             <td class="money">
-                                <t t-esc="doc['other_cost'] or ''"/>
+                                <t t-esc="'{:,.0f}'.format(doc['other_cost'] or 0).replace(',', '.')"/>
                             </td>
                             <td class="money">
-                                <t t-esc="doc['expense']"/>
+                                <t t-esc="'{:,.0f}'.format(doc['expense']).replace(',', '.')"/>
                             </td>
                             <td class="money">
-                                <t t-esc="doc['profit']"/>
+                                <t t-esc="'{:,.0f}'.format(doc['profit']).replace(',', '.')"/>
                             </td>
                         </tr>
                     </t>
