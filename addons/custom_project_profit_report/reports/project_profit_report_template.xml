@@ -4,34 +4,61 @@
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&amp;display=swap');
 
+                
+                h1 {
+                    padding-top: 20px;
+                    font-weight: bold;
+                    font-family: 'Poppins', sans-serif;
+                }
                 .cards {
                     display: flex;
                     gap: 20px;
                     margin: 20px 0;
                     font-family: 'Poppins', sans-serif;
                 }
-                h1{
-                    padding-top:20px;
-                    font-weight:bold;
-                    font-family: 'Poppins', sans-serif;
-                }
+
                 .card {
                     flex: 1;
                     background: #fff;
-                    padding: 15px;
-                    border-radius: 10px;
+                                                                                                                                                                                                                    <!-- border-radius: 10px; -->
                     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-                    text-align: center;
                 }
-                .card h3 {
+
+                .card-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between; /* đẩy icon sang phải */
+                    background: #fff;
+                    padding: 10px 15px;
+                    border: none;
+                }
+
+                .card-header h3 {
                     font-size: 16px;
                     color: #666;
                     margin: 0;
+                    flex-grow: 1; /* chiếm hết khoảng trống */
+                    text-align: center; /* căn giữa text trong phần còn lại */
                 }
+
+                .icon-right {
+                    font-size: 18px;
+                    color: #666; /* mặc định cùng màu text */
+                }
+
+                .text-success {
+                    color: #27ae60 !important;
+                }
+
+                .text-danger {
+                    color: #e74c3c !important;
+                }
+
                 .card p {
                     font-size: 20px;
                     font-weight: bold;
-                    margin: 5px 0 0;
+                    margin: 10px;
+                    text-align: center;
                     color: #2c3e50;
                 }
 
@@ -75,23 +102,38 @@
             <!-- Dashboard Cards -->
             <div class="cards">
                 <div class="card">
-                    <h3>Tổng số dự án</h3>
+                    <div class="card-header">
+                        <h3>Tổng số dự án</h3>
+                        <i class="fa fa-folder-open icon icon-right"></i>
+                    </div>
                     <p t-esc="len(docs)"/>
                 </div>
+
                 <div class="card">
-                    <h3>Tổng doanh thu</h3>
+                    <div class="card-header">
+                        <h3>Tổng doanh thu</h3>
+                        <i class="fa fa-arrow-up icon icon-right text-success"></i>
+                    </div>
                     <p>
                         <t t-esc="'{:,.0f}'.format(sum(d['revenue'] for d in docs)).replace(',', '.')"/>
                     </p>
                 </div>
+
                 <div class="card">
-                    <h3>Tổng chi phí</h3>
+                    <div class="card-header">
+                        <h3>Tổng chi phí</h3>
+                        <i class="fa fa-arrow-down icon icon-right text-danger"></i>
+                    </div>
                     <p>
                         <t t-esc="'{:,.0f}'.format(sum(d['expense'] for d in docs)).replace(',', '.')"/>
                     </p>
                 </div>
+
                 <div class="card">
-                    <h3>Lãi / Lỗ</h3>
+                    <div class="card-header">
+                        <h3>Lãi / Lỗ</h3>
+                        <i class="fa fa-line-chart icon icon-right" style="color:#27ae60;"></i>
+                    </div>
                     <p>
                         <t t-esc="'{:,.0f}'.format(sum(d['profit'] for d in docs)).replace(',', '.')"/>
                     </p>
