@@ -30,8 +30,9 @@
                 </header>
                 <sheet>
                     <div class="oe_title">
-                        <h1>
+                        <h1 >
                             <field name="name" readonly="1"/>
+                            <field name="status_expense" widget="badge" decoration-success="status_expense == 'paid'" decoration-danger="status_expense == 'not yet'"/>
                         </h1>
                     </div>
                     <group col="2" name="Thông tin">
