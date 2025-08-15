@@ -35,21 +35,27 @@ class ProjectExpenseDashboard(models.Model):
 )
     total_actual_without_item = fields.Float(
         string="Tổng chi không hạng mục",
-        compute="_compute_total_actual_split",
+        compute="_compute_total_actual_split",   
         store=True
     )
 
-    @api.depends('project_id')
+    @api.depends(
+        'project_id',
+        'project_id.account_payment_request_ids.total',
+        'project_id.account_payment_request_ids.status_expense',
+        'project_id.account_payment_request_ids.cost_estimate_line_id',
+    )
     def _compute_total_actual_split(self):
-        ProjectRequest = self.env['account.payment.request']
         for record in self:
             if record.project_id:
-                payments = ProjectRequest.search([
-                    ('project_id', '=', record.project_id.id),
-                    ('state', '=', 'done')
-                ])
-                record.total_actual_with_item = sum(p.total for p in payments if p.cost_estimate_line_id)
-                record.total_actual_without_item = sum(p.total for p in payments if not p.cost_estimate_line_id)
+                payments_with_item = record.project_id.account_payment_request_ids.filtered(
+                    lambda p: p.status_expense == 'paid' and p.cost_estimate_line_id
+                )
+                payments_without_item = record.project_id.account_payment_request_ids.filtered(
+                    lambda p: p.status_expense == 'paid' and not p.cost_estimate_line_id
+                )
+                record.total_actual_with_item = sum(payments_with_item.mapped('total'))
+                record.total_actual_without_item = sum(payments_without_item.mapped('total'))
             else:
                 record.total_actual_with_item = 0.0
                 record.total_actual_without_item = 0.0

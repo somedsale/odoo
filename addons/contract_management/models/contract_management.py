@@ -33,6 +33,7 @@ class ContractManagement(models.Model):
 
     name = fields.Char(string='Tên hợp đồng', required=True)
     num_contract = fields.Char(string='Số hợp đồng')
+    contract_value = fields.Float(string='Giá trị hợp đồng')
     sale_order_id = fields.Many2one('sale.order', string='Đơn hàng', required=True)
     partner_id = fields.Many2one('res.partner', string='Khách hàng', required=True)
     stage = fields.Selection([
