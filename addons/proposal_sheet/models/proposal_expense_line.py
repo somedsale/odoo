@@ -18,6 +18,7 @@ class ProposalExpenseLine(models.Model):
     price_total = fields.Float(string='Thành tiền', compute='_compute_price_total', store=True)
     description = fields.Text(string='Ghi Chú')
     type = fields.Selection([('expense', 'Chi Phí')], default='expense', required=True, readonly=True)
+    type_expense = fields.Selection(related='expense_id.type', string='Loại Chi Phí', readonly=True)
     estimate_price_unit = fields.Float(
     string='Giá Dự Toán',
     compute='_compute_estimate_price_unit',

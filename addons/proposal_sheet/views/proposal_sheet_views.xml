@@ -72,6 +72,7 @@
                                     <field name="expense_id" required="1" />
                                     <field name="quantity" required="1"/>
                                     <field name="unit" />
+                                    <field name="type_expense"/>
                                     <field name="estimate_price_unit" string="Giá dự toán" readonly="1"/>
                                     <field name="price_unit" string="Giá đề xuất" required="1"/>
                                     <field name="estimate_price_total" string="Tổng giá dự toán" readonly="1"/>

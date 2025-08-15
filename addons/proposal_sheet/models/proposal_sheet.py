@@ -369,56 +369,41 @@ class ProposalSheet(models.Model):
         expense_lines = []
 
         if self.type == 'material':
-            if not self.task_id:
-                raise ValidationError("Phiếu loại Vật tư bắt buộc phải chọn Nhiệm vụ.")
+            if not self.cost_estimate_line_id:
+                raise ValidationError("Phiếu loại Vật tư bắt buộc phải chọn Hạng mục dự toán.")
 
             # Lấy tất cả dòng dự toán của task cho vật tư
-            estimate_lines = self.env['cost.estimate.line'].search([
-                ('task_id', '=', self.task_id.id),
-                ('product_id.detailed_type', 'in', ['consu', 'product'])
-            ])
-            if not estimate_lines:
-                raise ValidationError("Không tìm thấy vật tư nào trong dự toán cho Nhiệm vụ này.")
-
-            for line in estimate_lines:
-                for material_line in line.material_line_ids:
-                    material_lines.append((0, 0, {
-                        'material_id': material_line.material_id.id,
-                        'quantity': material_line.quantity,
-                        'unit': material_line.unit.id,
-                        'price_unit': material_line.price_unit or 0.0,
-                        'vendor_id': material_line.vendor_id.id
-                    }))
+            for material_line in self.cost_estimate_line_id.material_line_ids:
+                material_lines.append((0, 0, {
+                    'material_id': material_line.material_id.id,
+                    'quantity': material_line.quantity,
+                    'unit': material_line.unit.id,
+                    'price_unit': material_line.price_unit or 0.0,
+                    'vendor_id': material_line.vendor_id.id
+                }))
 
             if not material_lines:
-                raise ValidationError("Không tìm thấy chi tiết vật tư nào trong dự toán cho Nhiệm vụ này.")
+                raise ValidationError("Không tìm thấy chi tiết vật tư nào trong hạng mục dự toán này.")
+
             self.material_line_ids = material_lines
-
         elif self.type == 'expense':
-    # Lấy tất cả dòng dự toán của dự án
-            estimate_lines = self.env['cost.estimate.line'].search([
-                ('cost_estimate_id.project_id', '=', self.project_id.id)
-            ])
-            if not estimate_lines:
-                raise ValidationError("Không tìm thấy chi phí nào trong dự toán của Dự án này.")
+            if not self.cost_estimate_line_id:
+                raise ValidationError("Phiếu loại Chi phí bắt buộc phải chọn Hạng mục dự toán.")
 
-            # Lấy tất cả mapping từ project_expense_line
-            existing_expense_lines = self.env['project.expense.line'].search([
-                ('estimate_line_id', 'in', estimate_lines.ids)
-            ])
+            # Lấy trực tiếp các dòng chi phí từ hạng mục dự toán
+            existing_expense_lines = self.cost_estimate_line_id.expense_line_ids
             if not existing_expense_lines:
-                raise ValidationError("Không tìm thấy chi phí trong dự toán.")
+                raise ValidationError("Không tìm thấy chi phí nào trong hạng mục dự toán này.")
 
             expense_lines = []
             for mapping in existing_expense_lines:
                 expense_lines.append((0, 0, {
-                    'expense_id': mapping.expense_id.id,             # expense_id đã mapping sẵn
-                    'quantity': mapping.quantity,             # số lượng lấy luôn từ project_expense_line
-                    'unit': mapping.unit.id or mapping.expense_id.default_unit.id,                         # đơn vị lấy luôn từ project_expense_line
-                    'price_unit': mapping.price_unit,         # giá lấy từ project_expense_line
-                    'type': mapping.expense_id.type,                 # type lấy từ project_expense_line
+                    'expense_id': mapping.expense_id.id,   # Đã mapping sẵn
+                    'quantity': mapping.quantity,          # Số lượng từ hạng mục
+                    'unit': mapping.unit.id or mapping.expense_id.default_unit.id,
+                    'price_unit': mapping.price_unit,
+                    'type_expense': mapping.expense_id.type,
                 }))
-            # Gán vào proposal
             self.expense_line_ids = expense_lines
     def action_view_pdf(self):
         self.ensure_one()
