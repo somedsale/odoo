@@ -21,17 +21,19 @@ class ProjectCashFlow(models.Model):
     account_payment_id = fields.Many2one('account.payment.request', string='Phiếu chi')
 
     note = fields.Text(string='Ghi chú')
+    total_in_all = fields.Monetary(string="Tổng Thu Toàn Bộ", compute="_compute_totals_all", store=True)
+    total_out_all = fields.Monetary(string="Tổng Chi Toàn Bộ", compute="_compute_totals_all", store=True)
+    balance_all = fields.Monetary(string="Số dư Toàn Bộ", compute="_compute_totals_all", store=True)
 
-    # @api.onchange('receipt_id', 'account_payment_id')
-    # def _onchange_linked_docs(self):
-    #     if self.receipt_id:
-    #         self.amount = self.receipt_id.amount
-    #         self.partner_id = self.receipt_id.partner_id
-    #         self.type = 'in'
-        # elif self.account_payment_id:
-        #     self.amount = self.account_payment_id.amount
-        #     self.partner_id = self.account_payment_id.partner_id
-        #     self.type = 'out'
+    @api.depends()
+    def _compute_totals_all(self):
+        total_in = sum(self.env['project.cash.flow'].search([]).filtered(lambda r: r.type=='in').mapped('amount'))
+        total_out = sum(self.env['project.cash.flow'].search([]).filtered(lambda r: r.type=='out').mapped('amount'))
+        balance = total_in - total_out
+        for rec in self:
+            rec.total_in_all = total_in
+            rec.total_out_all = total_out
+            rec.balance_all = balance
     @api.onchange('receipt_id')
     def _onchange_receipt_id(self):
         """Khi chọn phiếu thu thì tự gán loại dòng tiền là Thu (in)"""
