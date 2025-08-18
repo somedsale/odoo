@@ -1,6 +1,6 @@
 <odoo>
     <!-- Menu Gốc -->
-    <menuitem id="menu_accounting_custom_root" name="Kế Toán" sequence="1" groups="account.group_account_manager"/>
+    <menuitem id="menu_accounting_custom_root" name="Kế Toán" sequence="1" groups="account.group_account_manager" web_icon="custom_account_menu,static/src/img/icon.png"/>
 
     <!-- ================= PHÂN NHÓM CHÍNH ================= -->
     <!-- <menuitem id="menu_accounting_operations" name="Nghiệp Vụ" parent="menu_accounting_custom_root" sequence="10"/> -->

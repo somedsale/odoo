@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo><!-- Contract Form View -->
+<odoo>    <!-- Contract Form View -->
     <record id="view_contract_management_form" model="ir.ui.view">
         <field name="name">contract.management.form</field>
         <field name="model">contract.management</field>
@@ -23,6 +23,7 @@
                             <field name="partner_id" options="{&apos;no_create&apos;: True}" readonly="1"/>
                             <field name="project_id" readonly="1"/>
                             <field name="company_id" groups="base.group_multi_company"/>
+                            <field name ="contract_value"/>
                         </group>
                         <group>
                             <field name="planned_start_date"/>
@@ -39,7 +40,7 @@
                 </div>
             </form>
         </field>
-    </record><!-- Contract Tree View -->
+    </record>    <!-- Contract Tree View -->
     <record id="view_contract_management_tree" model="ir.ui.view">
         <field name="name">contract.management.tree</field>
         <field name="model">contract.management</field>
@@ -47,13 +48,14 @@
             <tree string="Contracts">
                 <field name="name"/>
                 <field name="num_contract"/>
+                <field name ="contract_value" sum="Tổng"/>
                 <field name="sale_order_id"/>
                 <field name="project_id"/>
                 <field name="partner_id"/>
                 <field name="stage" widget="badge" decoration-info="stage == &apos;negotiating&apos;" decoration-warning="stage == &apos;preparing&apos;" decoration-primary="stage == &apos;executing&apos;" decoration-success="stage == &apos;completed&apos;"/>
             </tree>
         </field>
-    </record><!-- Action for Contract Menu -->
+    </record>    <!-- Action for Contract Menu -->
     <record id="action_contract_management" model="ir.actions.act_window">
         <field name="name">Hợp đồng</field>
         <field name="res_model">contract.management</field>
@@ -61,7 +63,7 @@
         <field name="help" type="html">
             <p class="oe_view_nocontent_create">Click to create a new contract.</p>
         </field>
-    </record><!-- Menu Item -->
+    </record>    <!-- Menu Item -->
     <menuitem id="menu_contract_management_root" name="Hợp đồng" sequence="10" parent="sale.sale_menu_root"/>
     <menuitem id="menu_contract_management" name="Hợp đồng" action="action_contract_management" parent="menu_contract_management_root" sequence="10"/>
 </odoo>

@@ -18,6 +18,47 @@ class ProposalExpenseLine(models.Model):
     price_total = fields.Float(string='Thành tiền', compute='_compute_price_total', store=True)
     description = fields.Text(string='Ghi Chú')
     type = fields.Selection([('expense', 'Chi Phí')], default='expense', required=True, readonly=True)
+    type_expense = fields.Selection(related='expense_id.type', string='Loại Chi Phí', readonly=True)
+    estimate_price_unit = fields.Float(
+    string='Giá Dự Toán',
+    compute='_compute_estimate_price_unit',
+    store=False,
+    readonly=True
+)
+    estimate_price_total = fields.Float(string='Giá Dự Toán', compute='_compute_estimate_price_total', store=False, readonly=True)
+    @api.depends('expense_id', 'sheet_id')
+    def _compute_estimate_price_unit(self):
+        for line in self:
+            if not line.expense_id or not line.sheet_id or not line.sheet_id.project_id:
+                line.estimate_price_unit = 0.0
+                continue
+            
+            project = line.sheet_id.project_id
+            
+            # Lấy tất cả dòng dự toán của dự án
+            estimate_lines = self.env['cost.estimate.line'].search([
+                ('cost_estimate_id.project_id', '=', project.id)
+            ])
+            
+            if not estimate_lines:
+                line.estimate_price_unit = 0.0
+                continue
+            
+            # Lấy các mapping project.expense.line với estimate_line_id trong estimate_lines
+            mappings = self.env['project.expense.line'].search([
+                ('estimate_line_id', 'in', estimate_lines.ids),
+                ('expense_id', '=', line.expense_id.id)
+            ], limit=1)  # lấy 1 mapping tương ứng expense_id và estimate_line
+            
+            if mappings and mappings.estimate_line_id:
+                line.estimate_price_unit = mappings.price_unit or 0.0
+            else:
+                line.estimate_price_unit = 0.0
+
+    @api.depends('quantity', 'estimate_price_unit')
+    def _compute_estimate_price_total(self):
+        for line in self:
+            line.estimate_price_total = line.quantity * (line.estimate_price_unit or 0.0)
 
     @api.onchange('expense_id')
     def _onchange_expense_id(self):
@@ -49,8 +90,6 @@ class ProposalExpenseLine(models.Model):
             expense = self.env['project.expense'].browse(vals['expense_id'])
             if not expense.exists():
                 raise ValidationError("Chi phí không tồn tại.")
-            if not expense.default_unit:
-                raise ValidationError(f"Chi phí '{expense.name}' chưa có đơn vị được cấu hình.")
             vals['unit'] = expense.default_unit.id
             if not vals.get('price_unit'):
                 vals['price_unit'] = expense.price_unit or 0.0

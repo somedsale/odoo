@@ -5,14 +5,14 @@ class AccountingPaymentRequest(models.Model):
     _name = 'account.payment.request'
     _description = 'Yêu cầu chi tiền kế toán'
     _inherit = ['mail.thread', 'mail.activity.mixin']
-    name = fields.Char(string="Mã phiếu chi", required=True, copy=False, readonly=True, default=lambda self: self.env['ir.sequence'].next_by_code('account.payment.request'))
-    proposal_sheet_id = fields.Many2one('proposal.sheet', string="Phiếu đề xuất", required=True)
-    proposal_person_id = fields.Many2one('res.users', string="Người đề xuất", default=lambda self: self.env.user)
-    total = fields.Float(string="Số tiền", required=True)
+    name = fields.Char(string="Mã phiếu chi", required=True, copy=False, readonly=True, default='/')
+    proposal_sheet_id = fields.Many2one('proposal.sheet', string="Phiếu đề xuất")
+    proposal_person_id = fields.Many2one('res.users', string="Người đề xuất", store=True)
+    total = fields.Float(string="Số tiền")
     date = fields.Date(string="Ngày đề xuất", default=fields.Date.today)
     date_payment = fields.Date(string="Ngày thanh toán")
     journal_id = fields.Many2one('account.journal', string="Nhật ký", domain="[('type', 'in', ['cash', 'bank'])]")
-    project_id = fields.Many2one('project.project', string="Dự án")
+    project_id = fields.Many2one('project.project', string="Dự án", store=True)
     is_confirmed = fields.Boolean(string="Đã chi", default=False)
     receive_person = fields.Many2one('res.partner', string="Người nhận tiền")
     payment_person = fields.Many2one('res.partner', string="Người tạo chi")
@@ -35,13 +35,18 @@ class AccountingPaymentRequest(models.Model):
         ('not yet', 'Chưa chi'),
         ('paid', 'Đã chi'),
     ], default='not yet')
-    @api.depends('journal_id')
-    def _compute_proposal_sheet_id(self):
+    @api.model
+    def create(self, vals):
+        if vals.get('name', '/') == '/':
+            vals['name'] = self.env['ir.sequence'].next_by_code('account.payment.request')
+        return super().create(vals)
+    
+    @api.onchange('proposal_sheet_id')
+    def _onchange_proposal_sheet_id(self):
         for rec in self:
-            if rec.proposal_sheet_id and rec.proposal_sheet_id.journal_id:
-                rec.journal_id = rec.proposal_sheet_id.journal_id
-            else:
-                rec.journal_id = False
+            if rec.proposal_sheet_id:
+                rec.project_id = rec.proposal_sheet_id.project_id
+                rec.proposal_person_id = rec.proposal_sheet_id.requested_by
     def button_confirm_payment(self):
         for rec in self:
             if not rec.is_confirmed:
@@ -49,8 +54,10 @@ class AccountingPaymentRequest(models.Model):
                 rec.proposal_sheet_id.state = 'done'
     def action_confirm(self):
         for rec in self:
+            if not rec.total or rec.total <= 0:
+                raise UserError("Bạn phải nhập số tiền trước khi hoàn tất.")
             if rec.state == 'draft':
-                rec.state = 'confirmed'
+                rec.state = 'confirmed'          
     def action_post(self):
         for rec in self:
             if rec.state == 'confirmed':
@@ -71,14 +78,23 @@ class AccountingPaymentRequest(models.Model):
                 rec.state = 'done'
                 # Logic to mark the payment request as done
                 # This could involve updating related records, etc.
-                rec.proposal_sheet_id.state = 'done'
+                if rec.proposal_sheet_id:
+                    all_payments = self.env['account.payment.request'].search([
+                        ('proposal_sheet_id', '=', rec.proposal_sheet_id.id)
+                    ])
+                    all_done = all(p.state == 'done' for p in all_payments)
+                    # Tổng tiền của các phiếu chi đã done
+                    total_paid = sum(p.total for p in all_payments if p.state == 'done')
+                    # Nếu tổng đã chi >= tổng đề xuất -> done
+                    if all_done and total_paid >= rec.proposal_sheet_id.amount_total:  # total_amount là field tổng tiền PĐX
+                        rec.proposal_sheet_id.state = 'done'
                 rec.status_expense = 'paid'
                 rec.payment_person = self.env.user.partner_id
                 rec.date_payment = fields.Datetime.now()
                 rec.message_post(body="Yêu cầu chi tiền đã hoàn tất.")
                 expense = self.env['project.expense.custom'].search([('project_id', '=', rec.project_id.id)], limit=1)
-                if expense:
-                    expense._compute_costs()
+                # if expense:
+                #     expense._compute_costs()
                 dashboard = self.env['project.expense.dashboard'].search([('project_id', '=', rec.project_id.id)])
                 dashboard._compute_total_actual()
                 self.env['project.cash.flow'].create({

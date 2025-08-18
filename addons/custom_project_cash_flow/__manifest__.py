@@ -15,6 +15,11 @@ bao gồm dòng tiền thực tế liên quan đến các đối tác và chứn
         'security/ir.model.access.csv',
         'views/project_cash_flow_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'custom_project_cash_flow/static/src/xml/custom_list_render_cash_flow.xml',
+        ],
+    },
     'installable': True,
     'application': False,
     'license': 'LGPL-3',

@@ -30,22 +30,23 @@
                 </header>
                 <sheet>
                     <div class="oe_title">
-                        <h1>
+                        <h1 >
                             <field name="name" readonly="1"/>
+                            <field name="status_expense" widget="badge" decoration-success="status_expense == 'paid'" decoration-danger="status_expense == 'not yet'"/>
                         </h1>
                     </div>
                     <group col="2" name="Thông tin">
                         <group>
-                            <field name="proposal_sheet_id" readonly="1"/>
-                            <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="1"/>
+                            <field name="proposal_sheet_id" domain="[('project_id', '=', project_id)]"/>
+                            <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" />
                             <field name="payment_person" widget="many2one_avatar_user" readonly="1"/>
                             <field name="note"/>
                             <field name="currency_id" invisible="1"/>
                         </group>
                         <group>
-                            <field name="project_id" readonly="1"/>
-                            <field name="date" readonly="1"/>
-                            <field name="proposal_person_id" widget="many2one_avatar_user" readonly="1"/>
+                            <field name="project_id" />
+                            <field name="date" />
+                            <field name="proposal_person_id" widget="many2one_avatar_user" readonly="1" invisible="proposal_person_id == False"/>
                         </group>
                     </group>
                 </sheet>
@@ -54,47 +55,6 @@
                     <field name="message_ids" widget="mail_thread"/>
                 </div>
             </form>
-        </field>
-    </record>
-    <record id="view_account_payment_request_kanban" model="ir.ui.view">
-        <field name="name">account.payment.request.kanban</field>
-        <field name="model">account.payment.request</field>
-        <field name="arch" type="xml">
-            <kanban class="o_kanban_example" create="false">
-                <field name="state"/>
-                <field name="project_id"/>
-                <field name="date"/>
-                <field name="total"/>
-                <field name="currency_id"/>
-
-                <templates>
-                    <t t-name="kanban-box">
-                        <div class="oe_kanban_global_click o_kanban_record">
-                            <div class="o_kanban_details">
-                                <strong>
-                                    <field name="proposal_sheet_id"/>
-                                </strong>
-                                <div>
-                                    <span>Ngày:</span>
-                                    <field name="date"/>
-                                </div>
-                                <div>
-                                    <span>Dự án:</span>
-                                    <field name="project_id"/>
-                                </div>
-                                <div>
-                                    <span>Số tiền:</span>
-                                    <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                                </div>
-                                <div>
-                                    <span>Trạng thái:</span>
-                                    <field name="state" widget="badge"/>
-                                </div>
-                            </div>
-                        </div>
-                    </t>
-                </templates>
-            </kanban>
         </field>
     </record>
     <record id="view_account_payment_request_search" model="ir.ui.view">
@@ -121,19 +81,19 @@
         </field>
     </record>
     <record id="action_account_payment_request" model="ir.actions.act_window">
-        <field name="name">Phiếu chi</field>
+        <field name="name">Phiếu Chi</field>
         <field name="res_model">account.payment.request</field>
-        <field name="view_mode">tree,form,kanban</field>
+        <field name="view_mode">tree,form</field>
         <field name="context">{}</field>
         <field name="search_view_id" ref="view_account_payment_request_search"/>
     </record>
     <record id="action_account_payment_request_without_searchpanel" model="ir.actions.act_window">
-        <field name="name">Phiếu chi</field>
+        <field name="name">Phiếu Chi</field>
         <field name="res_model">account.payment.request</field>
         <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="view_account_payment_request_search_no_panel"/>
     </record>
 
-    <menuitem id="menu_accounting_payment_request" name="Phiếu chi" parent="custom_account_menu.menu_accounting_vouchers" action="action_account_payment_request"/>
+    <menuitem id="menu_accounting_payment_request" name="Phiếu Chi" parent="custom_account_menu.menu_accounting_vouchers" action="action_account_payment_request"/>
 
 </odoo>

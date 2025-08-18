@@ -1,0 +1,14 @@
+<odoo>
+    <data>
+        <record id="view_dashboard_estimate_lines_inherit" model="ir.ui.view">
+            <field name="name">project.expense.dashboard.estimate.lines.inherit</field>
+            <field name="model">project.expense.dashboard</field>
+            <field name="inherit_id" ref="project_expense_dashboard.view_project_expense_dashboard_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='cost_estimate_line_ids']/tree" position="inside">
+                    <field name="actual_cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

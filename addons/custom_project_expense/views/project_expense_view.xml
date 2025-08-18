@@ -30,7 +30,7 @@
                         <field name="total_not_spent" widget="monetary"/>
                     </group>
 
-                    <field name="payment_request_ids">
+                    <field name="payment_request_ids" widget="">
                         <tree create="false" edit="false" delete="false">
                             <field name="name"/>
                             <field name="proposal_sheet_id"/>

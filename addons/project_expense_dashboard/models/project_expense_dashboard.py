@@ -4,6 +4,7 @@ class ProjectExpenseDashboard(models.Model):
     _name = 'project.expense.dashboard'
     _description = 'Dashboard quản lý chi phí dự án'
     _inherit = ['mail.thread', 'mail.activity.mixin']
+    name = fields.Char(string="Tên dashboard", compute="_compute_name", store=True)
 
     project_id = fields.Many2one(
         'project.project',
@@ -24,27 +25,47 @@ class ProjectExpenseDashboard(models.Model):
     payment_request_count = fields.Integer(
     compute="_compute_payment_request_count",
 )
-    # proposal_material_line_ids = fields.One2many(
-    #     'proposal.material.line',
-    #     compute='_compute_proposal_material_lines',
-    #     string="Vật tư đã chi"
-    # )
+    payment_request_pending_count = fields.Integer(
+    compute="_compute_payment_request_count",
+)
+    total_actual_with_item = fields.Float(
+    string="Tổng chi có hạng mục",
+    compute="_compute_total_actual_split",
+    store=True
+)
+    total_actual_without_item = fields.Float(
+        string="Tổng chi không hạng mục",
+        compute="_compute_total_actual_split",   
+        store=True
+    )
 
-    # @api.depends('project_id')
-    # def _compute_proposal_material_lines(self):
-    #     for record in self:
-    #         if not record.project_id:
-    #             record.proposal_material_line_ids = False
-    #             continue
-    #         # Tìm phiếu đề xuất vật tư đã duyệt/hoàn tất trong dự án
-    #         proposal_sheets = self.env['proposal.sheet'].search([
-    #             ('project_id', '=', record.project_id.id),
-    #             ('state', '=',  'done')
-    #         ])
-    #         lines = self.env['proposal.material.line'].search([
-    #             ('sheet_id', 'in', proposal_sheets.ids)
-    #         ])
-    #         record.proposal_material_line_ids = lines
+    @api.depends(
+        'project_id',
+        'project_id.account_payment_request_ids.total',
+        'project_id.account_payment_request_ids.status_expense',
+        'project_id.account_payment_request_ids.cost_estimate_line_id',
+    )
+    def _compute_total_actual_split(self):
+        for record in self:
+            if record.project_id:
+                payments_with_item = record.project_id.account_payment_request_ids.filtered(
+                    lambda p: p.status_expense == 'paid' and p.cost_estimate_line_id
+                )
+                payments_without_item = record.project_id.account_payment_request_ids.filtered(
+                    lambda p: p.status_expense == 'paid' and not p.cost_estimate_line_id
+                )
+                record.total_actual_with_item = sum(payments_with_item.mapped('total'))
+                record.total_actual_without_item = sum(payments_without_item.mapped('total'))
+            else:
+                record.total_actual_with_item = 0.0
+                record.total_actual_without_item = 0.0
+    @api.depends('project_id.name')
+    def _compute_name(self):
+        for rec in self:
+            if rec.project_id:
+                rec.name = rec.project_id.display_name
+            else:
+                rec.name = ""
 
     @api.depends('project_id')
     def _compute_payment_request_count(self):
@@ -52,10 +73,15 @@ class ProjectExpenseDashboard(models.Model):
             if record.project_id:
                 record.payment_request_count = self.env['account.payment.request'].search_count([
                     ('project_id', '=', record.project_id.id),
-                    ('state', '=', 'done')
+                    ('status_expense', '=', 'paid')
+                ])
+                record.payment_request_pending_count = self.env['account.payment.request'].search_count([
+                    ('project_id', '=', record.project_id.id),
+                    ('status_expense', '=', 'not yet')
                 ])
             else:
                 record.payment_request_count = 0
+                record.payment_request_pending_count = 0
 
 
     @api.depends('cost_estimate_id','cost_estimate_id.total_cost')
@@ -98,8 +124,18 @@ class ProjectExpenseDashboard(models.Model):
             return self.env.ref('custom_account_payment_request.action_account_payment_request_without_searchpanel').read()[0] | {
                 'domain': [
                     ('project_id', '=', self.project_id.id),
-                    ('state', '=', 'done')
+                    ('status_expense', '=', 'paid')
                 ],
                 'context': {'default_project_id': self.project_id.id},
-                'target': 'new',
+                'target': 'current',
+            }
+    def action_view_payment_pending_requests(self):
+            self.ensure_one()
+            return self.env.ref('custom_account_payment_request.action_account_payment_request_without_searchpanel').read()[0] | {
+                'domain': [
+                    ('project_id', '=', self.project_id.id),
+                    ('status_expense', '=', 'not yet')
+                ],
+                'context': {'default_project_id': self.project_id.id},
+                'target': 'current',
             }
