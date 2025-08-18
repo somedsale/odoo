@@ -21,10 +21,10 @@
                         </div>
                     </div>
                     <div class="row">
-                        <Card name="Quotations" value="state.dashboardData.quotations" percentage="6"/>
-                        <Card name="Orders" value="state.dashboardData.orders" percentage="20"/>
-                        <Card name="Revenues" value="state.dashboardData.revenues" percentage="-3"/>
-                        <Card name="Average Order" value="state.dashboardData.avg_order" percentage="-10"/>
+                        <Card name="'Quotations'" value="state.dashboardData.quotations" percentage="6"/>
+                        <Card name="'Orders'" value="state.dashboardData.orders" percentage="20"/>
+                        <Card name="'Revenues'" value="state.dashboardData.revenues" percentage="-3"/>
+                        <Card name="'Average Order'" value="state.dashboardData.avg_order" percentage="-10"/>
                     </div>
                     <div class="row">
                         <div class="col-lg-6 m-0 p-0">
