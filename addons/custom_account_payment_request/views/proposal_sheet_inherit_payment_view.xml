@@ -44,6 +44,9 @@
                     </field>
                 </page>
             </xpath>
+            <xpath expr="//sheet/group/group/field[@name=&apos;amount_total&apos;]" position="after">
+                <field name="payment_total" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+            </xpath>
         </field>
     </record>
 </odoo>

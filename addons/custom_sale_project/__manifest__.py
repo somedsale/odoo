@@ -1,7 +1,7 @@
 {
     'name': 'Auto Create Project from Sale Order',
     'version': '1.0',
-    'depends': ['sale', 'project', 'base'],
+    'depends': ['sale', 'project', 'base', 'sale_project'],
     'data': [
         'security/ir.model.access.csv',
         'views/project_config_views.xml',

@@ -26,6 +26,7 @@ class ProposalExpenseLine(models.Model):
     readonly=True
 )
     estimate_price_total = fields.Float(string='Giá Dự Toán', compute='_compute_estimate_price_total', store=False, readonly=True)
+    currency_id = fields.Many2one('res.currency', string='Tính Giá', default=lambda self: self.env.company.currency_id)
     @api.depends('expense_id', 'sheet_id')
     def _compute_estimate_price_unit(self):
         for line in self:

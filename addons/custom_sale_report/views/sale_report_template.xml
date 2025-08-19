@@ -66,9 +66,11 @@
                             </tr>
                         </t>
                         <tr>
-                            <td colspan="2" style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">Tổng cộng</td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: left; font-weight: bold;">Tổng cộng</td>
                             <td style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
                                 <t t-esc="sum_total_amount" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                            <td  style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
                             </td>
                         </tr>
                         <t t-if="not contracts">
@@ -102,9 +104,11 @@
                             </tr>
                         </t>
                         <tr>
-                            <td colspan="2" style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">Tổng cộng</td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: left; font-weight: bold;">Tổng cộng</td>
                             <td style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
                                 <t t-esc="sum_total_amount" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                            <td  style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
                             </td>
                         </tr>
                         <t t-if="not contract_negotiations">
@@ -138,9 +142,11 @@
                             </tr>
                         </t>
                         <tr>
-                            <td colspan="2" style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">Tổng cộng</td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: left; font-weight: bold;">Tổng cộng</td>
                             <td style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
                                 <t t-esc="sum_total_amount" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                            <td  style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
                             </td>
                         </tr>
                         <t t-if="not project_prospects">
@@ -161,6 +167,7 @@
                 </div>
                 <div> 
             </div>
+        </div>
         </t>
     </template>
 
