@@ -37,6 +37,7 @@
                                         <field name="proposal_sheet_id" readonly="state =='confirmed' or state =='done'"/>
                                         <field name="proposal_person_id" widget="many2one_avatar_user" readonly="state =='confirmed' or state =='done'"/>
                                         <field name="note"/>
+                                        <field name="expense_type"  widget="select"/>
                                     </group>
                                 </group>
                             </sheet>

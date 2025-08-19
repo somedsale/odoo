@@ -16,6 +16,7 @@ class ProposalMaterialLine(models.Model):
     unit = fields.Many2one('uom.uom', string='Đơn Vị', required=True)
     price_unit = fields.Float(string='Đơn Giá', digits='Product Price')
     price_total = fields.Float(string='Thành tiền', compute='_compute_price_total', store=True)
+    currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
     vendor_id = fields.Many2one(
     'res.partner',
     string='Nhà Cung Cấp Đề Xuất',

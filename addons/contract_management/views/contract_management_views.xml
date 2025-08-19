@@ -19,7 +19,7 @@
                     <group>
                         <group>
                             <field name="sale_order_id" options="{&apos;no_create&apos;: True}" readonly="1"/>
-                            <field name="num_contract" required="1"/>
+                            <field name="num_contract"/>
                             <field name="partner_id" options="{&apos;no_create&apos;: True}" readonly="1"/>
                             <field name="project_id" readonly="1"/>
                             <field name="company_id" groups="base.group_multi_company"/>

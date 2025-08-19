@@ -89,7 +89,7 @@
         <field name="arch" type="xml">
             <form string="Chi tiết dòng dự toán">
                 <sheet>
-                    <group col="2" invisible="product_type == 'service'">
+                    <group col="2" >
                         <group string="Thông tin dự toán">
                             <field name="is_from_sale_order" invisible="1"/>
                             <field name="product_type" invisible="1"/>
@@ -119,13 +119,13 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Chi phí sản xuất" invisible="product_type == 'service'">
+                        <page string="Chi phí nguyên vật liệu" >
                             <field name="material_line_ids" context="{'default_estimate_line_id': active_id}" mode="tree,form">
                                 <tree editable="bottom" view_id="project_material.view_product_material_line_tree"/>
                                 <form view_id="project_material.view_product_material_line_form"/>
                             </field>
                         </page>
-                        <page string="Chi phí nhân công" invisible="product_type == 'service'">
+                        <page string="Chi phí nhân công" >
                             <field name="labor_expense_line_ids" context="{'default_estimate_line_id': active_id, 'default_type': 'labor'}" mode="tree,form">
                                 <tree editable="bottom">
                                     <field name="expense_id" context="{'default_type': 'labor'}" string="Chi phí nhân công" domain="[('type', '=', 'labor')]" />
@@ -145,7 +145,7 @@
                                 </form>
                             </field>
                         </page>
-                        <page string="Chi phí máy móc" invisible="product_type == 'service'">
+                        <page string="Chi phí khác" >
                             <field name="equipment_expense_line_ids" context="{'default_estimate_line_id': active_id, 'default_type': 'equipment'}" mode="tree,form">
                                 <tree editable="bottom">
                                     <field name="expense_id" context="{'default_type': 'equipment'}" domain="[('type', '=', 'equipment')]" string="Chi phí máy móc"/>
@@ -166,7 +166,7 @@
                             </field>
                         </page>
 
-                        <page string="Chi phí khác" invisible="product_type != 'service'">
+                        <!-- <page string="Chi phí khác" invisible="product_type != 'service'">
                             <field name="expense_line_ids" context="{'default_estimate_line_id': active_id, 'default_type': 'other'}" mode="tree,form">
                                 <tree editable="bottom">
                                     <field name="expense_id" context="{'default_type': 'other'}" domain="[('type', '=', 'other')]" string="Chi phí khác"/>
@@ -185,7 +185,7 @@
                                     </group>
                                 </form>
                             </field>
-                        </page>
+                        </page> -->
                     </notebook>
                 </sheet>
             </form>
