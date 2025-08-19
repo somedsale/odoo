@@ -11,7 +11,7 @@
             <xpath expr="//group/group/field[@name=&apos;active&apos;]" position="after">
                 <field name="partner_id" x-options="{'readOnly': true}"/>
             </xpath>
-            <xpath expr="//group/group/field[@name=&apos;milestone_id&apos;]" position="before">
+            <xpath expr="//group/group/field[@name=&apos;milestone_id&apos;]" position="replace">
                 <field name="milestone_id" invisible="1"/>
             </xpath>
             <xpath expr="//group/group/field[@name=&apos;user_ids&apos;]" position="replace">
@@ -51,6 +51,17 @@
             </field>
         </field>
     </record>
+    <record id="view_task_form_inherit_custom" model="ir.ui.view">
+        <field name="name">project.task.form.inherit.custom</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="sale_project.view_sale_project_inherit_form"/>
+        <field name="arch" type="xml">
+            <!-- Ẩn trường sale_line_id -->
+            <xpath expr="//group/group/field[@name=&apos;sale_line_id&apos;]" position="replace">
+                <field name="sale_line_id" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
     <record id="view_project_task_kanban_inherit_progress" model="ir.ui.view">
         <field name="name">project.task.kanban.progress.bar</field>
         <field name="model">project.task</field>
@@ -67,27 +78,31 @@
                     <t t-set="deadline_date" t-value="new Date(record.date_deadline.raw_value)"/>
                     <t t-set="deadline_str" t-value="deadline_date.toLocaleString(&apos;vi-VN&apos;, { hour: &apos;2-digit&apos;, minute: &apos;2-digit&apos;, day: &apos;2-digit&apos;, month: &apos;2-digit&apos;, year: &apos;numeric&apos; })"/>
                     <div t-if="record.deadline_status.raw_value == &apos;overdue&apos;" style="color: red; font-weight: bold; font-size: 12px;">
-        ⏰ Quá hạn (hạn: <t t-esc="deadline_str"/>)
-    </div>
+        ⏰ Quá hạn (hạn: <t t-esc="deadline_str"/>
+)
+                    </div>
                     <div t-if="record.deadline_status.raw_value == &apos;upcoming&apos;" style="color: orange; font-size: 12px;">
-        ⚠️ Sắp hết hạn (hạn: <t t-esc="deadline_str"/>)
-    </div>
+        ⚠️ Sắp hết hạn (hạn: <t t-esc="deadline_str"/>
+)
+                    </div>
                     <div t-if="record.deadline_status.raw_value == &apos;ontrack&apos;" style="color: green; font-size: 12px;">
-        ✅ Còn thời gian (hạn: <t t-esc="deadline_str"/>)
-    </div>
+        ✅ Còn thời gian (hạn: <t t-esc="deadline_str"/>
+)
+                    </div>
                 </t>
                 <t t-set="percent" t-value="record.completion_percent.raw_value"/>
                 <t t-set="color">
-                    <t t-if="percent &lt; 30">#f44336</t><!-- Đỏ -->
-                    <t t-elif="percent &lt;= 70">#ff9800</t><!-- Cam -->
-                    <t t-else="">#4caf50</t><!-- Xanh -->
+                    <t t-if="percent &lt; 30">#f44336</t>                    <!-- Đỏ -->
+                    <t t-elif="percent &lt;= 70">#ff9800</t>                    <!-- Cam -->
+                    <t t-else="">#4caf50</t>                    <!-- Xanh -->
                 </t>
                 <div class="oe_kanban_progressbar" style="margin-top: 8px;">
                     <div style="width: 100%; height: 10px; background-color: #e0e0e0; border-radius: 5px; overflow: hidden;">
                         <div t-att-style="&apos;width: &apos; + percent + &apos;%&apos; + &apos;; height: 100%; background-color: &apos; + color + &apos;; transition: width 0.3s;&apos;"/>
                     </div>
                     <div style="font-size: 11px; color: #555; margin-top: 2px;">
-                        <t t-esc="percent"/>%
+                        <t t-esc="percent"/>
+%
                     </div>
                 </div>
             </xpath>
