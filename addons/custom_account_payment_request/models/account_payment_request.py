@@ -17,6 +17,11 @@ class AccountingPaymentRequest(models.Model):
     receive_person = fields.Many2one('res.partner', string="Người nhận tiền")
     payment_person = fields.Many2one('res.partner', string="Người tạo chi")
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
+    expense_type = fields.Selection([
+        ('material', 'Nguyên vật liệu'),
+        ('labor', 'Nhân công'),
+        ('manufacturing', 'Sản xuất chung'),
+    ], string="Loại chi phí", default='material',required=True)
     payment_type = fields.Selection([
         ('cash', 'Tiền mặt'),
         ('bank', 'Chuyển khoản'),

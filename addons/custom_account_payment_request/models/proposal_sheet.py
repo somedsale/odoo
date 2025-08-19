@@ -13,3 +13,5 @@ class ProposalSheet(models.Model):
     def _compute_payment_total(self):
         for record in self:
             record.payment_total = sum(record.payment_ids.mapped('total'))
+
+    currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)

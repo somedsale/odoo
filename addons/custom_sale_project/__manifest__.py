@@ -3,6 +3,7 @@
     'version': '1.0',
     'depends': ['sale', 'project', 'base', 'sale_project'],
     'data': [
+        'data/cron_data.xml',
         'security/ir.model.access.csv',
         'views/project_config_views.xml',
         'views/project_task_inherit_view.xml',

@@ -2,7 +2,8 @@
 from odoo import models, fields, api, _
 from datetime import date, timedelta, datetime
 from odoo.exceptions import UserError
-
+import logging
+_logger = logging.getLogger(__name__)
 class ProjectTask(models.Model):
     _inherit = ['project.task']
     name = fields.Char(string='Nhiệm vụ', required=True)
@@ -29,7 +30,12 @@ class ProjectTask(models.Model):
         ('ontrack', 'Còn thời gian')
     ], string="Trạng thái Deadline", compute="_compute_deadline_status", store=True, tracking=True)
     can_edit = fields.Boolean(compute='_compute_can_edit')
-
+    @api.model
+    def _cron_update_deadline_status(self):
+        _logger.info('Starting cron job to update deadline status')
+        tasks = self.search([("date_deadline", "!=", False)])
+        tasks._compute_deadline_status()
+        _logger.info(f'Updated deadline status for {len(tasks)} tasks')
     @api.depends()
     def _compute_can_edit(self):
         for rec in self:
