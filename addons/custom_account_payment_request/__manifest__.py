@@ -11,6 +11,11 @@
         'views/account_payment_request_views.xml',
         'views/proposal_sheet_inherit_payment_view.xml'
     ],
+    'assets': {
+        'web.assets_backend': [
+            'custom_account_payment_request/static/src/css/list_view.css',
+        ],
+    },
     'installable': True,
     'auto_install': False,
 }

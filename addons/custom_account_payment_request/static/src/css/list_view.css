@@ -1,0 +1,26 @@
+/* Mặc định: tất cả cột đều căn giữa */
+.o_list_table thead th,
+.o_list_table tbody td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Cột tiền: header vẫn giữa, value căn phải */
+.o_list_table th[data-name="total"] {
+  text-align: center; /* giữ tiêu đề giữa */
+}
+
+.o_list_table td[data-name="total"] {
+  text-align: right !important; /* giá trị sang phải */
+}
+.project_value {
+  text-align: left !important; /* giá trị sang trái */
+}
+.o_list_number_th {
+  text-align: center !important;
+}
+.o_list_table {
+  border-collapse: collapse !important; /* gọn gàng */
+  table-layout: auto !important; /* ✅ để cột tự co giãn */
+  width: 100% !important; /* vẫn full width table */
+}
