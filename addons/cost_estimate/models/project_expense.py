@@ -8,8 +8,8 @@ class ProjectExpense(models.Model):
     default_unit = fields.Many2one('uom.uom', string='Đơn vị mặc định', required=True)
     type = fields.Selection([
     ('labor', 'Chi phí nhân công'),
-    ('equipment', 'Chi phí máy móc'),
-    ('other', 'Chi phí khác'),
+    # ('equipment', 'Chi phí máy móc'),
+    ('other', 'Chi phí sản xuất chung'),
 ], default='other', string='Loại chi phí', required=True)
     price_unit = fields.Float(string='Đơn giá', digits='Product Price', default=0.0)
     @api.model

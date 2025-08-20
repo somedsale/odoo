@@ -20,7 +20,7 @@
                 .card {
                     flex: 1;
                     background: #fff;
-                                                                                                                                                                                                                    <!-- border-radius: 10px; -->
+                                                                                                                                                                                                                                                    <!-- border-radius: 10px; -->
                     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
                 }
 
@@ -148,13 +148,12 @@
                         <th rowspan="2">Dự án</th>
                         <th rowspan="2">Số HĐ</th>
                         <th rowspan="2">Doanh thu</th>
-                        <th colspan="5">Chi phí</th>
+                        <th colspan="4">Chi phí</th>
                         <th rowspan="2">Lãi / Lỗ</th>
                     </tr>
                     <tr>
                         <th>Vật tư</th>
                         <th>Nhân công</th>
-                        <th>Máy móc</th>
                         <th>Sản xuất chung</th>
                         <th>Tổng chi phí</th>
                     </tr>
@@ -181,9 +180,6 @@
                             </td>
                             <td class="money">
                                 <t t-esc="'{:,.0f}'.format(doc['labor_cost'] or 0).replace(',', '.')"/>
-                            </td>
-                            <td class="money">
-                                <t t-esc="'{:,.0f}'.format(doc['machine_cost'] or 0).replace(',', '.')"/>
                             </td>
                             <td class="money">
                                 <t t-esc="'{:,.0f}'.format(doc['other_cost'] or 0).replace(',', '.')"/>

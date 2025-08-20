@@ -8,8 +8,8 @@
                 <field name="name" string="Mã phiếu chi"/>
                 <field name="proposal_sheet_id" string="Phiếu đề xuất"/>
                 <field name ="project_id" string="Dự án" class="project_value"/>
-                <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="1"/>
                 <field name="date"/>
+                <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="1" sum="Tổng"/>
                 <field name="state" widget="badge" decoration-muted="state == 'draft'" decoration-primary="state == 'confirmed'" decoration-success="state == 'done'"/>
                 <field name="status_expense" widget="badge" string="Trạng thái chi tiền" decoration-danger="status_expense == 'not yet'" decoration-success="status_expense == 'paid'"/>
             </tree>
