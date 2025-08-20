@@ -1,10 +1,11 @@
 <odoo>
-    <record id="view_users_form_inherit_chatter_position_inline" model="ir.ui.view">
-        <field name="name">res.users.form.inherit.chatter.position.inline</field>
+    <record id="view_res_users_form_chatter_position" model="ir.ui.view">
+        <field name="name">res.users.form.chatter.position.user</field>
         <field name="model">res.users</field>
-        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="inherit_id" ref="base.view_users_form_simple_modif"/>
+        <!-- form đơn giản cho user -->
         <field name="arch" type="xml">
-            <field name="action_id" position="after">
+            <field name="tz" position="after">
                 <field name="chatter_position" widget="radio"/>
             </field>
         </field>

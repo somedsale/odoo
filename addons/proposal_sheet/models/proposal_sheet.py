@@ -233,7 +233,7 @@ class ProposalSheet(models.Model):
         for record in self:
             payment_request = self.env['account.payment.request'].create({
                 'proposal_sheet_id': record.id,
-                # 'total': record.amount_total,
+                'total': record.amount_total,
                 'date': record.create_date,
                 'project_id': record.project_id.id,
                 'proposal_person_id': record.requested_by.id,

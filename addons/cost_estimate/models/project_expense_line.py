@@ -25,7 +25,7 @@ class ProjectExpenseLine(models.Model):
     )
     type = fields.Selection([
     ('labor', 'Nhân công'),
-    ('equipment', 'Máy móc'),
+    # ('equipment', 'Máy móc'),
     ('other', 'Chi phí khác')
 ], string="Loại chi phí", default=lambda self: self.env.context.get('default_type'), store=True)
 
