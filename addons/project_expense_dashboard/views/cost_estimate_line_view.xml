@@ -6,7 +6,8 @@
             <field name="inherit_id" ref="project_expense_dashboard.view_project_expense_dashboard_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='cost_estimate_line_ids']/tree" position="inside">
-                    <field name="actual_cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    <field name="actual_cost" string="Thành tiền thực tế" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng cộng"/>
+                    <field name="difference_cost" string="Chênh lệch" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng cộng"/>
                 </xpath>
             </field>
         </record>

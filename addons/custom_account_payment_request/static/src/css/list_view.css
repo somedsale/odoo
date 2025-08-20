@@ -19,8 +19,6 @@
 .o_list_number_th {
   text-align: center !important;
 }
-.o_list_table {
-  border-collapse: collapse !important; /* gọn gàng */
-  table-layout: auto !important; /* ✅ để cột tự co giãn */
-  width: 100% !important; /* vẫn full width table */
+.o_field_x2many_list_row_add {
+  text-align: left !important;
 }

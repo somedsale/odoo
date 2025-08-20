@@ -14,7 +14,7 @@ class CostEstimateLine(models.Model):
     unit = fields.Many2one('uom.uom', string='Đơn vị')
     price_unit = fields.Float(string='Đơn giá', digits=(16, 0), default=0.0)
     price_subtotal = fields.Float(
-        string='Thành tiền',
+        string='Thành tiền dự toán',
         compute='_compute_price_subtotal',
         store=True,
         digits=(16, 0)

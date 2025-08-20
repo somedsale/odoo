@@ -7,6 +7,11 @@ class CostEstimateLine(models.Model):
         store=False
     )
     name = fields.Char(compute="_compute_name", store=True)
+    difference_cost = fields.Float(
+        string="Chênh lệch",
+        compute="_compute_difference_cost",
+        store=False
+    )
 
     @api.depends('cost_estimate_id.project_id.name', 'product_id', 'quantity')
     def _compute_name(self):
@@ -22,3 +27,7 @@ class CostEstimateLine(models.Model):
                 ('state', '=', 'done'),
             ])
             line.actual_cost = sum(p.total for p in payments)
+    @api.depends('actual_cost', 'price_subtotal')
+    def _compute_difference_cost(self):
+        for line in self:
+            line.difference_cost = (line.actual_cost or 0.0) - (line.price_subtotal or 0.0)
