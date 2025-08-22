@@ -10,6 +10,8 @@
                 <field name="project_id"/>
                 <field name="num_contract"/>
                 <field name="contract_value" sum="1"/>
+                <field name="settlement_value" sum="1"/>
+                <field name="invoice_amount" sum="1"/>
                 <field name="revenue" sum="1"/>
                 <field name="material_cost" sum="1"/>
                 <field name="labor_cost" sum="1"/>
@@ -32,6 +34,8 @@
                             <field name="project_id" readonly="1"/>
                             <field name="num_contract" readonly="1"/>
                             <field name="contract_value" readonly="1"/>
+                            <field name="settlement_value" />
+                            <field name="invoice_amount" />
                             <field name ="currency_id" invisible="1"/>
                         </group>
                         <group string="Chi phí">

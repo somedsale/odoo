@@ -15,12 +15,14 @@ class ProjectProfitLost(models.Model):
 
     num_contract = fields.Char(string='Số hợp đồng')
     contract_value = fields.Monetary(string='Giá trị hợp đồng', currency_field='currency_id')
+    settlement_value = fields.Monetary(string='Giá trị quyết toán', currency_field='currency_id')  
+    invoice_amount = fields.Monetary(string='Số tiền hóa đơn', currency_field='currency_id', store=True, compute="_compute_fill_invoice_amount")  
     revenue = fields.Monetary(string='Số tiền đã thanh toán', currency_field='currency_id',  store=True)
     material_cost = fields.Monetary(string='Chi phí nguyên vật liệu (VT)', currency_field='currency_id', store=True)
     labor_cost = fields.Monetary(string='Chi phí nhân công', currency_field='currency_id', store=True)
     other_cost = fields.Monetary(string='Chi phí khác (SXC)', currency_field='currency_id', store=True)
     expense = fields.Monetary(string='Tổng chi phí', currency_field='currency_id',  store=True)
-    profit = fields.Monetary(string='Lợi nhuận', currency_field='currency_id',  store=True)
+    profit = fields.Monetary(string='Lãi/Lỗ', currency_field='currency_id',  store=True, compute="_compute_profit")
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
 
     detail_ids = fields.One2many("project.profit.lost.detail", "profit_lost_id", string="Chi tiết")
@@ -32,8 +34,20 @@ class ProjectProfitLost(models.Model):
                 rec.name = f"Chi tiết lời lỗ công trình - {rec.project_id.name}"
             else:
                 rec.name = "Chi tiết lời lỗ công trình"
-
-    
+    @api.depends("settlement_value")
+    def _compute_profit(self):
+        for rec in self:
+            if rec.settlement_value:
+                rec.profit = rec.settlement_value - rec.expense
+            else:
+                rec.profit = 0
+    @api.depends("settlement_value")
+    def _compute_fill_invoice_amount(self):
+        for rec in self:
+            if rec.settlement_value:
+                rec.invoice_amount = rec.settlement_value
+            else:
+                rec.invoice_amount = 0
 
     def _recompute_values(self):
         for rec in self:
@@ -80,7 +94,10 @@ class ProjectProfitLost(models.Model):
                 rec.detail_ids.create(vals)
 
             # Lợi nhuận
-            rec.profit = rec.revenue - rec.expense
+            if rec.settlement_value:
+                rec.profit = rec.settlement_value - rec.expense
+            else:
+                rec.profit = 0
     @api.model
     def create_or_update(self, project_id):
         rec = self.search([('project_id', '=', project_id)], limit=1)
