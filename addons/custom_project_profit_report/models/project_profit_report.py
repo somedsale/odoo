@@ -14,6 +14,7 @@ class ProjectProfitReport(models.Model):
     expense = fields.Monetary(string='Chi phí', currency_field='currency_id' )
     profit = fields.Monetary(string='Lợi nhuận', currency_field='currency_id' )
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
+    contract_value = fields.Monetary(string='Giá trị hợp đồng', currency_field='currency_id')
 
     @api.model
     def _compute_records(self):
@@ -24,13 +25,19 @@ class ProjectProfitReport(models.Model):
             revenue = 0.0
             expense = 0.0
             contract = self.env['contract.management'].search([('project_id','=',p.id)], limit=1)
-            if contract and contract.sale_order_id:
-                revenue = contract.sale_order_id.amount_total
+            # if contract and contract.sale_order_id:
+            #     revenue = contract.sale_order_id.amount_total
+            receipt = self.env['account.receipt'].search([
+                ('project_id', '=', p.id),
+                ('state', '=', 'posted')
+            ])
+            revenue = sum(receipt.mapped('amount'))
             payments = self.env['account.payment.request'].search([
             ('project_id', '=', p.id),
             ('status_expense', '=', 'paid')
             ])
             num_contract = contract.num_contract if contract else ''
+            contract_value = contract.contract_value if contract else 0.0
             expense = sum(payments.mapped('total'))
             material_cost = sum(payments.filtered(lambda x: x.expense_type == 'material').mapped('total'))
             labor_cost = sum(payments.filtered(lambda x: x.expense_type == 'labor').mapped('total'))
@@ -46,5 +53,8 @@ class ProjectProfitReport(models.Model):
                 'other_cost': other_cost,
                 'expense': expense,
                 'profit': profit,
+                'contract_value': contract_value,
             })
         return records
+    
+   

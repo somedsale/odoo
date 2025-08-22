@@ -1,0 +1,105 @@
+<odoo>
+    <record id="view_project_profit_lost_tree" model="ir.ui.view">
+        <field name="name">project.profit.lost.tree</field>
+        <field name="model">project.profit.lost</field>
+        <field name="arch" type="xml">
+            <tree string="Phân tích lời lỗ công trình" decoration-info="is_highlighted" decoration-bf="is_highlighted">
+                <header>
+                    <button name="action_highlight" type="object" string="Highlight"/>
+                </header>
+                <field name="project_id"/>
+                <field name="num_contract"/>
+                <field name="contract_value" sum="1"/>
+                <field name="revenue" sum="1"/>
+                <field name="material_cost" sum="1"/>
+                <field name="labor_cost" sum="1"/>
+                <field name="other_cost" sum="1"/>
+                <field name="expense" sum="1"/>
+                <field name="profit" sum="1"/>
+                <field name ="currency_id" optional="hide"/>
+                <field name="is_highlighted" invisible="1" nolabel="1"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_project_profit_lost_form" model="ir.ui.view">
+        <field name="name">project.profit.lost.form</field>
+        <field name="model">project.profit.lost</field>
+        <field name="arch" type="xml">
+            <form string="Phân tích lời lỗ công trình">
+                <sheet>
+                    <group col="3">
+                        <group string="Thông tin">
+                            <field name="project_id" readonly="1"/>
+                            <field name="num_contract" readonly="1"/>
+                            <field name="contract_value" readonly="1"/>
+                            <field name ="currency_id" invisible="1"/>
+                        </group>
+                        <group string="Chi phí">
+                            <field name="material_cost" readonly="1"/>
+                            <field name="labor_cost" readonly="1"/>
+                            <field name="other_cost" readonly="1"/>
+                        </group>
+                        <group string="Kết quả">
+                            <field name="revenue" readonly="1"/>
+                            <field name="expense" readonly="1"/>
+                            <field name="profit" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Chi tiết chi">
+                            <field name="detail_ids" readonly="1">
+                                <tree >
+                                    <field name="date"/>
+                                    <field name="material_amount" sum="1"/>
+                                    <field name="labor_amount" sum="1"/>
+                                    <field name="other_amount" sum="1"/>
+                                    <field name ="total_amount" sum="1"/>
+                                    <field name="description" readonly="0"/>
+                                    <field name="currency_id" nolabel="1" invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_project_profit_lost_pivot" model="ir.ui.view">
+        <field name="name">project.profit.lost.pivot</field>
+        <field name="model">project.profit.lost</field>
+        <field name="arch" type="xml">
+            <pivot string="Phân tích lời lỗ công trình">
+                <field name="project_id" type="row"/>
+                <field name="profit" type="measure"/>
+                <field name="revenue" type="measure"/>
+                <field name="expense" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- <record id="action_project_profit_lost" model="ir.actions.act_window">
+        <field name="name">Phân tích lời lỗ</field>
+        <field name="res_model">project.profit.lost</field>
+        <field name="view_mode">tree,form,pivot</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Nhấn vào đây để tạo mới một bản ghi phân tích lời lỗ công trình.
+            </p>
+        </field>
+    </record> -->
+    <record id="action_open_project_profit_lost" model="ir.actions.server">
+        <field name="name">Mở phân tích lời lỗ</field>
+        <field name="model_id" ref="model_project_profit_lost"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_profit_lost()</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Nhấn vào đây để tạo mới một bản ghi phân tích lời lỗ công trình.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_project_profit_lost_root" name="Lời lỗ công trình" parent="custom_account_menu.menu_accounting_project"/>
+    <menuitem id="menu_project_profit_lost" name="Phân tích lời lỗ công trình" parent="menu_project_profit_lost_root" action="action_open_project_profit_lost"/>
+</odoo>

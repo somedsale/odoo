@@ -1,10 +1,26 @@
 <odoo>
-    <template id="custom_project_profit_report.project_profit_template">
+    <template id="custom_project_profit_layout">
         <t t-call="web.html_container">
+            <t t-set="o" t-value="o or doc"/>
+            <div class="header"></div>
+            <div class="article" style="font-family: Times New Roman; font-size: 11pt; line-height: 1.5;">
+                <t t-raw="0"/>
+                <!-- Nội dung chính của báo cáo -->
+            </div>
+            <div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt;">
+                <p>
+                    <span class="page"/>
+                </p>
+            </div>
+        </t>
+    </template>
+    <template id="custom_project_profit_report.project_profit_template">
+        <t t-call="custom_project_profit_report.custom_project_profit_layout">
             <style>
-                @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&amp;display=swap');
-
-                
+                @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&amp;display=swap'); 
+                *{
+                    font-family: 'Poppins', sans-serif;
+                }
                 h1 {
                     padding-top: 20px;
                     font-weight: bold;
@@ -19,8 +35,7 @@
 
                 .card {
                     flex: 1;
-                    background: #fff;
-                                                                                                                                                                                                                                                    <!-- border-radius: 10px; -->
+                    background: #fff;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              <!-- border-radius: 10px; -->
                     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
                 }
 
@@ -100,7 +115,7 @@
             <h1 style="text-align:center; margin-bottom:20px;">BÁO CÁO TỔNG HỢP LÃI LỖ CÁC CÔNG TRÌNH</h1>
 
             <!-- Dashboard Cards -->
-            <div class="cards">
+            <!-- <div class="cards">
                 <div class="card">
                     <div class="card-header">
                         <h3>Tổng số dự án</h3>
@@ -138,7 +153,7 @@
                         <t t-esc="'{:,.0f}'.format(sum(d['profit'] for d in docs)).replace(',', '.')"/>
                     </p>
                 </div>
-            </div>
+            </div> -->
 
             <!-- Table Report -->
             <table class="report-table">
@@ -146,13 +161,15 @@
                     <tr>
                         <th rowspan="2">STT</th>
                         <th rowspan="2">Dự án</th>
-                        <th rowspan="2">Số HĐ</th>
-                        <th rowspan="2">Doanh thu</th>
+                        <th colspan="2">Hợp đồng</th>
+                        <th rowspan="2">Số tiền đã thanh toán</th>
                         <th colspan="4">Chi phí</th>
                         <th rowspan="2">Lãi / Lỗ</th>
                     </tr>
                     <tr>
-                        <th>Vật tư</th>
+                        <th>Số HĐ</th>
+                        <th>Giá trị HĐ</th>
+                        <th>Nguyên vật liệu</th>
                         <th>Nhân công</th>
                         <th>Sản xuất chung</th>
                         <th>Tổng chi phí</th>
@@ -166,11 +183,14 @@
                                 <t t-esc="counter"/>
                                 <t t-set="counter" t-value="counter + 1"/>
                             </td>
-                            <td>
+                            <td class="text-start">
                                 <t t-esc="doc['project_id'].name"/>
                             </td>
-                            <td>
+                            <td class="text-start">
                                 <t t-esc="doc['num_contract']"/>
+                            </td>
+                            <td class="money">
+                                <t t-esc="'{:,.0f}'.format(doc['contract_value']).replace(',', '.')"/>
                             </td>
                             <td class="money">
                                 <t t-esc="'{:,.0f}'.format(doc['revenue']).replace(',', '.')"/>
@@ -193,6 +213,32 @@
                         </tr>
                     </t>
                 </tbody>
+                <tfoot>
+                    <tr style="font-weight:bold;">
+                        <td colspan="3" style="text-align:center;">Tổng cộng</td>
+                        <td class="money">
+                            <t t-esc="'{:,.0f}'.format(sum(d['contract_value'] for d in docs)).replace(',', '.')"/>
+                        </td>
+                        <td class="money">
+                            <t t-esc="'{:,.0f}'.format(sum(d['revenue'] for d in docs)).replace(',', '.')"/>
+                        </td>
+                        <td class="money">
+                            <t t-esc="'{:,.0f}'.format(sum(d['material_cost'] or 0 for d in docs)).replace(',', '.')"/>
+                        </td>
+                        <td class="money">
+                            <t t-esc="'{:,.0f}'.format(sum(d['labor_cost'] or 0 for d in docs)).replace(',', '.')"/>
+                        </td>
+                        <td class="money">
+                            <t t-esc="'{:,.0f}'.format(sum(d['other_cost'] or 0 for d in docs)).replace(',', '.')"/>
+                        </td>
+                        <td class="money">
+                            <t t-esc="'{:,.0f}'.format(sum(d['expense'] for d in docs)).replace(',', '.')"/>
+                        </td>
+                        <td class="money">
+                            <t t-esc="'{:,.0f}'.format(sum(d['profit'] for d in docs)).replace(',', '.')"/>
+                        </td>
+                    </tr>
+                </tfoot>
             </table>
         </t>
     </template>

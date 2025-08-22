@@ -28,7 +28,8 @@ class CostEstimateLine(models.Model):
     expense_line_ids = fields.One2many(
         'project.expense.line',
         'estimate_line_id',
-        string='Dòng chi phí khác'
+        string='Dòng chi phí khác',
+        domain=[('type', '=', 'other')]
 )
     labor_expense_line_ids = fields.One2many(
     'project.expense.line', 'estimate_line_id',

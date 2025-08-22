@@ -89,7 +89,10 @@ class ProjectExpenseDashboard(models.Model):
         for record in self:
             record.total_estimate = record.cost_estimate_id.total_cost if record.cost_estimate_id and hasattr(record.cost_estimate_id, 'total_cost') else 0.0
 
-    @api.depends('project_id')
+    @api.depends( 'project_id',
+    'project_id.account_payment_request_ids.state',
+    'project_id.account_payment_request_ids.total',
+    )
     def _compute_total_actual(self):
         ProjectRequest = self.env['account.payment.request']
         for record in self:
