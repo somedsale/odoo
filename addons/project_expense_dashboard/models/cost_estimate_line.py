@@ -15,8 +15,15 @@ class CostEstimateLine(models.Model):
 
     @api.depends('cost_estimate_id.project_id.name', 'product_id', 'quantity')
     def _compute_name(self):
-        for line in self:
-            line.name = f"[{line.cost_estimate_id.project_id.name}] {line.product_id.display_name or ''} ({line.quantity or 0})"
+        for rec in self:
+            stt = 0
+            if rec.cost_estimate_id and rec.id:
+                lines = rec.cost_estimate_id.line_ids.sorted(lambda l: l.create_date or l.id)
+                for idx, line in enumerate(lines, start=1):
+                    if line.id == rec.id:
+                        stt = idx
+                        break
+            rec.name = f"{stt}. [{rec.cost_estimate_id.project_id.name}] {rec.product_id.display_name or ''}"
 
     @api.depends('product_id', 'quantity')
     def _compute_actual_cost(self):

@@ -65,9 +65,9 @@
             <search string="Tìm kiếm phiếu chi">
                 <filter string="Đã xác nhận" name="confirmed" domain="[('state','=','confirmed')]" />
                 <searchpanel>
-                    <field name="project_id" string="Dự án" />
-                    <field name="state" string="Trạng thái" icon="fa-bullseye" select="multi"/>
-                    <field name="status_expense" string="Trạng thái chi" icon="fa-bullseye" select="multi"/>
+                    <field name="project_id" string="Dự án" enable_counters="1" />
+                    <field name="state" string="Trạng thái" icon="fa-bullseye" select="multi" enable_counters="1"/>
+                    <field name="status_expense" string="Trạng thái chi" icon="fa-bullseye" select="multi" enable_counters="1"/>
                 </searchpanel>
             </search>
         </field>
