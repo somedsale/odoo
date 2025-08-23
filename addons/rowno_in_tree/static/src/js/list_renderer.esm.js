@@ -10,7 +10,7 @@ patch(ListRenderer.prototype, {
 
     if (!$(child_table.firstChild).hasClass("o_list_row_count_sheliya")) {
       const a = $(child_table).prepend(
-        '<th class="o_list_row_number_header o_list_row_count_sheliya" style="width: 40px !important;text-align:center !important;">'
+        '<th class="o_list_row_number_header o_list_row_count_sheliya" style="width: 40px !important;text-align:center !important;  min-width: 40px !important;">'
       );
       a.find("th.o_list_row_count_sheliya").html("#");
     }
