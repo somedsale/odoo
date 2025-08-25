@@ -6,7 +6,9 @@ class PurchaseContract(models.Model):
 
     name = fields.Char(string='Số hợp đồng', required=True)
     supplier_id = fields.Many2one('res.partner', string='Nhà cung cấp', required=True, domain=[('supplier_rank', '>', 0)])
+    supplier_debt_summary_id = fields.Many2one('supplier.debt.summary', string='Tổng hợp công nợ nhà cung cấp')
     project_id = fields.Many2one('project.project', string='Dự án')
+    description = fields.Text(string='Diễn giải')
     date_signed = fields.Date(string='Ngày ký', default=fields.Date.today)
     date_start = fields.Date(string='Ngày bắt đầu')
     date_end = fields.Date(string='Ngày kết thúc')
@@ -19,6 +21,7 @@ class PurchaseContract(models.Model):
     account_payment_request_ids = fields.One2many('account.payment.request', 'purchase_contract_id', string='Phiếu chi')
     due_amount = fields.Monetary(string='Số tiền còn nợ', compute='_compute_due_amount', store=True)
     invoice_amount = fields.Monetary(string='Tổng giá trị hóa đơn', compute='_compute_due_amount', store=True)
+    note = fields.Text(string='Ghi chú')
     state = fields.Selection([
         ('draft', 'Nháp'),
         ('confirmed', 'Xác nhận'),
@@ -45,6 +48,18 @@ class PurchaseContract(models.Model):
 
     def action_cancel(self):
         self.write({'state': 'cancel'})
+    def action_report(self):
+        supplier_id = self.supplier_id.id  # Lấy ID của nhà cung cấp từ bản ghi hiện tại
+        contracts = self.env['purchase.contract'].search([('supplier_id', '=', supplier_id)])
+        return self.env.ref('custom_purchase_contract.action_purchase_report_html').report_action(contracts, data={})
+    def _get_report_values(self, docids, data=None):
+        docs = self.env['purchase.contract'].browse(docids)
+        return {
+            'doc_ids': docids,
+            'doc_model': 'purchase.contract',
+            'docs': docs,
+            'data': data,
+        }
 # Model cho hồ sơ quyết toán
 class PurchaseContractSettlement(models.Model):
     _name = 'purchase.contract.settlement'
