@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree view cho danh sách tổng hợp -->
+    <record id="view_supplier_debt_summary_tree" model="ir.ui.view">
+        <field name="name">supplier.debt.summary.tree</field>
+        <field name="model">supplier.debt.summary</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="supplier_id"/>
+                <field name="project_id"/>
+                <field name="purchase_contract_id"/>
+                <field name="paid_amount" sum="Tổng đã trả" widget="monetary"/>
+                <field name="due_amount" sum="Tổng còn nợ" widget="monetary"/>
+                <field name="currency_id" invisible="1" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form view để nhập dữ liệu -->
+    <record id="view_supplier_debt_summary_form" model="ir.ui.view">
+        <field name="name">supplier.debt.summary.form</field>
+        <field name="model">supplier.debt.summary</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="supplier_id"/>
+                        <field name="project_id"/>
+                        <field name="purchase_contract_id"/>
+                        <field name="paid_amount" readonly="1" widget="monetary"/>
+                        <field name="due_amount" readonly="1" widget="monetary"/>
+                        <field name="currency_id" invisible="1"/>
+                    </group>
+               
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action để mở view -->
+    <record id="action_supplier_debt_summary" model="ir.actions.act_window">
+        <field name="name">Tổng hợp công nợ phải trả</field>
+        <field name="res_model">supplier.debt.summary</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

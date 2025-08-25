@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_purchase_contract" 
+              name="Công nợ phải trả tổng hợp" 
+              parent="custom_account_menu.menu_accounting_custom_root" 
+              action="action_purchase_contract" 
+              sequence="10"/>
+</odoo>

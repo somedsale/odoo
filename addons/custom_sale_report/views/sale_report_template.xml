@@ -1,7 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="sale_report_template">
+    <record id="custom_sale_report_a4_portrait" model="report.paperformat">
+        <field name="name">Custom Sale Report A4 Portrait</field>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">30</field><!-- Điều chỉnh từ 40mm xuống 30mm -->
+        <field name="margin_bottom">30</field><!-- Tăng từ 23mm lên 30mm -->
+        <field name="margin_left">10</field><!-- Tăng từ 7mm lên 10mm -->
+        <field name="margin_right">10</field><!-- Tăng từ 7mm lên 10mm -->
+        <field name="header_spacing">25</field><!-- Giảm từ 35mm xuống 25mm -->
+        <field name="dpi">90</field>
+    </record>
+    <template id="sale_report_layout">
         <t t-call="web.html_container">
+            <t t-set="o" t-value="o or doc"/>
+            <div class="header"></div>
+            <div class="article" style="font-family: Times New Roman; font-size: 11pt; line-height: 1.5;">
+                <t t-raw="0"/><!-- Nội dung chính của báo cáo -->
+            </div>
+            <div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt;">
+                <p>
+                    <span class="page"/>
+                </p>
+            </div>
+        </t>
+    </template><!-- Template for Sale Contract Report -->
+    <template id="sale_report_template">
+        <t t-call="custom_sale_report.sale_report_layout">
             <div class="page" style="font-family: Times New Roman, sans-serif; font-size: 14px; color: #333; padding: 20px;">
                 <div style="text-align: left; margin-bottom: 20px;">
                     <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id" alt="Company Logo" style="max-width: 160px;"/>
@@ -178,6 +203,7 @@
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">custom_sale_report.sale_report_template</field>
         <field name="print_report_name">'Sale Quotation Report'</field>
+        <field name="paperformat_id" ref="custom_sale_report_a4_portrait"/>
     </record>
 
     <record id="action_sale_report_html" model="ir.actions.report">
@@ -194,6 +220,7 @@
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">custom_sale_report.sale_report_template</field>
         <field name="print_report_name">'Sale Report History'</field>
+        <field name="paperformat_id" ref="custom_sale_report_a4_portrait"/>
     </record>
 
     <record id="action_sale_report_history_html" model="ir.actions.report">
