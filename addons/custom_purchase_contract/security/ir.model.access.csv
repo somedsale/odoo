@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_purchase_contract,access.purchase.contract,custom_purchase_contract.model_purchase_contract,purchase.group_purchase_manager,1,1,1,1
+access_purchase_contract_settlement,access.purchase.contract.settlement,custom_purchase_contract.model_purchase_contract_settlement,purchase.group_purchase_manager,1,1,1,1
+access_purchase_invoice,access.purchase.invoice,custom_purchase_contract.model_purchase_invoice,purchase.group_purchase_manager,1,1,1,1

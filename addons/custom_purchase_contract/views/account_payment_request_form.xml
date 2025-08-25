@@ -1,0 +1,12 @@
+<odoo>
+    <record id="view_proposal_sheet_form_inherit_payment" model="ir.ui.view">
+        <field name="name">account.payment.request.form</field>
+        <field name="model">account.payment.request</field>
+        <field name="inherit_id" ref="custom_account_payment_request.view_account_payment_request_form"/>
+        <field name="arch" type="xml">
+        <xpath expr="//sheet/group/group/field[@name=&apos;currency_id&apos;]" position="after">
+            <field name="obj_type" string="Cho chi" help="Chọn loại đối tượng cho chi tiền này" options="{'no_create': True}"/>
+            <field name="purchase_contract_id" string="Hợp đồng mua hàng" invisible="obj_type != 'vendor'"/>
+            <field name="vendor_id" domain="[('supplier_rank', '>', 0)]" context="{'default_supplier_rank': 1}" string="Nhà cung cấp" readonly="1" invisible="obj_type != 'vendor'"/>
+        </xpath>
+</odoo>

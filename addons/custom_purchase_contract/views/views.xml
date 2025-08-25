@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree view -->
+    <record id="view_purchase_contract_tree" model="ir.ui.view">
+        <field name="name">purchase.contract.tree</field>
+        <field name="model">purchase.contract</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="supplier_id"/>
+                <field name="date_signed"/>
+                <field name="value" sum="Tổng giá trị"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form view -->
+    <record id="view_purchase_contract_form" model="ir.ui.view">
+        <field name="name">purchase.contract.form</field>
+        <field name="model">purchase.contract</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm" string="Xác nhận" type="object" invisible="state != 'draft'"/>
+                    <button name="action_done" string="Hoàn thành" type="object" invisible="state != 'confirmed'"/>
+                    <button name="action_cancel" string="Hủy" type="object" invisible="state not in ('draft', 'confirmed')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="project_id"/>
+                        <field name="supplier_id"/>
+                        <field name="date_signed"/>
+                        <field name="date_start"/>
+                        <field name="date_end"/>
+                        <field name="value"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="paid_amount" readonly="1" widget="monetary"/>
+                        <field name="due_amount" readonly="1" widget="monetary"/>
+                        <field name="invoice_amount" readonly="1" widget="monetary"/>
+                    </group>
+                    <notebook>
+                        <page string="Điều khoản">
+                            <field name="terms"/>
+                        </page>
+                        <page string="Hồ sơ quyết toán">
+                            <field name="settlement_ids" widget="many2one_list" options="{'no_create': True}">
+                                <tree>
+                                <field name="name"/>
+                                <field name="date_settlement" string="Ngày quyết toán"/>
+                                <field name="amount" sum="Tổng số tiền" widget="monetary"/>
+                                <field name="currency_id" invisible="1" optional="hide"/>
+                                <field name="note"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Tệp đính kèm">
+                            <field name="attachment_ids" widget="many2many_binary" nolabel="1">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="type"/>
+                                    <field name="create_date"/>
+                                    <field name="create_uid" string="Người tạo"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Hóa đơn liên quan">
+                            <field name="purchase_invoice_ids">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="amount_total"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Phiếu chi liên quan">
+                            <field name="account_payment_request_ids" readonly="1">
+                                <tree>
+                                    <field name="name" />
+                                    <field name="date" string="Ngày tạo chi" />
+                                    <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
+                                    <field name="currency_id" optional="hide"/>
+                                    <field name="state" string="Trạng thái" widget="badge" decoration-muted="state == 'draft'" decoration-primary="state == 'confirmed'" decoration-success="state == 'done'"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_purchase_contract" model="ir.actions.act_window">
+        <field name="name">Tổng hợp công nợ phải trả</field>
+        <field name="res_model">purchase.contract</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>
