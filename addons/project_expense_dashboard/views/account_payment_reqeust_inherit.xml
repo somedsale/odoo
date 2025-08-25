@@ -7,6 +7,7 @@
             <!-- Chèn sau trường project_id -->
             <xpath expr="//field[@name='project_id']" position="after">
                 <field name="cost_estimate_line_id" string="Hạng mục trong dự toán" domain="[('project_id', '=', project_id)]"/>
+                <field name="item_note_alt" string="Mục đích" placeholder="Nhập ghi chú nếu không có hạng mục để chọn" invisible="cost_estimate_line_id"/>
             </xpath>
         </field>
     </record>
