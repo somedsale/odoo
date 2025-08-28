@@ -3,6 +3,10 @@
     <t t-name="ProjectTaskGantt">
         <div class="o_project_task_gantt">
             <div id="gantt" style="width:100%; height:90vh;"></div>
+            <div class="o_gantt_toolbar">
+                <button type="button" class="btn btn-secondary" t-on-click="undo">Undo</button>
+                <button type="button" class="btn btn-secondary" t-on-click="redo">Redo</button>
+            </div>
         </div>
     </t>
 </templates>
