@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Đăng ký report -->
+    <report id="supplier_summary_report_action" model="supplier.summary" string="Supplier Summary" report_type="qweb-html" name="vendor_debt_management.report_supplier_summary_view" file="vendor_debt_management.report_supplier_summary_view" print_report_name="'Supplier Summary Report'" />
+
+    <record id="custom_sale_report_a4_portrait" model="report.paperformat">
+        <field name="name">Custom Sale Report A4 Portrait</field>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">30</field>        <!-- Điều chỉnh từ 40mm xuống 30mm -->
+        <field name="margin_bottom">30</field>        <!-- Tăng từ 23mm lên 30mm -->
+        <field name="margin_left">10</field>        <!-- Tăng từ 7mm lên 10mm -->
+        <field name="margin_right">10</field>        <!-- Tăng từ 7mm lên 10mm -->
+        <field name="header_spacing">25</field>        <!-- Giảm từ 35mm xuống 25mm -->
+        <field name="dpi">90</field>
+    </record>
+    <!-- Template QWeb -->
+    <template id="report_supplier_summary_layout">
+        <t t-call="web.html_container">
+            <t t-set="o" t-value="o or doc"/>
+                <div  class="header" style="display: flex; justify-content: space-between;">
+                    <div style="text-align: left; margin-bottom: 20px;">
+                        <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id" alt="Company Logo" style="max-width: 160px;"/>
+                    </div>
+                    <div style="text-align: right; margin-bottom: 20px; font-size: 11px; text-transform: capitalize;">
+                        <span t-esc="res_company.name" style="transform: uppercase;"/>
+                                <br/>
+                                MST: <span t-esc="res_company.partner_id.vat"/>
+                            <br/>
+                                Địa chỉ: <span t-esc="res_company.partner_id.street"/>
+                        <br/>
+                                SĐT: 0932 071 699                 <!-- số điện thoại kt -->
+                        <br/>
+                                Email: <span style="text-transform: lowercase;" t-esc="res_company.partner_id.email"/>
+            <!-- Email kt -->
+        </div>
+    </div>
+    <div class="article" style="font-family: Times New Roman; font-size: 11pt; line-height: 1.5;">
+        <t t-raw="0"/>
+        <!-- Nội dung chính của báo cáo -->
+    </div>
+    <div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt;">
+        <p>
+            <span class="page"/>
+        </p>
+    </div>
+</t>
+</template><!-- Template for Sale Contract Report -->
+<template id="report_supplier_summary_view">
+<t t-call="vendor_debt_management.report_supplier_summary_layout">
+    <div class="page">
+
+        <style>
+                .page {
+                    font-family: "Times New Roman";
+                    font-size: 16px;
+                    color: #333;
+                }
+                .styled-table {
+                    border-collapse: collapse;
+                    margin: 0 auto;
+                    font-size: 16px;
+                    min-width: 100%;
+                    border: 1px solid #dddddd;
+                }
+                .styled-table thead tr {
+                    background-color: #2480db;
+                    color: #ffffff;
+                    text-align: center;
+                }
+                .styled-table th,
+                .styled-table td {
+                    padding: 8px 12px;
+                    border: 1px solid #dddddd;
+                }
+                .styled-table tbody tr:nth-of-type(even) {
+                    background-color: #f3f6fb;
+                }
+                .styled-table tbody tr:hover {
+                    background-color: #e7f1fb;
+                }
+                .text-center { text-align: center; }
+                .text-right { text-align: right; }
+        </style>
+
+
+        <h2 style="text-align:center; margin-bottom: 20px; font-size: 24px; text-transform: uppercase;">Tổng hợp công nợ phải trả nhà cung cấp thực tế</h2>
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Nhà cung cấp</th>
+                    <th>Diễn giải</th>
+                    <th>Số tiền hợp đồng</th>
+                    <th>Số tiền Hóa đơn</th>
+                    <th>Số tiền Đã thanh toán</th>
+                    <th>Số tiền Còn nợ</th>
+                    <th>Số tiền Tạm ứng/ Chưa HĐ</th>
+                    <th>Hạn thanh toán</th>
+                    <th>Ghi chú</th>
+                </tr>
+            </thead>
+            <tbody>
+                <t t-set="stt" t-value="0"/>
+                <t t-foreach="docs" t-as="o">
+                    <tr>
+                        <td class="text-center">
+                            <t t-set="stt" t-value="stt + 1"/>
+                            <span t-esc="stt"/>
+                        </td>
+                        <td>
+                            <span t-field="o.partner_id.name"/>
+                        </td>
+                        <td>
+                            <span t-field="o.interpretation"/>
+                        </td>
+                        <t t-if="o.total_contracts != 0">
+                            <td class="text-right">
+                                <span t-field="o.total_contracts"/>
+                            </td>
+                        </t>
+                        <t t-else="">
+                            <td class="text-center">-</td>
+                        </t>
+                        <t t-if="o.total_invoices != 0">
+                            <td class="text-right">
+                                <span t-field="o.total_invoices"/>
+                            </td>
+                        </t>
+                        <t t-else="">
+                            <td class="text-center">-</td>
+                        </t>
+                        <t t-if="o.paid_amount != 0">
+                            <td class="text-right">
+                                <span t-field="o.paid_amount"/>
+                            </td>
+                        </t>
+                        <t t-else="">
+                            <td class="text-center">-</td>
+                        </t>
+                        <t t-if="o.residual_amount != 0">
+                            <td class="text-right">
+                                <span t-field="o.residual_amount"/>
+                            </td>
+                        </t>
+                        <t t-else="">
+                            <td class="text-center">-</td>
+                        </t>
+                        <t t-if="o.advance_amount != 0">
+                            <td class="text-right">
+                                <span t-field="o.advance_amount"/>
+                            </td>
+                        </t>
+                        <t t-else="">
+                            <td class="text-center">-</td>
+                        </t>
+                        <td class="text-center">
+                            <span t-if="o.due_days" t-field="o.due_days"/>
+                        </td>
+                        <td></td>
+                    </tr>
+                </t>
+            </tbody>
+        </table>
+    </div>
+</t>
+</template>
+<!-- Hai action URL: HTML & PDF -->
+<record id="action_supplier_summary_report_html_url" model="ir.actions.act_url">
+<field name="name">Supplier Summary (HTML)</field>
+<field name="type">ir.actions.act_url</field>
+<!-- docids = 0 (bị bỏ qua), AbstractModel sẽ lấy search([]) -->
+<field name="url">/report/html/vendor_debt_management.report_supplier_summary_view/0</field>
+<field name="target">new</field>
+</record>
+
+<record id="action_supplier_summary_report_pdf_url" model="ir.actions.act_url">
+<field name="name">Supplier Summary (PDF)</field>
+<field name="type">ir.actions.act_url</field>
+<field name="url">/report/pdf/vendor_debt_management.report_supplier_summary_view/0</field>
+<field name="target">new</field>
+</record>
+<record id="action_supplier_summary_report" model="ir.actions.report">
+<field name="name">Supplier Summary Report</field>
+<field name="model">supplier.summary</field>
+<field name="report_type">qweb-html</field>
+<field name="report_name">vendor_debt_management.report_supplier_summary_view</field>
+<field name="report_file">vendor_debt_management.report_supplier_summary_view</field>
+<field name="print_report_name">'Supplier Summary Report'</field>
+</record>
+<record id="action_supplier_summary_report_pdf" model="ir.actions.report">
+<field name="name">Supplier Summary Report (PDF)</field>
+<field name="model">supplier.summary</field>
+<field name="report_type">qweb-pdf</field>
+<field name="report_name">vendor_debt_management.report_supplier_summary_view</field>
+<field name="report_file">vendor_debt_management.report_supplier_summary_view</field>
+<field name="print_report_name">'Supplier Summary Report'</field>
+<field name="paperformat_id" ref="custom_sale_report_a4_portrait"/>
+</record>
+<!-- Menu -->
+<menuitem id="menu_supplier_summary_root" name="Supplier Summary" parent="custom_account_menu.menu_accounting_custom_root"/>
+
+<menuitem id="menu_supplier_summary_report" name="Báo cáo Công nợ NCC" parent="menu_supplier_summary_root" action="vendor_debt_management.action_supplier_summary_report"/>
+<menuitem id="menu_supplier_summary_report_pdf" name="Báo cáo Công nợ NCC (PDF)" parent="menu_supplier_summary_root" action="vendor_debt_management.action_supplier_summary_report_pdf"/>
+</odoo>

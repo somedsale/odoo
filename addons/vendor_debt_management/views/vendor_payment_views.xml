@@ -1,0 +1,36 @@
+<!-- vendor_debt_management/views/vendor_payment_views.xml -->
+<odoo>
+    <record id="view_vendor_payment_tree" model="ir.ui.view">
+        <field name="name">vendor.payment.tree</field>
+        <field name="model">vendor.payment</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="date"/>
+                <field name="contract_id"/>
+                <field name="amount"/>
+                <field name="note"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_vendor_payment_form" model="ir.ui.view">
+        <field name="name">vendor.payment.form</field>
+        <field name="model">vendor.payment</field>
+        <field name="arch" type="xml">
+            <form string="Thanh toán NCC">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="date"/>
+                        <field name="contract_id"/>
+                        <field name="amount"/>
+                        <field name="currency_id"/>
+                    </group>
+                    <group>
+                        <field name="note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

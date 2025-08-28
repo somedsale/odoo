@@ -1,0 +1,62 @@
+<odoo>
+    <record id="view_supplier_summary_tree" model="ir.ui.view">
+        <field name="name">supplier.summary.tree</field>
+        <field name="model">supplier.summary</field>
+        <field name="arch" type="xml">
+            <tree create="false" edit="false" delete="false">
+                <field name="partner_id"/>
+                <field name="total_contracts"/>
+                <field name="total_invoices"/>
+                <field name="paid_amount"/>
+                <field name="residual_amount"/>
+                <field name="currency_id" optional="hide" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_supplier_summary_form" model="ir.ui.view">
+        <field name="name">supplier.summary.form</field>
+        <field name="model">supplier.summary</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="true" delete="false">
+                <sheet>
+                    <group>
+                        <field name="partner_id" readonly="1"/>
+                        <field name="due_date"/>
+                        <field name="due_days"/>
+                        <field name="interpretation"/>
+                        <field name="total_contracts"/>
+                        <field name="total_invoices"/>
+                        <field name="paid_amount"/>
+                        <field name="residual_amount"/>
+                        <field name="advance_amount"/>
+                        <field name="currency_id" optional="hide" invisible="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Hợp đồng">
+                            <field name="contract_ids">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="contract_date"/>
+                                    <field name="amount"/>
+                                    <field name="total_invoices"/>
+                                    <field name="paid_amount"/>
+                                    <field name="residual_amount"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_supplier_summary" model="ir.actions.act_window">
+        <field name="name">Tổng hợp công nợ nhà cung cấp</field>
+        <field name="res_model">supplier.summary</field>
+        <field name="view_mode">tree,form</field>
+        <field name="limit">80</field>
+    </record>
+
+    <menuitem id="menu_supplier_summary" name="Tổng hợp công nợ" parent="menu_supplier_contract_root" action="action_supplier_summary" sequence="10"/>
+
+</odoo>

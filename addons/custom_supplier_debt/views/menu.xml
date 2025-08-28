@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<odoo>
-    <!-- Menu item -->
-    <menuitem id="menu_supplier_contract_summary"
-              name="Tổng hợp hợp đồng"
-              parent="custom_account_menu.menu_accounting_custom_root"
-              action="action_supplier_contract_summary"
-              sequence="10"/>
-</odoo>
