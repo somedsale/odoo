@@ -16,9 +16,9 @@
     "author": "Serpent Consulting Services Pvt. Ltd.",
     "website": "http://www.serpentcs.com/",
     'license': 'LGPL-3',
-    'depends': ['web'],
+    'depends': ['web', 'sale_management'],
     "images": ["static/description/Digital_Signature.jpg"],
-    "data": ["views/users_view.xml"],
+    "data": ["views/users_view.xml","views/sale_order_view_inherit.xml"],
     "assets": {
         "web.assets_backend": [
             "/web_digital_sign/static/src/js/digital_sign.js",
