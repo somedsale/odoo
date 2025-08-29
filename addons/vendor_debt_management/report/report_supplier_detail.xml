@@ -1,0 +1,55 @@
+<odoo>
+    <!-- Báo cáo HTML -->
+    <report
+        id="action_report_supplier_summary_html"
+        model="supplier.summary"
+        string="Chi tiết công nợ NCC"
+        report_type="qweb-html"
+        name="vendor_debt_management.report_supplier_summary_detail_html"
+        file="vendor_debt_management.report_supplier_summary_detail_html"
+        print_report_name="'Chi tiết công nợ NCC - %s' % (data.get('partner_name') or '')"
+    />
+
+    <!-- Template HTML QWeb -->
+    <template id="report_supplier_summary_detail_html">
+        <t t-call="web.external_layout">
+            <t t-set="partner_name" t-value="data.get('partner_name')"/>
+            <div class="page">
+                <h2 style="text-align:center; margin-bottom:20px;">Chi tiết công nợ NCC</h2>
+                <p><strong>Nhà cung cấp:</strong> <span t-esc="partner_name"/></p>
+
+                <table class="table table-sm table-bordered" style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <thead>
+                        <tr style="background-color:#2480db; color:white; text-align:center;">
+                            <th>STT</th>
+                            <th>Diễn giải</th>
+                            <th>Số tiền HĐ</th>
+                            <th>Số tiền Hóa đơn</th>
+                            <th>Đã thanh toán</th>
+                            <th>Còn nợ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="stt" t-value="0"/>
+                        <t t-foreach="docs" t-as="line">
+                            <t t-set="stt" t-value="stt + 1"/>
+                            <tr>
+                                <td style="text-align:center;"><t t-esc="stt"/></td>
+                                <td><t t-esc="line.interpretation"/></td>
+                                <td style="text-align:right;"><t t-esc="line.total_contracts or 0"/></td>
+                                <td style="text-align:right;"><t t-esc="line.total_invoices or 0"/></td>
+                                <td style="text-align:right;"><t t-esc="line.paid_amount or 0"/></td>
+                                <td style="text-align:right;"><t t-esc="line.residual_amount or 0"/></td>
+                            </tr>
+                        </t>
+                        <t t-if="not docs">
+                            <tr>
+                                <td colspan="6" style="text-align:center;">Không có dữ liệu</td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+</odoo>

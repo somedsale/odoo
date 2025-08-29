@@ -1,0 +1,16 @@
+<odoo>
+    <record id="view_company_form_inherit_department_phone" model="ir.ui.view">
+        <field name="name">res.company.form.inherit.department.phone</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[group/field[@name='social_twitter']]" position="inside">
+                <group string="Điện thoại phòng ban">
+                    <field name="phone_accounting" string="SDT Phòng Kế Toán"/>
+                    <field name="phone_sale" string="SDT Phòng Kinh Doanh"/>
+                    <field name="phone_manufacturing" string="SDT Phòng Sản Xuất"/> 
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

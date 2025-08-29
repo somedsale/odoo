@@ -29,7 +29,7 @@
                             <br/>
                                 Địa chỉ: <span t-esc="res_company.partner_id.street"/>
                         <br/>
-                                SĐT: 0932 071 699                 <!-- số điện thoại kt -->
+                                SĐT: <span t-esc="res_company.phone_accounting"/>
                         <br/>
                                 Email: <span style="text-transform: lowercase;" t-esc="res_company.partner_id.email"/>
             <!-- Email kt -->

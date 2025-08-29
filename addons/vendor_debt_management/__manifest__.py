@@ -12,6 +12,8 @@
         "views/account_payment_request_views.xml",
         'views/supplier_views.xml',
         "report/report_supplier_summary.xml",
+        "report/report_supplier_detail.xml",
+        "wizard/wizard_views.xml"
     ],
     "installable": True,
     "application": True,

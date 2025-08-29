@@ -3,3 +3,4 @@ access_supplier_contract,supplier.contract,model_supplier_contract,base.group_us
 access_supplier_invoice,supplier.invoice,model_supplier_invoice,base.group_user,1,1,1,1
 access_settlement,settlement,model_supplier_settlement,base.group_user,1,1,1,1
 access_supplier_summary,supplier.summary,model_supplier_summary,base.group_user,1,1,1,1
+access_supplier_summary_wizard,supplier.summary.wizard,model_supplier_summary_wizard,,1,1,1,1
