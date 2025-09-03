@@ -21,7 +21,7 @@ class SupplierSummary(models.Model):
     residual_amount = fields.Monetary("Còn nợ", compute="_compute_residual", currency_field="currency_id")
     advance_amount = fields.Monetary("Số tiền đã tạm ứng/ chưa hóa đơn", compute="_compute_advance_amount", currency_field="currency_id")
     currency_id = fields.Many2one("res.currency", string="Tiền tệ")
-    
+    total_settlements = fields.Monetary("Tổng giá trị hồ sơ quyết toán", compute="_compute_total_settlements", currency_field="currency_id")
     def init(self):
         """Create or update the database view for supplier.summary."""
         tools.drop_view_if_exists(self.env.cr, self._table)  # Drop the view if it exists
@@ -60,6 +60,10 @@ class SupplierSummary(models.Model):
     def _compute_total_contracts(self):
         for record in self:
             record.total_contracts = sum(record.contract_ids.mapped("amount"))
+    @api.depends("contract_ids.total_settlements")
+    def _compute_total_settlements(self):
+        for record in self:
+            record.total_settlements = sum(record.contract_ids.mapped("total_settlements"))
     @api.depends("total_invoices", "paid_amount")
     def _compute_advance_amount(self):
         for record in self:

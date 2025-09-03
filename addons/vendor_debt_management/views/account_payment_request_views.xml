@@ -9,6 +9,7 @@
                 <field name="supplier_contract_id" string="Hợp đồng mua hàng" invisible="receive_type != 'supplier'"/>
                 <field name="supplier_id" domain="[('supplier_rank', '>', 0)]" context="{'default_supplier_rank': 1}" string="Nhà cung cấp" readonly="1" invisible="receive_type != 'supplier'"/>
                 <field name="employee_id" string="Nhân viên" invisible="receive_type != 'employee'"/>
+                <field name="invoice_id" string="Hóa đơn"/>
             </xpath>
         </field>
     </record>

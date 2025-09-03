@@ -12,3 +12,4 @@ class SupplierInvoice(models.Model):
     currency_id = fields.Many2one("res.currency", default=lambda self: self.env.company.currency_id)
     partner_id = fields.Many2one(related="contract_id.partner_id", string="Nhà cung cấp", store=True)
     project_id = fields.Many2one(related="contract_id.project_id", string="Dự án", store=True)
+    account_payment_request_ids = fields.One2many("account.payment.request", "invoice_id", string="Phiếu chi")

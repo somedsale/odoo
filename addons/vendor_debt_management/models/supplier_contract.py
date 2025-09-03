@@ -14,6 +14,7 @@ class SupplierContract(models.Model):
     due_date = fields.Date("Ngày đến hạn")
     create_date = fields.Datetime("Ngày tạo", default=fields.Datetime.now)
     total_invoices = fields.Monetary("Tổng giá trị hóa đơn", compute="_compute_total_invoices", store=True, currency_field="currency_id")
+    total_settlements = fields.Monetary("Tổng giá trị hồ sơ quyết toán", compute="_compute_total_settlements", store=True, currency_field="currency_id")
     paid_amount = fields.Monetary("Tổng giá trị đã thanh toán", compute="_compute_paid_amount", store=True, currency_field="currency_id")
     residual_amount = fields.Monetary("Còn nợ", compute="_compute_residual", store=True, currency_field="currency_id")
     advance_amount = fields.Monetary("Số tiền đã tạm ứng/ chưa hóa đơn", compute="_compute_advance_amount", store=True, currency_field="currency_id")
@@ -28,6 +29,10 @@ class SupplierContract(models.Model):
     def _compute_total_invoices(self):
         for record in self:
             record.total_invoices = sum(record.invoice_ids.mapped("amount"))
+    @api.depends("settlement_ids.amount")
+    def _compute_total_settlements(self):
+        for record in self:
+            record.total_settlements = sum(record.settlement_ids.mapped("amount"))
     @api.depends("account_payment_request_ids.total", "account_payment_request_ids.state")
     def _compute_paid_amount(self):
         for record in self:

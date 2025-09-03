@@ -1,50 +1,179 @@
 <odoo>
     <!-- Báo cáo HTML -->
-    <report
-        id="action_report_supplier_summary_html"
-        model="supplier.summary"
-        string="Chi tiết công nợ NCC"
-        report_type="qweb-html"
-        name="vendor_debt_management.report_supplier_summary_detail_html"
-        file="vendor_debt_management.report_supplier_summary_detail_html"
-        print_report_name="'Chi tiết công nợ NCC - %s' % (data.get('partner_name') or '')"
-    />
-
+    <!-- <report id="action_report_supplier_summary_html" model="supplier.summary" string="Chi tiết công nợ NCC" report_type="qweb-html" name="vendor_debt_management.report_sup_summary_html" file="vendor_debt_management.report_sup_summary_html" print_report_name="'Chi tiết công nợ NCC - %s' % (data.get('partner_name') or '')" /> -->
+    <record id="action_report_supplier_summary_html" model="ir.actions.report">
+        <field name="name">Chi tiết công nợ NCC</field>
+        <field name="model">supplier.summary</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">vendor_debt_management.report_sup_summary_html</field>
+        <field name="report_file">vendor_debt_management.report_sup_summary_html</field>
+        <field name="print_report_name">'Chi tiết công nợ NCC'</field>
+    </record>
     <!-- Template HTML QWeb -->
-    <template id="report_supplier_summary_detail_html">
-        <t t-call="web.external_layout">
-            <t t-set="partner_name" t-value="data.get('partner_name')"/>
+    <template id="report_sup_summary_html">
+        <t t-call="vendor_debt_management.report_supplier_summary_layout">
+        <style>
+                    /* Style tổng thể bảng */
+                    table.report-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        font-size: 13px;
+                        font-family: Arial, sans-serif;
+                    }
+                    table.report-table thead th {
+                        background-color: #2480db;
+                        color: #fff;
+                        padding: 6px;
+                        text-align: center;
+                        border: 1px solid #ddd;
+                        vertical-align: middle;
+                    }
+                    table.report-table tbody td {
+                        border: 1px solid #ddd;
+                        padding: 5px 6px;
+                        vertical-align: middle;
+                    }
+                    table.report-table tbody tr:nth-child(even) {
+                        background-color: #f9f9f9;
+                    }
+                    table.report-table tbody tr:hover {
+                        background-color: #f1f6fc;
+                    }
+                    table.report-table td.text-right {
+                        text-align: right;
+                    }
+                    table.report-table td.text-center {
+                        text-align: center;
+                    }
+                    h2.report-title {
+                        text-align: center;
+                        margin-bottom: 20px;
+                        font-size: 18px;
+                        color: #2480db;
+                        text-transform: uppercase;
+                    }
+                </style>
             <div class="page">
-                <h2 style="text-align:center; margin-bottom:20px;">Chi tiết công nợ NCC</h2>
-                <p><strong>Nhà cung cấp:</strong> <span t-esc="partner_name"/></p>
+                <h2 class="report-title">Chi tiết công nợ NCC</h2>
+                <p>
+                    <strong>Nhà cung cấp:</strong>
+                    <span t-esc="partner_name"/>
+                </p>
 
-                <table class="table table-sm table-bordered" style="width:100%; border-collapse:collapse; font-size:12px;">
+                <table class="report-table">
                     <thead>
-                        <tr style="background-color:#2480db; color:white; text-align:center;">
-                            <th>STT</th>
-                            <th>Diễn giải</th>
-                            <th>Số tiền HĐ</th>
-                            <th>Số tiền Hóa đơn</th>
-                            <th>Đã thanh toán</th>
-                            <th>Còn nợ</th>
+                        <tr>
+                            <th rowspan="2">STT</th>
+                            <th rowspan="2">Dự án</th>
+                            <th rowspan="2">Diễn giải</th>
+                            <th colspan="2">Hợp đồng</th>
+                            <th colspan="2">Hồ sơ quyết toán</th>
+                            <th colspan="3">Hóa đơn</th>
+                            <th colspan="2">Đã trả</th>
+                            <th rowspan="2">Số tiền còn nợ</th>
+                            <th rowspan="2">Ghi chú</th>
+                            <th rowspan="2">Hạn T/T</th>
+                        </tr>
+                        <tr>
+                            <th>Số/ Ngày</th>
+                            <th>Số tiền</th>
+                            <th>Số HS/ ngày</th>
+                            <th>Số tiền</th>
+                            <th>Ngày</th>
+                            <th>Số</th>
+                            <th>Số tiền</th>
+                            <th>Ngày trả</th>
+                            <th>Số tiền</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <t t-set="stt" t-value="0"/>
-                        <t t-foreach="docs" t-as="line">
-                            <t t-set="stt" t-value="stt + 1"/>
-                            <tr>
-                                <td style="text-align:center;"><t t-esc="stt"/></td>
-                                <td><t t-esc="line.interpretation"/></td>
-                                <td style="text-align:right;"><t t-esc="line.total_contracts or 0"/></td>
-                                <td style="text-align:right;"><t t-esc="line.total_invoices or 0"/></td>
-                                <td style="text-align:right;"><t t-esc="line.paid_amount or 0"/></td>
-                                <td style="text-align:right;"><t t-esc="line.residual_amount or 0"/></td>
+                        <!-- Tổng hợp -->
+                        <t t-foreach="docs" t-as="docs">
+                            <tr style="font-weight:bold">
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td t-esc="docs.total_contracts or ''" class="text-right"/>
+                                <td></td>
+                                <td t-esc="docs.total_settlements or ''" class="text-right"/>
+                                <td></td>
+                                <td></td>
+                                <td t-esc="docs.total_invoices or ''" class="text-right"/>
+                                <td></td>
+                                <td t-esc="docs.paid_amount or ''" class="text-right"/>
+                                <td t-esc="docs.residual_amount or ''" class="text-right"/>
+                                <td></td>
+                                <td t-esc="docs.due_days or ''"/>
                             </tr>
                         </t>
-                        <t t-if="not docs">
+
+                        <!-- Chi tiết -->
+                        <t t-set="stt" t-value="0"/>
+                        <t t-set="grouped_contracts" t-value="docs.contract_ids.sorted(key=lambda x: x.project_id.id or x.id)"/>
+                        <t t-set="current_project" t-value="None"/>
+                        <t t-foreach="grouped_contracts" t-as="line">
+                            <!-- Tính max_rows cho mỗi hợp đồng -->
+                            <t t-set="max_rows" t-value="max(
+                                len(line.invoice_ids or []),
+                                len(line.account_payment_request_ids or []),
+                                len(line.settlement_ids or []),
+                                1
+                            )"/>
+                            <!-- Nếu là dự án mới thì tính rowspan -->
+                            <t t-if="current_project != (line.project_id.id or line.id)">
+                                <t t-set="current_project" t-value="line.project_id.id or line.id"/>
+                                <t t-set="project_rowspan" t-value="sum(max(
+                                    1,
+                                    max(len(c.invoice_ids or []), len(c.account_payment_request_ids or []), len(c.settlement_ids or []))
+                                ) for c in grouped_contracts.filtered(lambda c: (c.project_id.id or c.id) == current_project))"/>
+                            </t>
+
+                            <!-- Chuẩn bị dữ liệu -->
+                            <t t-set="invoice_data_list" t-value="line.invoice_ids or []"/>
+                            <t t-set="settlement_data_list" t-value="line.settlement_ids or []"/>
+                            <t t-set="payment_data_list" t-value="line.account_payment_request_ids or []"/>
+
+                            <!-- Vòng lặp dòng -->
+                            <t t-foreach="range(max_rows)" t-as="i">
+                                <t t-set="stt" t-value="stt + 1"/>
+                                <t t-set="invoice_data" t-value="invoice_data_list[i] if i &lt; len(invoice_data_list) else None"/>
+                                <t t-set="settlement_data" t-value="settlement_data_list[i] if i &lt; len(settlement_data_list) else None"/>
+                                <t t-set="payment_data" t-value="payment_data_list[i] if i &lt; len(payment_data_list) else None"/>
+
+                                <t t-set="residual_amount" t-value="0"/>
+                                <t t-if="invoice_data and invoice_data.amount">
+                                    <t t-set="residual_amount" t-value="(invoice_data.amount or 0) - (payment_data and payment_data.total or 0)"/>
+                                </t>
+
+                                <tr>
+                                    <td t-esc="stt" class="text-center"/>
+                                    <!-- Merge cell Dự án -->
+                                    <t t-if="i == 0 and (line.project_id.id or line.id) == current_project">
+                                        <td t-esc="line.project_id.name or line.name or ''"
+                                            t-att-rowspan="project_rowspan"
+                                            class="text-center" style="vertical-align:middle;"/>
+                                    </t>
+                                    <td t-esc="line.interpretation or ''" class="text-center"/>
+                                    <td t-esc="line.name or ''" class="text-center"/>
+                                    <td t-esc="line.amount or ''" class="text-right"/>
+                                    <td t-esc="settlement_data and settlement_data.name or ''" class="text-center"/>
+                                    <td t-esc="settlement_data and settlement_data.amount or ''" class="text-right"/>
+                                    <td t-esc="invoice_data and invoice_data.date or ''" class="text-center"/>
+                                    <td t-esc="invoice_data and invoice_data.name or ''" class="text-center"/>
+                                    <td t-esc="invoice_data and invoice_data.amount or ''" class="text-right"/>
+                                    <td t-esc="payment_data and payment_data.date_payment or ''" class="text-center"/>
+                                    <td t-esc="payment_data and payment_data.total or ''" class="text-right"/>
+                                    <td t-esc="residual_amount or ''" class="text-right"/>
+                                    <td></td>
+                                    <td t-esc="line.due_date or ''" class="text-center"/>
+                                </tr>
+                            </t>
+                        </t>
+
+                        <t t-if="not grouped_contracts">
                             <tr>
-                                <td colspan="6" style="text-align:center;">Không có dữ liệu</td>
+                                <td colspan="15" class="text-center">Không có dữ liệu</td>
                             </tr>
                         </t>
                     </tbody>

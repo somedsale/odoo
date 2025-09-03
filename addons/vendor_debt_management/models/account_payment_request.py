@@ -13,3 +13,4 @@ class AccountPaymentRequest(models.Model):
     ], string="Loại chi phí", default='supplier',required=True)
     supplier_id = fields.Many2one("res.partner", string="Nhà cung cấp", related='supplier_contract_id.partner_id', domain=[("supplier_rank", ">", 0)])
     employee_id = fields.Many2one("hr.employee", string="Nhân viên")
+    invoice_id = fields.Many2one("supplier.invoice", string="Hóa đơn")
