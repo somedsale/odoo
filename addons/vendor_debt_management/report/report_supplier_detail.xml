@@ -38,7 +38,7 @@
                         padding: 5px 6px;
                         vertical-align: middle;
                     }
-                    <!-- table.report-table tbody tr:nth-child(even) {
+                                                    <!-- table.report-table tbody tr:nth-child(even) {
                         background-color: #f9f9f9;
                     }
                     table.report-table tbody tr:hover {
@@ -181,34 +181,8 @@
                         </t>
                     </tbody>
                 </table>
-                <div style="page-break-inside: avoid; style: font-weight: bold">
-                    <div class="row">
-                        <div class="col-6" style="text-align:center;line-height:1.8">
-                            <div>
-                                <span>Người lập biểu</span>
-                            </div>
-                            <div style="height:65px"></div>
-                            <div>
-                                <span t-field="user_id.name"/>
-                            </div>
-                        </div>
-                        <div class="col-6" style="text-align:center;line-height:1.8">
-                            <div>
-    TP Hồ Chí Minh ngày <span t-esc="datetime.datetime.today().day"/>
-    tháng <span t-esc="datetime.datetime.today().month"/>
-    năm <span t-esc="datetime.datetime.today().year"/>
-                    </div>
-                    <div>
-                                    Giám Đốc
-                    </div>
-                    <div style="height:65px"></div>
-                    <div>
-                        <span> Đỗ Minh Toàn </span>
-                    </div>
-                </div>
+
             </div>
-        </div>
-    </div>
-</t>
-</template>
+        </t>
+    </template>
 </odoo>
