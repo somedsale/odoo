@@ -42,14 +42,14 @@ export class ProjectTaskGantt extends Component {
     // 1. Lấy project
     const projects = await this.orm.searchRead(
       "project.project",
-      [],
+      [["id", "!=", 4]],
       ["name", "date_start", "date"]
     );
 
     // 2. Lấy task (dùng completion_percent)
     const tasks = await this.orm.searchRead(
       "project.task",
-      [],
+      [["project_id", "!=", 4]],
       [
         "name",
         "create_date",
@@ -120,7 +120,7 @@ export class ProjectTaskGantt extends Component {
       );
 
       items.push({
-        id: "t" + r.id,
+        id: r.id,
         text: r.name,
         start_date: start,
         duration: duration,
@@ -168,6 +168,40 @@ export class ProjectTaskGantt extends Component {
       }
       return "gantt-task";
     };
+    gantt.config.scales = [
+      { unit: "year", step: 1, format: "%Y" }, // cấp 1: Năm
+      { unit: "month", step: 1, format: "%M" }, // cấp 2: Tháng
+      { unit: "day", step: 1, format: "%d %M" }, // cấp 3: Ngày
+    ];
+
+    gantt.config.subscales = []; // xóa subscale mặc định nếu có
+    gantt.config.scale_height = 60; //
+    gantt.attachEvent("onAfterTaskUpdate", async (id, task) => {
+      // Chỉ xử lý task, bỏ qua project
+      if (task.type === "project") return;
+
+      // Cập nhật Odoo
+      await this.orm.write("project.task", [id], {
+        name: task.text,
+        completion_percent: Math.round((task.progress || 0) * 100),
+        date_deadline: gantt.date.date_to_str("%Y-%m-%d")(task.end_date),
+      });
+      console.log("✅ Task updated in Odoo:", task.text);
+    });
+
+    // --- Đồng bộ Delete ---
+    gantt.attachEvent("onBeforeTaskDelete", async (id, task) => {
+      if (task.type === "project") return true; // cho phép xóa project bình thường trên UI (không đụng Odoo)
+
+      try {
+        await this.orm.unlink("project.task", [id]);
+        console.log("🗑️ Task deleted in Odoo:", task.text);
+        return true; // cho phép xóa trong Gantt
+      } catch (e) {
+        console.error("❌ Lỗi khi xóa task:", e);
+        return false; // chặn xóa trên Gantt nếu backend fail
+      }
+    });
 
     gantt.init("gantt");
     gantt.parse({ data: this.state.items });
