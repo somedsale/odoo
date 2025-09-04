@@ -12,6 +12,7 @@ class AccountPaymentRequest(models.Model):
         'product.template',
         string='Sản phẩm'
     )
+    item_note_alt = fields.Char(string="Ghi chú", help="Nhập ghi chú nếu không có hạng mục để chọn")
     @api.onchange('project_id')
     def _onchange_project(self):
         if self.project_id:

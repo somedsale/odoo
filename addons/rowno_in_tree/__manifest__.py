@@ -9,6 +9,7 @@
         "web.assets_backend": [
             "rowno_in_tree/static/src/views/list/list_render.xml",
             "rowno_in_tree/static/src/js/list_renderer.esm.js",
+            "rowno_in_tree/static/src/css/rowno.css",
         ]
     },
     "images": ["static/description/blue_banner.png"],

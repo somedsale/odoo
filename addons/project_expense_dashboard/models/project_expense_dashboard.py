@@ -38,6 +38,18 @@ class ProjectExpenseDashboard(models.Model):
         compute="_compute_total_actual_split",   
         store=True
     )
+    payment_requests_without_item_ids = fields.One2many(
+    comodel_name="account.payment.request",
+    compute="_compute_payment_requests_without_item_ids",
+    string="Chi phí không hạng mục",
+)
+
+    @api.depends('project_id.account_payment_request_ids')
+    def _compute_payment_requests_without_item_ids(self):
+        for rec in self:
+            rec.payment_requests_without_item_ids = rec.project_id.account_payment_request_ids.filtered(
+                lambda p: p.status_expense == 'paid' and not p.cost_estimate_line_id
+            )
 
     @api.depends(
         'project_id',
@@ -120,6 +132,7 @@ class ProjectExpenseDashboard(models.Model):
         for record in self:
             if record.total_estimate > 0:
                 record.progress = (record.total_actual / record.total_estimate) * 100
+                record.progress = min(record.progress, 100.0)  # Giới hạn tối đa 100
             else:
                 record.progress = 0.0
     def action_view_payment_requests(self):

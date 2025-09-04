@@ -1,0 +1,51 @@
+/* ================== Project ================== */
+.gantt_task_line.gantt-project {
+  background: linear-gradient(
+    90deg,
+    #34d399,
+    #10b981
+  ) !important; /* xanh lá nhạt -> đậm */
+  border-radius: 6px;
+  border: none !important;
+}
+.gantt_task_progress.gantt-project {
+  background: linear-gradient(
+    90deg,
+    #059669,
+    #047857
+  ) !important; /* xanh lá đậm hơn */
+  border-radius: 6px;
+}
+
+/* ================== Task ================== */
+.gantt_task_line.gantt-task {
+  background: linear-gradient(
+    90deg,
+    #60a5fa,
+    #2563eb
+  ) !important; /* xanh dương nhạt -> đậm */
+  border-radius: 6px;
+  border: none !important;
+}
+.gantt_task_progress.gantt-task {
+  background: linear-gradient(
+    90deg,
+    #1d4ed8,
+    #1e40af
+  ) !important; /* xanh dương đậm hơn */
+  border-radius: 6px;
+}
+
+/* ================== Text ================== */
+.gantt_task_content {
+  color: #fff !important;
+  font-weight: 500;
+}
+/* Header timeline */
+.gantt_scale_line,
+.gantt_task .gantt_grid_head_cell {
+  background: #33b579 !important; /* màu header */
+  color: #fff !important; /* chữ trắng */
+  font-weight: 600;
+  font-size: 13px;
+}

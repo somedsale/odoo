@@ -29,6 +29,8 @@
                     <field name="state" widget="statusbar" statusbar_visible="confirmed,done"/>
                 </header>
                 <sheet>
+                    <widget name="web_ribbon" title="Đã thanh toán" bg_color="bg-success" invisible="status_expense != 'paid'"/>
+                    <widget name="web_ribbon" title="Chưa thanh toán" bg_color="bg-danger" invisible="status_expense != 'not yet'"/>
                     <div class="oe_title">
                         <h1 >
                             <field name="name" readonly="1"/>
