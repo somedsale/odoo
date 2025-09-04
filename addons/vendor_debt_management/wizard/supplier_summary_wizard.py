@@ -1,6 +1,8 @@
 from odoo import models, fields
 from odoo.exceptions import UserError
-
+from odoo.tools.misc import format_amount
+from odoo.tools import format_date
+import datetime
 class SupplierSummaryWizard(models.TransientModel):
     _name = "supplier.summary.wizard"
     _description = "Wizard chọn nhà cung cấp"
@@ -48,4 +50,7 @@ class ReportSupplierSummary(models.AbstractModel):
             'doc_model': 'supplier.summary',
             'docs': docs,
             'partner_name': data.get('partner_name') if data else False,
+            'format_amount': lambda amount, currency: format_amount(self.env, amount, currency),
+            'user_id': self.env.user,
+            'format_date': lambda date: format_date(self.env, date, date_format='dd/MM/yyyy'),
         }
