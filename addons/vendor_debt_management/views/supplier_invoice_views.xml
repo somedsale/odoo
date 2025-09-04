@@ -1,0 +1,42 @@
+<odoo>
+    <record id="view_supplier_invoice_tree" model="ir.ui.view">
+        <field name="name">supplier.invoice.tree</field>
+        <field name="model">supplier.invoice</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="project_id"/>
+                <field name="contract_id"/>
+                <field name="settlement_id"/>
+                <field name="date"/>
+                <field name="amount"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_supplier_invoice_form" model="ir.ui.view">
+        <field name="name">supplier.invoice.form</field>
+        <field name="model">supplier.invoice</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="contract_id"/>
+                        <field name="settlement_id"/>
+                        <field name="date"/>
+                        <field name="amount"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_supplier_invoice" model="ir.actions.act_window">
+        <field name="name">Hóa đơn</field>
+        <field name="res_model">supplier.invoice</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="menu_supplier_invoice" name="Hóa đơn" parent="menu_supplier_contract_root" action="action_supplier_invoice" sequence="20"/>
+</odoo>

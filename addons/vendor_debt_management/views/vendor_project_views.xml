@@ -1,0 +1,50 @@
+<!-- vendor_debt_management/views/vendor_project_views.xml -->
+<odoo>
+    <record id="view_vendor_project_tree" model="ir.ui.view">
+        <field name="name">vendor.project.tree</field>
+        <field name="model">vendor.project</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="total_invoices"/>
+                <field name="total_payments"/>
+                <field name="total_outstanding"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_vendor_project_form" model="ir.ui.view">
+        <field name="name">vendor.project.form</field>
+        <field name="model">vendor.project</field>
+        <field name="arch" type="xml">
+            <form string="Dự án NCC">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="partner_id"/>
+                        <field name="currency_id"/>
+                    </group>
+                    <group>
+                        <field name="total_contract_amount" readonly="1"/>
+                        <field name="total_invoices" readonly="1"/>
+                        <field name="total_payments" readonly="1"/>
+                        <field name="total_outstanding" readonly="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Hợp đồng">
+                            <field name="contract_ids">
+                                <tree editable="bottom">
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="amount_total"/>
+                                    <field name="outstanding"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

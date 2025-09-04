@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="custom_purchase_report_a4_portrait" model="report.paperformat">
+        <field name="name">Custom Sale Report A4 Portrait</field>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">30</field>        <!-- Điều chỉnh từ 40mm xuống 30mm -->
+        <field name="margin_bottom">30</field>        <!-- Tăng từ 23mm lên 30mm -->
+        <field name="margin_left">10</field>        <!-- Tăng từ 7mm lên 10mm -->
+        <field name="margin_right">10</field>        <!-- Tăng từ 7mm lên 10mm -->
+        <field name="header_spacing">25</field>        <!-- Giảm từ 35mm xuống 25mm -->
+        <field name="dpi">90</field>
+    </record>
+    <template id="summary_of_debt_report_layout">
+        <t t-call="web.html_container">
+            <t t-set="o" t-value="o or doc"/>
+            <div class="header"></div>
+            <div class="article" style="font-family: Times New Roman; font-size: 11pt; line-height: 1.5;">
+                <t t-raw="0"/>
+                <!-- Nội dung chính của báo cáo -->
+            </div>
+            <div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt;">
+                <p>
+                    <span class="page"/>
+                </p>
+            </div>
+        </t>
+    </template>    <!-- Template for Sale Contract Report -->
+    <template id="summary_of_debt_report_template">
+        <t t-call="custom_purchase_contract.summary_of_debt_report_layout">
+            <style>
+            table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: Arial, sans-serif;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .header {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .signature {
+            margin-top: 20px;
+        }
+            </style>
+            <div class="page" style="font-family: Times New Roman, sans-serif; font-size: 14px; color: #333; padding: 20px;">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Tên nhà cung cấp</th>
+                            <th>Diễn giải</th>
+                            <th>Số tiền hợp đồng</th>
+                            <th>Số tiền hóa đơn</th>
+                            <th>Số tiền đã thanh toán</th>
+                            <th>Số tiền còn nợ</th>
+                            <th>Số tiền đã tạm ứng/ chưa hóa đơn</th>
+                            <th>Ghi chú</th>
+                        </tr>
+
+                    </thead>
+                    <tbody>
+                        <t t-set="stt" t-value="0"/>
+                        <t t-foreach="docs" t-as="o">
+                            <tr>
+                                <td><t t-esc="stt + 1"/></td>
+                                <td><t t-esc="o.supplier_id.name or ''"/></td>
+                                <td><t t-esc="o.name or ''"/></td>
+                                <td><t t-esc="o.value or 0.0"/></td>
+                                <td><t t-esc="o.invoice_ids.mapped('amount_total') or 0.0"/></td>
+                                <td><t t-esc="o.paid_amount or 0.0"/></td>
+                                <td><t t-esc="o.due_amount or 0.0"/></td>
+                                <td><t t-esc="o.settlement_ids.mapped('amount') or 0.0"/></td>
+                                <td><t t-esc="o.terms or ''"/></td>
+                            </tr>
+                        </t>
+                    <!-- Thêm các hàng khác nếu cần dựa trên dữ liệu thực tế -->
+                </tbody>
+            </table>
+
+            <div>
+            </div>
+        </div>
+    </t>
+</template>
+
+
+<record id="action_purchase_report_pdf" model="ir.actions.report">
+    <field name="name">Tổng hợp công nợ phải trả nhà cung cấp thực tế (PDF)</field>
+    <field name="model">purchase.contract</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">custom_purchase_contract.summary_of_debt_report_template</field>
+    <field name="print_report_name">'Tổng hợp công nợ phải trả nhà cung cấp thực tế'</field>
+    <field name="paperformat_id" ref="custom_purchase_report_a4_portrait"/>
+</record>
+
+<record id="action_purchase_report_html" model="ir.actions.report">
+    <field name="name">Tổng hợp công nợ phải trả nhà cung cấp thực tế (HTML)</field>
+    <field name="model">purchase.contract</field>
+    <field name="report_type">qweb-html</field>
+    <field name="report_name">custom_purchase_contract.summary_of_debt_report_template</field>
+    <field name="print_report_name">'Tổng hợp công nợ phải trả nhà cung cấp thực tế'</field>
+</record>
+<menuitem id="menu_purchase_report" 
+          name="Báo cáo công nợ phải trả tổng hợp" 
+          parent="custom_account_menu.menu_accounting_reporting" 
+          action="action_purchase_report_html" 
+          sequence="20"/>
+</odoo>

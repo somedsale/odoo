@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="custom_purchase_report_a4_portrait" model="report.paperformat">
+        <field name="name">Custom Sale Report A4 Portrait</field>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">30</field>        <!-- Điều chỉnh từ 40mm xuống 30mm -->
+        <field name="margin_bottom">30</field>        <!-- Tăng từ 23mm lên 30mm -->
+        <field name="margin_left">10</field>        <!-- Tăng từ 7mm lên 10mm -->
+        <field name="margin_right">10</field>        <!-- Tăng từ 7mm lên 10mm -->
+        <field name="header_spacing">25</field>        <!-- Giảm từ 35mm xuống 25mm -->
+        <field name="dpi">90</field>
+    </record>
+    <template id="purchase_report_layout">
+        <t t-call="web.html_container">
+            <t t-set="o" t-value="o or doc"/>
+            <div class="header"></div>
+            <div class="article" style="font-family: Times New Roman; font-size: 11pt; line-height: 1.5;">
+                <t t-raw="0"/>
+                <!-- Nội dung chính của báo cáo -->
+            </div>
+            <div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt;">
+                <p>
+                    <span class="page"/>
+                </p>
+            </div>
+        </t>
+    </template>    <!-- Template for Sale Contract Report -->
+    <template id="purchase_report_template">
+        <t t-call="custom_purchase_contract.purchase_report_layout">
+            <style>
+            table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: Arial, sans-serif;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .header {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .signature {
+            margin-top: 20px;
+        }
+            </style>
+            <div class="page" style="font-family: Times New Roman, sans-serif; font-size: 14px; color: #333; padding: 20px;">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th rowspan="2">STT</th>
+                            <th rowspan="2">Tên nhà cung cấp</th>
+                            <th rowspan="2">Dự án/ công trình</th>
+                            <th rowspan="2">Diễn giải</th>
+                            <th colspan="2">Hợp đồng</th>
+                            <th colspan="2">Hồ sơ quyết toán</th>
+                            <th colspan="3">Hóa đơn</th>
+                            <th colspan="2">Đã trả</th>
+                            <th rowspan="2">Số tiền còn nợ</th>
+                            <th rowspan="2">Ghi chú</th>
+                            <th rowspan="2">Hạn T/T</th>
+                        </tr>
+                        <tr>
+                            <th>Số/ ngày</th>
+                            <th>Số tiền</th>
+                            <th>Số HS/ Ngày</th>
+                            <th>Số tiền</th>
+                            <th>Ngày</th>
+                            <th>Số hóa đơn</th>
+                            <th>Số tiền</th>
+                            <th>Ngày trả</th>
+                            <th>Số tiền</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="stt" t-value="0"/>
+                        <t t-foreach="docs" t-as="contract">
+                                    <t t-set="displayed_suppliers" t-value="{}"/>
+            <t t-set="displayed_projects" t-value="{}"/>
+
+                            <t t-foreach="contract.purchase_invoice_ids" t-as="invoice">
+                                <tr>
+                                    <td>
+                                        <t t-esc="stt + 1"/>
+                                    </td>
+                                    <td>
+                                        <t t-if="not displayed_suppliers.get(str(contract.supplier_id.id) if contract.supplier_id else 'None', False)">
+                                        <t t-esc="contract.supplier_id.name or ''"/>
+                                        <t t-set="temp_dict_suppliers" t-value="displayed_suppliers"/>
+                                        <t t-set="temp_dict_suppliers" t-value="dict(temp_dict_suppliers, **{str(contract.supplier_id.id) if contract.supplier_id else 'None': True})"/>
+                                        <t t-set="displayed_suppliers" t-value="temp_dict_suppliers"/>
+                                        </t>
+                                        <t t-if="displayed_suppliers.get(str(contract.supplier_id.id) if contract.supplier_id else 'None', False)"></t>
+                                    </td>
+                                    <td>
+                                        <t t-if="not displayed_projects.get(str(contract.project_id.id) if contract.project_id else 'None', False)">
+                                            <t t-esc="contract.project_id.name or ''"/>
+                                            <t t-set="temp_dict" t-value="displayed_projects"/>
+                                            <t t-set="temp_dict" t-value="dict(temp_dict, **{str(contract.project_id.id) if contract.project_id else 'None': True})"/>
+                                            <t t-set="displayed_projects" t-value="temp_dict"/>
+                                        </t>
+                                        <t t-if="displayed_projects.get(str(contract.project_id.id) if contract.project_id else 'None', False)"></t>
+                                    </td>
+                                    <td>
+                                    <t t-esc="contract.description or ''"/>
+                                </td>
+                                <td>
+                                    <t t-esc="contract.name"/>
+ (                                    <t t-esc="contract.date_signed or ''"/>
+)</td>
+                                <td>
+                                    <t t-esc="contract.value or 0.0"/>
+                                </td>
+                                <td>
+                                    <t t-esc="contract.settlement_ids.mapped('name') or ''"/>
+ (                                    <t t-esc="contract.settlement_ids.mapped('date_settlement') or ''"/>
+)</td>
+                                <td>
+                                    <t t-esc="contract.settlement_ids.mapped('amount') or 0.0"/>
+                                </td>
+                                <td>
+                                    <t t-esc="invoice.create_date or ''"/>
+                                </td>
+                                <td>
+                                    <t t-esc="invoice.name or ''"/>
+                                </td>
+                                <td>
+                                    <t t-esc="invoice.amount_total or 0.0"/>
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                    <t t-esc="contract.due_amount or 0.0"/>
+                                </td>
+                                <td>
+                                    <t t-esc="contract.paid_amount or 0.0"/>
+                                </td>
+                                <td>
+                                    <t t-esc="contract.terms or ''"/>
+                                </td>
+                                <td>
+                                    <t t-esc="contract.date_end or ''"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </t>
+                    <!-- Thêm các hàng khác nếu cần dựa trên dữ liệu thực tế -->
+                </tbody>
+                <tfoot>
+                    <!-- <tr>
+                                <td colspan="6">Tổng cộng</td>
+                                <td>515,008,000</td>
+                                <td></td>
+                                <td>51,500,800</td>
+                                <td>566,508,800</td>
+                            </tr> -->
+                </tfoot>
+            </table>
+
+            <div class="signature">
+                <p>Người lập bảng kê: Nguyễn Thị Thu Hà</p>
+                <p>Kế toán: Đỗ Thị Vân</p>
+                <p>Ngày: 25/08/2025</p>
+            </div>
+            <div>
+            </div>
+        </div>
+    </t>
+</template>
+
+
+<record id="action_purchase_report_pdf" model="ir.actions.report">
+    <field name="name">Purchase Report (PDF)</field>
+    <field name="model">purchase.contract</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">custom_purchase_contract.purchase_report_template</field>
+    <field name="print_report_name">'Purchase Report'</field>
+    <field name="paperformat_id" ref="custom_purchase_report_a4_portrait"/>
+</record>
+
+<record id="action_purchase_report_html" model="ir.actions.report">
+    <field name="name">Purchase Report (HTML)</field>
+    <field name="model">purchase.contract</field>
+    <field name="report_type">qweb-html</field>
+    <field name="report_name">custom_purchase_contract.purchase_report_template</field>
+    <field name="print_report_name">'Purchase Report'</field>
+</record>
+</odoo>

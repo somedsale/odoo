@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_debt_settlement_user,access.debt.settlement.user,model_debt_settlement,base.group_user,1,1,1,1
+access_debt_settlement_manager,access.debt.settlement.manager,model_debt_settlement,account.group_account_manager,1,1,1,1

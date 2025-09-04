@@ -13,6 +13,7 @@
         'security/ir.model.access.csv',
         'views/views.xml',
         'views/menu.xml',
+        'views/purchase_report_template.xml',
     ],
     'installable': True,
     'application': False,

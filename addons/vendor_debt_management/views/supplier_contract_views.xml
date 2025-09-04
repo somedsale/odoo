@@ -1,0 +1,92 @@
+<odoo>
+    <record id="view_supplier_contract_tree" model="ir.ui.view">
+        <field name="name">supplier.contract.tree</field>
+        <field name="model">supplier.contract</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="project_id"/>
+                <field name="interpretation"/>
+                <field name="contract_date"/>
+                <field name="amount"/>
+                <field name="total_invoices"/>
+                <field name="paid_amount"/>
+                <field name="residual_amount"/>
+                <field name="currency_id" optional="hide" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_supplier_contract_form" model="ir.ui.view">
+        <field name="name">supplier.contract.form</field>
+        <field name="model">supplier.contract</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                    <group string="Thông tin chung">
+                        <field name="name"/>
+                        <field name="partner_id"/>
+                        <field name="project_id"/>
+                        <field name="interpretation"/>
+                        <field name="contract_date"/>
+                        <field name="due_date"/>
+                    </group>
+                    <group string="Chi tiết">
+                        <field name="amount"/>
+                        <field name="total_invoices" readonly="1"/>
+                        <field name="paid_amount" readonly="1"/>
+                        <field name="residual_amount" readonly="1"/>
+                        <field name="currency_id" invisible="1" optional="hide"/>
+                    </group>
+                    </group>
+                    <notebook>
+                        <page string="Hồ sơ quyết toán">
+                            <field name="settlement_ids">
+                                <tree editable="bottom">
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="amount"/>
+                                    <field name="currency_id" invisible="1" optional="hide"/>
+
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Hóa đơn">
+                            <field name="invoice_ids">
+                                <tree editable="bottom">
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="amount"/>
+                                    <field name="currency_id" invisible="1" optional="hide"/>
+
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Phiếu chi">
+                            <field name="account_payment_request_ids">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="total"/>
+                                    <field name="state"/>
+                                    <field name="currency_id" invisible="1" optional="hide"/>
+
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_supplier_contract" model="ir.actions.act_window">
+        <field name="name">Hợp đồng</field>
+        <field name="res_model">supplier.contract</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="menu_supplier_contract_root" name="Quản lý nợ NCC" sequence="10" parent="custom_account_menu.menu_accounting_custom_root"/>
+    <menuitem id="menu_supplier_contract" name="Hợp đồng" parent="menu_supplier_contract_root" action="action_supplier_contract" sequence="10"/>
+</odoo>

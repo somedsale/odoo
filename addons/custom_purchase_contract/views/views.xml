@@ -22,10 +22,7 @@
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <button name="action_confirm" string="Xác nhận" type="object" invisible="state != 'draft'"/>
-                    <button name="action_done" string="Hoàn thành" type="object" invisible="state != 'confirmed'"/>
-                    <button name="action_cancel" string="Hủy" type="object" invisible="state not in ('draft', 'confirmed')"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done"/>
+                    <button name="action_report" string="Báo cáo" type="object"/>
                 </header>
                 <sheet>
                     <group>
@@ -33,8 +30,6 @@
                         <field name="project_id"/>
                         <field name="supplier_id"/>
                         <field name="date_signed"/>
-                        <field name="date_start"/>
-                        <field name="date_end"/>
                         <field name="value"/>
                         <field name="currency_id" invisible="1"/>
                         <field name="paid_amount" readonly="1" widget="monetary"/>

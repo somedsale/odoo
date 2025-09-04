@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree view cho danh sách nhà cung cấp với công nợ -->
+    <record id="view_partner_debt_tree" model="ir.ui.view">
+        <field name="name">res.partner.debt.tree</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <tree string="Danh Sách Công Nợ Nhà Cung Cấp">
+                <field name="name" string="Nhà Cung Cấp"/>
+                <field name="debt_amount" string="Công Nợ" sum="Tổng Công Nợ"/>
+                <field name="project_ids" widget="many2many_tags" string="Dự Án"/>
+                <field name="purchase_order_ids" widget="many2many_tags" string="Hợp Đồng"/>
+                <field name="settlement_ids" widget="many2many_tags" string="Hồ Sơ Quyết Toán"/>
+                <field name="invoice_ids" widget="many2many_tags" string="Hóa Đơn"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form view để chi tiết, với tabs cho projects, contracts, etc. -->
+    <record id="view_partner_debt_form" model="ir.ui.view">
+        <field name="name">res.partner.debt.form</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="Công Nợ">
+                    <field name="debt_amount"/>
+                    <field name="project_ids">
+                        <tree>
+                            <field name="name"/>
+                            <!-- Thêm fields project -->
+                        </tree>
+                    </field>
+                    <field name="purchase_order_ids"/>
+                    <field name="settlement_ids"/>
+                    <field name="invoice_ids"/>
+                </page>
+            </notebook>
+        </field>
+    </record>
+
+    <!-- Action để mở view -->
+    <record id="action_debt_management" model="ir.actions.act_window">
+        <field name="name">Quản Lý Công Nợ</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">tree,form,kanban</field>
+        <field name="domain">[('supplier_rank', '&gt;', 0)]</field>  <!-- Chỉ suppliers -->
+        <field name="context">{}</field>
+    </record>
+
+    <!-- Menu item -->
+    <menuitem id="menu_debt_management" name="Công Nợ Nhà Cung Cấp" parent="custom_account_menu.menu_accounting_custom_root" action="action_debt_management" sequence="10"/>
+</odoo>
