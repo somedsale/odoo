@@ -21,7 +21,7 @@ class AccountingPaymentRequest(models.Model):
         ('employee', 'Chi phi nhân viên'),
         ('office', 'Chi phí văn phòng'),
         ('project', 'Chi phí dự án'),
-    ])
+    ], string="Phân loại chi phí", default='employee',required=True)
     expense_type = fields.Selection([
         ('material', 'Nguyên vật liệu'),
         ('labor', 'Nhân công'),
@@ -29,9 +29,8 @@ class AccountingPaymentRequest(models.Model):
     ], string="Loại chi phí", default='material',required=True)
     payment_type = fields.Selection([
         ('cash', 'Tiền mặt'),
-        ('bank', 'Chuyển khoản'),
-        ('other', 'Khác')
-    ], string="Loại thanh toán", default='cash')
+        ('bank', 'Chuyển khoản')
+    ], string="Loại thanh toán", default='cash',required=True)
     bankids = fields.Many2one('res.partner.bank', string="Tài khoản ngân hàng" , domain="[('partner_id', '=', receive_person)]")
     note = fields.Text(string="Ghi chú")
     state = fields.Selection([
