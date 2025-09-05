@@ -30,11 +30,11 @@
                 </header>
                 <sheet>
                     <widget name="web_ribbon" title="Đã thanh toán" bg_color="bg-success" invisible="status_expense != 'paid'"/>
-                    <widget name="web_ribbon" title="Chưa thanh toán" bg_color="bg-danger" invisible="status_expense != 'not yet'"/>
+                    <widget name="web_ribbon" title="Chưa thanh toán" bg_color="bg-danger" invisible="status_expense != 'not yet' or state == 'draft'"/>
                     <div class="oe_title">
                         <h1 >
                             <field name="name" readonly="1"/>
-                            <field name="status_expense" widget="badge" decoration-success="status_expense == 'paid'" decoration-danger="status_expense == 'not yet'"/>
+                            <!-- <field name="status_expense" widget="badge" decoration-success="status_expense == 'paid'" decoration-danger="status_expense == 'not yet'"/> -->
                         </h1>
                     </div>
                     <group col="2" string="Thông tin">

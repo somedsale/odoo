@@ -9,6 +9,7 @@
                 <field name="total_invoices"/>
                 <field name="paid_amount"/>
                 <field name="residual_amount"/>
+                <field name="due_days"/>
                 <field name="currency_id" optional="hide" invisible="1"/>
             </tree>
         </field>
@@ -19,17 +20,25 @@
         <field name="arch" type="xml">
             <form create="false" edit="true" delete="false">
                 <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="partner_id" readonly="1"/>
+                        </h1>
+                    </div>
                     <group>
-                        <field name="partner_id" readonly="1"/>
-                        <field name="due_date"/>
-                        <field name="due_days"/>
-                        <field name="interpretation"/>
-                        <field name="total_contracts"/>
-                        <field name="total_invoices"/>
-                        <field name="paid_amount"/>
-                        <field name="residual_amount"/>
-                        <field name="advance_amount"/>
-                        <field name="currency_id" optional="hide" invisible="1"/>
+                        <group>
+                            <field name="due_date"/>
+                            <field name="due_days"/>
+                            <field name="interpretation"/>
+                        </group>
+                        <group>
+                            <field name="total_contracts"/>
+                            <field name="total_invoices"/>
+                            <field name="paid_amount"/>
+                            <field name="residual_amount"/>
+                            <field name="advance_amount"/>
+                            <field name="currency_id" optional="hide" invisible="1"/>
+                        </group>
                     </group>
                     <notebook>
                         <page string="Hợp đồng">
@@ -41,6 +50,7 @@
                                     <field name="total_invoices"/>
                                     <field name="paid_amount"/>
                                     <field name="residual_amount"/>
+                                    <field name="currency_id" optional="hide" invisible="1"/>
                                 </tree>
                             </field>
                         </page>
