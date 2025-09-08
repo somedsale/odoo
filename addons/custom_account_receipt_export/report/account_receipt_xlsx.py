@@ -91,8 +91,8 @@ class AccountReceiptXlsx(models.AbstractModel):
         sheet.merge_range(row, 1, row, 3, receipt_address, value_format)
         row += 1
 
-        # Lý do chi
-        sheet.write(row, 0, "Lý do chi:", label_format)
+        # Lý do thu
+        sheet.write(row, 0, "Lý do thu:", label_format)
         reason = records[0].note or ""
         sheet.merge_range(row, 1, row, 3, reason, value_format)
         row += 1

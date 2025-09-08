@@ -81,7 +81,13 @@ class AccountPaymentRequestXlsx(models.AbstractModel):
         row +=2
         # Họ tên người nhận tiền
         sheet.write(row, 0, "Họ tên người nhận tiền:", label_format)
-        receive_name = records[0].receive_person.name if records[0].receive_person else ""
+        receive_name = ""
+        if records[0].receive_type == "employee" and records[0].employee_id:
+            receive_name = records[0].employee_id.name
+        elif records[0].receive_type == "supplier" and records[0].supplier_id:
+            receive_name = records[0].supplier_id.name
+        elif records[0].receive_person:
+            receive_name = records[0].receive_person.name
         sheet.merge_range(row, 1, row, 3, receive_name, value_format)
         row += 1
 
@@ -105,8 +111,8 @@ class AccountPaymentRequestXlsx(models.AbstractModel):
         if project:
             # Tìm hợp đồng có project_id trùng
             contract = self.env['supplier.contract'].search([('project_id', '=', project.id)], limit=1)
-        if contract:
-            contract_name = contract.name
+            if contract:
+                contract_name = contract.name
         else:
             contract_name = ""
         sheet.merge_range(row, 1, row, 3, contract_name, value_format)
@@ -141,7 +147,7 @@ class AccountPaymentRequestXlsx(models.AbstractModel):
         sheet.write(row, 1, "(Ký, họ tên)", italic_center_label)
         sheet.write(row, 2, "(Ký, họ tên)", italic_center_label)
         sheet.write(row, 3, "(Ký, họ tên, đóng dấu)", italic_center_label)
-        row += 4
+        row += 6
         sheet.write(row, 0, "Đã nhận đủ tiền:", label_format)
         sheet.merge_range(row, 1, row, 3, amount_words, value_format)
 
