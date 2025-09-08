@@ -3,12 +3,12 @@ import base64
 from io import BytesIO
 from datetime import datetime
 
-class AccountPaymentRequestXlsx(models.AbstractModel):
-    _name = 'report.payment_request_xlsx_report.payment_request_xlsx'
+class AccountReceiptXlsx(models.AbstractModel):
+    _name = 'report.account_receipt_xlsx_report.account_receipt_xlsx'
     _inherit = 'report.report_xlsx.abstract'
 
     def generate_xlsx_report(self, workbook, data, records):
-        sheet = workbook.add_worksheet("Phiếu chi")
+        sheet = workbook.add_worksheet("Phiếu thu")
         sheet.set_zoom(110)
 
         sheet.set_column('A:D', 25)
@@ -68,7 +68,7 @@ class AccountPaymentRequestXlsx(models.AbstractModel):
         row += 1
         sheet.merge_range('D2:D3', "LƯU HÀNH NỘI BỘ", header_badge)
 
-        sheet.merge_range('B5:C5',"PHIẾU CHI", title)
+        sheet.merge_range('B5:C5',"PHIẾU THU", title)
         row += 1
         sheet.write('D5', "Quyển số: .....................", normal_left)
         row += 1
@@ -79,16 +79,16 @@ class AccountPaymentRequestXlsx(models.AbstractModel):
         sheet.merge_range('B6:C6', today, italic_center)
         sheet.write('D6', "Số: ...............................", normal_left)
         row +=2
-        # Họ tên người nhận tiền
-        sheet.write(row, 0, "Họ tên người nhận tiền:", label_format)
-        receive_name = records[0].receive_person.name if records[0].receive_person else ""
-        sheet.merge_range(row, 1, row, 3, receive_name, value_format)
+        # Họ tên người nộp tiền
+        sheet.write(row, 0, "Họ tên người nộp tiền:", label_format)
+        receipter_name = records[0].create_uid.name if records[0].create_uid else ""
+        sheet.merge_range(row, 1, row, 3, receipter_name, value_format)
         row += 1
 
         # Địa chỉ
         sheet.write(row, 0, "Địa chỉ:", label_format)
-        receive_address = records[0].receive_person.contact_address if records[0].receive_person else ""
-        sheet.merge_range(row, 1, row, 3, receive_address, value_format)
+        receipt_address = records[0].create_uid.contact_address if records[0].create_uid else ""
+        sheet.merge_range(row, 1, row, 3, receipt_address, value_format)
         row += 1
 
         # Lý do chi
@@ -113,7 +113,7 @@ class AccountPaymentRequestXlsx(models.AbstractModel):
         row += 1
         # Số tiền
         sheet.write(row, 0, "Số tiền:", label_format)
-        amount = records[0].total or 0.0
+        amount = records[0].amount or 0.0
         # currency = records[0].currency_id.symbol or "đ"
         currency = "đ"
 
@@ -142,7 +142,7 @@ class AccountPaymentRequestXlsx(models.AbstractModel):
         sheet.write(row, 2, "(Ký, họ tên)", italic_center_label)
         sheet.write(row, 3, "(Ký, họ tên, đóng dấu)", italic_center_label)
         row += 4
-        sheet.write(row, 0, "Đã nhận đủ tiền:", label_format)
+        sheet.write(row, 0, "Đã thu đủ tiền:", label_format)
         sheet.merge_range(row, 1, row, 3, amount_words, value_format)
 
     
