@@ -60,17 +60,6 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Hồ sơ quyết toán">
-                            <field name="settlement_ids">
-                                <tree editable="bottom">
-                                    <field name="name" width="150"/>
-                                    <field name="date" width="100"/>
-                                    <field name="description" width="300"/>
-                                    <field name="amount" widget="monetary" class="o_list_number" width="120"/>
-                                    <field name="currency_id" invisible="1" optional="hide"/>
-                                </tree>
-                            </field>
-                        </page>
                         <page string="Hóa đơn">
                             <field name="invoice_ids">
                                 <tree editable="bottom">
@@ -90,6 +79,17 @@
                                     <field name="date" width="100"/>
                                     <field name="total" widget="monetary" class="o_list_number" width="120"/>
                                     <field name="state" width="100" string="Trạng thái"/>
+                                    <field name="currency_id" invisible="1" optional="hide"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Hồ sơ quyết toán">
+                            <field name="settlement_ids">
+                                <tree editable="bottom">
+                                    <field name="name" width="150"/>
+                                    <field name="date" width="100"/>
+                                    <field name="description" width="300"/>
+                                    <field name="amount" widget="monetary" class="o_list_number" width="120"/>
                                     <field name="currency_id" invisible="1" optional="hide"/>
                                 </tree>
                             </field>
