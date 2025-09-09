@@ -33,7 +33,8 @@ class AccountReceiptXlsx(models.AbstractModel):
         })
         normal_left = workbook.add_format({'align': 'left', 'font_size': 13, 'font_name': 'Times New Roman'})
         italic_center = workbook.add_format({'italic': True, 'bold': True, 'align': 'center', 'font_size': 13, 'font_name': 'Times New Roman'})
-        italic_center_label = workbook.add_format({'italic': True,  'align': 'center', 'font_size': 13, 'font_name': 'Times New Roman'})
+        sign_header = workbook.add_format({ 'bold': True,'align': 'center', 'font_size': 13, 'font_name': 'Times New Roman'})
+        sign_sub = workbook.add_format({ 'align': 'center', 'font_size': 13, 'font_name': 'Times New Roman'})
         date_format = workbook.add_format({'italic': True,  'align': 'center', 'font_size': 13, 'font_name': 'Times New Roman'})
         label_format = workbook.add_format({
             'align': 'left',
@@ -132,15 +133,15 @@ class AccountReceiptXlsx(models.AbstractModel):
         sheet.merge_range(row, 2, row, 3, today, date_format)
         row += 1
         # --- Chữ ký ---
-        sheet.write(row, 0, "Người nhận tiền", italic_center)
-        sheet.write(row, 1, "Kế toán tổng hợp", italic_center)
-        sheet.write(row, 2, "Thủ quỹ", italic_center)
-        sheet.write(row, 3, "Giám đốc", italic_center); row += 1
+        sheet.write(row, 0, "Người nhận tiền", sign_header)
+        sheet.write(row, 1, "Kế toán tổng hợp", sign_header)
+        sheet.write(row, 2, "Thủ quỹ", sign_header)
+        sheet.write(row, 3, "Giám đốc", sign_header); row += 1
 
-        sheet.write(row, 0, "(Ký, họ tên)", italic_center_label)
-        sheet.write(row, 1, "(Ký, họ tên)", italic_center_label)
-        sheet.write(row, 2, "(Ký, họ tên)", italic_center_label)
-        sheet.write(row, 3, "(Ký, họ tên, đóng dấu)", italic_center_label)
+        sheet.write(row, 0, "(Ký, họ tên)", sign_sub)
+        sheet.write(row, 1, "(Ký, họ tên)", sign_sub)
+        sheet.write(row, 2, "(Ký, họ tên)", sign_sub)
+        sheet.write(row, 3, "(Ký, họ tên, đóng dấu)", sign_sub)
         row += 4
         sheet.write(row, 0, "Đã thu đủ tiền:", label_format)
         sheet.merge_range(row, 1, row, 3, amount_words, value_format)
