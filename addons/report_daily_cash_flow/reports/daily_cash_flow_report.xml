@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="daily_cash_flow_report" model="ir.actions.report">
+        <field name="name">Daily Cash Flow Report (HTML)</field>
+        <field name="model">daily.cash.flow.wizard</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">report_daily_cash_flow.daily_cash_flow_report_template</field>
+        <field name="print_report_name">'Daily Cash Flow Report'</field>
+    </record>
+    <record id="custom_sale_report_a4_portrait" model="report.paperformat">
+        <field name="name">Custom Sale Report A4 Portrait</field>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">30</field>        <!-- Điều chỉnh từ 40mm xuống 30mm -->
+        <field name="margin_bottom">30</field>        <!-- Tăng từ 23mm lên 30mm -->
+        <field name="margin_left">10</field>        <!-- Tăng từ 7mm lên 10mm -->
+        <field name="margin_right">10</field>        <!-- Tăng từ 7mm lên 10mm -->
+        <field name="header_spacing">25</field>        <!-- Giảm từ 35mm xuống 25mm -->
+        <field name="dpi">90</field>
+    </record>
+    <template id="daily_cash_flow_report_layout">
+        <t t-call="web.html_container">
+            <t t-set="o" t-value="o or doc"/>
+            <div class="header"></div>
+            <div class="article" style="font-family: Times New Roman; font-size: 11pt; line-height: 1.5;">
+                <t t-raw="0"/>
+                <!-- Nội dung chính của báo cáo -->
+            </div>
+            <div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt;">
+                <p>
+                    <span class="page"/>
+                </p>
+            </div>
+        </t>
+    </template>    <!-- Template for Sale Contract Report -->
+    <template id="daily_cash_flow_report_template">
+        <t t-call="report_daily_cash_flow.daily_cash_flow_report_layout">
+            <style>
+                            .page {
+                    font-family: "Times New Roman";
+                    font-size: 16px;
+                    color: #333;
+                }
+                    /* Style tổng thể bảng */
+                    table.report-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        font-size: 13px;
+                        font-family: Arial, sans-serif;
+                    }
+                    table.report-table thead th {
+                        background-color: #2480db;
+                        color: #000;
+                        padding: 6px;
+                        text-align: center;
+                        border: 1px solid #ddd;
+                        vertical-align: middle;
+                    }
+                    table.report-table tbody td {
+                        border: 1px solid #ddd;
+                        padding: 5px 6px;
+                        vertical-align: middle;
+                    }
+                    table.report-table tbody tr:nth-child(even) {
+                        background-color: #f9f9f9;
+                    }
+                    table.report-table tbody tr:hover {
+                        background-color: #f1f6fc;
+                    }
+                    table.report-table td.text-right {
+                        text-align: right;
+                    }
+                    table.report-table td.text-center {
+                        text-align: center;
+                    }
+                    h2.report-title {
+                        text-align: center;
+                        margin-bottom: 20px;
+                        font-size: 20px;
+                        color: #2480db;
+                        text-transform: uppercase;
+                    }
+            </style>
+
+            <div class="page" style="font-family: Times New Roman, sans-serif; font-size: 14px; color: #333; padding: 20px;">
+                <h2 style="text-align: center; color: #2c3e50;">Báo cáo thu chi ngày <t t-esc="date_report"/>
+                </h2>
+                <table class="report-table">
+                    <!-- 1) Ấn định độ rộng từng cột -->
+                    <colgroup>
+                        <col style="width: 5%"/>
+                        <!-- STT -->
+                        <col style="width: 19%"/>
+                        <!-- Nội dung thu -->
+                        <col style="width: 8%"/>
+                        <!-- Thu NH -->
+                        <col style="width: 8%"/>
+                        <!-- Thu TM -->
+                        <col style="width: 22%"/>
+                        <!-- Nội dung chi -->
+                        <col style="width: 10%"/>
+                        <!-- Chi NH -->
+                        <col style="width: 10%"/>
+                        <!-- Chi TM -->
+                        <col style="width: 18%"/>
+                        <!-- Gói thầu / Công trình / ... -->
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th style="text-align: center; background-color: #D9E1F2;"></th>
+                            <th colspan="3" style="text-align: center; background-color: #92D050;"> THU TIỀN </th>
+                            <th colspan="4" style="text-align: center; background-color: #FFF2CC;"> CHI TIỀN </th>
+                        </tr>
+                        <tr>
+                            <th style="text-align: center; background-color: #D9E1F2;">STT</th>
+                            <th style="text-align: center; background-color: #92D050;">Nội dung thu</th>
+                            <th style="text-align: center; background-color: #92D050;">Ngân hàng</th>
+                            <th style="text-align: center; background-color: #92D050;">Tiền mặt</th>
+                            <th style="text-align: center; background-color: #FFF2CC;">Nội dung chi</th>
+                            <th style="text-align: center; background-color: #FFF2CC;">Ngân hàng</th>
+                            <th style="text-align: center; background-color: #FFF2CC;">Tiền mặt</th>
+                            <th style="text-align: center; background-color: #FFF2CC;">GÓI THẦU/ CÔNG TRÌNH/ ĐỊA ĐIỂM/ CHỦ ĐẦU TƯ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td></td>
+                            <td style="text-align: center;">
+                                <div>TỒN ĐẦU KỲ</div>
+                                <div> NGÀY <t t-esc="date_report"/>
+                                </div>
+                            </td>
+                            <td style="text-align:right">
+                                <t t-esc="opening_bank" t-options="{'widget': 'monetary', 'display_currency': currency_id}"/>
+                            </td>
+                            <td style="text-align:right">
+                                <t t-esc="opening_cash" t-options="{'widget': 'monetary', 'display_currency': currency_id}"/>
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <t t-set="max_len" t-value="max(len(receipts), len(payments))"/>
+                        <t t-foreach="range(max_len)" t-as="i">
+                            <tr>
+                                <td style="text-align: center;" t-esc="i+1"/>
+                                <!-- Thu -->
+                                <t t-if="i &lt; len(receipts)">
+                                    <t t-set="receipt" t-value="receipts[i]"/>
+                                    <td t-esc="receipt.note or ''"/>
+                                    <t t-if="receipt.payment_method == 'bank'">
+                                        <td style="text-align:right" t-esc="receipt.amount or 0" t-options="{'widget': 'monetary', 'display_currency': currency_id}"/>
+                                        <td></td>
+                                    </t>
+                                    <t t-else="">
+                                        <td></td>
+                                        <td style="text-align:right" t-esc="receipt.amount or 0" t-options="{'widget': 'monetary', 'display_currency': currency_id}"/>
+                                    </t>
+                                </t>
+                                <t t-else="">
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </t>
+                                <!-- Chi -->
+                                <t t-if="i &lt; len(payments)">
+                                    <t t-set="payment" t-value="payments[i]"/>
+                                    <td t-esc="payment.note or ''"/>
+                                    <t t-if="payment.payment_type == 'bank'">
+                                        <td style="text-align:right" t-esc="payment.total or 0" t-options="{'widget': 'monetary', 'display_currency': currency_id}"/>
+                                        <td></td>
+                                    </t>
+                                    <t t-else="">
+                                        <td></td>
+                                        <td style="text-align:right" t-esc="payment.total or 0" t-options="{'widget': 'monetary', 'display_currency': currency_id}"/>
+                                    </t>
+                                    <td>
+                                        <t t-if="payment.cost_classification == 'project'">
+                                            <t t-if ="payment.expense_category_id">
+                                                <t t-esc="payment.expense_category_id.name"/>
+                                                -                                                
+                                                <t t-esc="payment.project_id.name"/>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-if ="payment.expense_category_id">
+                                                <t t-esc="payment.expense_category_id.name"/>
+                                            </t>
+                                        </t>
+                                    </td>
+                                </t>
+                                <t t-else="">
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </t>
+                            </tr>
+                        </t>
+                        <tr>
+                            <td></td>
+                            <td style="text-align: center; font-weight: bold">TỔNG THU/ CHI</td>
+                            <td style="text-align:right; font-weight: bold">
+                                <t t-esc="sum_receipt_bank" t-options="{'widget': 'monetary', 'display_currency': currency_id}"/>
+                            </td>
+                            <td style="text-align:right; font-weight: bold">
+                                <t t-esc="sum_receipt_cash" t-options="{'widget': 'monetary', 'display_currency': currency_id}"/>
+                            </td>
+                            <td></td>
+                            <td style="text-align:right; font-weight: bold">
+                                <t t-esc="sum_payment_bank" t-options="{'widget': 'monetary', 'display_currency': currency_id}"/>
+                            </td>
+                            <td style="text-align:right; font-weight: bold">
+                                <t t-esc="sum_payment_cash" t-options="{'widget': 'monetary', 'display_currency': currency_id}"/>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td style="text-align: center; font-weight: bold">
+                                <div>TỒN TIỀN</div>
+                                <div>NGÂN HÀNG/ MẶT</div>
+                                <div>
+                                    <t t-esc="date_report"/>
+                                </div>
+                            </td>
+                            <td style="text-align:right; font-weight: bold">
+                                <t t-esc="closing_bank" t-options="{'widget': 'monetary', 'display_currency': currency_id}"/>
+                            </td>
+                            <td style="text-align:right; font-weight: bold">
+                                <t t-esc="closing_cash" t-options="{'widget': 'monetary', 'display_currency': currency_id}"/>
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </t>
+    </template>
+</odoo>

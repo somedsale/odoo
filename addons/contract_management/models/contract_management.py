@@ -45,7 +45,7 @@ class ContractManagement(models.Model):
     ], string='Giai đoạn', default='negotiating', required=True)
     project_id = fields.Many2one('project.project', string='Dự án', readonly=True)
     company_id = fields.Many2one('res.company', string='Công ty', default=lambda self: self.env.company)
-    planned_start_date = fields.Date(string='Ngày bắt dầu')
+    planned_start_date = fields.Date(string='Ngày bắt đầu')
     planned_end_date = fields.Date(string='Ngày kết thúc')
     description = fields.Text(string='Mô tả')
     attachment_ids = fields.Many2many('ir.attachment', string='Tài liệu')
@@ -80,7 +80,7 @@ class ContractManagement(models.Model):
                         except ValueError:
                             raise UserError(f"Task stage {ref} not found. Please ensure all task stages are defined.")
                     if contract.sale_order_id.x_project_name:
-                        name_project = contract.sale_order_id.x_project_name + ' - ' + contract.sale_order_id.name
+                        name_project = f"Số HĐ ${contract.num_contract} - ${contract.sale_order_id.x_project_name}"
                     else:
                         name_project = contract.sale_order_id.name
                     # Create project when stage is 'Đang thực hiện'
@@ -88,6 +88,7 @@ class ContractManagement(models.Model):
                         'name': f'{name_project}',
                         'partner_id': contract.partner_id.id,
                         'company_id': contract.company_id.id,
+                        'contract_id': contract.id,
                         'allow_timesheets': False,  # Optional: Disable timesheets if not needed
                         'allow_billable': False,  # Optional: Disable billing if not needed  # Optional: Disable billing if not needed
                         'type_ids': [(6, 0, task_stages.ids)],  # Assign task stages to project
@@ -244,7 +245,7 @@ class ProjectTask(models.Model):
 
 class ProjectProject(models.Model):
     _inherit = 'project.project'
-
+    contract_id = fields.Many2one('contract.management', string='Hợp đồng')
     @api.model
     def write(self, vals):
         res = super(ProjectProject, self).write(vals)
