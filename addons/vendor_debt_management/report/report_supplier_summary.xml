@@ -206,8 +206,8 @@
 <field name="paperformat_id" ref="custom_sale_report_a4_portrait"/>
 </record>
 <!-- Menu -->
-<menuitem id="menu_supplier_summary_root" name="Supplier Summary" parent="custom_account_menu.menu_accounting_custom_root"/>
+<menuitem id="menu_supplier_summary_root" name="Tổng hợp nhà cung cấp" parent="custom_account_menu.menu_accounting_reporting"/>
 
 <menuitem id="menu_supplier_summary_report" name="Báo cáo Công nợ NCC" parent="menu_supplier_summary_root" action="vendor_debt_management.action_supplier_summary_report"/>
-<menuitem id="menu_supplier_summary_report_pdf" name="Báo cáo Công nợ NCC (PDF)" parent="menu_supplier_summary_root" action="vendor_debt_management.action_supplier_summary_report_pdf"/>
+<!-- <menuitem id="menu_supplier_summary_report_pdf" name="Báo cáo Công nợ NCC (PDF)" parent="menu_supplier_summary_root" action="vendor_debt_management.action_supplier_summary_report_pdf"/> -->
 </odoo>
