@@ -20,7 +20,7 @@
                                 <field name="partner_id"/>
                                 <field name="amount" widget="monetary"/>
                                 <field name="currency_id" invisible="1" optional="hide"/>
-                                <field name="x_payment_method_id"/>
+                                <field name="payment_method"/>
                                 <field name="note"/>
                             </group>
                             <group>
@@ -48,7 +48,7 @@
                     <field name="partner_id"/>
                     <field name="amount" widget="monetary"/>
                     <field name="currency_id" invisible="1" optional="hide"/>
-                    <field name="x_payment_method_id"/>
+                    <field name="payment_method"/>
                     <field name="state"/>
                 </tree>
             </field>

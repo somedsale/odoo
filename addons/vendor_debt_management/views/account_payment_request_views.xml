@@ -5,11 +5,11 @@
         <field name="inherit_id" ref="custom_account_payment_request.view_account_payment_request_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name=&apos;note&apos;]" position="after">
-                <field name="receive_type" string="Chi cho" />
+                <!-- <field name="receive_type" string="Chi cho" />
                 <field name="supplier_contract_id" string="Hợp đồng mua hàng" invisible="receive_type != 'supplier'"/>
                 <field name="supplier_id" domain="[('supplier_rank', '>', 0)]" context="{'default_supplier_rank': 1}" string="Nhà cung cấp" readonly="1" invisible="receive_type != 'supplier'"/>
                 <field name="employee_id" string="Nhân viên" invisible="receive_type != 'employee'"/>
-                <field name="invoice_id" string="Hóa đơn"/>
+                <field name="invoice_id" string="Hóa đơn"/> -->
             </xpath>
         </field>
     </record>

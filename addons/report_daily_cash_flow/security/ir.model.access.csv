@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_daily_cash_flow_wizard,daily.cash.flow.wizard,model_daily_cash_flow_wizard,base.group_user,1,1,1,1
+access_cash_daily_balance,cash.daily.balance,model_cash_daily_balance,base.group_user,1,1,1,1

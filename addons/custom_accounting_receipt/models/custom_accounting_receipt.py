@@ -12,7 +12,10 @@ class AccountReceipt(models.Model):
     partner_id = fields.Many2one('res.partner', string='Khách hàng', required=True)
     amount = fields.Float(string='Số tiền', required=True)
     currency_id = fields.Many2one('res.currency', string='Tiền tệ', default=lambda self: self.env.company.currency_id)
-    x_payment_method_id = fields.Many2one('payment.method', string='Phương thức thanh toán', required=True)
+    payment_method = fields.Selection([
+        ('cash', 'Tiền mặt'),
+        ('bank', 'Chuyển khoản')
+    ], string='Phương thức thanh toán', default='cash', required=True)
     state = fields.Selection([
         ('draft', 'Nháp'),
         ('posted', 'Đã ghi sổ'),

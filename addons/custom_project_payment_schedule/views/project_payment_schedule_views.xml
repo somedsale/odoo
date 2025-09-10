@@ -50,7 +50,7 @@
                             <field name="amount" widget="monetary"/>
                             <field name="date"/>
                             <field name="partner_id" />
-                            <field name ="x_payment_method_id"/>
+                            <field name ="payment_method"/>
                             <field name="state" widget="badge"/>
                             <field name="project_id" optional="hide"/>
                             <field name ="currency_id" optional="hide"/>

@@ -48,8 +48,6 @@
 </template><!-- Template for Sale Contract Report -->
 <template id="report_supplier_summary_view">
 <t t-call="vendor_debt_management.report_supplier_summary_layout">
-    <div class="page">
-
         <style>
                 .page {
                     font-family: "Times New Roman";
@@ -82,6 +80,8 @@
                 .text-center { text-align: center; }
                 .text-right { text-align: right; }
         </style>
+    <div class="page">
+
 
 
         <h2 style="text-align:center; margin-bottom: 20px; font-size: 24px; text-transform: uppercase;">Tổng hợp công nợ phải trả nhà cung cấp thực tế</h2>

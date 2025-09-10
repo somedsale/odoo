@@ -9,7 +9,8 @@
         'data/ir_sequence_data.xml',
         'security/ir.model.access.csv',
         'views/account_payment_request_views.xml',
-        'views/proposal_sheet_inherit_payment_view.xml'
+        'views/proposal_sheet_inherit_payment_view.xml',
+        'views/expense_category_view_form.xml',
     ],
     'installable': True,
     'auto_install': False,

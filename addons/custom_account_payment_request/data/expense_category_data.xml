@@ -1,0 +1,83 @@
+<!-- data/expense_category_data.xml -->
+<odoo noupdate="1">
+    <!-- Nhóm: Chi phí tại công ty -->
+    <record id="exp_office_root" model="expense.category">
+        <field name="name">Chi phí tại công ty</field>
+        <field name="classification">office</field>
+    </record>
+
+    <record id="exp_office_khach" model="expense.category">
+        <field name="name">Tiếp khách</field>
+        <field name="classification">office</field>
+        <field name="parent_id" ref="exp_office_root"/>
+    </record>
+
+    <record id="exp_office_xuong" model="expense.category">
+        <field name="name">Xưởng</field>
+        <field name="classification">office</field>
+        <field name="parent_id" ref="exp_office_root"/>
+    </record>
+
+    <record id="exp_office_kho" model="expense.category">
+        <field name="name">Kho</field>
+        <field name="classification">office</field>
+        <field name="parent_id" ref="exp_office_root"/>
+    </record>
+    <record id="exp_office_thue" model="expense.category">
+        <field name="name">Thuế</field>
+        <field name="classification">office</field>
+        <field name="parent_id" ref="exp_office_root"/>
+    </record>
+    <record id="exp_office_quy" model="expense.category">
+        <field name="name">Quỹ</field>
+        <field name="classification">office</field>
+        <field name="parent_id" ref="exp_office_root"/>
+    </record>
+        <record id="exp_office_nh" model="expense.category">
+        <field name="name">Ngân hàng</field>
+        <field name="classification">office</field>
+        <field name="parent_id" ref="exp_office_root"/>
+    </record>
+        <record id="exp_office_luong" model="expense.category">
+        <field name="name">Lương</field>
+        <field name="classification">office</field>
+        <field name="parent_id" ref="exp_office_root"/>
+    </record>
+    <record id="exp_office_lai" model="expense.category">
+        <field name="name">Lãi Vay</field>
+        <field name="classification">office</field>
+        <field name="parent_id" ref="exp_office_root"/>
+    </record>
+    <record id="exp_office_doingoai" model="expense.category">
+        <field name="name">Đối Ngoại</field>
+        <field name="classification">office</field>
+        <field name="parent_id" ref="exp_office_root"/>
+    </record>
+    <!-- Bạn có thể thêm các mục con khác dưới 'office' nếu cần -->
+    <!-- <record ...> ... </record> -->
+
+    <!-- Nhóm: Chi phí các công trình -->
+    <record id="exp_project_root" model="expense.category">
+        <field name="name">Chi phí các công trình</field>
+        <field name="classification">project</field>
+    </record>
+
+    <record id="exp_project_khach" model="expense.category">
+        <field name="name">Tiếp khách</field>
+        <field name="classification">project</field>
+        <field name="parent_id" ref="exp_project_root"/>
+    </record>
+
+    <record id="exp_project_import" model="expense.category">
+        <field name="name">Chi phí nhập khẩu</field>
+        <field name="classification">project</field>
+        <field name="parent_id" ref="exp_project_root"/>
+    </record>
+
+    <record id="exp_project_doi_ngoai" model="expense.category">
+        <field name="name">Đối ngoại</field>
+        <field name="classification">project</field>
+        <field name="parent_id" ref="exp_project_root"/>
+    </record>
+
+</odoo>

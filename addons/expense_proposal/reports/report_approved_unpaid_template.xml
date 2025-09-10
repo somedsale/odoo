@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Đăng ký report -->
+    <report id="report_unpaid_approval_action" model="report.approved.unpaid" string="Khoản chi chưa chi" report_type="qweb-html" name="expense_proposal.report_approved_unpaid" file="expense_proposal.report_approved_unpaid" print_report_name="'Các khoản đã duyệt chưa chi Report'" />
+
+    <record id="custom_sale_report_a4_portrait" model="report.paperformat">
+        <field name="name">Custom Sale Report A4 Portrait</field>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">30</field>        <!-- Điều chỉnh từ 40mm xuống 30mm -->
+        <field name="margin_bottom">30</field>        <!-- Tăng từ 23mm lên 30mm -->
+        <field name="margin_left">5</field>        <!-- Tăng từ 7mm lên 10mm -->
+        <field name="margin_right">5</field>        <!-- Tăng từ 7mm lên 10mm -->
+        <field name="header_spacing">25</field>        <!-- Giảm từ 35mm xuống 25mm -->
+        <field name="dpi">110</field>
+    </record>
+    <!-- Template QWeb -->
+    <template id="report_unpaid_approval_layout">
+        <t t-call="web.html_container">
+            <t t-set="o" t-value="o or list"/>
+            <div class="header" style="display: flex; justify-content: space-between; font-family: Times New Roman;">
+                <table style="width:100%; border-collapse: collapse; border: 1px solid #fff;">
+                    <tr>
+                        <!-- Cột logo bên trái -->
+                        <td style="text-align: left; vertical-align: middle; border-collapse: collapse; border: 1px solid #fff; width: 50%;">
+                            <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id" alt="Company Logo" style="max-width: 160px;"/>
+                        </td>
+
+                        <!-- Cột thông tin công ty bên phải -->
+                        <td style="text-align: right; vertical-align: middle; border-collapse: collapse; border: 1px solid #fff; font-size: 11px; text-transform: capitalize; width: 50%;">
+                            <span t-esc="res_company.name" style="text-transform: uppercase;"/>
+                            <br/>
+                MST: <span t-esc="res_company.partner_id.vat"/>
+                        <br/>
+                Địa chỉ: <span t-esc="res_company.partner_id.street"/>
+                    <br/>
+                SĐT: <span t-esc="res_company.phone_accounting"/>
+                <br/>
+                Email: <span style="text-transform: lowercase;" t-esc="res_company.partner_id.email"/>
+            </td>
+        </tr>
+    </table>
+
+
+</div>
+<div class="article" style="font-family: Times New Roman; font-size: 11pt; line-height: 1.5; padding-top: 15px;">
+    <t t-raw="0"/>
+    <!-- Nội dung chính của báo cáo -->
+</div>
+<div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt; font-family: Times New Roman;">
+    <p>
+        <span class="page"/>
+    </p>
+</div>
+</t>
+</template><!-- Template for Sale Contract Report -->
+<template id="report_approved_unpaid">
+<t t-call="expense_proposal.report_unpaid_approval_layout">
+<style>
+  .page { font-family: "Times New Roman"; font-size: 12pt; color: #000; }
+
+  .styled-table {
+    border-collapse: collapse;
+    margin: 0 auto;
+    font-size: 12pt;
+    width: 100%;                 
+    border: 1px solid #000;
+    table-layout: fixed;          
+  }
+
+  .styled-table thead tr {
+    background-color: #C6E0B4;
+    font-weight: bold;
+    color: #000;
+    text-align: center;
+  }
+
+  .table-item{
+    text-transform: uppercase;
+    background-color: #E2EFDA;
+    font-weight: bold;
+    color: #000;
+  }
+
+  .styled-table th, .styled-table td {
+    padding: 8px 12px;
+    border: 1px solid #000;
+    vertical-align: middle;
+    overflow: hidden;            
+    word-wrap: break-word;       
+    overflow-wrap: anywhere;
+  }
+
+  <!-- /* .styled-table tbody tr:hover { background-color: #D9EAD3; } */ -->
+
+  .text-center { text-align: center; }
+  .text-right  { text-align: right; }
+
+  .num { white-space: nowrap; }
+</style>
+
+<div class="page">
+    <h2 style="text-align:center; margin-bottom: 20px; font-size: 24pt; text-transform: uppercase;">Các khoản chi đã được duyệt thực tế chưa chi</h2>
+
+
+    <table class="styled-table">
+      <colgroup>
+    <col style="width:7%"/>
+    <col style="width:10%"/>
+    <col style="width:25%"/>
+    <col style="width:15%"/>
+    <col style="width:15%"/>
+    <col style="width:28%"/>
+  </colgroup>
+        <thead>
+            <tr>
+                <th rowspan="2" class="table-item">STT</th>
+                <th rowspan="2" class="table-item">Ngày</th>
+                <th rowspan="2" class="table-item">Nội dung</th>
+                <th colspan="2" class="table-item">Số tiền</th>
+                <th rowspan="2" class="table-item">GÓI THẦU/CÔNG TRÌNH/ĐỊA ĐIỂM/CHỦ ĐẦU TƯ</th>
+            </tr>
+            <tr>
+                <th class="table-item" style="text-transform: capitalize">Ngân hàng</th>
+                <th class="table-item" style="text-transform: capitalize">Tiền mặt</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <t t-foreach="lists" t-as="grp">
+
+                <!-- NHÓM: KHOẢN VAY NỘI BỘ (NHÂN VIÊN) -->
+                <t t-if="(grp.get('total_cash_employee', 0) + grp.get('total_bank_employee', 0)) > 0">
+                    <tr class="table-item">
+
+                        <td colspan="3">KHOẢN VAY NỘI BỘ (NHÂN VIÊN)</td>
+                        <td class="text-right">
+                            <t t-esc="grp.get('total_bank_employee', 0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
+                        </td>
+                        <td class="text-right">
+                            <t t-esc="grp.get('total_cash_employee', 0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
+                        </td>
+                        <td>
+                            <t t-esc="grp.get('total_bank_employee', 0) + grp.get('total_cash_employee', 0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
+                        </td>
+                    </tr>
+                    <t t-set="i_employee" t-value="0"/>
+                    <t t-foreach="grp.get('line_items_employee', [])" t-as="line">
+                        <tr>
+                            <t t-set="i_employee" t-value="i_employee + 1"/>
+                            <td class="text-center" t-esc="i_employee"/>
+                            <td class="text-center"> <t t-esc="line.get('date').strftime('%d/%m/%Y') or ''"/> </td>
+                            <td class="text-left" t-esc="line.get('note') or ''"/>
+                            <t t-if="line.get('payment_type') == 'bank'">
+                                <td class="text-right">
+                                    <t t-esc="(line.get('total') or 0.0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
+                                </td>
+                                <td class="text-right">-</td>
+                            </t>
+                            <t t-else="">
+                                <td class="text-right">-</td>
+                                <td class="text-right">
+                                    <t t-esc="(line.get('total') or 0.0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
+                                </td>
+                            </t>
+                            <td class="text-left">
+                                <t t-if="line.get('cost_classification') != 'project'">
+                                    <span t-esc="(line.get('expense_category_id') and line.get('expense_category_id').name) or ''"/>
+                                </t>
+                                <t t-else="">
+                                    <span t-esc="(line.get('expense_category_id') and line.get('expense_category_id').name) or ''"/>
+                                    <t t-if="line.get('expense_category_id') and line.get('expense_category_id').name"> - </t>
+                                    <span t-esc="(line.get('project_id') and line.get('project_id').name) or ''"/>
+                                </t>
+                            </td>
+                        </tr>
+                    </t>
+                </t>
+
+                <!-- NHÓM: CHI PHÍ TẠI CÔNG TY -->
+                <t t-if="(grp.get('total_cash_office', 0) + grp.get('total_bank_office', 0)) > 0">
+                    <tr class="table-item">
+                        <td colspan="3">CHI PHÍ TẠI CÔNG TY</td>
+                        <td class="text-right">
+                            <t t-esc="grp.get('total_bank_office', 0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
+                        </td>
+                        <td class="text-right">
+                            <t t-esc="grp.get('total_cash_office', 0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
+                        </td>
+                        <td>
+                            <t t-esc="grp.get('total_bank_office', 0) + grp.get('total_cash_office', 0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
+                        </td>
+                    </tr>
+                    <t t-set="i_office" t-value="0"/>
+                    <t t-foreach="grp.get('line_items_office', [])" t-as="line">
+                        <tr>
+                            <t t-set="i_office" t-value="i_office + 1"/>
+                            <td class="text-center" t-esc="i_office"/>
+                            <td class="text-center"> <t t-esc="line.get('date').strftime('%d/%m/%Y') or ''"/> </td>
+                            <td class="text-left" t-esc="line.get('note') or ''"/>
+                            <t t-if="line.get('payment_type') == 'bank'">
+                                <td class="text-right">
+                                    <t t-esc="(line.get('total') or 0.0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
+                                </td>
+                                <td class="text-right">-</td>
+                            </t>
+                            <t t-else="">
+                                <td class="text-right">-</td>
+                                <td class="text-right">
+                                    <t t-esc="(line.get('total') or 0.0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
+                                </td>
+                            </t>
+                            <td class="text-left">
+                                <t t-if="line.get('cost_classification') != 'project'">
+                                    <span t-esc="(line.get('expense_category_id') and line.get('expense_category_id').name) or ''"/>
+                                </t>
+                                <t t-else="">
+                                    <span t-esc="(line.get('expense_category_id') and line.get('expense_category_id').name) or ''"/>
+                                    <t t-if="line.get('expense_category_id') and line.get('expense_category_id').name"> - </t>
+                                    <span t-esc="(line.get('project_id') and line.get('project_id').name) or ''"/>
+                                </t>
+                            </td>
+                        </tr>
+                    </t>
+                </t>
+
+                <!-- NHÓM: CHI PHÍ CÁC CÔNG TRÌNH -->
+                <t t-if="(grp.get('total_cash_project', 0) + grp.get('total_bank_project', 0)) > 0">
+                    <tr class="table-item">
+                        <td colspan="3">CHI PHÍ CÁC CÔNG TRÌNH</td>
+                        <td class="text-right">
+                            <t t-esc="grp.get('total_bank_project', 0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
+                        </td>
+                        <td class="text-right">
+                            <t t-esc="grp.get('total_cash_project', 0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
+                        </td>
+                        <td>
+                            <t t-esc="grp.get('total_bank_project', 0) + grp.get('total_cash_project', 0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
+                        </td>
+                    </tr>
+                    <t t-set="i_project" t-value="0"/>
+                    <t t-foreach="grp.get('line_items_project', [])" t-as="line">
+                        <tr>
+                        <t t-set="i_project" t-value="i_project + 1"/>
+                            <td class="text-center" t-esc="i_project"/>
+                            <td class="text-center"> <t t-esc="line.get('date').strftime('%d/%m/%Y') or ''"/> </td>
+                            <td class="text-left" t-esc="line.get('note') or ''"/>
+                            <t t-if="line.get('payment_type') == 'bank'">
+                                <td class="text-right">
+                                    <t t-esc="(line.get('total') or 0.0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
+                                </td>
+                                <td class="text-right">-</td>
+                            </t>
+                            <t t-else="">
+                                <td class="text-right">-</td>
+                                <td class="text-right">
+                                    <t t-esc="(line.get('total') or 0.0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
+                                </td>
+                            </t>
+                            <td class="text-left">
+                                <t t-if="line.get('cost_classification') != 'project'">
+                                    <span t-esc="(line.get('expense_category_id') and line.get('expense_category_id').name) or ''"/>
+                                </t>
+                                <t t-else="">
+                                    <span t-esc="(line.get('expense_category_id') and line.get('expense_category_id').name) or ''"/>
+                                    <t t-if="line.get('expense_category_id') and line.get('expense_category_id').name"> - </t>
+                                    <span t-esc="(line.get('project_id') and line.get('project_id').name) or ''"/>
+                                </t>
+                            </td>
+                        </tr>
+                    </t>
+                </t>
+            </t>
+
+            <!-- TỔNG CỘNG CUỐI BẢNG: Ngân hàng trước, Tiền mặt sau -->
+            <tr>
+                <td colspan="3" class="text-left" style="font-weight: bold">
+                    <strong>TỔNG DỰ CHI NGÂN HÀNG / TIỀN MẶT</strong>
+                </td>
+                <td class="text-right" style="font-weight: bold">
+                    <strong>
+                        <t t-esc="bank_total_amount" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
+                    </strong>
+                </td>
+                <td class="text-right" style="font-weight: bold">
+                    <strong>
+                        <t t-esc="cash_total_amount" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
+                    </strong>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td colspan="3" class="text-left" style="font-weight: bold">
+                    <strong>TỔNG CỘNG</strong>
+                </td>
+                <td colspan="2" class="text-center" style="font-weight: bold; font-size: 13pt">
+                    <strong>
+                        <t t-esc="total" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
+                    </strong>
+                </td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</t>
+</template>
+<record id="action_report_unpaid_approved" model="ir.actions.report">
+<field name="name">Các khoản đã duyệt chưa chi</field>
+<field name="model">account.payment.request</field>
+<field name="report_type">qweb-html</field>
+<field name="report_name">expense_proposal.report_approved_unpaid</field>
+<field name="report_file">expense_proposal.report_approved_unpaid</field>
+<field name="print_report_name">'Các khoản đã duyệt chưa chi'</field>
+<field name="paperformat_id" ref="custom_sale_report_a4_portrait"/>
+</record>
+<record id="action_report_unpaid_approved_pdf" model="ir.actions.report">
+<field name="name">Các khoản đã duyệt chưa chi (PDF)</field>
+<field name="model">account.payment.request</field>
+<field name="report_type">qweb-pdf</field>
+<field name="report_name">expense_proposal.report_approved_unpaid</field>
+<field name="report_file">expense_proposal.report_approved_unpaid</field>
+<field name="print_report_name">'Các khoản đã duyệt chưa chi'</field>
+<field name="paperformat_id" ref="custom_sale_report_a4_portrait"/>
+</record>
+<!-- Menu -->
+<menuitem id="menu_report_unpaid_approved_root" name="Các khoản chưa chi" parent="custom_account_menu.menu_accounting_reporting" action="expense_proposal.action_report_unpaid_approved"/>
+
+</odoo>

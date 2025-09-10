@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Đăng ký report -->
+    <report id="report_pending_approval_action" model="report.pending.approval" string="Khoản chi chưa được duyệt" report_type="qweb-html" name="expense_proposal.report_pending_approval" file="expense_proposal.report_pending_approval" print_report_name="'Các khoản chi chưa duyệt Report'" />
+
+    <record id="custom_sale_report_a4_portrait" model="report.paperformat">
+        <field name="name">Custom Sale Report A4 Portrait</field>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">30</field>        <!-- Điều chỉnh từ 40mm xuống 30mm -->
+        <field name="margin_bottom">30</field>        <!-- Tăng từ 23mm lên 30mm -->
+        <field name="margin_left">10</field>        <!-- Tăng từ 7mm lên 10mm -->
+        <field name="margin_right">10</field>        <!-- Tăng từ 7mm lên 10mm -->
+        <field name="header_spacing">25</field>        <!-- Giảm từ 35mm xuống 25mm -->
+        <field name="dpi">90</field>
+    </record>
+    <!-- Template QWeb -->
+    <template id="report_pending_approval_layout">
+        <t t-call="web.html_container">
+            <t t-set="o" t-value="o or list"/>
+            <div class="header" style="display: flex; justify-content: space-between;">
+                <div style="text-align: left; margin-bottom: 20px;">
+                    <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id" alt="Company Logo" style="max-width: 160px;"/>
+                </div>
+                <div style="text-align: right; margin-bottom: 20px; font-size: 11px; text-transform: capitalize;">
+                    <span t-esc="res_company.name" style="transform: uppercase;"/>
+                    <br/>
+                                MST: <span t-esc="res_company.partner_id.vat"/>
+                <br/>
+                                Địa chỉ: <span t-esc="res_company.partner_id.street"/>
+            <br/>
+                                SĐT: <span t-esc="res_company.phone_accounting"/>
+        <br/>
+                                Email: <span style="text-transform: lowercase;" t-esc="res_company.partner_id.email"/>
+    <!-- Email kt -->
+    </div>
+</div>
+<div class="article" style="font-family: Times New Roman; font-size: 11pt; line-height: 1.5;">
+    <t t-raw="0"/>
+    <!-- Nội dung chính của báo cáo -->
+</div>
+<div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt;">
+    <p>
+        <span class="page"/>
+    </p>
+</div>
+</t>
+</template><!-- Template for Sale Contract Report -->
+<template id="report_pending_approval">
+<t t-call="expense_proposal.report_pending_approval_layout">
+<style>
+                .page {
+                    font-family: "Times New Roman";
+                    font-size: 12pt;
+                    color: #333;
+                }
+                .styled-table {
+                    border-collapse: collapse;
+                    margin: 0 auto;
+                    font-size: 12pt;
+                    min-width: 100%;
+                    border: 1px solid #000;
+                    vertical-align: middle;
+                }
+                .styled-table thead tr {
+                    background-color: #C6E0B4;
+                    font-weight: bold;
+                    color: #000;
+                    text-align: center;
+                }
+                .table-item{
+                    text-transform: uppercase;
+                    background-color: #E2EFDA;
+                    font-weight: bold;
+                    color: #FF0000;
+                }
+                .styled-table th,
+                .styled-table td {
+                    padding: 8px 12px;
+                    border: 1px solid #000;
+                }
+                <!-- .styled-table tbody tr:nth-of-type(even) {
+                    background-color: #f3f6fb;
+                } -->
+                .styled-table tbody tr:hover {
+                    background-color: #D9EAD3;
+                }
+                .text-center { text-align: center; }
+                .text-right { text-align: right; }
+</style>
+<div class="page">
+
+
+
+    <h2 style="text-align:center; margin-bottom: 20px; font-size: 24pt; text-transform: uppercase;">DỰ KIẾN THANH TOÁN</h2>
+    <div style="text-align: center; margin-bottom: 20px; text-transform: capitalize;">
+        Ngày: <t t-esc="today.strftime('%d/%m/%Y')"/>
+    </div>
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th class="text-center" style="width: 5%;">STT</th>
+                <th class="text-center" style="width: 20%;">Đối tượng/ NCC</th>
+                <th class="text-center" style="width: 27%;">Nội dung</th>
+                <th class="text-center" style="width: 13%;">Tổng giá trị</th>
+                <th class="text-center" style="width: 25%;">Dự án</th>
+                <th class="text-center" style="width: 10%;">Ghi chú</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- ĐỔI alias từ 'list' -> 'grp' để tránh đè built-in -->
+            <t t-foreach="lists" t-as="grp">
+                <t t-if="grp.get('total_amount_employee', 0) > 0">
+                    <tr class="table-item">
+                        <td class="text-center"></td>
+                        <td>KHOẢN VAY NỘI BỘ NHÂN VIÊN</td>
+                        <td></td>
+                        <td class="text-right">
+                            <t t-esc="grp.get('total_amount_employee', 0)"  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <t t-foreach="grp.get('line_items_employee', [])" t-as="line">
+                        <tr>
+                            <td class="text-center" t-esc="line['stt']"/>
+                            <td t-esc="line['object']"/>
+                            <td t-esc="line['name']"/>
+                            <td class="text-right">
+                                <t t-esc="line['amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                            <td t-esc="line['project']"/>
+                            <td t-esc="line['note']"/>
+                        </tr>
+                    </t>
+                </t>
+
+                <t t-if="grp.get('total_amount_office', 0) > 0">
+                    <tr  class="table-item">
+                        <td class="text-center"></td>
+                        <td>CHI PHÍ TẠI CÔNG TY</td>
+                        <td></td>
+                        <td class="text-right">
+                            <t t-esc="grp.get('total_amount_office', 0)"  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <t t-foreach="grp.get('line_items_office', [])" t-as="line">
+                        <tr>
+                            <td class="text-center" t-esc="line['stt']"/>
+                            <td t-esc="line['object']"/>
+                            <td t-esc="line['name']"/>
+                            <td class="text-right">
+                                <t t-esc="line['amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                            <td t-esc="line['project']"/>
+                            <td t-esc="line['note']"/>
+                        </tr>
+                    </t>
+                </t>
+
+                <t t-if="grp.get('total_amount_project', 0) > 0">
+                    <tr  class="table-item">
+                        <td class="text-center"></td>
+                        <td>CHI PHÍ CÁC CÔNG TRÌNH</td>
+                        <td></td>
+                        <td class="text-right">
+                            <t t-esc="grp.get('total_amount_project', 0)"  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <t t-foreach="grp.get('line_items_project', [])" t-as="line">
+                        <tr>
+                            <td class="text-center" t-esc="line['stt']"/>
+                            <td t-esc="line['object']"/>
+                            <td t-esc="line['name']"/>
+                            <td class="text-right">
+                                <t t-esc="line['amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                            <td t-esc="line['project']"/>
+                            <td t-esc="line['note']"/>
+                        </tr>
+                    </t>
+                </t>
+
+                <t t-if="grp.get('total_amount_estimated_cost', 0) > 0">
+                    <tr  class="table-item">
+                        <td class="text-center"></td>
+                        <td>ĐỀ XUẤT CHI PHÍ THEO DỰ TOÁN</td>
+                        <td></td>
+                        <td class="text-right">
+                            <t t-esc="grp.get('total_amount_estimated_cost', 0)"  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <t t-foreach="grp.get('line_items_estimated_cost', [])" t-as="line">
+                        <tr>
+                            <td class="text-center" t-esc="line['stt']"/>
+                            <td t-esc="line['object']"/>
+                            <td t-esc="line['name']"/>
+                            <td class="text-right">
+                                <t t-esc="line['amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                            <td t-esc="line['project']"/>
+                            <td t-esc="line['note']"/>
+                        </tr>
+                    </t>
+                </t>
+            </t>
+            <tr>
+                <td colspan="3" style="padding: 8px; text-align: center; font-weight: bold; text-transform: uppercase">Tổng cộng</td>
+                <td style="padding: 8px; text-align: right; font-weight: bold;">
+                    <t t-esc="total" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                </td>
+                <td> </td>
+                <td> </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</t>
+</template>
+<!-- Hai action URL: HTML & PDF -->
+<record id="action_report_pending_approval_html_url" model="ir.actions.act_url">
+<field name="name">Các khoản chi chưa duyệt (HTML)</field>
+<field name="type">ir.actions.act_url</field>
+<!-- docids = 0 (bị bỏ qua), AbstractModel sẽ lấy search([]) -->
+<field name="url">/report/html/expense_proposal.report_pending_approval/0</field>
+<field name="target">new</field>
+</record>
+
+<record id="action_report_pending_approval_pdf_url" model="ir.actions.act_url">
+<field name="name">Các khoản chi chưa duyệt (PDF)</field>
+<field name="type">ir.actions.act_url</field>
+<field name="url">/report/pdf/expense_proposal.report_pending_approval/0</field>
+<field name="target">new</field>
+</record>
+<record id="action_report_pending_approval" model="ir.actions.report">
+<field name="name">Các khoản chi chưa duyệt Report</field>
+<field name="model">expense.proposal</field>
+<field name="report_type">qweb-html</field>
+<field name="report_name">expense_proposal.report_pending_approval</field>
+<field name="report_file">expense_proposal.report_pending_approval</field>
+<field name="print_report_name">'Các khoản chi chưa duyệt Report'</field>
+</record>
+<record id="action_report_pending_approval_pdf" model="ir.actions.report">
+<field name="name">Các khoản chi chưa duyệt Report (PDF)</field>
+<field name="model">expense.proposal</field>
+<field name="report_type">qweb-pdf</field>
+<field name="report_name">expense_proposal.report_pending_approval</field>
+<field name="report_file">expense_proposal.report_pending_approval</field>
+<field name="print_report_name">'Các khoản chi chưa duyệt Report'</field>
+<field name="paperformat_id" ref="custom_sale_report_a4_portrait"/>
+</record>
+<!-- Menu -->
+<menuitem id="menu_report_pending_approval_root" name="Các khoản chi chưa duyệt" parent="custom_account_menu.menu_accounting_reporting" action="expense_proposal.action_report_pending_approval"/>
+
+</odoo>
