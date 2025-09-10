@@ -13,6 +13,7 @@
                 <field name="total_invoices"/>
                 <field name="paid_amount"/>
                 <field name="residual_amount"/>
+                <field name="due_date"/>
                 <field name="currency_id" optional="hide" invisible="1"/>
             </tree>
         </field>
@@ -24,55 +25,72 @@
         <field name="arch" type="xml">
             <form>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_invoices" type="object" class="oe_stat_button" icon="fa-file-text-o" title="Xem tất cả hóa đơn thuộc hợp đồng này">
+                            <field name="total_invoices" widget="statinfo" string="Hóa đơn"/>
+                        </button>
+
+                        <button name="action_open_payment_requests" type="object" class="oe_stat_button" icon="fa-credit-card" title="Xem các phiếu chi liên quan hợp đồng này">
+                            <field name="paid_amount" widget="statinfo" string="Đã chi"/>
+                        </button>
+
+                        <button name="action_open_settlements" type="object" class="oe_stat_button" icon="fa-check-square-o" title="Xem hồ sơ quyết toán của hợp đồng này">
+                            <field name="total_settlements" widget="statinfo" string="Quyết toán"/>
+                        </button>
+
+                        <button name="action_open_residual" type="object" class="oe_stat_button" icon="fa-exclamation-circle" title="Xem chi tiết công nợ còn lại của hợp đồng này">
+                            <field name="residual_amount" widget="statinfo" string="Còn nợ"/>
+                        </button>
+                    </div>
                     <group>
-                    <group string="Thông tin chung">
-                        <field name="name"/>
-                        <field name="partner_id"/>
-                        <field name="project_id"/>
-                        <field name="interpretation"/>
-                        <field name="contract_date"/>
-                        <field name="due_date"/>
-                    </group>
-                    <group string="Chi tiết">
-                        <field name="amount"/>
-                        <field name="total_invoices" readonly="1"/>
-                        <field name="paid_amount" readonly="1"/>
-                        <field name="residual_amount" readonly="1"/>
-                        <field name="currency_id" invisible="1" optional="hide"/>
-                    </group>
+                        <group string="Thông tin chung">
+                            <field name="name"/>
+                            <field name="partner_id"/>
+                            <field name="project_id"/>
+                            <field name="interpretation"/>
+                            <field name="contract_date"/>
+                            <field name="due_date"/>
+                        </group>
+                        <group string="Chi tiết">
+                            <field name="amount"/>
+                            <field name="total_invoices" readonly="1"/>
+                            <field name="paid_amount" readonly="1"/>
+                            <field name="residual_amount" readonly="1"/>
+                            <field name="currency_id" invisible="1" optional="hide"/>
+                        </group>
                     </group>
                     <notebook>
-                        <page string="Hồ sơ quyết toán">
-                            <field name="settlement_ids">
-                                <tree editable="bottom">
-                                    <field name="name"/>
-                                    <field name="date"/>
-                                    <field name="amount"/>
-                                    <field name="currency_id" invisible="1" optional="hide"/>
-
-                                </tree>
-                            </field>
-                        </page>
                         <page string="Hóa đơn">
                             <field name="invoice_ids">
                                 <tree editable="bottom">
-                                    <field name="name"/>
-                                    <field name="date"/>
-                                    <field name="amount"/>
+                                    <field name="name" width="150"/>
+                                    <field name="date" width="100"/>
+                                    <field name="due_date" width="100"/>
+                                    <field name="amount" widget="monetary" class="o_list_number" width="120"/>
+                                    <field name="note" width="250"/>
                                     <field name="currency_id" invisible="1" optional="hide"/>
-
                                 </tree>
                             </field>
                         </page>
                         <page string="Phiếu chi">
                             <field name="account_payment_request_ids">
                                 <tree>
-                                    <field name="name"/>
-                                    <field name="date"/>
-                                    <field name="total"/>
-                                    <field name="state"/>
+                                    <field name="name" width="150"/>
+                                    <field name="date" width="100"/>
+                                    <field name="total" widget="monetary" class="o_list_number" width="120"/>
+                                    <field name="state" width="100" string="Trạng thái"/>
                                     <field name="currency_id" invisible="1" optional="hide"/>
-
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Hồ sơ quyết toán">
+                            <field name="settlement_ids">
+                                <tree editable="bottom">
+                                    <field name="name" width="150"/>
+                                    <field name="date" width="100"/>
+                                    <field name="description" width="300"/>
+                                    <field name="amount" widget="monetary" class="o_list_number" width="120"/>
+                                    <field name="currency_id" invisible="1" optional="hide"/>
                                 </tree>
                             </field>
                         </page>
@@ -81,12 +99,31 @@
             </form>
         </field>
     </record>
+    <record id="view_supplier_contract_search" model="ir.ui.view">
+        <field name="name">supplier.contract.search</field>
+        <field name="model">supplier.contract</field>
+        <field name="arch" type="xml">
+            <search string="Tìm hợp đồng mua">
+                <filter string="Hợp đồng còn nợ" name="has_residual" domain="[('residual_amount','&gt;',0)]" help="Lọc các hợp đồng còn nợ"/>
+                <searchpanel>
+                    <field name="partner_id" string="Nhà cung cấp" icon="fa-user" select="multi" enable_counters="1"/>
+                    <field name="project_id" string="Dự án" icon="fa-folder" select="multi" enable_counters="1"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
 
     <record id="action_supplier_contract" model="ir.actions.act_window">
-        <field name="name">Hợp đồng</field>
+        <field name="name">Hợp đồng mua</field>
         <field name="res_model">supplier.contract</field>
         <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_supplier_contract_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Nhấn vào nút Tạo để tạo hợp đồng mới.
+            </p>
+        </field>
     </record>
     <menuitem id="menu_supplier_contract_root" name="Quản lý nợ NCC" sequence="10" parent="custom_account_menu.menu_accounting_custom_root"/>
-    <menuitem id="menu_supplier_contract" name="Hợp đồng" parent="menu_supplier_contract_root" action="action_supplier_contract" sequence="10"/>
+    <menuitem id="menu_supplier_contract" name="Hợp đồng mua" parent="menu_supplier_contract_root" action="action_supplier_contract" sequence="10"/>
 </odoo>

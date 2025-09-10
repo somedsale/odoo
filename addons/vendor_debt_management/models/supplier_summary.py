@@ -26,21 +26,31 @@ class SupplierSummary(models.Model):
         """Create or update the database view for supplier.summary."""
         tools.drop_view_if_exists(self.env.cr, self._table)  # Drop the view if it exists
         self.env.cr.execute("""
-            CREATE OR REPLACE VIEW supplier_summary AS (
-                SELECT
-                    row_number() OVER () AS id,  -- Generate a unique ID for the view
-                    sc.partner_id AS partner_id,
-                    sc.currency_id AS currency_id,
-                    SUM(sc.amount) AS total_contracts,
-                    SUM(sc.total_invoices) AS total_invoices,
-                    SUM(sc.paid_amount) AS paid_amount,
-                    SUM(sc.residual_amount) AS residual_amount
-                FROM supplier_contract sc
-                LEFT JOIN res_partner rp ON sc.partner_id = rp.id
-                LEFT JOIN res_currency rc ON sc.currency_id = rc.id
-                GROUP BY sc.partner_id, sc.currency_id
+           CREATE OR REPLACE VIEW supplier_summary AS (
+            SELECT
+                row_number() OVER () AS id,
+                sc.partner_id AS partner_id,
+                sc.currency_id AS currency_id
+            FROM supplier_contract sc
+            GROUP BY sc.partner_id, sc.currency_id
             )
         """)
+    due_days_html = fields.Html("Số ngày đến hạn", compute="_compute_due_days_html", sanitize=False)
+
+    @api.depends("contract_ids.due_date")
+    def _compute_due_days_html(self):
+        today = date.today()
+        for rec in self:
+            if rec.due_date:
+                delta = (rec.due_date - today).days
+                if delta > 0:
+                    rec.due_days_html = f"<span style='color:green;font-weight:bold;'>Còn {delta} ngày - Tính từ {rec.due_date.strftime('%d/%m/%Y')}</span>"
+                elif delta == 0:
+                    rec.due_days_html = f"<span style='color:orange;font-weight:bold;'>Đến hạn hôm nay - {rec.due_date.strftime('%d/%m/%Y')}</span>"
+                else:
+                    rec.due_days_html = f"<span style='color:red;font-weight:bold;'>Quá hạn {abs(delta)} ngày - Tính từ {rec.due_date.strftime('%d/%m/%Y')}</span>"
+            else:
+                rec.due_days_html = "-"
     @api.depends("contract_ids.total_invoices")
     def _compute_total_invoices(self):
         for record in self:
@@ -96,14 +106,15 @@ class SupplierSummary(models.Model):
 
                 delta = (nearest_due - today).days
                 if delta > 0:
-                    rec.due_days = f"Còn {delta} ngày - {nearest_due.strftime('%d/%m/%Y')}"
+                    rec.due_days = f"Còn {delta} ngày - Tính từ {nearest_due.strftime('%d/%m/%Y')}"
                 elif delta == 0:
-                    rec.due_days = f"Đến hạn hôm nay - {nearest_due.strftime('%d/%m/%Y')}"
+                    rec.due_days = f"Hôm nay - {nearest_due.strftime('%d/%m/%Y')}"
                 else:
-                    rec.due_days = f"Quá hạn {abs(delta)} ngày - {nearest_due.strftime('%d/%m/%Y')}"
+                    rec.due_days = f"Quá hạn {abs(delta)} ngày - Tính từ {nearest_due.strftime('%d/%m/%Y')}"
             else:
                 rec.due_date = False
                 rec.due_days = "-"
+    @api.depends("partner_id")
     def _compute_contract_ids(self):
         for rec in self:
             rec.contract_ids = self.env["supplier.contract"].search([("partner_id", "=", rec.partner_id.id)])

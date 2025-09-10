@@ -18,37 +18,39 @@
     <template id="report_supplier_summary_layout">
         <t t-call="web.html_container">
             <t t-set="o" t-value="o or doc"/>
-                <div  class="header" style="display: flex; justify-content: space-between;">
-                    <div style="text-align: left; margin-bottom: 20px;">
-                        <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id" alt="Company Logo" style="max-width: 160px;"/>
-                    </div>
-                    <div style="text-align: right; margin-bottom: 20px; font-size: 11px; text-transform: capitalize;">
-                        <span t-esc="res_company.name" style="transform: uppercase;"/>
-                                <br/>
+            <div class="header" style="display: flex; justify-content: space-between;">
+                <div style="text-align: left; margin-bottom: 20px;">
+                    <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id" alt="Company Logo" style="max-width: 160px;"/>
+                </div>
+                <div style="text-align: right; margin-bottom: 20px; font-size: 11px; text-transform: capitalize;">
+                    <span t-esc="res_company.name" style="transform: uppercase;"/>
+                    <br/>
                                 MST: <span t-esc="res_company.partner_id.vat"/>
-                            <br/>
+                <br/>
                                 Địa chỉ: <span t-esc="res_company.partner_id.street"/>
-                        <br/>
+            <br/>
                                 SĐT: <span t-esc="res_company.phone_accounting"/>
-                        <br/>
+        <br/>
                                 Email: <span style="text-transform: lowercase;" t-esc="res_company.partner_id.email"/>
-            <!-- Email kt -->
-        </div>
+    <!-- Email kt -->
     </div>
-    <div class="article" style="font-family: Times New Roman; font-size: 11pt; line-height: 1.5;">
-        <t t-raw="0"/>
-        <!-- Nội dung chính của báo cáo -->
-    </div>
-    <div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt;">
-        <p>
-            <span class="page"/>
-        </p>
-    </div>
+</div>
+<div class="article" style="font-family: Times New Roman; font-size: 11pt; line-height: 1.5;">
+    <t t-raw="0"/>
+    <!-- Nội dung chính của báo cáo -->
+</div>
+<div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt;">
+    <p>
+        <span class="page"/>
+    </p>
+</div>
 </t>
 </template><!-- Template for Sale Contract Report -->
 <template id="report_supplier_summary_view">
 <t t-call="vendor_debt_management.report_supplier_summary_layout">
-        <style>
+<div class="page">
+
+    <style>
                 .page {
                     font-family: "Times New Roman";
                     font-size: 16px;
@@ -79,90 +81,96 @@
                 }
                 .text-center { text-align: center; }
                 .text-right { text-align: right; }
-        </style>
-    <div class="page">
+    </style>
 
 
+    <h2 style="text-align:center; margin-bottom: 20px; font-size: 24px; text-transform: uppercase;">Tổng hợp công nợ phải trả nhà cung cấp thực tế</h2>
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th rowspan="2">STT</th>
+                <th rowspan="2">Nhà cung cấp</th>
+                <th rowspan="2">Diễn giải</th>
+                <th rowspan="2">Số tiền hợp đồng</th>
+                <th rowspan="2">Số tiền Hóa đơn</th>
 
-        <h2 style="text-align:center; margin-bottom: 20px; font-size: 24px; text-transform: uppercase;">Tổng hợp công nợ phải trả nhà cung cấp thực tế</h2>
-        <table class="styled-table">
-            <thead>
+                <!-- Header cha -->
+                <th colspan="2">Số tiền đã thanh toán</th>
+
+                <th rowspan="2">Số tiền Còn nợ</th>
+                <th rowspan="2">Hạn thanh toán</th>
+                <th rowspan="2">Ghi chú</th>
+            </tr>
+            <tr>
+                <!-- Header con -->
+                <th>Đã HĐ</th>
+                <th>Chưa HĐ</th>
+            </tr>
+        </thead>
+        <tbody>
+            <t t-set="stt" t-value="0"/>
+            <t t-foreach="docs" t-as="o">
                 <tr>
-                    <th>STT</th>
-                    <th>Nhà cung cấp</th>
-                    <th>Diễn giải</th>
-                    <th>Số tiền hợp đồng</th>
-                    <th>Số tiền Hóa đơn</th>
-                    <th>Số tiền Đã thanh toán</th>
-                    <th>Số tiền Còn nợ</th>
-                    <th>Số tiền Tạm ứng/ Chưa HĐ</th>
-                    <th>Hạn thanh toán</th>
-                    <th>Ghi chú</th>
+                    <td class="text-center">
+                        <t t-set="stt" t-value="stt + 1"/>
+                        <span t-esc="stt"/>
+                    </td>
+                    <td>
+                        <span t-field="o.partner_id.name"/>
+                    </td>
+                    <td>
+                        <span t-field="o.interpretation"/>
+                    </td>
+                    <t t-if="o.total_contracts != 0">
+                        <td class="text-right">
+                            <span t-field="o.total_contracts"/>
+                        </td>
+                    </t>
+                    <t t-else="">
+                        <td class="text-center">-</td>
+                    </t>
+                    <t t-if="o.total_invoices != 0">
+                        <td class="text-right">
+                            <span t-field="o.total_invoices"/>
+                        </td>
+                    </t>
+                    <t t-else="">
+                        <td class="text-center">-</td>
+                    </t>
+                    <t t-if="o.paid_amount != 0">
+                        <td class="text-right">
+                            <span t-field="o.paid_amount"/>
+                        </td>
+                    </t>
+                    <t t-else="">
+                        <td class="text-center">-</td>
+                    </t>
+                    <t t-if="o.advance_amount != 0">
+                        <td class="text-right">
+                            <span t-field="o.advance_amount"/>
+                        </td>
+                    </t>
+                    <t t-else="">
+                        <td class="text-center">-</td>
+                    </t>
+                    <t t-if="o.residual_amount != 0">
+                        <td class="text-right">
+                            <span t-field="o.residual_amount"/>
+                        </td>
+                    </t>
+                    <t t-else="">
+                        <td class="text-center">-</td>
+                    </t>
+
+                    <td class="text-center">
+                        <span t-if="o.due_days" t-field="o.due_days"/>
+                    </td>
+                    <td></td>
                 </tr>
-            </thead>
-            <tbody>
-                <t t-set="stt" t-value="0"/>
-                <t t-foreach="docs" t-as="o">
-                    <tr>
-                        <td class="text-center">
-                            <t t-set="stt" t-value="stt + 1"/>
-                            <span t-esc="stt"/>
-                        </td>
-                        <td>
-                            <span t-field="o.partner_id.name"/>
-                        </td>
-                        <td>
-                            <span t-field="o.interpretation"/>
-                        </td>
-                        <t t-if="o.total_contracts != 0">
-                            <td class="text-right">
-                                <span t-field="o.total_contracts"/>
-                            </td>
-                        </t>
-                        <t t-else="">
-                            <td class="text-center">-</td>
-                        </t>
-                        <t t-if="o.total_invoices != 0">
-                            <td class="text-right">
-                                <span t-field="o.total_invoices"/>
-                            </td>
-                        </t>
-                        <t t-else="">
-                            <td class="text-center">-</td>
-                        </t>
-                        <t t-if="o.paid_amount != 0">
-                            <td class="text-right">
-                                <span t-field="o.paid_amount"/>
-                            </td>
-                        </t>
-                        <t t-else="">
-                            <td class="text-center">-</td>
-                        </t>
-                        <t t-if="o.residual_amount != 0">
-                            <td class="text-right">
-                                <span t-field="o.residual_amount"/>
-                            </td>
-                        </t>
-                        <t t-else="">
-                            <td class="text-center">-</td>
-                        </t>
-                        <t t-if="o.advance_amount != 0">
-                            <td class="text-right">
-                                <span t-field="o.advance_amount"/>
-                            </td>
-                        </t>
-                        <t t-else="">
-                            <td class="text-center">-</td>
-                        </t>
-                        <td class="text-center">
-                            <span t-if="o.due_days" t-field="o.due_days"/>
-                        </td>
-                        <td></td>
-                    </tr>
-                </t>
-            </tbody>
-        </table>
-    </div>
+            </t>
+        </tbody>
+    </table>
+</div>
 </t>
 </template>
 <!-- Hai action URL: HTML & PDF -->

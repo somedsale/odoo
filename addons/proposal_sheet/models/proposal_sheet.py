@@ -11,7 +11,7 @@ class ProposalSheet(models.Model):
     _description = 'Phiếu Đề Xuất'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = "create_date desc"
-    department_id = fields.Many2one('hr.department', string='Phòng Ban', required=True)
+    department_id = fields.Many2one('hr.department', string='Phòng Ban', required=True,default=lambda self: self.env.user.employee_id.department_id.id)
     manager_id = fields.Many2one('hr.employee', string='Người Quản Lý', compute='_compute_manager_id')
     director_user_id = fields.Many2one('res.users', string="Giám Đốc", default=lambda self: self._default_director_user(), readonly=True)
     name = fields.Char(string='Mã Đề Xuất', default='New', readonly=True, copy=False)

@@ -11,7 +11,7 @@ class SupplierContract(models.Model):
     contract_date = fields.Date("Ngày Hợp đồng")
     amount = fields.Monetary("Giá trị Hợp đồng", currency_field="currency_id")
     currency_id = fields.Many2one("res.currency", default=lambda self: self.env.company.currency_id)
-    due_date = fields.Date("Ngày đến hạn")
+    due_date = fields.Date("Ngày đến hạn",compute="_compute_due_date", store=True)
     create_date = fields.Datetime("Ngày tạo", default=fields.Datetime.now)
     total_invoices = fields.Monetary("Tổng giá trị hóa đơn", compute="_compute_total_invoices", store=True, currency_field="currency_id")
     total_settlements = fields.Monetary("Tổng giá trị hồ sơ quyết toán", compute="_compute_total_settlements", store=True, currency_field="currency_id")
@@ -25,6 +25,14 @@ class SupplierContract(models.Model):
     )
     settlement_ids = fields.One2many("supplier.settlement", "contract_id", string="Hồ sơ quyết toán")
     invoice_ids = fields.One2many("supplier.invoice", "contract_id", string="Hóa đơn")
+    @api.depends("invoice_ids.due_date")
+    def _compute_due_date(self):
+        for record in self:
+            dates = [d for d in record.invoice_ids.mapped("due_date") if d]
+            if dates:
+                record.due_date = min(dates)  # hoặc max(dates) nếu muốn ngày muộn nhất
+            else:
+                record.due_date = False
     @api.depends("invoice_ids.amount")
     def _compute_total_invoices(self):
         for record in self:
@@ -56,6 +64,72 @@ class SupplierContract(models.Model):
         for record in self:
             if record.residual_amount == 0:
                 record.due_date = False
+    def action_open_invoices(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Hóa đơn NCC",
+            "res_model": "supplier.invoice",
+            "view_mode": "tree,form",
+            "target": "current",
+            "domain": [("contract_id", "=", self.id)],
+            "context": {
+                "default_contract_id": self.id,
+                "default_partner_id": self.partner_id.id,
+                "default_project_id": self.project_id.id,
+            },
+        }
+
+    # Phiếu chi thuộc HĐ này (hoặc hóa đơn của HĐ này)
+    def action_open_payment_requests(self):
+        self.ensure_one()
+        # nếu model account.payment.request có field invoice_id + supplier_contract_id như bạn dùng
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Phiếu chi",
+            "res_model": "account.payment.request",
+            "view_mode": "tree,form",
+            "target": "current",
+            "domain": ["|", ("supplier_contract_id", "=", self.id),
+                             ("invoice_id.contract_id", "=", self.id)],
+            "context": {
+                "default_supplier_contract_id": self.id,
+                "default_partner_id": self.partner_id.id,
+                "default_project_id": self.project_id.id,
+            },
+        }
+
+    # Hồ sơ quyết toán thuộc HĐ này
+    def action_open_settlements(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Hồ sơ quyết toán",
+            "res_model": "supplier.settlement",
+            "view_mode": "tree,form",
+            "target": "current",
+            "domain": [("contract_id", "=", self.id)],
+            "context": {
+                "default_contract_id": self.id,
+            },
+        }
+
+    # “Còn nợ”: mở danh sách hóa đơn chưa thanh toán (tùy bạn muốn mở invoices hay payment requests)
+    def action_open_residual(self):
+        self.ensure_one()
+        # ví dụ mở hóa đơn của HĐ này (bạn có thể thêm điều kiện due_date/quá hạn tùy ý)
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Công nợ chưa thanh toán",
+            "res_model": "supplier.invoice",
+            "view_mode": "tree,form",
+            "target": "current",
+            "domain": [("contract_id", "=", self.id)],
+            "context": {
+                "default_contract_id": self.id,
+                "search_default_contract_id": 1,
+            },
+        }
 class ResPartner(models.Model):
     _inherit = "res.partner"
 
