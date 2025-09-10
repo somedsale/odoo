@@ -1,4 +1,4 @@
-from odoo import models, fields
+from odoo import models, fields,api
 from odoo.exceptions import UserError
 from odoo.tools.misc import format_amount
 from odoo.tools import format_date
@@ -11,8 +11,14 @@ class SupplierSummaryWizard(models.TransientModel):
         "res.partner",
         string="Nhà cung cấp",
         required=True,
-        domain=[("supplier_rank", ">", 0)]
+        # domain=[("supplier_rank", ">", 0)]
+        domain=lambda self: self._get_partner_domain(),
     )
+    @api.model
+    def _get_partner_domain(self):
+        # Lấy partner_id từ supplier.summary (có dữ liệu công nợ)
+        partner_ids = self.env["supplier.summary"].search([]).mapped("partner_id").ids
+        return [("id", "in", partner_ids)]
 
     def action_view_report(self):
         """Mở báo cáo công nợ NCC HTML theo partner đã chọn"""

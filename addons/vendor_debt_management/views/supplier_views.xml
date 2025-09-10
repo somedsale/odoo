@@ -9,7 +9,9 @@
                 <field name="total_invoices"/>
                 <field name="paid_amount"/>
                 <field name="residual_amount"/>
-                <field name="due_days"/>
+                <field name="advance_amount"/>
+                <field name="due_days" column_invisible="1"/>
+                <field name="due_days_html" widget="html" readonly="1"/>
                 <field name="currency_id" optional="hide" invisible="1"/>
             </tree>
         </field>
@@ -28,7 +30,8 @@
                     <group>
                         <group>
                             <field name="due_date"/>
-                            <field name="due_days"/>
+                            <field name="due_days" invisible="1"/>
+                            <field name="due_days_html" widget="html" readonly="1"/>
                             <field name="interpretation"/>
                         </group>
                         <group>
@@ -42,7 +45,7 @@
                     </group>
                     <notebook>
                         <page string="Hợp đồng">
-                            <field name="contract_ids">
+                            <field name="contract_ids" context="{'default_partner_id': partner_id}">
                                 <tree>
                                     <field name="name"/>
                                     <field name="contract_date"/>
@@ -65,8 +68,9 @@
         <field name="res_model">supplier.summary</field>
         <field name="view_mode">tree,form</field>
         <field name="limit">80</field>
+        <field name="context">{}</field>
     </record>
-    <menuitem id="menu_supplier_summary" name="Tổng hợp công nợ" parent="menu_supplier_contract_root" action="action_supplier_summary" sequence="10"/>
+    <menuitem id="menu_supplier_summary" name="Tổng hợp công nợ" parent="menu_supplier_contract_root" action="action_supplier_summary" sequence="20"/>
     <menuitem id="menu_supplier_ids" name="Nhà cung cấp" parent="menu_supplier_contract_root" action="account.res_partner_action_supplier" sequence="10"/>
 
 </odoo>

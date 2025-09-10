@@ -7,7 +7,7 @@
         </xpath>
         <!-- Save -->
         <xpath expr="//button[(hasclass('o_form_button_save'))]" position="replace">
-            <button type="button" class="o_form_button_save btn btn-outline-success btn-sm px-2 d-flex align-items-center rounded-pill" data-hotkey="s" t-on-click.stop="save" aria-label="Lưu bản ghi" data-tooltip="Lưu bản ghi" t-ref="save">
+            <button type="button" class="o_form_button_save btn btn-outline-success btn-sm px-2 d-flex align-items-center " data-hotkey="s" t-on-click.stop="save" aria-label="Lưu bản ghi" data-tooltip="Lưu bản ghi" t-ref="save">
                 <i class="fa fa-check me-1"></i>
                 <span>Lưu</span>
             </button>
@@ -15,7 +15,7 @@
 
         <!-- Cancel / Discard -->
         <xpath expr="//button[(hasclass('o_form_button_cancel'))]" position="replace">
-            <button type="button" class="o_form_button_cancel btn btn-outline-danger btn-sm px-2 d-flex align-items-center rounded-pill" data-hotkey="j" t-on-click.stop="discard" aria-label="Hủy thay đổi" data-tooltip="Hủy thay đổi">
+            <button type="button" class="o_form_button_cancel btn btn-outline-danger btn-sm px-2 d-flex align-items-center " data-hotkey="j" t-on-click.stop="discard" aria-label="Hủy thay đổi" data-tooltip="Hủy thay đổi">
                 <i class="fa fa-times me-1"></i>
                 <span>Hủy</span>
             </button>

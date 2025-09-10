@@ -99,12 +99,31 @@
             </form>
         </field>
     </record>
+    <record id="view_supplier_contract_search" model="ir.ui.view">
+        <field name="name">supplier.contract.search</field>
+        <field name="model">supplier.contract</field>
+        <field name="arch" type="xml">
+            <search string="Tìm hợp đồng mua">
+                <filter string="Hợp đồng còn nợ" name="has_residual" domain="[('residual_amount','&gt;',0)]" help="Lọc các hợp đồng còn nợ"/>
+                <searchpanel>
+                    <field name="partner_id" string="Nhà cung cấp" icon="fa-user" select="multi" enable_counters="1"/>
+                    <field name="project_id" string="Dự án" icon="fa-folder" select="multi" enable_counters="1"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
 
     <record id="action_supplier_contract" model="ir.actions.act_window">
-        <field name="name">Hợp đồng</field>
+        <field name="name">Hợp đồng mua</field>
         <field name="res_model">supplier.contract</field>
         <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_supplier_contract_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Nhấn vào nút Tạo để tạo hợp đồng mới.
+            </p>
+        </field>
     </record>
     <menuitem id="menu_supplier_contract_root" name="Quản lý nợ NCC" sequence="10" parent="custom_account_menu.menu_accounting_custom_root"/>
-    <menuitem id="menu_supplier_contract" name="Hợp đồng" parent="menu_supplier_contract_root" action="action_supplier_contract" sequence="10"/>
+    <menuitem id="menu_supplier_contract" name="Hợp đồng mua" parent="menu_supplier_contract_root" action="action_supplier_contract" sequence="10"/>
 </odoo>
