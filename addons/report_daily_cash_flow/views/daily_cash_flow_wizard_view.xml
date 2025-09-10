@@ -6,7 +6,7 @@
         <field name="arch" type="xml">
             <form string="Generate Sale Report">
                 <group>
-                    <field name="date_report" widget="date" string="Chọn ngày báo cáo" options="{'format': 'dd/mm/yyyy'}"/>
+                    <field name="date_report" widget="date" string="Chọn ngày báo cáo"/>
 
                 </group>
                 <group string="Tồn đầu kỳ (nhập lần đầu)">

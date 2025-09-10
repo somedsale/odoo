@@ -1,0 +1,24 @@
+<odoo>
+    <record id="view_account_payment_request_form_inherit1" model="ir.ui.view">
+        <field name="name">account.payment.request.form.inherit1</field>
+        <field name="model">account.payment.request</field>
+        <field name="inherit_id" ref="custom_account_payment_request.view_account_payment_request_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name=&apos;proposal_sheet_id&apos;]" position="replace">
+                <field name="proposal_display" string="Phiếu đề xuất"/>
+            </xpath>
+        </field>
+    </record>
+    <!-- Extend Tree View with XPath -->
+    <record id="view_account_payment_request_tree_inherit1" model="ir.ui.view">
+        <field name="name">account.payment.request.tree.inherit1</field>
+        <field name="model">account.payment.request</field>
+        <field name="inherit_id" ref="custom_account_payment_request.view_account_payment_request_tree"/>
+        <field name="arch" type="xml">
+            <!-- Replace proposal_sheet_id with attrs to hide when expense_proposal_id is set -->
+            <xpath expr="//field[@name='proposal_sheet_id']" position="replace">
+                <field name="proposal_display" string="Phiếu đề xuất"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

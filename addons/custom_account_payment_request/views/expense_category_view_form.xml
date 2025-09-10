@@ -1,0 +1,16 @@
+<odoo>
+    <record id="view_expense_category_form" model="ir.ui.view">
+        <field name="name">expense.category.form</field>
+        <field name="model">expense.category</field>
+        <field name="arch" type="xml">
+            <form string="Nhóm chi phí">
+                <sheet>
+                    <group colspan="2">
+                        <field name="name" string="Khoản mục"/>
+                        <field name="classification" string="Phân loại chi phí"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

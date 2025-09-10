@@ -9,7 +9,7 @@ class AccountingPaymentRequest(models.Model):
     proposal_sheet_id = fields.Many2one('proposal.sheet', string="Phiếu đề xuất")
     proposal_person_id = fields.Many2one('res.users', string="Người đề xuất", store=True)
     total = fields.Float(string="Số tiền")
-    date = fields.Date(string="Ngày đề xuất", default=fields.Date.today)
+    date = fields.Date(string="Ngày đề xuất")
     date_payment = fields.Date(string="Ngày thanh toán")
     journal_id = fields.Many2one('account.journal', string="Nhật ký", domain="[('type', 'in', ['cash', 'bank'])]")
     project_id = fields.Many2one('project.project', string="Dự án", store=True)
@@ -18,10 +18,16 @@ class AccountingPaymentRequest(models.Model):
     payment_person = fields.Many2one('res.partner', string="Người tạo chi")
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
     cost_classification = fields.Selection([
-        ('employee', 'Chi phi nhân viên'),
-        ('office', 'Chi phí văn phòng'),
-        ('project', 'Chi phí dự án'),
+        ('employee', 'Khoản vay nội bộ(nhân viên)'),
+        ('office', 'Chi phí tại công ty'),
+        ('project', 'Chi phí các công trình'),
     ], string="Phân loại chi phí", default='employee',required=True)
+    # NEW: Khoản mục
+    expense_category_id = fields.Many2one(
+        'expense.category', string="Khoản mục",
+        domain="[('classification', '=', cost_classification)]",
+        help="Chọn khoản mục chi tiết phù hợp với Phân loại chi phí."
+    )
     expense_type = fields.Selection([
         ('material', 'Nguyên vật liệu'),
         ('labor', 'Nhân công'),
@@ -32,7 +38,7 @@ class AccountingPaymentRequest(models.Model):
         ('bank', 'Chuyển khoản')
     ], string="Loại thanh toán", default='cash',required=True)
     bankids = fields.Many2one('res.partner.bank', string="Tài khoản ngân hàng" , domain="[('partner_id', '=', receive_person)]")
-    note = fields.Text(string="Ghi chú")
+    note = fields.Text(string="Nội dung")
     state = fields.Selection([
         ('draft', 'Nháp'),
         ('confirmed', 'Xác nhận'),

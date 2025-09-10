@@ -177,8 +177,17 @@
                                         <td style="text-align:right" t-esc="payment.total or 0" t-options="{'widget': 'monetary', 'display_currency': currency_id}"/>
                                     </t>
                                     <td>
-                                        <t t-if="payment.project_id">
-                                            <t t-esc="payment.project_id.name or ''" />
+                                        <t t-if="payment.cost_classification == 'project'">
+                                            <t t-if ="payment.expense_category_id">
+                                                <t t-esc="payment.expense_category_id.name"/>
+                                                -                                                
+                                                <t t-esc="payment.project_id.name"/>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-if ="payment.expense_category_id">
+                                                <t t-esc="payment.expense_category_id.name"/>
+                                            </t>
                                         </t>
                                     </td>
                                 </t>
