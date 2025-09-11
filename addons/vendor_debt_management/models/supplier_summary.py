@@ -5,6 +5,7 @@ class SupplierSummary(models.Model):
     _name = "supplier.summary"
     _description = "Tổng hợp công nợ nhà cung cấp"
     _auto = False
+    _rec_name="partner_id"
     partner_id = fields.Many2one("res.partner", string="Nhà cung cấp", domain=[("supplier_rank", ">", 0)])
     contract_ids = fields.One2many(
         "supplier.contract",

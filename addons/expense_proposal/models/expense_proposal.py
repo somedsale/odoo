@@ -16,11 +16,16 @@ class ExpenseProposal(models.Model):
         ('draft', 'Nháp'),
         ('submitted', 'Gửi duyệt'),
         ('approved', 'Đã duyệt'),
-        ('rejected', 'Từ chối'),
         ('posted', 'Tạo phiếu chi'),
         ('completed', 'Hoàn tất',),
+        ('rejected', 'Từ chối'),
     ], string='Status', default='draft', track_visibility='onchange')
-
+    director_user_id = fields.Many2one('res.users', string="Giám Đốc", default=lambda self: self._default_director_user(), readonly=True)
+    @api.model
+    def _default_director_user(self):
+        group = self.env.ref('custom_director_role.group_director')  # đổi lại module ID cho đúng
+        users = self.env['res.users'].search([('groups_id', 'in', group.id)], limit=1)
+        return users.id if users else False
     def action_submit(self):
         self.write({'state': 'submitted'})
 
@@ -29,6 +34,18 @@ class ExpenseProposal(models.Model):
 
     def action_reject(self):
         self.write({'state': 'rejected'})
+
+    def action_open_reject_wizard(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'expense.proposal.reject.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'active_id': self.id,
+            }
+        }
 
     def action_post(self):
         for rec in self:

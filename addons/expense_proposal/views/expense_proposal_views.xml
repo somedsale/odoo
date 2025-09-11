@@ -9,7 +9,7 @@
                 <field name="date"/>
                 <field name="proposer_id"/>
                 <field name="amount"/>
-                <field name="state"/>
+                <field name="state" widget="badge" decoration-muted="state == 'draft'" decoration-primary="state == 'submitted'" decoration-success="state == 'approved'" decoration-warning="state == 'posted'" decoration-info="state == 'completed'" decoration-danger="state == 'rejected'"/>
             </tree>
         </field>
     </record>
@@ -21,11 +21,11 @@
             <form>
                 <header>
                     <button name="action_submit" string="Xác nhận" type="object" class="oe_highlight" invisible="state != 'draft'"/>
-                    <button name="action_approve" string="Duyệt" type="object" class="oe_highlight" invisible="state != 'submitted'"/>
-                    <button name="action_reject" string="Từ chối" type="object" invisible="state != 'submitted'"/>
+                    <button name="action_approve" string="Duyệt" type="object" class="oe_highlight" invisible="state != 'submitted'" groups="custom_director_role.group_director"/>
+                    <button name="action_open_reject_wizard" string="Từ chối" type="object" invisible="state != 'submitted'" groups="custom_director_role.group_director"/>
                     <button name="action_post" string="Tạo phiếu chi" type="object" class="oe_highlight" invisible="state != 'approved'"/>
-                    <button name="action_draft" string="Trở về nháp" type="object" invisible="state != 'approved'"/>
-                    <field name="state" widget="statusbar"/>
+                    <button name="action_draft" string="Trở về nháp" type="object" invisible="state != 'rejected'" confirm="Bạn muốn chuyển trạng thái thành nháp ?"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,posted,completed"/>
                 </header>
                 <sheet>
                     <group>
@@ -34,17 +34,16 @@
                         <field name="proposer_id"/>
                         <field name="amount"/>
                     </group>
-                        <field name="expense_proposal_lines">
-                            <tree>
-                                <field name="content" width="20%"/>
-                                <field name="date" width="20%"/>
-                                <field name="cost_classification" width="20%"/>
-                                <field name="amount" width="20%"/>
-                                <field name="expense_category_id" width="20%"/>
-                                 <button name="action_view_payment_request" type="object" string="Xem Phiếu Chi"
-                                        icon="fa-money" invisible="'payment_request_id', '=', False"/>
-                            </tree>
-                        </field>
+                    <field name="expense_proposal_lines">
+                        <tree>
+                            <field name="content" width="20%"/>
+                            <field name="date" width="20%"/>
+                            <field name="cost_classification" width="20%"/>
+                            <field name="amount" width="20%"/>
+                            <field name="expense_category_id" width="20%"/>
+                            <button name="action_view_payment_request" type="object" string="Xem Phiếu Chi" icon="fa-money" invisible="'payment_request_id', '=', False"/>
+                        </tree>
+                    </field>
                 </sheet>
                 <div class="oe_chatter">
                     <field name="message_follower_ids"/>
@@ -60,12 +59,12 @@
         <field name="res_model">expense.proposal</field>
         <field name="view_mode">tree,form</field>
     </record>
-<record id="action_view_payment_requests" model="ir.actions.act_window">
-    <field name="name">Phiếu Chi</field>
-    <field name="res_model">account.payment.request</field>
-    <field name="view_mode">tree,form</field>
-    <field name="domain">[('expense_proposal_id', '=', active_id)]</field>
-    <field name="target">current</field>
-</record>
+    <record id="action_view_payment_requests" model="ir.actions.act_window">
+        <field name="name">Phiếu Chi</field>
+        <field name="res_model">account.payment.request</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('expense_proposal_id', '=', active_id)]</field>
+        <field name="target">current</field>
+    </record>
     <menuitem id="menu_expense_proposal" name="Đề xuất chi phí" action="action_expense_proposal" parent="custom_account_menu.menu_accounting_vouchers" sequence="10"/>
 </odoo>

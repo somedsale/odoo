@@ -12,7 +12,8 @@
         'views/expense_proposal_views.xml',
         'views/account_payment_request_views.xml',
         'reports/report_pending_approval.xml',
-        'reports/report_approved_unpaid_template.xml'
+        'reports/report_approved_unpaid_template.xml',
+        'wizard/view_wizard.xml',
     ],
     'installable': True,
     'application': True,

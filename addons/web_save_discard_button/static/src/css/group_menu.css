@@ -1,0 +1,8 @@
+/* Custom cho menu cha (header trong dropdown) */
+.dropdown-menu .dropdown-header {
+  font-weight: bold !important;
+  text-transform: uppercase;
+  color: #2a2a2a;
+  background-color: transparent;
+  padding: 4px 8px;
+}
