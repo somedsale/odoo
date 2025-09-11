@@ -36,7 +36,7 @@
                     <br/>
                 SĐT: <span t-esc="res_company.phone_accounting"/>
                 <br/>
-                Email: <span style="text-transform: lowercase;" t-esc="res_company.partner_id.email"/>
+                <!-- Email: <span style="text-transform: lowercase;" t-esc="res_company.email_accounting"/> -->
             </td>
         </tr>
     </table>

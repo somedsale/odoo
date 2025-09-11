@@ -25,12 +25,19 @@ class SupplierContract(models.Model):
     )
     settlement_ids = fields.One2many("supplier.settlement", "contract_id", string="Hồ sơ quyết toán")
     invoice_ids = fields.One2many("supplier.invoice", "contract_id", string="Hóa đơn")
-    @api.depends("invoice_ids.due_date")
+    @api.depends("invoice_ids.due_date", "invoice_ids.amount", "account_payment_request_ids.total")
     def _compute_due_date(self):
         for record in self:
-            dates = [d for d in record.invoice_ids.mapped("due_date") if d]
-            if dates:
-                record.due_date = min(dates)  # hoặc max(dates) nếu muốn ngày muộn nhất
+            dates = []
+            for invoice in record.invoice_ids:
+                payments = record.account_payment_request_ids.filtered(lambda r: r.invoice_id == invoice)
+                total = sum(p.total for p in payments)
+                temp = invoice.amount - total
+                if temp > 0:
+                    if invoice.due_date:
+                        dates.append(invoice.due_date)
+            if dates:  
+                record.due_date = min(dates)
             else:
                 record.due_date = False
     @api.depends("invoice_ids.amount")
@@ -45,12 +52,12 @@ class SupplierContract(models.Model):
     def _compute_paid_amount(self):
         for record in self:
             record.paid_amount = sum(request.total for request in record.account_payment_request_ids if request.state == 'done')
-    @api.depends("amount", "paid_amount", "account_payment_request_ids.total", "account_payment_request_ids.state", "invoice_ids.amount")
+    @api.depends("amount", "paid_amount", "advance_amount", "account_payment_request_ids.total", "account_payment_request_ids.state", "invoice_ids.amount")
     def _compute_residual(self):
         for record in self:
             residual_amount = record.total_invoices - record.paid_amount
             if residual_amount < 0:
-                residual_amount = 0
+                residual_amount = residual_amount
             record.residual_amount = residual_amount
     @api.depends("total_invoices", "paid_amount")
     def _compute_advance_amount(self):
@@ -130,6 +137,90 @@ class SupplierContract(models.Model):
                 "search_default_contract_id": 1,
             },
         }
+
+    def get_report_rows(self):
+        """
+        rows: list các dict cho QWeb, mỗi dict gồm:
+          - 'invoice': record hoặc None
+          - 'payment': record hoặc None
+          - 'running_balance': số dư còn lại SAU DÒNG NÀY
+                * Nếu có hóa đơn: số tiền còn lại của chính hóa đơn đó (>= có thể âm nếu trả dư)
+                * Nếu KHÔNG có hóa đơn: số dư tạm ứng âm (lũy kế âm theo thời gian)
+          - 'is_first_invoice_row': True nếu là dòng đầu tiên của một hóa đơn
+        """
+        self.ensure_one()
+        rows = []
+
+        # 1) Sắp xếp hóa đơn: ngày -> số
+        invoices = self.invoice_ids.sorted(
+            key=lambda inv: (
+                inv.date or inv.create_date or fields.Date.today(),
+                inv.name or ''
+            )
+        )
+
+        # 2) Sắp xếp thanh toán: ưu tiên ngày HĐ (nếu có), rồi ngày trả
+        payments = self.account_payment_request_ids.sorted(
+            key=lambda p: (
+                (getattr(p, 'invoice_id', False) and
+                 (p.invoice_id.date or p.invoice_id.create_date or fields.Date.today()))
+                or (p.date_payment or p.create_date or fields.Datetime.now()),
+                p.date_payment or p.create_date or fields.Datetime.now(),
+                p.id or 0
+            )
+        )
+
+        # 3) Gom theo invoice_id (False = không gắn hóa đơn)
+        by_inv = {}
+        for p in payments:
+            key = p.invoice_id.id if getattr(p, 'invoice_id', False) else False
+            by_inv.setdefault(key, []).append(p)
+
+        # 4) Cho từng hóa đơn: tính running balance của HÓA ĐƠN
+        for inv in invoices:
+            plist = by_inv.pop(inv.id, [])
+            # Thứ tự lũy kế theo ngày trả + id
+            plist = sorted(plist, key=lambda p: (
+                p.date_payment or p.create_date or fields.Datetime.now(),
+                p.id or 0
+            ))
+
+            running = float(inv.amount or 0.0)  # bắt đầu từ số tiền hóa đơn
+            if plist:
+                for idx, p in enumerate(plist):
+                    running = running - float(p.total or 0.0)   # cho phép âm (trả dư)
+                    rows.append({
+                        'invoice': inv,
+                        'payment': p,
+                        'running_balance': running,   # còn lại sau dòng này
+                        'is_first_invoice_row': (idx == 0),
+                    })
+            else:
+                # Không có payment: 1 dòng, còn nợ = toàn bộ tiền hóa đơn
+                rows.append({
+                    'invoice': inv,
+                    'payment': None,
+                    'running_balance': float(inv.amount or 0.0),
+                    'is_first_invoice_row': True,
+                })
+
+        # 5) Thanh toán KHÔNG gắn hóa đơn: lũy kế âm (tạm ứng)
+        unlinked = by_inv.get(False, [])
+        unlinked = sorted(unlinked, key=lambda p: (
+            p.date_payment or p.create_date or fields.Datetime.now(),
+            p.id or 0
+        ))
+        advance_running = 0.0  # lũy kế âm
+        for p in unlinked:
+            advance_running = advance_running - float(p.total or 0.0)  # tăng âm
+            rows.append({
+                'invoice': None,                 # phần hóa đơn trống
+                'payment': p,
+                'running_balance': advance_running,  # số dư tạm ứng (âm)
+                'is_first_invoice_row': False,
+            })
+
+        return rows
 class ResPartner(models.Model):
     _inherit = "res.partner"
 

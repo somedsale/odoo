@@ -33,6 +33,7 @@
                             <field name="due_days" invisible="1"/>
                             <field name="due_days_html" widget="html" readonly="1"/>
                             <field name="interpretation"/>
+                            <field name="note"/>
                         </group>
                         <group>
                             <field name="total_contracts"/>
