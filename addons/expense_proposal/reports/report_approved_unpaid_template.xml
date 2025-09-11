@@ -91,7 +91,7 @@
     overflow-wrap: anywhere;
   }
 
-  <!-- /* .styled-table tbody tr:hover { background-color: #D9EAD3; } */ -->
+  .styled-table tbody tr:hover { background-color: #D9EAD3; }
 
   .text-center { text-align: center; }
   .text-right  { text-align: right; }
@@ -134,13 +134,13 @@
                     <tr class="table-item">
 
                         <td colspan="3">KHOẢN VAY NỘI BỘ (NHÂN VIÊN)</td>
-                        <td class="text-right">
+                        <td class="text-right num">
                             <t t-esc="grp.get('total_bank_employee', 0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
                         </td>
-                        <td class="text-right">
+                        <td class="text-right num">
                             <t t-esc="grp.get('total_cash_employee', 0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
                         </td>
-                        <td>
+                        <td class="num">
                             <t t-esc="grp.get('total_bank_employee', 0) + grp.get('total_cash_employee', 0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
                         </td>
                     </tr>
@@ -152,14 +152,14 @@
                             <td class="text-center"> <t t-esc="line.get('date').strftime('%d/%m/%Y') or ''"/> </td>
                             <td class="text-left" t-esc="line.get('note') or ''"/>
                             <t t-if="line.get('payment_type') == 'bank'">
-                                <td class="text-right">
+                                <td class="text-right num">
                                     <t t-esc="(line.get('total') or 0.0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
                                 </td>
                                 <td class="text-right">-</td>
                             </t>
                             <t t-else="">
                                 <td class="text-right">-</td>
-                                <td class="text-right">
+                                <td class="text-right num">
                                     <t t-esc="(line.get('total') or 0.0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
                                 </td>
                             </t>
@@ -181,13 +181,13 @@
                 <t t-if="(grp.get('total_cash_office', 0) + grp.get('total_bank_office', 0)) > 0">
                     <tr class="table-item">
                         <td colspan="3">CHI PHÍ TẠI CÔNG TY</td>
-                        <td class="text-right">
+                        <td class="text-right num">
                             <t t-esc="grp.get('total_bank_office', 0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
                         </td>
-                        <td class="text-right">
+                        <td class="text-right num">
                             <t t-esc="grp.get('total_cash_office', 0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
                         </td>
-                        <td>
+                        <td class="num">
                             <t t-esc="grp.get('total_bank_office', 0) + grp.get('total_cash_office', 0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
                         </td>
                     </tr>
@@ -199,14 +199,14 @@
                             <td class="text-center"> <t t-esc="line.get('date').strftime('%d/%m/%Y') or ''"/> </td>
                             <td class="text-left" t-esc="line.get('note') or ''"/>
                             <t t-if="line.get('payment_type') == 'bank'">
-                                <td class="text-right">
+                                <td class="text-right num">
                                     <t t-esc="(line.get('total') or 0.0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
                                 </td>
                                 <td class="text-right">-</td>
                             </t>
                             <t t-else="">
                                 <td class="text-right">-</td>
-                                <td class="text-right">
+                                <td class="text-right num">
                                     <t t-esc="(line.get('total') or 0.0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
                                 </td>
                             </t>
@@ -228,13 +228,13 @@
                 <t t-if="(grp.get('total_cash_project', 0) + grp.get('total_bank_project', 0)) > 0">
                     <tr class="table-item">
                         <td colspan="3">CHI PHÍ CÁC CÔNG TRÌNH</td>
-                        <td class="text-right">
+                        <td class="text-right num">
                             <t t-esc="grp.get('total_bank_project', 0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
                         </td>
-                        <td class="text-right">
+                        <td class="text-right num">
                             <t t-esc="grp.get('total_cash_project', 0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
                         </td>
-                        <td>
+                        <td class="num">
                             <t t-esc="grp.get('total_bank_project', 0) + grp.get('total_cash_project', 0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
                         </td>
                     </tr>
@@ -246,14 +246,14 @@
                             <td class="text-center"> <t t-esc="line.get('date').strftime('%d/%m/%Y') or ''"/> </td>
                             <td class="text-left" t-esc="line.get('note') or ''"/>
                             <t t-if="line.get('payment_type') == 'bank'">
-                                <td class="text-right">
+                                <td class="text-right num">
                                     <t t-esc="(line.get('total') or 0.0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
                                 </td>
                                 <td class="text-right">-</td>
                             </t>
                             <t t-else="">
                                 <td class="text-right">-</td>
-                                <td class="text-right">
+                                <td class="text-right num">
                                     <t t-esc="(line.get('total') or 0.0)" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
                                 </td>
                             </t>
@@ -277,12 +277,12 @@
                 <td colspan="3" class="text-left" style="font-weight: bold">
                     <strong>TỔNG DỰ CHI NGÂN HÀNG / TIỀN MẶT</strong>
                 </td>
-                <td class="text-right" style="font-weight: bold">
+                <td class="text-right num" style="font-weight: bold">
                     <strong>
                         <t t-esc="bank_total_amount" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
                     </strong>
                 </td>
-                <td class="text-right" style="font-weight: bold">
+                <td class="text-right num" style="font-weight: bold">
                     <strong>
                         <t t-esc="cash_total_amount" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
                     </strong>
@@ -293,7 +293,7 @@
                 <td colspan="3" class="text-left" style="font-weight: bold">
                     <strong>TỔNG CỘNG</strong>
                 </td>
-                <td colspan="2" class="text-center" style="font-weight: bold; font-size: 13pt">
+                <td colspan="2" class="text-center num" style="font-weight: bold; font-size: 13pt">
                     <strong>
                         <t t-esc="total" t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
                     </strong>
