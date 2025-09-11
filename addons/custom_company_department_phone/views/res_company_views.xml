@@ -8,7 +8,10 @@
                 <group string="Điện thoại phòng ban">
                     <field name="phone_accounting" string="SDT Phòng Kế Toán"/>
                     <field name="phone_sale" string="SDT Phòng Kinh Doanh"/>
-                    <field name="phone_manufacturing" string="SDT Phòng Sản Xuất"/> 
+                    <field name="phone_manufacturing" string="SDT Phòng Sản Xuất"/>
+                </group>
+                <group string="Email phòng ban">
+                    <field name="account_email" string="Email Phòng Kế Toán"/>
                 </group>
             </xpath>
         </field>
