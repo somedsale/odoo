@@ -1,4 +1,4 @@
-from odoo import fields, models,api
+from odoo import fields, models,api,exceptions, _
 from datetime import datetime, timedelta
 from collections import defaultdict
 class SaleOrder(models.Model):
@@ -160,6 +160,15 @@ class SaleOrder(models.Model):
     string="Đã bao gồm kiểm thử",
     help ="Chọn nếu báo giá đã bao gồm chi phí kiểm thử sản phẩm hoặc dịch vụ.",
     default=False)
+
+    def action_confirm(self):
+        for order in self:
+            # Kiểm tra nếu field x_project_name bị rỗng
+            if not order.x_project_name:
+                raise exceptions.UserError(_("Vui lòng nhập thông tin 'Dự án' trước khi xác nhận đơn hàng."))
+
+        # Nếu hợp lệ thì gọi xử lý gốc
+        return super(SaleOrder, self).action_confirm()
 
 
 
