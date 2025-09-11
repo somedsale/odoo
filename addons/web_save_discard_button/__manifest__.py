@@ -15,6 +15,7 @@
     "assets": {
         "web.assets_backend": [
             "web_save_discard_button/static/src/xml/template.xml",
+            "web_save_discard_button/static/src/css/group_menu.css",
         ],
     },
 }
