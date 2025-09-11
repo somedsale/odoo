@@ -71,6 +71,7 @@
         <field name="arch" type="xml">
             <search string="Tìm kiếm phiếu chi">
                 <filter string="Đã xác nhận" name="confirmed" domain="[('state','=','confirmed')]" />
+                <filter string="Không có dự án" name="no_project" domain="[('project_id','=',False)]"/>
                 <searchpanel>
                     <field name="project_id" string="Dự án" enable_counters="1" />
                     <field name="state" string="Trạng thái" icon="fa-bullseye" select="multi" enable_counters="1"/>
