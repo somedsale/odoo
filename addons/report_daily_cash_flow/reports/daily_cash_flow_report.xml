@@ -22,7 +22,31 @@
     <template id="daily_cash_flow_report_layout">
         <t t-call="web.html_container">
             <t t-set="o" t-value="o or doc"/>
-            <div class="header"></div>
+                        <div class="header" style="display: flex; justify-content: space-between; font-family: Times New Roman;">
+                <table style="width:100%; border-collapse: collapse; border: 1px solid #fff;">
+                    <tr>
+                        <!-- Cột logo bên trái -->
+                        <td style="text-align: left; vertical-align: middle; border-collapse: collapse; border: 1px solid #fff; width: 50%;">
+                            <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id" alt="Company Logo" style="max-width: 160px;"/>
+                        </td>
+
+                        <!-- Cột thông tin công ty bên phải -->
+                        <td style="text-align: right; vertical-align: middle; border-collapse: collapse; border: 1px solid #fff; font-size: 11px; text-transform: capitalize; width: 50%;">
+                            <span t-esc="res_company.name" style="text-transform: uppercase;"/>
+                            <br/>
+                MST: <span t-esc="res_company.partner_id.vat"/>
+                        <br/>
+                Địa chỉ: <span t-esc="res_company.partner_id.street"/>
+                    <br/>
+                SĐT: <span t-esc="res_company.phone_accounting"/>
+                <br/>
+                <!-- Email: <span style="text-transform: lowercase;" t-esc="res_company.email_accounting"/> -->
+            </td>
+        </tr>
+    </table>
+
+
+</div>
             <div class="article" style="font-family: Times New Roman; font-size: 11pt; line-height: 1.5;">
                 <t t-raw="0"/>
                 <!-- Nội dung chính của báo cáo -->

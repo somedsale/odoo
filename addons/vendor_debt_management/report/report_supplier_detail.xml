@@ -8,181 +8,272 @@
         <field name="report_name">vendor_debt_management.report_sup_summary_html</field>
         <field name="report_file">vendor_debt_management.report_sup_summary_html</field>
         <field name="print_report_name">'Chi tiết công nợ NCC'</field>
+        <field name="paperformat_id" ref="custom_sale_report_a4_portrait"/>
+    </record>
+        <record id="custom_sale_report_a4_portrait" model="report.paperformat">
+        <field name="name">Custom Sale Report A4 Landscape</field>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">30</field>        <!-- Điều chỉnh từ 40mm xuống 30mm -->
+        <field name="margin_bottom">30</field>        <!-- Tăng từ 23mm lên 30mm -->
+        <field name="margin_left">5</field>        <!-- Tăng từ 7mm lên 10mm -->
+        <field name="margin_right">5</field>        <!-- Tăng từ 7mm lên 10mm -->
+        <field name="header_spacing">25</field>        <!-- Giảm từ 35mm xuống 25mm -->
+        <field name="dpi">120</field>
     </record>
     <!-- Template HTML QWeb -->
     <template id="report_sup_summary_html">
         <t t-call="vendor_debt_management.report_supplier_summary_layout">
             <style>
-                            .page {
-                    font-family: "Times New Roman";
-                    font-size: 16px;
-                    color: #333;
-                }
-                    /* Style tổng thể bảng */
-                    table.report-table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        font-size: 13px;
-                        font-family: Arial, sans-serif;
-                    }
-                    table.report-table thead th {
-                        background-color: #2480db;
-                        color: #fff;
-                        padding: 6px;
-                        text-align: center;
-                        border: 1px solid #ddd;
-                        vertical-align: middle;
-                    }
-                    table.report-table tbody td {
-                        border: 1px solid #ddd;
-                        padding: 5px 6px;
-                        vertical-align: middle;
-                    }
-                                                    <!-- table.report-table tbody tr:nth-child(even) {
-                        background-color: #f9f9f9;
-                    }
-                    table.report-table tbody tr:hover {
-                        background-color: #f1f6fc;
-                    } -->
-                    table.report-table td.text-right {
-                        text-align: right;
-                    }
-                    table.report-table td.text-center {
-                        text-align: center;
-                    }
-                    h2.report-title {
-                        text-align: center;
-                        margin-bottom: 20px;
-                        font-size: 20px;
-                        color: #2480db;
-                        text-transform: uppercase;
-                    }
+  .page { font-family: "Times New Roman"; font-size: 12pt; color: #000; }
+
+  .styled-table {
+    border-collapse: collapse;
+    margin: 0 auto;
+    font-size: 12pt;
+    width: 100%;                 
+    border: 1px solid #000;
+    table-layout: fixed;          
+  }
+
+  .styled-table thead tr {
+    background-color: #C6E0B4;
+    font-weight: bold;
+    color: #000;
+    text-align: center;
+  }
+
+  .table-item{
+    text-transform: uppercase;
+    background-color: #E2EFDA;
+    font-weight: bold;
+    color: #000;
+  }
+
+  .styled-table th, .styled-table td {
+    font-size: 10pt;
+    padding: 8px 12px;
+    border: 1px solid #000;
+    vertical-align: middle;
+    overflow: hidden;            
+    word-wrap: break-word;       
+    overflow-wrap: anywhere;
+  }
+
+  .styled-table tbody tr:hover { background-color: #D9EAD3; }
+
+  .text-center { text-align: center; }
+  .text-right  { text-align: right; }
+
+  .num { white-space: nowrap; }
             </style>
             <div class="page">
-                <h2 class="report-title">
+                <h2 style="text-align:center; margin-bottom: 20px; font-size: 24px; text-transform: uppercase;">
                     <span t-esc="partner_name"/>
                 </h2>
 
-                <table class="report-table">
-                    <thead>
-                        <tr>
-                            <th rowspan="2">STT</th>
-                            <th rowspan="2">Dự án</th>
-                            <th rowspan="2">Diễn giải</th>
-                            <th colspan="2">Hợp đồng</th>
-                            <th colspan="2">Hồ sơ quyết toán</th>
-                            <th colspan="3">Hóa đơn</th>
-                            <th colspan="2">Đã trả</th>
-                            <th rowspan="2">Số tiền còn nợ</th>
-                            <th rowspan="2">Ghi chú</th>
-                            <th rowspan="2">Hạn T/T</th>
-                        </tr>
-                        <tr>
-                            <th>Số/ Ngày</th>
-                            <th>Số tiền</th>
-                            <th>Số HS/ ngày</th>
-                            <th>Số tiền</th>
-                            <th>Ngày</th>
-                            <th>Số</th>
-                            <th>Số tiền</th>
-                            <th>Ngày trả</th>
-                            <th>Số tiền</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Tổng hợp -->
-                        <t t-foreach="docs" t-as="docs">
-                            <tr style="font-weight:bold">
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td t-esc="docs.total_contracts and format_amount(docs.total_contracts, docs.currency_id) or ''" class="text-right"/>
-                                <td></td>
-                                <td t-esc="docs.total_settlements and format_amount(docs.total_settlements, docs.currency_id) or ''" class="text-right"/>
-                                <td></td>
-                                <td></td>
-                                <td t-esc="docs.total_invoices and format_amount(docs.total_invoices, docs.currency_id) or ''" class="text-right"/>
-                                <td></td>
-                                <td t-esc="docs.paid_amount and format_amount(docs.paid_amount, docs.currency_id) or ''" class="text-right"/>
-                                <td t-esc="docs.residual_amount and format_amount(docs.residual_amount, docs.currency_id) or ''" class="text-right"/>
-                                <td></td>
-                                <td t-esc="docs.due_days or ''"/>
-                            </tr>
-                        </t>
+<table class="styled-table">
+    <colgroup>
+        <col style="width:3%"/>   <!-- 1. STT -->
+        <col style="width:15%"/>  <!-- 2. Dự án -->
+        <col style="width:10%"/>  <!-- 3. Diễn giải -->
+        <col style="width:4%"/>   <!-- 4. HĐ Số/Ngày -->
+        <col style="width:4%"/>   <!-- 5. HĐ Số tiền -->
+        <col style="width:4%"/>   <!-- 6. HSQT Số HS/ngày -->
+        <col style="width:7%"/>   <!-- 7. HSQT Số tiền -->
+        <col style="width:5%"/>   <!-- 8. Hóa đơn Ngày -->
+        <col style="width:5%"/>   <!-- 9. Hóa đơn Số -->
+        <col style="width:7%"/>   <!-- 10. Hóa đơn Số tiền -->
+        <col style="width:6%"/>   <!-- 11. Đã trả Ngày -->
+        <col style="width:7%"/>   <!-- 12. Đã trả Số tiền -->
+        <col style="width:6%"/>   <!-- 13. Còn nợ -->
+        <col style="width:6%"/>   <!-- 14. Ghi chú -->
+        <col style="width:7%"/>   <!-- 15. Hạn T/T -->
+    </colgroup>
 
-                        <!-- Chi tiết -->
-                        <t t-set="stt" t-value="0"/>
-                        <t t-set="grouped_contracts" t-value="docs.contract_ids.sorted(key=lambda x: x.project_id.id or x.id)"/>
-                        <t t-set="current_project" t-value="None"/>
-                        <t t-foreach="grouped_contracts" t-as="line">
-                            <!-- Tính max_rows cho mỗi hợp đồng -->
-                            <t t-set="max_rows" t-value="max(
-            len(line.invoice_ids or []),
-            len(line.account_payment_request_ids or []),
-            len(line.settlement_ids or []),
-            1
-        )"/>
-                            <!-- Nếu là dự án mới thì tính rowspan -->
-                            <t t-if="current_project != (line.project_id.id or line.id)">
-                                <t t-set="current_project" t-value="line.project_id.id or line.id"/>
-                                <t t-set="project_rowspan" t-value="sum(max(
-                1,
-                max(len(c.invoice_ids or []), len(c.account_payment_request_ids or []), len(c.settlement_ids or []))
-            ) for c in grouped_contracts.filtered(lambda c: (c.project_id.id or c.id) == current_project))"/>
-                            </t>
+    <thead>
+        <tr>
+            <th rowspan="2">STT</th>
+            <th rowspan="2">Dự án</th>
+            <th rowspan="2">Diễn giải</th>
+            <th colspan="2">Hợp đồng</th>
+            <th colspan="2">Hồ sơ quyết toán</th>
+            <th colspan="3">Hóa đơn</th>
+            <th colspan="2">Đã trả</th>
+            <th rowspan="2">Số tiền còn nợ</th>
+            <th rowspan="2">Ghi chú</th>
+            <th rowspan="2">Hạn T/T</th>
+        </tr>
+        <tr>
+            <th>Số/ Ngày</th>
+            <th>Số tiền</th>
+            <th>Số HS/ ngày</th>
+            <th>Số tiền</th>
+            <th>Ngày</th>
+            <th>Số</th>
+            <th>Số tiền</th>
+            <th>Ngày trả</th>
+            <th>Số tiền</th>
+        </tr>
+    </thead>
 
-                            <!-- Chuẩn bị dữ liệu -->
-                            <t t-set="invoice_data_list" t-value="line.invoice_ids or []"/>
-                            <t t-set="settlement_data_list" t-value="line.settlement_ids or []"/>
-                            <t t-set="payment_data_list" t-value="line.account_payment_request_ids or []"/>
+    <tbody>
+<!-- Dòng tổng hợp theo từng docs (theo logic running + tạm ứng) -->
+<t t-foreach="docs" t-as="docs">
+    <!-- Tính nhanh số dư tổng: residual_total = invoices - paid (âm = tạm ứng) -->
+    <t t-set="residual_total" t-value="(docs.total_invoices or 0.0) - (docs.paid_amount or 0.0)"/>
+    <t t-set="advance_total" t-value="abs(residual_total) if residual_total &lt; 0 else 0.0"/>
 
-                            <!-- Vòng lặp dòng -->
-                            <t t-foreach="range(max_rows)" t-as="i">
-                                <t t-set="stt" t-value="stt + 1"/>
-                                <t t-set="invoice_data" t-value="invoice_data_list[i] if i &lt; len(invoice_data_list) else None"/>
-                                <t t-set="settlement_data" t-value="settlement_data_list[i] if i &lt; len(settlement_data_list) else None"/>
-                                <t t-set="payment_data" t-value="payment_data_list[i] if i &lt; len(payment_data_list) else None"/>
+    <tr style="font-weight:bold">
+        <td></td>   <!-- STT -->
+        <td></td>   <!-- Dự án -->
+        <td></td>   <!-- Diễn giải -->
+        <td></td>   <!-- HĐ Số/Ngày -->
 
-                                <t t-set="residual_amount" t-value="0"/>
-                                <t t-if="invoice_data and invoice_data.amount">
-                                    <t t-set="residual_amount" t-value="(invoice_data.amount or 0) - (payment_data and payment_data.total or 0)"/>
-                                </t>
-                                <t t-else="">
-                                    <t t-set="residual_amount" t-value="(0) - (payment_data and payment_data.total or 0)"/>
-                                </t>
-                                <tr>
-                                    <td t-esc="stt" class="text-center"/>
-                                    <!-- Merge cell Dự án -->
-                                    <t t-if="i == 0 and (line.project_id.id or line.id) == current_project">
-                                        <td t-esc="line.project_id.name or line.name or ''" t-att-rowspan="project_rowspan" class="text-center" style="vertical-align:middle;"/>
-                                        <td t-esc="line.interpretation or ''" t-att-rowspan="project_rowspan" class="text-center" style="vertical-align:middle;"/>
-                                        <td t-esc="line.name or ''" t-att-rowspan="project_rowspan" class="text-center" style="vertical-align:middle;"/>
-                                        <td t-esc="line.amount and format_amount(line.amount, line.currency_id or docs.currency_id) or ''" t-att-rowspan="project_rowspan" class="text-right" style="vertical-align:middle;"/>
-                                    </t>
-                                    <td t-esc="settlement_data and settlement_data.name or ''" class="text-center"/>
-                                    <td t-esc="settlement_data and settlement_data.amount and format_amount(settlement_data.amount, settlement_data.currency_id or docs.currency_id) or ''" class="text-right"/>
-                                    <td t-esc="invoice_data and invoice_data.date or ''" class="text-center"/>
-                                    <td t-esc="invoice_data and invoice_data.name or ''" class="text-center"/>
-                                    <td t-esc="invoice_data and invoice_data.amount and format_amount(invoice_data.amount, invoice_data.currency_id or docs.currency_id) or ''" class="text-right"/>
-                                    <td t-esc="payment_data and payment_data.date_payment or ''" class="text-center"/>
-                                    <td t-esc="payment_data and payment_data.total and format_amount(payment_data.total, payment_data.currency_id or docs.currency_id) or ''" class="text-right"/>
-                                    <td t-esc="residual_amount and format_amount(residual_amount, line.currency_id or docs.currency_id) or ''" class="text-right"/>
-                                    <td></td>
-                                    <td t-esc="line.due_date or ''" class="text-center"/>
-                                </tr>
-                            </t>
-                        </t>
+        <!-- 5. Tổng giá trị HĐ -->
+        <td t-esc="docs.total_contracts and format_amount(docs.total_contracts, docs.currency_id) or ''"
+            class="text-right num"/>
 
-                        <t t-if="not grouped_contracts">
-                            <tr>
-                                <td colspan="15" class="text-center">Không có dữ liệu</td>
-                            </tr>
-                        </t>
-                    </tbody>
-                </table>
+        <!-- 6-7. Tổng HSQT -->
+        <td></td>
+        <td t-esc="docs.total_settlements and format_amount(docs.total_settlements, docs.currency_id) or ''"
+            class="text-right num"/>
 
-            </div>
+        <!-- 8-10. Tổng Hóa đơn -->
+        <td></td>
+        <td></td>
+        <td t-esc="docs.total_invoices and format_amount(docs.total_invoices, docs.currency_id) or ''"
+            class="text-right num"/>
+
+        <!-- 11-12. Tổng Đã trả -->
+        <td></td>
+        <td t-esc="docs.paid_amount and format_amount(docs.paid_amount, docs.currency_id) or ''"
+            class="text-right num"/>
+
+        <!-- 13. Còn nợ (có thể âm nếu là tạm ứng) -->
+        <td t-esc="format_amount(residual_total, docs.currency_id)" class="text-right num"/>
+
+        <!-- 14. Ghi chú: nếu âm => hiển thị Tạm ứng -->
+        <td>
+            <t t-if="residual_total &lt; 0">
+                Tạm ứng: <t t-esc="format_amount(advance_total, docs.currency_id)"/>
+            </t>
+        </td>
+
+        <!-- 15. Hạn T/T -->
+        <td t-esc="docs.due_days or ''"/>
+    </tr>
+</t>
+
+
+        <!-- Biến đếm STT -->
+        <t t-set="stt" t-value="0"/>
+
+        <!-- Hợp đồng (không gộp ô) -->
+        <t t-set="grouped_contracts" t-value="docs.contract_ids.sorted(key=lambda x: x.project_id.id or x.id)"/>
+        <t t-foreach="grouped_contracts" t-as="line">
+            <!-- Lấy các dòng đã ghép: invoice -> payments, rồi payments không có invoice -->
+            <t t-set="rows" t-value="line.get_report_rows()"/>
+            <!-- Nếu không có invoice/payment nào, vẫn tạo 1 dòng rỗng cho hợp đồng -->
+            <t t-if="not rows">
+                <t t-set="rows" t-value="[{}]"/>
+            </t>
+
+            <t t-foreach="rows" t-as="row">
+                <t t-set="stt" t-value="stt + 1"/>
+                <tr>
+                    <!-- 1. STT -->
+                    <td t-esc="stt" class="text-center"/>
+
+                    <!-- 2-5. Thông tin hợp đồng: chỉ in ở dòng đầu tiên -->
+                    <t t-if="stt and (stt == 1 or (rows and row == rows[0]))">
+                        <td t-esc="line.project_id.name or line.name or ''" class="text-center" style="vertical-align:middle;"/>
+                        <td t-esc="line.interpretation or ''" class="text-center" style="vertical-align:middle;"/>
+                        <td t-esc="line.name or ''" class="text-center" style="vertical-align:middle;"/>
+                        <td t-esc="line.amount and format_amount(line.amount, line.currency_id or docs.currency_id) or ''" class="text-right num" style="vertical-align:middle;"/>
+                    </t>
+                    <t t-else="">
+                        <td></td><td></td><td></td><td></td>
+                    </t>
+
+                    <!-- 6-7. Hồ sơ quyết toán (để nguyên/tuỳ chỉnh nếu cần) -->
+                    <td></td>
+                    <td></td>
+
+                    <!-- 8-10. Hóa đơn -->
+                    <td t-esc="row.get('invoice') and (row.get('invoice').date or '') or ''" class="text-center"/>
+                    <td t-esc="row.get('invoice') and (row.get('invoice').name or '') or ''" class="text-center"/>
+                    <td t-esc="row.get('invoice') and row.get('invoice').amount and format_amount(row.get('invoice').amount, (row.get('invoice').currency_id or docs.currency_id)) or ''"
+                        class="text-right num"/>
+
+                    <!-- 11-12. Đã trả (theo thứ tự hóa đơn; nếu không có hóa đơn -> để trống phần hóa đơn) -->
+                    <td t-esc="row.get('payment') and (row.get('payment').date_payment or '') or ''" class="text-center"/>
+                    <td t-esc="row.get('payment') and row.get('payment').total and format_amount(row.get('payment').total, (row.get('payment').currency_id or docs.currency_id)) or ''"
+                        class="text-right num"/>
+
+                    <!-- 13. Còn nợ: số dư còn lại SAU DÒNG NÀY
+                        - Có hóa đơn: số dư của hóa đơn đó sau khi trừ thanh toán đến dòng này
+                        - Không có hóa đơn: số dư tạm ứng âm (lũy kế) -->
+                    <t t-if="row.get('running_balance') is not None">
+                        <td t-esc="format_amount(row.get('running_balance'),
+                                                (row.get('invoice') and row.get('invoice').currency_id) or (line.currency_id or docs.currency_id))"
+                            class="text-right num"/>
+                    </t>
+                    <t t-else="">
+                        <td></td>
+                    </t>
+
+                    <!-- 14. Ghi chú -->
+                    <td></td>
+
+<!-- 15. Hạn T/T theo Hóa đơn (supplier.invoice.due_date) -->
+<td class="text-center">
+  <t t-set="inv" t-value="row.get('invoice')"/>
+  <t t-esc="inv and inv.due_date or ''" t-options="{'widget': 'date'}"/>
+</td>
+
+                </tr>
+            </t>
         </t>
-    </template>
+
+        <!-- Không có dữ liệu -->
+        <t t-if="not grouped_contracts">
+            <tr>
+                <td colspan="15" class="text-center">Không có dữ liệu</td>
+            </tr>
+        </t>
+    </tbody>
+</table>
+
+
+                <div style="page-break-inside: avoid; style: font-weight: bold">
+                    <div class="row">
+                        <div class="col-6" style="text-align:center;line-height:1.8">
+                            <div>
+                                <span>Người lập biểu</span>
+                            </div>
+                            <div style="height:65px"></div>
+                            <div>
+                                <span t-field="user_id.name"/>
+                            </div>
+                        </div>
+                        <div class="col-6" style="text-align:center;line-height:1.8">
+                            <div>
+    TP Hồ Chí Minh ngày <span t-esc="datetime.datetime.today().day"/>
+    tháng <span t-esc="datetime.datetime.today().month"/>
+    năm <span t-esc="datetime.datetime.today().year"/>
+                    </div>
+                    <div>
+                                    Giám Đốc
+                    </div>
+                    <div style="height:65px"></div>
+                    <div>
+                        <span> Đỗ Minh Toàn </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</t>
+</template>
 </odoo>

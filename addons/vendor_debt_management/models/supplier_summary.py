@@ -13,7 +13,6 @@ class SupplierSummary(models.Model):
         inverse="_inverse_contract_ids",
         string="Hợp đồng"
     )
-    interpretation = fields.Char("Diễn giải", compute="_compute_interpretation")
     due_date = fields.Date("Ngày đến hạn" , compute="_compute_due_date")
     due_days = fields.Char("Số ngày đến hạn", compute="_compute_due_date")
     total_contracts = fields.Monetary("Tổng giá trị hợp đồng", compute="_compute_total_contracts")
@@ -23,6 +22,20 @@ class SupplierSummary(models.Model):
     advance_amount = fields.Monetary("Số tiền đã tạm ứng/ chưa hóa đơn", compute="_compute_advance_amount", currency_field="currency_id")
     currency_id = fields.Many2one("res.currency", string="Tiền tệ")
     total_settlements = fields.Monetary("Tổng giá trị hồ sơ quyết toán", compute="_compute_total_settlements", currency_field="currency_id")
+    # THAY field note cũ (nếu là simple Text) bằng field có compute + inverse
+    note = fields.Text(
+        "Ghi chú",
+        compute="_compute_note",
+        inverse="_inverse_note",
+        store=False,
+    )
+        # NEW: field người dùng nhập để ghi đè diễn giải
+    interpretation = fields.Char(
+        "Diễn giải",
+        compute="_compute_interpretation",
+        inverse="_inverse_interpretation",
+        store=False,
+    )
     def init(self):
         """Create or update the database view for supplier.summary."""
         tools.drop_view_if_exists(self.env.cr, self._table)  # Drop the view if it exists
@@ -65,7 +78,7 @@ class SupplierSummary(models.Model):
         for record in self:
             residual_amount = sum(record.contract_ids.mapped("residual_amount"))
             if residual_amount < 0:
-                residual_amount = 0
+                residual_amount = residual_amount
             record.residual_amount = residual_amount
     @api.depends("contract_ids.amount")
     def _compute_total_contracts(self):
@@ -82,15 +95,6 @@ class SupplierSummary(models.Model):
             if advance_amount < 0:
                 advance_amount = 0
             record.advance_amount = advance_amount
-    @api.depends("contract_ids.create_date", "contract_ids.interpretation")
-    def _compute_interpretation(self):
-        for rec in self:
-            if rec.contract_ids:
-                # Sắp xếp theo create_date giảm dần (lấy hợp đồng mới nhất)
-                latest_contract = rec.contract_ids.sorted(lambda c: c.create_date or fields.Datetime.now(), reverse=True)[0]
-                rec.interpretation = latest_contract.interpretation
-            else:
-                rec.interpretation = False
             
     @api.depends("contract_ids.due_date")
     def _compute_due_date(self):
@@ -125,6 +129,53 @@ class SupplierSummary(models.Model):
         for rec in self:
             for contract in rec.contract_ids:
                 contract.partner_id = rec.partner_id
+    @api.depends("partner_id")
+    def _compute_note(self):
+        Note = self.env["supplier.summary.note"]
+        for rec in self:
+            if rec.partner_id:
+                note_rec = Note.search([("partner_id", "=", rec.partner_id.id)], limit=1)
+                rec.note = note_rec.note if note_rec else False
+            else:
+                rec.note = False
+
+    def _inverse_note(self):
+        Note = self.env["supplier.summary.note"]
+        for rec in self:
+            if not rec.partner_id:
+                continue
+            note_rec = Note.search([("partner_id", "=", rec.partner_id.id)], limit=1)
+            if note_rec:
+                note_rec.note = rec.note or False
+            else:
+                Note.create({
+                    "partner_id": rec.partner_id.id,
+                    "note": rec.note or False,
+                })
+    # --- mapping OVERRIDE ---
+    @api.depends("partner_id")
+    def _compute_interpretation(self):
+        Note = self.env["supplier.summary.note"]
+        for rec in self:
+            if rec.partner_id:
+                n = Note.search([("partner_id", "=", rec.partner_id.id)], limit=1)
+                rec.interpretation = n.interpretation or False if n else False
+            else:
+                rec.interpretation = False
+
+    def _inverse_interpretation(self):
+        Note = self.env["supplier.summary.note"]
+        for rec in self:
+            if not rec.partner_id:
+                continue
+            n = Note.search([("partner_id", "=", rec.partner_id.id)], limit=1)
+            if n:
+                n.interpretation = rec.interpretation or False
+            else:
+                Note.create({
+                    "partner_id": rec.partner_id.id,
+                    "interpretation": rec.interpretation or False,
+                })
 class ReportSupplierSummary(models.AbstractModel):
     _name = 'report.vendor_debt_management.report_supplier_summary_view'
     _description = 'Supplier Summary Report'
@@ -137,3 +188,20 @@ class ReportSupplierSummary(models.AbstractModel):
             'doc_model': 'supplier.summary',
             'docs': docs,
         }
+# models/supplier_summary_note.py
+from odoo import models, fields, api
+
+class SupplierSummaryNote(models.Model):
+    _name = "supplier.summary.note"
+    _description = "Ghi chú tổng hợp công nợ theo Nhà cung cấp"
+    _rec_name = "partner_id"
+
+    partner_id = fields.Many2one(
+        "res.partner", string="Nhà cung cấp",
+        required=True, domain=[("supplier_rank", ">", 0)], ondelete="cascade"
+    )
+    note = fields.Text("Ghi chú")
+    interpretation = fields.Char("Diễn giải")
+    _sql_constraints = [
+        ("partner_unique", "unique(partner_id)", "Mỗi nhà cung cấp chỉ có một ghi chú."),
+    ]
