@@ -1,9 +1,14 @@
-from odoo import fields, models,api
+from odoo import fields, models,api,exceptions, _
 from datetime import datetime, timedelta
 from collections import defaultdict
 class SaleOrder(models.Model):
     _inherit = 'sale.order'   
 
+    def action_set_sent(self):
+            """Chuyển trạng thái báo giá sang Đã gửi"""
+            for record in self:
+                if record.state == 'draft':
+                    record.state = 'sent'
     is_including_transport = fields.Boolean(
     string="Đã bao gồm vận chuyển",
     default=False
@@ -111,11 +116,16 @@ class SaleOrder(models.Model):
             currency = order.currency_id
 
             for line in order.order_line.filtered(lambda l: not l.display_type):
-                price_unit = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
+                # Giá sau chiết khấu
+                price_unit = (line.price_unit or 0.0) * (1 - (line.discount or 0.0) / 100.0)
+                # Cộng giá nhân công
+                price_unit_with_nhan_cong = price_unit + (line.x_chi_phi_nhan_cong or 0.0)
+
                 taxes = line.tax_id.compute_all(
-                    price_unit, currency, line.product_uom_qty,
+                    price_unit_with_nhan_cong, currency, line.product_uom_qty,
                     product=line.product_id, partner=order.partner_id
                 )
+
                 for tax in taxes['taxes']:
                     tax_details[tax['name']]['base'] += tax['base']
                     tax_details[tax['name']]['amount'] += tax['amount']
@@ -130,7 +140,7 @@ class SaleOrder(models.Model):
                 f"<td style='text-align:right; white-space:nowrap; padding:4px;'>{currency.format(order.amount_untaxed)}</td></tr>"
             )
 
-            # Thuế chi tiết
+            # Chi tiết thuế
             for tax_name, data in tax_details.items():
                 summary_lines.append(
                     f"<tr><td style='white-space:nowrap; padding:4px;'>"
@@ -146,6 +156,19 @@ class SaleOrder(models.Model):
 
             summary_lines.append("</table>")
             order.x_tax_summary = ''.join(summary_lines)
+    is_including_testing = fields.Boolean(
+    string="Đã bao gồm kiểm thử",
+    help ="Chọn nếu báo giá đã bao gồm chi phí kiểm thử sản phẩm hoặc dịch vụ.",
+    default=False)
+
+    def action_confirm(self):
+        for order in self:
+            # Kiểm tra nếu field x_project_name bị rỗng
+            if not order.x_project_name:
+                raise exceptions.UserError(_("Vui lòng nhập thông tin 'Dự án' trước khi xác nhận đơn hàng."))
+
+        # Nếu hợp lệ thì gọi xử lý gốc
+        return super(SaleOrder, self).action_confirm()
 
 
 

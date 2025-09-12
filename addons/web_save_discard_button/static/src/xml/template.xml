@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <t t-name="web_save_discard_button.FormStatusIndicator" t-inherit="web.FormStatusIndicator" t-inherit-mode="extension" owl="1">
+
+        <xpath expr="//div[(hasclass('o_form_status_indicator_buttons'))]" position="attributes">
+            <attribute name="class" add="gap-2 d-flex align-items-center" separator=" " />
+        </xpath>
+        <!-- Save -->
+        <xpath expr="//button[(hasclass('o_form_button_save'))]" position="replace">
+            <button type="button" class="o_form_button_save btn btn-outline-success btn-sm px-2 d-flex align-items-center " data-hotkey="s" t-on-click.stop="save" aria-label="Lưu bản ghi" data-tooltip="Lưu bản ghi" t-ref="save">
+                <i class="fa fa-check me-1"></i>
+                <span>Lưu</span>
+            </button>
+        </xpath>
+
+        <!-- Cancel / Discard -->
+        <xpath expr="//button[(hasclass('o_form_button_cancel'))]" position="replace">
+            <button type="button" class="o_form_button_cancel btn btn-outline-danger btn-sm px-2 d-flex align-items-center " data-hotkey="j" t-on-click.stop="discard" aria-label="Hủy thay đổi" data-tooltip="Hủy thay đổi">
+                <i class="fa fa-times me-1"></i>
+                <span>Hủy</span>
+            </button>
+        </xpath>
+
+    </t>
+</templates>

@@ -1,0 +1,13 @@
+<odoo>
+  <record id="module_category_director" model="ir.module.category">
+    <field name="name">Giám Đốc</field>
+    <field name="sequence">10</field>
+  </record>
+
+  <record id="group_director" model="res.groups">
+    <field name="name">Giám Đốc</field>
+    <field name="category_id" ref="module_category_director"/>
+    <!-- <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/> -->
+    <field name="comment">Chỉ duy nhất một người dùng được gán nhóm này.</field>
+  </record>
+</odoo>

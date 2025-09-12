@@ -8,7 +8,7 @@
     "data": [
         'security/ir.model.access.csv',
         "views/sale_order_views.xml",
-        
+        "views/custom_button_confirm.xml",
     ],
     "installable": True,
     "application": False,

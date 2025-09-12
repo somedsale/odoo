@@ -1,0 +1,11 @@
+<odoo>
+    <record id="action_report_payment_request_xlsx" model="ir.actions.report">
+        <field name="name">Xuất Excel Phiếu Chi</field>
+        <field name="model">account.payment.request</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">payment_request_xlsx_report.payment_request_xlsx</field>
+        <field name="binding_model_id" ref="custom_account_payment_request.model_account_payment_request"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'PhieuChi_' + (object.name or 'NoName') + '_' + time.strftime('%Y%m%d')</field>
+    </record>
+</odoo>

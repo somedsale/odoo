@@ -1,0 +1,13 @@
+<odoo>
+    <record id="view_proposal_sheet_form_inherit_cost_estimate" model="ir.ui.view">
+        <field name="name">proposal.sheet.form.inherit.cost.estimate</field>
+        <field name="model">proposal.sheet</field>
+        <field name="inherit_id" ref="proposal_sheet.view_proposal_sheet_form"/>
+        <field name="arch" type="xml">
+            <!-- Chèn sau project_id -->
+            <xpath expr="//group/group/field[@name='project_id']" position="after">
+                <field name="cost_estimate_line_id" options="{'no_create': True}" domain="[('project_id', '=', project_id)]" string="Hạng mục dự toán" readonly="state != 'draft'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

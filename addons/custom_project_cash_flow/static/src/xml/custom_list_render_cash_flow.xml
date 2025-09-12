@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="custom_project_cash_flow.ListRenderer" t-inherit="web.ListRenderer" t-inherit-mode="extension" owl="1">
+        <xpath expr="//table" position="before">
+            <t t-if="props.list.resModel === 'project.cash.flow'">
+
+                <!-- Lấy ký hiệu tiền tệ từ bản ghi đầu tiên nếu có -->
+                <t t-set="currencySymbol" t-value="props.list.records.length &gt; 0 &amp;&amp; props.list.records[0].data.currency_id ? props.list.records[0].data.currency_id[1] : ''"/>
+
+                <!-- Tính tổng các giá trị Thu / Chi / Số dư -->
+                <t t-set="totalIn" t-value="props.list.records.length &gt; 0 ? props.list.records[0].data.total_in_all : 0"/>
+                <t t-set="totalOut" t-value="props.list.records.length &gt; 0 ? props.list.records[0].data.total_out_all : 0"/>
+                <t t-set="balance" t-value="props.list.records.length &gt; 0 ? props.list.records[0].data.balance_all : 0"/>
+
+
+                <div class="o_cashflow_statusbar d-flex w-100 align-items-stretch">
+
+                    <!-- Tổng Thu -->
+                    <div class="o_cashflow_card flex-grow-1 d-flex flex-column p-3 border-bottom text-center">
+                        <span class="h2 m-0 text-success">
+                            <t t-esc="totalIn.toLocaleString()"/>
+                            <t t-esc="currencySymbol"/>
+                        </span>
+                        <b class="mx-2">Tổng Thu</b>
+                    </div>
+                    <div class="o_cashflow_card flex-grow-0 d-flex align-items-center justify-content-center border-bottom px-2">
+                        <i class="fa fa-angle-right fa-3x"/>
+                    </div>
+
+                    <!-- Tổng Chi -->
+                    <div class="o_cashflow_card flex-grow-1 d-flex flex-column p-3 border-bottom text-center">
+                        <span class="h2 m-0 text-danger">
+                            <t t-esc="totalOut.toLocaleString()"/>
+                            <t t-esc="currencySymbol"/>
+                        </span>
+                        <b class="mx-2">Tổng Chi</b>
+                    </div>
+                    <div class="o_cashflow_card flex-grow-0 d-flex align-items-center justify-content-center border-bottom px-2">
+                        <i class="fa fa-angle-right fa-3x"/>
+                    </div>
+
+                    <!-- Số dư -->
+                    <div class="o_cashflow_card flex-grow-1 d-flex flex-column p-3 border-bottom text-center">
+                        <span class="h2 m-0 text-primary">
+                            <t t-esc="balance.toLocaleString()"/>
+                            <t t-esc="currencySymbol"/>
+                        </span>
+                        <b class="mx-2">Số dư</b>
+                    </div>
+
+                </div>
+
+            </t>
+        </xpath>
+    </t>
+</templates>

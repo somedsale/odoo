@@ -1,0 +1,75 @@
+<!-- views/project_payment_schedule_views.xml -->
+<odoo>
+    <record id="view_project_payment_schedule_tree" model="ir.ui.view">
+        <field name="name">project.payment.schedule.tree</field>
+        <field name="model">project.payment.schedule</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="project_id"/>
+                <field name ="partner_id"/>
+                <field name="sequence" string="Đợt"/>
+                <field name="name" string="Tên đợt"/>
+                <field name="date_planned"/>
+                <field name="amount" widget="monetary" decoration-success="state == 'done'" decoration-bf="state == 'done'"/>
+                <field name="actual_amount" widget="monetary" decoration-success="actual_amount > 0" decoration-bf="actual_amount > 0"/>
+                <field name="balance_amount" widget="monetary" decoration-danger="balance_amount > 0" decoration-bf="balance_amount > 0"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'" decoration-warning="state == 'partial'" decoration-muted="state == 'pending'"/>
+                <field name ="currency_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_project_payment_schedule_form" model="ir.ui.view">
+        <field name="name">project.payment.schedule.form</field>
+        <field name="model">project.payment.schedule</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="pending,partial,done" readonly="1"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="project_id"/>
+                            <field name ="partner_id"/>
+                            <field name="sequence" string="Đợt"/>
+                            <field name="milestone_id"/>
+                            <field name="date_planned"/>
+                        </group>
+                        <group>
+                            <field name="amount" widget="monetary"/>
+                            <field name="actual_amount" readonly="1" widget="monetary"/>
+                            <field name="balance_amount" readonly="1" widget="monetary"/>
+                            <field name="description"/>
+                            <field name ="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <field name="receipt_ids" string="Phiếu thu">
+                        <tree editable="bottom">
+                            <field name="name"/>
+                            <field name="amount" widget="monetary"/>
+                            <field name="date"/>
+                            <field name="partner_id" />
+                            <field name ="payment_method"/>
+                            <field name="state" widget="badge"/>
+                            <field name="project_id" optional="hide"/>
+                            <field name ="currency_id" optional="hide"/>
+                        </tree>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_project_payment_schedule" model="ir.actions.act_window">
+        <field name="name">Đợt thanh toán dự án</field>
+        <field name="res_model">project.payment.schedule</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p>Quản lý tiến độ thanh toán của từng dự án</p>
+        </field>
+        <field name="limit">20</field>
+    </record>
+
+    <menuitem id="menu_project_payment_schedule_root" name="Thanh toán dự án" parent="custom_account_menu.menu_accounting_project" action="action_project_payment_schedule"/>
+</odoo>

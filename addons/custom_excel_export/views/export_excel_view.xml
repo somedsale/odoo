@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- View for the wizard -->
+        <record id="view_export_excel_wizard" model="ir.ui.view">
+            <field name="name">export.excel.wizard.form</field>
+            <field name="model">export.excel.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Export to Excel">
+                    <group>
+                        <field name="id" invisible="1"/>
+                        <p>Click Export to generate an Excel file with selected Sale Orders.</p>
+                    </group>
+                    <footer>
+                        <button name="export_to_excel" string="Export" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+    <record id="access_export_excel_wizard" model="ir.model.access">
+        <field name="name">Access Export Excel Wizard</field>
+        <field name="model_id" ref="model_export_excel_wizard"/>
+        <field name="group_id" ref="base.group_user"/>
+        <field name="perm_read">1</field>
+        <field name="perm_write">1</field>
+        <field name="perm_create">1</field>
+        <field name="perm_unlink">1</field>
+    </record>
+        <!-- Action for the wizard -->
+        <record id="action_export_excel" model="ir.actions.act_window">
+            <field name="name">Export to Excel</field>
+            <field name="res_model">export.excel.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <!-- Binding to add the action to the Sale Order model -->
+        <record id="action_export_excel_binding" model="ir.actions.act_window">
+            <field name="name">Export to Excel</field>
+            <field name="res_model">export.excel.wizard</field>
+            <field name="binding_model_id" ref="sale.model_sale_order"/>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

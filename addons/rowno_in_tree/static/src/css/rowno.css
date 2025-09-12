@@ -1,0 +1,9 @@
+.o_list_view th.o_list_row_count_sheliya,
+.o_list_view td.o_list_row_count_sheliya {
+  width: 40px !important;
+  min-width: 40px !important;
+  max-width: 40px !important;
+  text-align: center !important;
+  white-space: nowrap;
+  overflow: hidden;
+}

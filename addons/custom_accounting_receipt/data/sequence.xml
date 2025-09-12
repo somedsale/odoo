@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="sequence_account_receipt" model="ir.sequence">
+            <field name="name">Phiếu Thu Kế Toán</field>
+            <field name="code">account.receipt</field>
+            <field name="prefix">PT/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

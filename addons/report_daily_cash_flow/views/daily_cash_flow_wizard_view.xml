@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_daily_cash_flow_report_wizard_form" model="ir.ui.view">
+        <field name="name">daily.cash.flow.wizard.form</field>
+        <field name="model">daily.cash.flow.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Generate Sale Report">
+                <group>
+                    <field name="date_report" widget="date" string="Chọn ngày báo cáo"/>
+
+                </group>
+                <group string="Tồn đầu kỳ (nhập lần đầu)">
+                    <field name="opening_bank" placeholder="0" help="Nhập tay nếu là ngày đầu tiên."/>
+                    <field name="opening_cash" placeholder="0" help="Nhập tay nếu là ngày đầu tiên."/>
+                </group>
+                <footer>
+                    <button name="action_generate_report" string="Xem báo cáo" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_daily_cash_flow_report_wizard" model="ir.actions.act_window">
+        <field name="name">Tạo báo cáo</field>
+        <field name="res_model">daily.cash.flow.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_cash_flow_report_daily" name="Báo cáo thu chi hàng ngày" parent="custom_account_menu.menu_accounting_reporting" action="action_daily_cash_flow_report_wizard" sequence="100"/>
+</odoo>

@@ -1,0 +1,8 @@
+<odoo>
+    <record id="seq_account_payment_request" model="ir.sequence">
+        <field name="name">Mã Phiếu chi</field>
+        <field name="code">account.payment.request</field>
+        <field name="prefix">PC/%(year)s/</field>
+        <field name="padding">4</field>
+    </record>
+</odoo>
