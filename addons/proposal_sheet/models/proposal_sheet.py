@@ -19,6 +19,7 @@ class ProposalSheet(models.Model):
     task_id = fields.Many2one('project.task', string='Nhiệm Vụ', tracking=True)
     requested_by = fields.Many2one('res.users', string='Người Đề Xuất', default=lambda self: self.env.user, readonly=True, tracking=True)
     currency_id = fields.Many2one('res.currency', string='Tiền tệ', required=True, default=lambda self: self.env.company.currency_id)
+    purchase_order = fields.Many2one('purchase.order', string='Phiếu mua hang', tracking=True)
     state = fields.Selection([
         ('draft', 'Nháp'),
         ('reviewed_manager', 'Đang phê duyệt (QL)'),
@@ -252,6 +253,31 @@ class ProposalSheet(models.Model):
                 'res_id': payment_request.id,
                 'target': 'current',  # hoặc 'new' nếu muốn mở trong popup
             }
+    def action_purchase_order(self):
+        purchase_order = self.env['purchase.order'].create({
+            'partner_id': self.partner_id.id,
+            'proposal_sheet_id': self.id,
+            'date_order': self.create_date,
+            'project_id': self.project_id.id,
+            'user_id': self.env.user.id,
+            'origin': f'{self._name} - {self.name}',
+        })
+        for line in self.material_line_ids:
+            product = line.material_id.product_id
+            self.env['purchase.order.line'].create({
+                'order_id': purchase_order.id,
+                'product_id': product.product_id.id,
+                'product_uom': product.product_uom_id.id,
+                'product_qty': product.quantity,
+                'price_unit': product.price_unit,
+                'tax_id': [(6, 0, [product.tax_id.id])],
+                'account_analytic_id': line.account_analytic_id.id,
+                'analytic_tag_ids': [(6, 0, line.analytic_tag_ids.ids)],
+                'name': line.name,
+            })
+        message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được tạo thành phiếu mua hàng <strong>{purchase_order.name}</strong>.</p>"        
+        partner_ids = self._get_approval_partners(include_manager=False, include_boss=False, include_accounting=False)
+        self._send_notification(message, partner_ids)
     def action_accounting_approve(self):
         if self.state != 'reviewed_accounting':
             raise UserError("Chỉ phiếu đã được Quản lý duyệt mới được Kế toán duyệt.")
