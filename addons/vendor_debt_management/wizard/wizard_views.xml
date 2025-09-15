@@ -6,16 +6,11 @@
         <field name="arch" type="xml">
             <form >
                 <group>
-                    <field name="partner_id"/>
+                    <field name="partner_id" options="{'no_create': True}"/>
                 </group>
                 <footer>
-                    <button name="action_view_report"
-                            type="object"
-                            string="Xem báo cáo"
-                            class="btn-primary"/>
-                    <button string="Hủy"
-                            class="btn-secondary"
-                            special="cancel"/>
+                    <button name="action_view_report" type="object" string="Xem báo cáo" class="btn-primary"/>
+                    <button string="Hủy" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
         </field>
@@ -30,9 +25,5 @@
     </record>
 
     <!-- Menu -->
-    <menuitem id="menu_supplier_summary_report_test_hihi"
-              name="Chi tiết công nợ NCC"
-              parent="menu_supplier_summary_root"
-              action="action_supplier_summary_wizard"
-              sequence="50"/>
+    <menuitem id="menu_supplier_summary_report_test_hihi" name="Chi tiết công nợ NCC" parent="menu_supplier_summary_root" action="action_supplier_summary_wizard" sequence="50"/>
 </odoo>
