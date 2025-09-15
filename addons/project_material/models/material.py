@@ -15,6 +15,12 @@ class ProjectMaterial(models.Model):
     string='Nhà Cung Cấp',
     domain=[('supplier_rank', '>', 0)]
 )
+    product_id = fields.Many2one(
+        'product.product',
+        string='Sản phẩm liên kết',
+        readonly=True,
+        ondelete='set null'
+    )
 
     @api.model
     def create(self, vals):
@@ -31,4 +37,24 @@ class ProjectMaterial(models.Model):
             vendor = self.env['res.partner'].browse(vendor_id)
             if vendor and vendor.supplier_rank == 0:
                 vendor.supplier_rank = 1  
-        return super(ProjectMaterial, self).create(vals)
+        material = super(ProjectMaterial, self).create(vals)
+        material_category = self.env['product.category'].search([('name', '=', 'Vật tư')], limit=1)
+        if not material_category:
+            material_category = self.env['product.category'].create({'name': 'Vật tư'})
+        product_vals = {
+            'name': material.name,
+            # 'default_code': material.code,
+            'uom_id': material.unit.id,
+            'uom_po_id': material.unit.id,
+            'type': 'product',  # hoặc 'consu'
+            'purchase_ok': True,
+            'sale_ok': False,
+            'categ_id': material_category.id,
+            # 'list_price': material.price_unit,   # Giá bán (nếu có)
+            # 'standard_price': material.price_unit,  # Giá vốn
+        }
+        product = self.env['product.product'].create(product_vals)
+
+        # Link lại
+        material.product_id = product.id
+        return material
