@@ -7,8 +7,8 @@ _logger = logging.getLogger(__name__)
 class ProjectTask(models.Model):
     _inherit = ['project.task']
     name = fields.Char(string='Nhiệm vụ', required=True)
-    quantity = fields.Float(string='Quantity', default=0.0)
-    uom_id = fields.Many2one('uom.uom', string='Unit of Measure')
+    quantity = fields.Float(string='Quantity', related="sale_order_line_id.product_uom_qty", default=0.0)
+    uom_id = fields.Many2one('uom.uom', related="sale_order_line_id.product_uom", string='Unit of Measure')
     quantity_uom = fields.Char(string='Tổng số lượng theo Hợp đồng', compute='_compute_quantity_uom', store=True, readonly=True)
 
     remaining_quantity = fields.Float(
