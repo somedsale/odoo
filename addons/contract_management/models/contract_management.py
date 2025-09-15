@@ -31,7 +31,7 @@ class ContractManagement(models.Model):
     _name = 'contract.management'
     _description = 'Contract Management'
     _inherit = ['mail.thread', 'mail.activity.mixin']  # Enable chatter for tracking
-
+    _order = 'created_date desc'
     name = fields.Char(string='Tên hợp đồng', required=True)
     num_contract = fields.Char(string='Số hợp đồng')
     contract_value = fields.Float(string='Giá trị hợp đồng')

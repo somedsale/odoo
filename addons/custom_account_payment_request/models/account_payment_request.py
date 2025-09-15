@@ -5,6 +5,7 @@ class AccountingPaymentRequest(models.Model):
     _name = 'account.payment.request'
     _description = 'Yêu cầu chi tiền kế toán'
     _inherit = ['mail.thread', 'mail.activity.mixin']
+    _order = "create_date desc"
     name = fields.Char(string="Mã phiếu chi", required=True, copy=False, readonly=True, default='/')
     proposal_sheet_id = fields.Many2one('proposal.sheet', string="Phiếu đề xuất")
     proposal_person_id = fields.Many2one('res.users', string="Người đề xuất", store=True)
