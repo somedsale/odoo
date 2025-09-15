@@ -1,0 +1,22 @@
+<!-- views/project_task_form_inherit_sale_order.xml -->
+<odoo>
+    <record id="view_task_form_inherit_sale_order" model="ir.ui.view">
+        <field name="name">project.task.form.inherit.sale.order</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+
+            <!-- 2 smart buttons trên header -->
+            <xpath expr="//group/group/field[@name=&apos;project_id&apos;]" position="after">
+                <!-- SO của Dự án để người dùng dễ nhìn bối cảnh -->
+                <field name="project_sale_order_id" readonly="1" options="{'no_open': False}"/>
+
+                <!-- Chỉ cho chọn line thuộc SO của Dự án -->
+                <field name="sale_order_line_id" domain="[('order_id','=',project_sale_order_id)]" options="{'no_open': False}"/>
+            </xpath>
+
+
+
+        </field>
+    </record>
+</odoo>

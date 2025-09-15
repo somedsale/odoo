@@ -14,6 +14,7 @@
         'security/ir.model.access.csv',
         'views/contract_management_views.xml',
         'views/project_task_views.xml',
+        'views/project_task_form_inherit_sale_order.xml',
 
     ],
     'installable': True,
