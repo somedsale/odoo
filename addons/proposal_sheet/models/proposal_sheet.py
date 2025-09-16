@@ -19,7 +19,6 @@ class ProposalSheet(models.Model):
     task_id = fields.Many2one('project.task', string='Nhiệm Vụ', tracking=True)
     requested_by = fields.Many2one('res.users', string='Người Đề Xuất', default=lambda self: self.env.user, readonly=True, tracking=True)
     currency_id = fields.Many2one('res.currency', string='Tiền tệ', required=True, default=lambda self: self.env.company.currency_id)
-    purchase_order = fields.Many2one('purchase.order', string='Phiếu mua hang', tracking=True)
     state = fields.Selection([
         ('draft', 'Nháp'),
         ('reviewed_manager', 'Đang phê duyệt (QL)'),

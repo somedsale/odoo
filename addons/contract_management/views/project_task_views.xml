@@ -2,7 +2,7 @@
 <odoo>
     <!-- Task Stages -->
     <record id="task_type_new_order" model="project.task.type">
-        <field name="name">Đơn đặt hàng mới</field>
+        <field name="name">Chưa thực hiện</field>
         <field name="sequence">1</field>
     </record>
     <record id="task_type_purchase" model="project.task.type">

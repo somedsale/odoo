@@ -1,0 +1,9 @@
+<odoo>
+    <record id="seq_proposal_sheet" model="ir.sequence">
+        <field name="name">Proposal Sheet</field>
+        <field name="code">proposal.sheet</field>
+        <field name="prefix">PROP/%(y)s/</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>
