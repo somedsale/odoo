@@ -16,7 +16,6 @@
         'views/proposal_sheet_views.xml',
         'views/task_inherit_view.xml',
         'views/project_task_form_inherit_show_team_lead.xml',
-        'views/project_task_estimate_material_views.xml',
     ],
     'installable': True,
     'application': True,
