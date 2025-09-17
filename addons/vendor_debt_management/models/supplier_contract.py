@@ -4,7 +4,7 @@ class SupplierContract(models.Model):
     _name = "supplier.contract"
     _description = "Supplier Contract"
 
-    name = fields.Char("Số Hợp đồng")
+    name = fields.Char("Mã")
     partner_id = fields.Many2one("res.partner", string="Nhà cung cấp", required=True, domain=[("supplier_rank", ">", 0)])
     project_id = fields.Many2one("project.project", string="Dự án", required=True)
     interpretation = fields.Char("Diễn giải")
@@ -25,6 +25,7 @@ class SupplierContract(models.Model):
     )
     settlement_ids = fields.One2many("supplier.settlement", "contract_id", string="Hồ sơ quyết toán")
     invoice_ids = fields.One2many("supplier.invoice", "contract_id", string="Hóa đơn")
+    number_contract = fields.Char("Số hợp đồng", store=True)
     @api.depends("invoice_ids.due_date", "invoice_ids.amount", "account_payment_request_ids.total")
     def _compute_due_date(self):
         for record in self:

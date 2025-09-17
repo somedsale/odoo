@@ -21,16 +21,27 @@
       <field name="inherit_id" ref="project.view_task_form2"/>
       <field name="arch" type="xml">
         <xpath expr="//form/sheet/div[@name='button_box']" position="inside">
-          <button name="action_view_task_purchase_orders"
-                  type="object"
-                  class="oe_stat_button"
-                  icon="fa-shopping-cart"
-                  invisible="purchase_order_count == 0">
-            <field name="purchase_order_count" string="Đơn mua hàng" widget="statinfo"/>
+          <button name="action_view_task_purchase_orders" type="object" class="oe_stat_button" icon="fa-shopping-cart" groups="purchase.group_purchase_user,project.group_project_user" invisible="purchase_order_count == 0">
+            <field name="purchase_order_count" widget="statinfo" string="Đơn mua hàng"/>
           </button>
         </xpath>
       </field>
     </record>
-
+    <!-- Thêm 2 checkbox vào form Task -->
+    <record id="view_task_form_add_optional_stages" model="ir.ui.view">
+      <field name="name">project.task.form.add.optional.stages</field>
+      <field name="model">project.task</field>
+      <field name="inherit_id" ref="project.view_task_form2"/>
+      <field name="priority" eval="10010"/>
+      <field name="arch" type="xml">
+        <!-- Chèn vào group đầu tiên trong sheet (tuỳ bố cục của bạn) -->
+        <xpath expr="//form/sheet/group" position="inside">
+          <group string="Luồng tuỳ chọn">
+            <field name="add_stage_production"/>
+            <field name="add_stage_installation"/>
+          </group>
+        </xpath>
+      </field>
+    </record>
   </data>
 </odoo>

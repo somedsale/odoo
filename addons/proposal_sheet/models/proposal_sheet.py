@@ -305,7 +305,9 @@ class ProposalSheet(models.Model):
             'type': 'ir.actions.client',
             'tag': 'reload',
         }
-            
+    def action_done(self):
+        for rec in self:
+            rec.state = 'done' 
             
         
 
@@ -320,7 +322,7 @@ class ProposalSheet(models.Model):
             rec.show_button_manager_approve = rec.state == 'reviewed_manager' and is_manager
             rec.show_button_accounting_approve = rec.state == 'reviewed_accounting' and is_accounting
             rec.show_button_boss_approve = rec.state == 'approved' and is_boss
-            rec.show_button_waiting_accounting_paid = rec.state == 'waiting_accounting_paid' and is_accounting
+            rec.show_button_waiting_accounting_paid = rec.state == 'waiting_accounting_paid' and rec.type == 'expense' and is_accounting
             rec.show_button_done = rec.state == 'done' and is_accounting
             rec.show_button_reject = (
                 (rec.state == 'reviewed_manager' and is_manager) or

@@ -8,24 +8,24 @@ class ProjectTask(models.Model):
         string="Số PO",
         compute="_compute_purchase_order_count",
     )
-
     def _compute_purchase_order_count(self):
-        PurchaseOrder = self.env["purchase.order"]
         for task in self:
-            # Đếm PO có liên kết proposal_sheet_id, mà proposal đó thuộc task này
-            task.purchase_order_count = PurchaseOrder.search_count([
-                ("proposal_sheet_id.task_id", "=", task.id)
+            task.purchase_order_count = self.env['purchase.order'].search_count([
+                ('proposal_sheet_id.task_id', '=', task.id)
             ])
 
     def action_view_task_purchase_orders(self):
-        """Mở các PO liên quan đến task này (thông qua proposal.sheet)."""
         self.ensure_one()
-        action = self.env.ref("purchase.purchase_form_action").read()[0]
-        # Dùng dot-notation để lọc qua M2O: purchase.order -> proposal_sheet_id -> task_id
-        action["domain"] = [("proposal_sheet_id.task_id", "=", self.id)]
-        # Tuỳ chọn context: group theo NCC, điền origin mặc định…
-        action["context"] = {
-            "search_default_groupby_partner": 1,
-            "default_origin": self.name,
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Đơn mua hàng'),
+            'res_model': 'purchase.order',
+            'view_mode': 'tree,form',
+            # Dùng domain dựa trên field lưu trong DB (tránh field compute store=False)
+            'domain': [('proposal_sheet_id.task_id', '=', self.id)],
+            'target': 'current',
+            'context': {
+                # tuỳ chọn: preset search/domain
+                'default_proposal_sheet_id': False,
+            },
         }
-        return action

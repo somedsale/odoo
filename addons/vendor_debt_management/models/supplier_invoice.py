@@ -16,6 +16,7 @@ class SupplierInvoice(models.Model):
     due_date = fields.Date("Ngày đến hạn")
     note = fields.Text("Diễn giải")
     account_payment_request_ids = fields.One2many("account.payment.request", "invoice_id", string="Phiếu chi")
+    purchase_id = fields.Many2one('purchase.order', string="Đơn mua hàng", index=True)
 
     @api.constrains("date", "due_date")
     def _check_due_date(self):

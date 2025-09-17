@@ -4,3 +4,5 @@ from . import project_task_inherit
 from . import account_payment_request
 from . import purchase_advance_payment_wizard
 from . import stock_picking_inherit
+from . import supplier_invoice
+from . import project_task_optional_stages

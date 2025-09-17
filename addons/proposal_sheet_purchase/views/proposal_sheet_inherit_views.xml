@@ -14,13 +14,7 @@
                   type="object"
                   class="btn-primary"
                   string="Tạo Đơn Mua"
-                  invisible="(type != 'material') or (state in ['canceled','done'])"/>
-          <button name="action_create_purchase_orders"
-                  type="object"
-                  class="btn-secondary"
-                  string="Tạo &amp; Xác nhận PO"
-                  context="{'confirm': True}"
-                  invisible="(type != 'material') or (state in ['canceled','done'])"/>
+                  invisible="(type != 'material') or (state != 'waiting_accounting_paid')" groups="account.group_account_manager"/>
         </xpath>
 
         <!-- Bổ sung button box nếu form chưa có -->
@@ -34,7 +28,8 @@
                   type="object"
                   class="oe_stat_button"
                   icon="fa-shopping-cart"
-                  invisible="purchase_order_count == 0">
+                  invisible="purchase_order_count == 0"
+                  groups="purchase.group_purchase_user,project.group_project_user">
             <field name="purchase_order_count" widget="statinfo" string="Đơn mua hàng"/>
           </button>
         </xpath>

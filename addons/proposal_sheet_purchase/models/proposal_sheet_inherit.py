@@ -17,11 +17,18 @@ class ProposalSheet(models.Model):
             rec.purchase_order_count = len(rec.purchase_order_ids)
 
     def action_view_purchase_orders(self):
-        """Mở các PO liên kết với phiếu hiện tại."""
+        """Mở các PO liên kết với phiếu hiện tại — không đụng tới ir.actions.act_window."""
         self.ensure_one()
-        action = self.env.ref("purchase.purchase_form_action").read()[0]
-        action["domain"] = [("proposal_sheet_id", "=", self.id)]
-        action["context"] = {"default_proposal_sheet_id": self.id}
+        domain = [("proposal_sheet_id", "=", self.id)]
+        action = {
+            "type": "ir.actions.act_window",
+            "name": _("Đơn mua hàng"),
+            "res_model": "purchase.order",
+            "view_mode": "tree,form",
+            "domain": domain,
+            "context": {"default_proposal_sheet_id": self.id},
+            "target": "current",
+        }
         if len(self.purchase_order_ids) == 1:
             action.update({"view_mode": "form", "res_id": self.purchase_order_ids.id})
         return action
@@ -93,9 +100,31 @@ class ProposalSheet(models.Model):
             created_pos |= po
 
         self.message_post(body=_("Đã tạo %s PO (mỗi NCC 1 đơn) từ Phiếu Đề Xuất.") % len(created_pos))
-
+        # SAU KHI tạo xong PO -> đẩy task sang “Mua Hàng”
+        self._push_task_to_purchase_stage()
         action = self.env.ref("purchase.purchase_form_action").read()[0]
         action["domain"] = [("id", "in", created_pos.ids)]
         if len(created_pos) == 1:
             action.update({"view_mode": "form", "res_id": created_pos.id})
         return action
+    def _push_task_to_purchase_stage(self):
+        """Đẩy task sang stage 'Mua Hàng' sau khi tạo PO từ phiếu đề xuất."""
+        STAGE_XID = "contract_management.task_type_purchase"  # đổi nếu stage ở module khác
+        for sheet in self:
+            task = sheet.task_id
+            if not task:
+                continue
+            stage = self.env.ref(STAGE_XID, raise_if_not_found=False)
+            if not stage:
+                # Không tìm thấy stage theo XMLID -> bỏ qua (tránh crash)
+                continue
+
+            project = task.project_id
+            if project:
+                # Đảm bảo stage này có link với project (M2M project_ids) để hiện trên Kanban project đó
+                if project.id not in stage.project_ids.ids:
+                    stage.sudo().write({"project_ids": [(4, project.id)]})
+
+            # Gán stage cho task (nếu khác hiện tại)
+            if task.stage_id != stage:
+                task.sudo().write({"stage_id": stage.id})

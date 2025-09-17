@@ -4,6 +4,11 @@ from odoo.exceptions import UserError, ValidationError
 from odoo.tools import float_compare, float_is_zero
 
 
+# Đổi nếu stage ở module khác:
+XID_STAGE_DELIVERY     = "contract_management.task_type_delivery"      # Giao hàng
+XID_STAGE_PRODUCTION   = "contract_management.task_type_production"    # Sản xuất
+XID_STAGE_INSTALLATION = "contract_management.task_type_installation"  # Thi công
+XID_STAGE_ACCEPTANCE   = "contract_management.task_type_acceptance"    # Nghiệm thu
 class PurchaseOrder(models.Model):
     _inherit = "purchase.order"
 
@@ -51,6 +56,7 @@ class PurchaseOrder(models.Model):
                                            string="Cách tính tạm ứng", default="percent")
     advance_percent = fields.Float(string="Tạm ứng (%)", default=30.0)
     advance_amount = fields.Monetary(string="Tạm ứng (số tiền)", currency_field="currency_id")
+    supplier_contract_id = fields.Many2one("supplier.contract", string="Hợp đồng NCC", index=True)
 
     # ==== Computes ngắn gọn (bạn có thể giữ code cũ của mình nếu đã có) ====
     @api.depends("proposal_sheet_id")
@@ -128,7 +134,18 @@ class PurchaseOrder(models.Model):
                 "default_task_id": self.task_id.id if self.task_id else False,
             },
         }
-
+    def action_view_supplier_contract(self):
+        self.ensure_one()
+        if not self.supplier_contract_id:
+            raise UserError(_("Không có hợp đồng gắn với đơn hàng này."))
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Hợp đồng NCC"),
+            "res_model": "supplier.contract",
+            "view_mode": "form",
+            "res_id": self.supplier_contract_id.id,
+            "target": "current",
+        }
     def _create_payment_request(self, kind, amount_override=None, payment_type="bank", journal_id=False, note=None):
         """kind: 'advance' | 'full'"""
         self.ensure_one()
@@ -157,11 +174,13 @@ class PurchaseOrder(models.Model):
         project = self.project_id
         task = self.task_id
         cost_classification = "project" if project else "office"
+        contract = self.supplier_contract_id or self._get_or_create_supplier_contract()
 
         vals = {
             "name": "/",
             "purchase_id": self.id,
             "proposal_sheet_id": proposal.id if proposal else False,
+            "supplier_contract_id": contract.id,
             "project_id": project.id if project else False,
             "task_id": task.id if task else False,
             "proposal_person_id": self.env.user.id,
@@ -170,6 +189,7 @@ class PurchaseOrder(models.Model):
             "currency_id": self.currency_id.id,
             "receive_person": self.partner_id.id,
             "payment_person": self.env.user.partner_id.id,
+            'supplier_id': self.partner_id.id,
             "payment_type": payment_type,
             "journal_id": journal_id or False,
             "cost_classification": cost_classification,
@@ -179,7 +199,7 @@ class PurchaseOrder(models.Model):
                 self.name, self.partner_id.display_name
             ),
             "payment_kind": kind,
-            "state": "confirmed",
+            "state": "draft",
         }
         pr = self.env["account.payment.request"].create(vals)
 
@@ -249,6 +269,11 @@ class PurchaseOrder(models.Model):
     def button_confirm(self):
         res = super().button_confirm()
         for po in self:
+            # Tạo/ghép hợp đồng
+            contract = po._get_or_create_supplier_contract()
+            # Gắn lại tài liệu liên quan
+            po._link_po_documents_to_contract(contract)
+            # (tùy chọn) Nếu shipping_status là 'done' do test trước đó, reset về 'not_shipped'
             if po.state in ('purchase', 'done') and po.shipping_status == 'done':
                 po.shipping_status = 'not_shipped'
         return res
@@ -268,7 +293,172 @@ class PurchaseOrder(models.Model):
                 raise UserError(_("Chỉ có thể 'Nhận hàng' khi trạng thái đang là 'Đang giao'."))
             po.shipping_status = 'done'
             po.message_post(body=_("Trạng thái hàng hóa chuyển sang <b>Đã giao</b> (cập nhật thủ công)."))
+        # Sau khi đã giao, chuyển trạng thái phiếu đề xuất thành hoàn tất
+        for po in self:
+            po.proposal_sheet_id.action_done()
         return {'type': 'ir.actions.client', 'tag': 'reload'}
+    def _get_or_create_supplier_contract(self):
+        """Trả về Hợp đồng NCC cho PO: tìm theo (partner, project).
+           Không có thì tạo mới từ PO."""
+        self.ensure_one()
+        partner = self.partner_id
+        project = getattr(self, "project_id", False) and self.project_id or False
+
+        domain = [("partner_id", "=", partner.id)]
+        if project:
+            domain.append(("project_id", "=", project.id))
+
+        contract = self.env["supplier.contract"].search(domain, limit=1)
+        if not contract:
+            seq = self.env["ir.sequence"].next_by_code("supplier.contract") or "SC/00000"
+            contract = self.env["supplier.contract"].create({
+                "name": seq,
+                "partner_id": partner.id,
+                "project_id": project.id if project else False,
+                "interpretation": f"HĐ từ PO {self.name}",
+                "contract_date": fields.Date.context_today(self),
+                "amount": self.amount_total,
+                "currency_id": self.currency_id.id,
+            })
+        # link ngược vào PO
+        if not self.supplier_contract_id:
+            self.supplier_contract_id = contract.id
+        return contract
+    def _link_po_documents_to_contract(self, contract):
+        """Gán các APR & Invoice của PO vào contract nếu chưa gán."""
+        self.ensure_one()
+        # Phiếu chi chưa gắn
+        aprs = self.env["account.payment.request"].search([
+            ("purchase_id", "=", self.id),
+            ("supplier_contract_id", "=", False),
+        ])
+        aprs.write({"supplier_contract_id": contract.id})
+
+        # Hóa đơn NCC của PO (nếu model supplier.invoice có purchase_id)
+        invoices = self.env["supplier.invoice"].sudo().search([
+            ("purchase_id", "=", self.id),
+            ("contract_id", "=", False),
+        ])
+        invoices.write({"contract_id": contract.id})
+    # Helper: đảm bảo người đề xuất (requested_by) là follower của PO
+    def _ensure_proposal_requester_follower(self):
+        for po in self:
+            proposer_user = po.proposal_sheet_id.requested_by
+            partner = proposer_user and proposer_user.partner_id
+            if partner and partner.id not in po.message_partner_ids.ids:
+                po.message_subscribe(partner_ids=[partner.id])
+
+    @api.model
+    def create(self, vals):
+        po = super().create(vals)
+        # Nếu tạo PO đã có proposal_sheet_id -> add follower ngay
+        po._ensure_proposal_requester_follower()
+        return po
+
+    def write(self, vals):
+        res = super().write(vals)
+        # Nếu có thay đổi proposal_sheet_id sau khi tạo -> thêm follower
+        if 'proposal_sheet_id' in vals:
+            self._ensure_proposal_requester_follower()
+        return res
+    # ------------------ PUBLIC ACTIONS (đang có) ------------------
+
+    def action_mark_shipping_in_progress(self):
+        """
+        Bấm 'Đang giao':
+        - PO phải đã confirm (purchase/done) và đã tạm ứng/thanh toán (bạn đã chặn ở invisible)
+        - Cập nhật shipping_status = in_progress
+        - TỰ ĐỘNG đẩy stage Task theo rule
+        """
+        for po in self:
+            if po.state not in ('purchase', 'done'):
+                raise UserError(_("Chỉ PO đã xác nhận mới chuyển sang 'Đang giao'."))
+            if po.shipping_status != 'not_shipped':
+                raise UserError(_("PO không ở trạng thái 'Chưa giao'."))
+            po.shipping_status = 'in_progress'
+            po.message_post(body=_("Trạng thái hàng hóa ➜ <b>Đang giao</b>."))
+        # auto move stage
+        self._auto_move_task_by_shipping()
+        return {'type': 'ir.actions.client', 'tag': 'reload'}
+
+    def action_mark_shipping_done(self):
+        """
+        Bấm 'Nhận hàng':
+        - PO phải đã confirm (purchase/done)
+        - Trạng thái hiện tại phải là 'Đang giao'
+        - Cập nhật shipping_status = done
+        - TỰ ĐỘNG đẩy stage Task theo rule
+        """
+        for po in self:
+            if po.state not in ('purchase', 'done'):
+                raise UserError(_("Chỉ PO đã xác nhận mới được 'Nhận hàng'."))
+            if po.shipping_status != 'in_progress':
+                raise UserError(_("Chỉ có thể 'Nhận hàng' khi trạng thái đang là 'Đang giao'."))
+            po.shipping_status = 'done'
+            po.message_post(body=_("Trạng thái hàng hóa ➜ <b>Đã giao</b>."))
+        # auto move stage
+        self._auto_move_task_by_shipping()
+        return {'type': 'ir.actions.client', 'tag': 'reload'}
+
+    # Nếu shipping_status đổi bằng cách khác (import, write API, …) vẫn tự chạy rule
+    def write(self, vals):
+        res = super().write(vals)
+        if 'shipping_status' in vals:
+            self._auto_move_task_by_shipping()
+        return res
+
+    # ------------------ CORE LOGIC ------------------
+
+    def _auto_move_task_by_shipping(self):
+        """
+        Đổi stage của Task (nếu có) dựa vào shipping_status của PO + 2 checkbox:
+        - task.add_stage_production
+        - task.add_stage_installation
+        """
+        for po in self:
+            task = po.proposal_sheet_id.task_id if po.proposal_sheet_id else False
+            if not task:
+                continue
+
+            project = task.project_id
+
+            def _get_stage(xid):
+                st = self.env.ref(xid, raise_if_not_found=False)
+                if st and project and project.id not in st.project_ids.ids:
+                    # đảm bảo stage hiển thị ở Project hiện tại
+                    st.sudo().write({'project_ids': [(4, project.id)]})
+                return st
+
+            need_prod = bool(getattr(task, 'add_stage_production', False))
+            need_inst = bool(getattr(task, 'add_stage_installation', False))
+
+            # ------ Khi ĐANG GIAO ------
+            if po.shipping_status == 'in_progress':
+                # Nếu KHÔNG cần sản xuất, chuyển task sang "Giao hàng"
+                if not need_prod:
+                    st = _get_stage(XID_STAGE_DELIVERY)
+                    if st and task.stage_id != st:
+                        task.sudo().write({'stage_id': st.id})
+                        task.message_post(body=_("Chuyển stage tự động ➜ <b>Giao hàng</b> (PO đang giao)."))
+
+            # ------ Khi ĐÃ GIAO ------
+            elif po.shipping_status == 'done':
+                if need_prod:
+                    # Có “Sản xuất” ⇒ bắt đầu sản xuất khi vật tư đã về
+                    st = _get_stage(XID_STAGE_PRODUCTION)
+                    if st and task.stage_id != st:
+                        task.sudo().write({'stage_id': st.id})
+                        task.message_post(body=_("Chuyển stage tự động ➜ <b>Sản xuất</b> (vật tư đã về)."))
+                else:
+                    # Không có “Sản xuất”: ưu tiên “Thi công”, nếu không có thì “Nghiệm thu”
+                    target_xid = XID_STAGE_INSTALLATION if need_inst else XID_STAGE_ACCEPTANCE
+                    st = _get_stage(target_xid)
+                    if st and task.stage_id != st:
+                        task.sudo().write({'stage_id': st.id})
+                        task.message_post(
+                            body=_("Chuyển stage tự động ➜ <b>%s</b>.") % (st.name,)
+                        )
+
 class PurchaseOrderLine(models.Model):
     _inherit = "purchase.order.line"
 
