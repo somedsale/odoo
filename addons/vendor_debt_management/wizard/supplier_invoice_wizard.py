@@ -109,3 +109,16 @@ class SupplierInvoiceReportWizard(models.TransientModel):
         return self.env.ref(
             'vendor_debt_management.action_supplier_invoice_report'
         ).report_action(invoices, data=data)
+    def action_view_all(self):
+        """Xem tất cả hóa đơn NCC mà không lọc theo ngày"""
+        invoices = self.env['supplier.invoice'].search([], order="date asc")
+        data = {
+            'date_from': None,
+            'date_to': None,
+            'year': self.year,
+            'month': self.month,
+            'quarter': self.quarter,
+        }
+        return self.env.ref(
+            'vendor_debt_management.action_supplier_invoice_report'
+        ).report_action(invoices, data=data)

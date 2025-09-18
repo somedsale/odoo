@@ -8,20 +8,22 @@
                     <field name="filter_type"/>
                 </group>
                 <group>                    <!-- Theo ngày -->
-                    <field name="date_from" options="{'warn_future': true}" invisible="filter_type != 'day'"/>
-                    <field name="date_to" options="{'warn_future': true}" invisible="filter_type != 'day'"/>
+                    <field name="date_from" options="{'warn_future': true}" invisible="filter_type != 'day'" required="filter_type == 'day'"/>
+                    <field name="date_to" options="{'warn_future': true}" invisible="filter_type != 'day'" required="filter_type == 'day'"/>
                     <!-- Theo tháng -->
-                    <field name="month" invisible="filter_type != 'month'"/>
+                    <field name="year" widget="yearpicker" invisible="filter_type != 'month'" required="filter_type == 'month'" help="Mặc định lấy năm hiện tại, có thể thay đổi nếu cần."/>
+                    <field name="month" invisible="filter_type != 'month'" required="filter_type == 'month'"/>
                     <!-- Theo quý -->
-                    <field name="year" widget="yearpicker" placeholder="Chọn năm..." invisible="filter_type != 'quarter'"/>
-                    <field name="quarter" invisible="filter_type != 'quarter'"/>
+                    <field name="year" widget="yearpicker" invisible="filter_type != 'quarter'" required="filter_type == 'quarter'" help="Mặc định lấy năm hiện tại, có thể thay đổi nếu cần."/>
+                    <field name="quarter" invisible="filter_type != 'quarter'" required="filter_type == 'quarter'"/>
                     <!-- Theo năm -->
-                    <field name="year" widget="yearpicker" placeholder="Chọn năm..." invisible="filter_type != 'year'"/>
+                    <field name="year" widget="yearpicker" invisible="filter_type != 'year'" required="filter_type == 'year'"/>
                 </group>
                 <footer>
-                    <button name="action_print_report" string="In báo cáo" type="object" class="btn-primary"/>
-                    <button name="action_view_report" string="Xem báo cáo" type="object" class="btn-primary"/>
-                    <button string="Hủy" class="btn-secondary" special="cancel"/>
+                    <button name="action_print_report" string="In báo cáo" type="object" class="btn-primary" icon="fa-print"/>
+                    <button name="action_view_report" string="Xem báo cáo" type="object" class="btn-primary" icon="fa-eye"/>
+                    <button name="action_view_all" string="Xem tất cả" type="object" class="btn-primary" icon="fa-list"/>
+                    <button string="Hủy" class="btn-secondary" special="cancel" icon="fa-times"/>
                 </footer>
             </form>
         </field>

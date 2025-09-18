@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates>
     <t t-name="FieldYear" owl="1">
-        <input type="text" readonly="1" t-att-value="state.year || ''" placeholder="Chọn năm..." class="o_input" t-ref="inputyear" t-on-click="_onSelectYearField"/>
+        <input type="text" readonly="1" t-att-value="state.year || ''" t-att-placeholder="props.placeholder || 'Chọn năm...'" class="o_input" t-ref="inputyear" t-on-click="_onSelectYearField"/>
     </t>
 </templates>

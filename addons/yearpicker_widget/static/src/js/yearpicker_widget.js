@@ -13,8 +13,9 @@ export class DomainSelectorTextField extends Component {
   setup() {
     super.setup();
     this.input = useRef("inputyear");
+    const currentYear = new Date().getFullYear();
     this.state = useState({
-      year: this.props.value,
+      year: this.props.value || currentYear,
     });
     this.datepicker = null;
 
