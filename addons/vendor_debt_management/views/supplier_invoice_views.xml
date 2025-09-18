@@ -38,6 +38,21 @@
                             <field name="currency_id" invisible="1"/>
                         </group>
                     </group>
+                    <notebook>
+                        <page string="Thông tin phiếu chi">
+                            <field name="account_payment_request_ids">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="create_date" string="Ngày tạo"/>
+                                    <field name="date_payment" string="Ngày chi"/>
+                                    <field name="total"/>
+                                    <field name ="currency_id" optional="hide"/>
+                                    <field name="payment_type" widget="badge" string="Hình thức thanh toán" decoration-primary="payment_type == 'cash'" decoration-success="payment_type == 'bank'"/>
+                                    <field name="state" widget="badge" string="Trạng thái" decoration-primary="state == 'confirmed'" decoration-success="state == 'done'"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>

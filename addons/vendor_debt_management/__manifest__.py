@@ -13,7 +13,9 @@
         'views/supplier_views.xml',
         "report/report_supplier_summary.xml",
         "report/report_supplier_detail.xml",
-        "wizard/wizard_views.xml"
+        "report/report_supplier_invoice.xml",
+        "wizard/wizard_views.xml",
+        "wizard/supplier_invoice_wizard.xml"
     ],
     "installable": True,
     "application": True,

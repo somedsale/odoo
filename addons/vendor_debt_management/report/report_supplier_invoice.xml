@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Report Paperformat (có thể reuse cái ở trên) -->
+    <record id="custom_invoice_report_a4_portrait" model="report.paperformat">
+        <field name="name">Custom Supplier Invoice Report A4 Portrait</field>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">30</field>
+        <field name="margin_bottom">30</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_spacing">25</field>
+        <field name="dpi">110</field>
+    </record>
+
+    <!-- Template Layout -->
+    <template id="report_supplier_invoice_layout">
+        <t t-call="web.html_container">
+            <t t-set="o" t-value="o or list"/>
+            <div class="header" style="display: flex; justify-content: space-between; font-family: Times New Roman;">
+                <table style="width:100%; border-collapse: collapse; border: 1px solid #fff;">
+                    <tr>
+                        <td style="text-align: left; width: 50%;">
+                            <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id" alt="Company Logo" style="max-width: 160px;"/>
+                        </td>
+                        <td style="text-align: right; width: 50%; font-size: 11px;">
+                            <span t-esc="res_company.name" style="text-transform: uppercase;"/>
+                            <br/>
+MST: <span t-esc="res_company.partner_id.vat"/>
+                        <br/>
+Địa chỉ: <span t-esc="res_company.partner_id.street"/>
+                    <br/>
+SĐT: <span t-esc="res_company.phone_accounting"/>
+                <br/>
+Email: <span t-esc="res_company.account_email"/>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div class="article" style="font-family: Times New Roman; font-size: 11pt; line-height: 1.5; padding-top: 15px;">
+    <t t-raw="0"/>
+</div>
+
+<div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt; font-family: Times New Roman;">
+    <p>
+        <span class="page"/>
+    </p>
+</div>
+</t>
+</template>
+
+<!-- Template Content -->
+<template id="report_supplier_invoice_view">
+<t t-call="vendor_debt_management.report_supplier_invoice_layout">
+<div class="page">
+    <style>
+        .page { font-family: "Times New Roman"; font-size: 12pt; color: #000; }
+
+        .styled-table {
+            border-collapse: collapse;
+            margin: 0 auto;
+            font-size: 12pt;
+            width: 100%;                 
+            border: 1px solid #000;
+            table-layout: fixed;          
+        }
+
+        .styled-table thead tr {
+            background-color: #C6E0B4;
+            font-weight: bold;
+            color: #000;
+            text-align: center;
+        }
+                                                                                                                                                                                                                                                                                                                                                                                                        <!-- .table-item{
+            text-transform: uppercase;
+            background-color: #E2EFDA;
+            font-weight: bold;
+            color: #000;
+        } -->
+
+        .styled-table th, .styled-table td {
+            font-size: 10pt;
+            padding: 8px 12px;
+            border: 1px solid #000;
+            vertical-align: middle;
+            overflow: hidden;            
+            word-wrap: break-word;       
+            overflow-wrap: anywhere;
+        }
+        .styled-table tbody tr:hover { background-color: #D9EAD3; }
+
+        .text-center { text-align: center; }
+        .text-right  { text-align: right; }
+        .text-left   { text-align: left; }
+
+        .num { white-space: nowrap; }
+    </style>
+    <h2 style="text-align:center; margin-bottom: 20px; font-weight:bold; font-size: 24px; text-transform: uppercase;">
+                    Báo cáo Hóa đơn Nhà cung cấp
+    </h2>
+    <div style="margin-bottom: 10px;">
+        <input type="text" id="searchBox" placeholder="Tìm kiếm..." style="width: 200px; padding: 5px;"/>
+    </div>
+
+    <table id="reportTable" class="styled-table" style="width: 100%; border-collapse: collapse; border: 1px solid #000;">
+        <colgroup>
+            <col style="width:4%"/>
+
+            <col style="width:8%"/>
+
+            <col style="width:8%"/>
+
+            <col style="width:10%"/>
+
+            <col style="width:10%"/>
+
+            <col style="width:10%"/>
+
+            <col style="width:10%"/>
+
+            <col style="width:10%"/>
+            <col style="width:15%"/>
+
+            <col style="width:10%"/>
+
+        </colgroup>
+        <thead>
+            <tr style="background:#C6E0B4; text-align:center;">
+                <th>STT</th>
+                <th>Ngày hóa đơn</th>
+                <th>Số hóa đơn</th>
+                <th>Nhà cung cấp</th>
+                <th>Tổng tiền</th>
+                <th>Dùng cho</th>
+                <th>Chi tiết</th>
+                <th>CT cần lấy</th>
+                <th>CTTT</th>
+                <th>Chứng từ kèm hóa đơn</th>
+            </tr>
+        </thead>
+        <tbody>
+            <t t-set="stt" t-value="0"/>
+            <t t-foreach="docs" t-as="inv">
+                <t t-set="stt" t-value="stt + 1"/>
+                <tr >
+                    <td class="text-center">
+                        <span t-esc="stt"/>
+                    </td>
+                    <td class="text-center">
+                        <span t-field="inv.date"/>
+                    </td>
+                    <td class="text-center">
+                        <span t-field="inv.name"/>
+                    </td>
+                    <td class="text-left">
+                        <span t-field="inv.partner_id.name"/>
+                    </td>
+                    <td class="text-right num">
+                        <t t-if="inv.currency_id and inv.currency_id.name == 'VND'">
+                            <t t-esc="inv.amount and ('{:,.0f}'.format(inv.amount).replace(',', '.'))" />
+ đ
+                        </t>
+                        <t t-else="">
+                            <span t-field="inv.amount" t-options="{'widget': 'monetary', 'display_currency': inv.currency_id}"/>
+                        </t>
+                    </td>
+                    <td class="text-center">
+                        <span t-field="inv.project_id.contract_id.name"/>
+                    </td>
+                    <td class="text-left">
+                        <span t-field="inv.note"/>
+                    </td>
+                    <td></td>
+                    <td>
+                        <t t-foreach="inv.account_payment_request_ids.filtered(lambda p: p.status_expense == 'paid')" t-as="pay">
+                            <t t-if="pay.payment_type == 'cash'">
+            TM 
+                                <t t-if="pay.date_payment">
+                                    <t t-esc="pay.date_payment.strftime('%d/%m')" />
+                                </t>
+                                <t t-if="inv.currency_id and inv.currency_id.name == 'VND'">
+                                    <t t-esc="pay.total and ('{:,.0f}'.format(pay.total).replace(',', '.'))" />
+ đ
+                                </t>
+                            </t>
+
+                            <t t-if="pay.payment_type == 'bank'">
+                                <t t-if="pay.bankids">
+                                    <t t-esc="pay.bankids.bank_id.name"/>
+                                </t>
+                                <t t-else="">
+                CK
+                                </t>
+                                <t t-if="pay.date_payment">
+                                    <t t-esc="pay.date_payment.strftime('%d/%m')" />
+                                </t>
+                                <t t-if="inv.currency_id and inv.currency_id.name == 'VND'">
+                                    <t t-esc="pay.total and ('{:,.0f}'.format(pay.total).replace(',', '.'))" />
+ đ
+                                </t>
+                            </t>
+                            <br/>
+                        </t>
+                    </td>
+                    <td></td>
+                </tr>
+            </t>
+        </tbody>
+    </table>
+</div>
+</t>
+</template>
+
+
+<!-- Action URL: HTML & PDF -->
+<record id="action_supplier_invoice_report_html_url" model="ir.actions.act_url">
+<field name="name">Supplier Invoice (HTML)</field>
+<field name="type">ir.actions.act_url</field>
+<field name="url">/report/html/vendor_debt_management.report_supplier_invoice_view/0</field>
+<field name="target">new</field>
+</record>
+
+<record id="action_supplier_invoice_report_pdf_url" model="ir.actions.act_url">
+<field name="name">Supplier Invoice (PDF)</field>
+<field name="type">ir.actions.act_url</field>
+<field name="url">/report/pdf/vendor_debt_management.report_supplier_invoice_view/0</field>
+<field name="target">new</field>
+</record>
+
+<!-- Action Report -->
+<record id="action_supplier_invoice_report" model="ir.actions.report">
+<field name="name">Bảng Tổng Hợp Hóa Đơn</field>
+<field name="model">supplier.invoice</field>
+<field name="report_type">qweb-html</field>
+<field name="report_name">vendor_debt_management.report_supplier_invoice_view</field>
+<field name="report_file">vendor_debt_management.report_supplier_invoice_view</field>
+<field name="print_report_name">'Bảng Tổng Hợp Hóa Đơn'</field>
+<field name="paperformat_id" ref="vendor_debt_management.custom_invoice_report_a4_portrait"/>
+</record>
+
+<record id="action_supplier_invoice_report_pdf" model="ir.actions.report">
+<field name="name">Supplier Invoice Report (PDF)</field>
+<field name="model">supplier.invoice</field>
+<field name="report_type">qweb-pdf</field>
+<field name="report_name">vendor_debt_management.report_supplier_invoice_view</field>
+<field name="report_file">vendor_debt_management.report_supplier_invoice_view</field>
+<field name="print_report_name">'Supplier Invoice Report'</field>
+<field name="paperformat_id" ref="vendor_debt_management.custom_invoice_report_a4_portrait"/>
+</record>
+
+<!-- Menu -->
+<menuitem id="menu_supplier_invoice_root" name="Hóa đơn nhà cung cấp" parent="custom_account_menu.menu_accounting_reporting" sequence="100"/>
+<!-- <menuitem id="menu_supplier_invoice_report" name="Báo cáo Hóa đơn NCC" parent="menu_supplier_invoice_root" action="vendor_debt_management.action_supplier_invoice_report" sequence="100"/> -->
+</odoo>

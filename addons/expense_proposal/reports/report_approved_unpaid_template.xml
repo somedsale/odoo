@@ -104,14 +104,14 @@
 
 
     <table class="styled-table">
-      <colgroup>
-    <col style="width:7%"/>
-    <col style="width:10%"/>
-    <col style="width:25%"/>
-    <col style="width:15%"/>
-    <col style="width:15%"/>
-    <col style="width:28%"/>
-  </colgroup>
+        <colgroup>
+            <col style="width:7%"/>
+            <col style="width:10%"/>
+            <col style="width:25%"/>
+            <col style="width:15%"/>
+            <col style="width:15%"/>
+            <col style="width:28%"/>
+        </colgroup>
         <thead>
             <tr>
                 <th rowspan="2" class="table-item">STT</th>
@@ -149,7 +149,9 @@
                         <tr>
                             <t t-set="i_employee" t-value="i_employee + 1"/>
                             <td class="text-center" t-esc="i_employee"/>
-                            <td class="text-center"> <t t-esc="line.get('date').strftime('%d/%m/%Y') or ''"/> </td>
+                            <td class="text-center">
+                                <t t-esc="line.get('date').strftime('%d/%m/%Y') or ''"/>
+                            </td>
                             <td class="text-left" t-esc="line.get('note') or ''"/>
                             <t t-if="line.get('payment_type') == 'bank'">
                                 <td class="text-right num">
@@ -196,7 +198,9 @@
                         <tr>
                             <t t-set="i_office" t-value="i_office + 1"/>
                             <td class="text-center" t-esc="i_office"/>
-                            <td class="text-center"> <t t-esc="line.get('date').strftime('%d/%m/%Y') or ''"/> </td>
+                            <td class="text-center">
+                                <t t-esc="line.get('date').strftime('%d/%m/%Y') or ''"/>
+                            </td>
                             <td class="text-left" t-esc="line.get('note') or ''"/>
                             <t t-if="line.get('payment_type') == 'bank'">
                                 <td class="text-right num">
@@ -241,9 +245,11 @@
                     <t t-set="i_project" t-value="0"/>
                     <t t-foreach="grp.get('line_items_project', [])" t-as="line">
                         <tr>
-                        <t t-set="i_project" t-value="i_project + 1"/>
+                            <t t-set="i_project" t-value="i_project + 1"/>
                             <td class="text-center" t-esc="i_project"/>
-                            <td class="text-center"> <t t-esc="line.get('date').strftime('%d/%m/%Y') or ''"/> </td>
+                            <td class="text-center">
+                                <t t-esc="line.get('date').strftime('%d/%m/%Y') or ''"/>
+                            </td>
                             <td class="text-left" t-esc="line.get('note') or ''"/>
                             <t t-if="line.get('payment_type') == 'bank'">
                                 <td class="text-right num">
@@ -324,6 +330,6 @@
 <field name="paperformat_id" ref="custom_sale_report_a4_portrait"/>
 </record>
 <!-- Menu -->
-<menuitem id="menu_report_unpaid_approved_root" name="Các khoản chưa chi" parent="custom_account_menu.menu_accounting_reporting" action="expense_proposal.action_report_unpaid_approved"/>
+<menuitem id="menu_report_unpaid_approved_root" name="Các khoản chưa chi" parent="menu_expense_proposal_root" action="expense_proposal.action_report_unpaid_approved"/>
 
 </odoo>
