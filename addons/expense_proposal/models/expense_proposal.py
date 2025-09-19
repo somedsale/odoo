@@ -47,6 +47,7 @@ class ExpenseProposal(models.Model):
         new_partners = [pid for pid in partner_ids if pid not in existing_followers]
         if new_partners:
             self.message_subscribe(partner_ids=new_partners)
+        odoodbot_partner = self.env.ref("base.partner_root")
 
         # Gửi vào chatter + discuss
         self.message_post(
@@ -54,6 +55,7 @@ class ExpenseProposal(models.Model):
             message_type="comment",
             subtype_xmlid="mail.mt_comment",
             partner_ids=partner_ids,
+            author_id=odoodbot_partner.id,
         )
     def action_submit(self):
         for rec in self:
