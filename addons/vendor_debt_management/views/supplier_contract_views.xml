@@ -5,6 +5,7 @@
         <field name="arch" type="xml">
             <tree>
                 <field name="name"/>
+                <field name="number_contract"/>
                 <field name="partner_id"/>
                 <field name="project_id"/>
                 <field name="interpretation"/>
@@ -45,6 +46,7 @@
                     <group>
                         <group string="Thông tin chung">
                             <field name="name"/>
+                            <field name="number_contract"/>
                             <field name="partner_id"/>
                             <field name="project_id"/>
                             <field name="interpretation"/>

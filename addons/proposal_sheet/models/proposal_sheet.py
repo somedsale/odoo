@@ -18,13 +18,13 @@ class ProposalSheet(models.Model):
     project_id = fields.Many2one('project.project', string='Dự án', required=True, tracking=True)
     task_id = fields.Many2one('project.task', string='Nhiệm Vụ', tracking=True)
     requested_by = fields.Many2one('res.users', string='Người Đề Xuất', default=lambda self: self.env.user, readonly=True, tracking=True)
+    treasurer_confirmed = fields.Boolean(string="Thủ quỹ đã xác nhận", default=False)
     currency_id = fields.Many2one('res.currency', string='Tiền tệ', required=True, default=lambda self: self.env.company.currency_id)
-    purchase_order = fields.Many2one('purchase.order', string='Phiếu mua hang', tracking=True)
     state = fields.Selection([
         ('draft', 'Nháp'),
-        ('reviewed_manager', 'Đang phê duyệt (QL)'),
-        ('reviewed_accounting', 'Đang phê duyệt (KT)'),
-        ('approved', 'Đang phê duyệt (Sếp)'),
+        ('reviewed_manager', 'QL Đang duyệt'),
+        ('reviewed_accounting', 'KTTH Đang duyệt'),
+        ('approved', 'Sếp Đang duyệt'),
         ('waiting_accounting_paid', 'Chờ chi tiền (KT)'),
         ('done', 'Hoàn tất'),
         ('rejected', 'Bị từ chối'),
@@ -49,6 +49,13 @@ class ProposalSheet(models.Model):
     )
     amount_total = fields.Float(string='Tổng Thành Tiền', compute='_compute_amount_total', store=True)
     take_note = fields.Text(string='Ghi Chú', tracking=True)
+    treasurer_confirmed_note = fields.Char(
+        compute='_compute_treasurer_confirmed_note', store=False
+    )
+    @api.depends('treasurer_confirmed')
+    def _compute_treasurer_confirmed_note(self):
+        for r in self:
+            r.treasurer_confirmed_note = "Thủ quỹ đã xác nhận" if r.treasurer_confirmed else ""
     @api.model
     def _default_director_user(self):
         group = self.env.ref('custom_director_role.group_director')  # đổi lại module ID cho đúng
@@ -206,7 +213,14 @@ class ProposalSheet(models.Model):
             'type': 'ir.actions.client',
             'tag': 'reload',
         }
-
+    def action_treasurer_comfirm(self):
+        if self.state != 'reviewed_accounting':
+            raise UserError("Chỉ phiếu đang xem xét mới được duyệt.")
+        self.treasurer_confirmed = True
+        treaserer_name = self.env.user.name
+        message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được xác nhận bởi bởi <em>{treaserer_name}</em>.</p>"
+        partner_ids = self._get_approval_partners(include_manager=False, include_boss=False, include_accounting=True)
+        self._send_notification(message, partner_ids)
     def action_manager_approve(self):
         if self.state != 'reviewed_manager':
             raise UserError("Chỉ phiếu đang xem xét mới được duyệt.")
@@ -306,7 +320,9 @@ class ProposalSheet(models.Model):
             'type': 'ir.actions.client',
             'tag': 'reload',
         }
-            
+    def action_done(self):
+        for rec in self:
+            rec.state = 'done' 
             
         
 
@@ -319,9 +335,9 @@ class ProposalSheet(models.Model):
             is_boss = rec.director_user_id == self.env.user
             rec.show_button_submit = rec.state == 'draft' and is_creator
             rec.show_button_manager_approve = rec.state == 'reviewed_manager' and is_manager
-            rec.show_button_accounting_approve = rec.state == 'reviewed_accounting' and is_accounting
+            rec.show_button_accounting_approve = rec.state == 'reviewed_accounting' and is_accounting  and rec.treasurer_confirmed
             rec.show_button_boss_approve = rec.state == 'approved' and is_boss
-            rec.show_button_waiting_accounting_paid = rec.state == 'waiting_accounting_paid' and is_accounting
+            rec.show_button_waiting_accounting_paid = rec.state == 'waiting_accounting_paid' and rec.type == 'expense' and is_accounting
             rec.show_button_done = rec.state == 'done' and is_accounting
             rec.show_button_reject = (
                 (rec.state == 'reviewed_manager' and is_manager) or

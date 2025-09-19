@@ -31,7 +31,7 @@ class ContractManagement(models.Model):
     _name = 'contract.management'
     _description = 'Contract Management'
     _inherit = ['mail.thread', 'mail.activity.mixin']  # Enable chatter for tracking
-    _order = 'created_date desc'
+    _order = 'create_date desc'
     name = fields.Char(string='Tên hợp đồng', required=True)
     num_contract = fields.Char(string='Số hợp đồng')
     contract_value = fields.Float(string='Giá trị hợp đồng')
@@ -184,8 +184,8 @@ class ContractManagement(models.Model):
 class ProjectTask(models.Model):
     _inherit = 'project.task'
 
-    sale_order_line_id = fields.Many2one('sale.order.line', string="Dòng đơn bán", index=True)
-    project_sale_order_id = fields.Many2one(related='project_id.sale_order_id', string="Đơn bán (Dự án)", store=True, readonly=True)
+    sale_order_line_id = fields.Many2one('sale.order.line', string="Bản báo giá", index=True)
+    project_sale_order_id = fields.Many2one(related='project_id.sale_order_id', string="Hạng mục", store=True, readonly=True)
 
     @api.onchange('project_id')
     def _onchange_project_id_set_domain_for_sol(self):
