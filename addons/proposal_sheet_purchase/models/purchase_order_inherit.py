@@ -23,7 +23,8 @@ class PurchaseOrder(models.Model):
     proposal_sheet_id = fields.Many2one("proposal.sheet", string="Phiếu Đề Xuất", index=True, ondelete="set null")
     project_id = fields.Many2one("project.project", string="Dự án", compute="_compute_project_task", store=False, readonly=True)
     task_id = fields.Many2one("project.task", string="Nhiệm vụ", compute="_compute_project_task", store=False, readonly=True)
-
+    supplier_invoice_ids = fields.One2many("supplier.invoice", "purchase_id", string="Hóa đơn NCC")
+    supplier_invoice_count = fields.Integer(string="Số hóa đơn NCC", compute="_compute_supplier_invoice_count")
     # Theo dõi phiếu chi (giữ nguyên nếu bạn đã có)
     payment_request_ids = fields.One2many("account.payment.request", "purchase_id", string="Phiếu chi")
     payment_request_count = fields.Integer(compute="_compute_payment_request_count", string="Số phiếu chi")
@@ -458,6 +459,45 @@ class PurchaseOrder(models.Model):
                         task.message_post(
                             body=_("Chuyển stage tự động ➜ <b>%s</b>.") % (st.name,)
                         )
+    def _compute_supplier_invoice_count(self):
+        for po in self:
+            po.supplier_invoice_count = len(po.supplier_invoice_ids)
+
+    def action_open_create_supplier_invoice_wizard(self):
+        self.ensure_one()
+        view_ref = "proposal_sheet_purchase.view_purchase_create_supplier_invoice_wizard_form"
+        view = self.env.ref(view_ref, raise_if_not_found=False)
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Tạo hóa đơn NCC"),
+            "res_model": "purchase.create.supplier.invoice.wizard",
+            "view_mode": "form",
+            "views": [(view.id, "form")] if view else [(False, "form")],
+            "target": "new",
+            "context": {"active_id": self.id},
+        }
+
+    def action_view_supplier_invoices(self):
+        self.ensure_one()
+        domain = [("purchase_id", "=", self.id)]
+        action = {
+            "type": "ir.actions.act_window",
+            "name": "Hóa đơn NCC",
+            "res_model": "supplier.invoice",
+            "view_mode": "tree,form",
+            "domain": domain,
+            "context": {
+                "default_purchase_id": self.id,
+                "default_contract_id": getattr(self, "supplier_contract_id", False) and self.supplier_contract_id.id or False,
+                "default_partner_id": self.partner_id.id,
+                "default_project_id": self.proposal_sheet_id and self.proposal_sheet_id.project_id.id or False,
+            },
+            "target": "current",
+        }
+        invoices = self.env["supplier.invoice"].search(domain, limit=2)
+        if len(invoices) == 1:
+            action.update({"view_mode": "form", "res_id": invoices.id})
+        return action
 
 class PurchaseOrderLine(models.Model):
     _inherit = "purchase.order.line"

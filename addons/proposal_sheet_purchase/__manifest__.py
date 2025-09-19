@@ -7,11 +7,12 @@
     "depends": ["purchase", "project", "uom", "mail", "proposal_sheet", "custom_account_payment_request", "vendor_debt_management", "purchase_stock"],
     "data": [
         "security/ir.model.access.csv",
+        "data/sequence_data.xml",
         "views/proposal_sheet_inherit_views.xml",
         "views/purchase_order_inherit_views.xml",
         "views/project_task_inherit_views.xml", 
         "views/purchase_advance_payment_wizard_views.xml",
-
+        "views/purchase_create_supplier_invoice_wizard_views.xml"
     ],
     "installable": True,
     "application": False,

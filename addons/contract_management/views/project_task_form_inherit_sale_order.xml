@@ -15,8 +15,6 @@
                 <field name="sale_order_line_id" domain="[('order_id','=',project_sale_order_id)]" options="{'no_open': False}"/>
             </xpath>
 
-
-
         </field>
     </record>
 </odoo>

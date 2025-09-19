@@ -6,3 +6,4 @@ from . import purchase_advance_payment_wizard
 from . import stock_picking_inherit
 from . import supplier_invoice
 from . import project_task_optional_stages
+from . import purchase_create_supplier_invoice_wizard

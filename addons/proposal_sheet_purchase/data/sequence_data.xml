@@ -6,4 +6,16 @@
         <field name="padding">4</field>
         <field name="company_id" eval="False"/>
     </record>
+    <!-- <data noupdate="1"> -->
+        <record id="seq_supplier_contract" model="ir.sequence">
+            <field name="name">Supplier Contract</field>
+            <field name="code">supplier.contract</field>
+            <field name="prefix">SC/</field>
+            <field name="padding">5</field>
+            <!-- Để trống company_id nếu muốn dùng chung đa công ty; hoặc set company_id nếu muốn tách theo công ty -->
+            <field name="company_id" eval="False"/>
+            <field name="implementation">no_gap</field>
+            <field name="active">True</field>
+        </record>
+    <!-- </data> -->
 </odoo>
