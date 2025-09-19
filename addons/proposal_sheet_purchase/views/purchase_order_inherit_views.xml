@@ -63,10 +63,10 @@
           <div class="oe_button_box" name="button_box" />
         </xpath>
         <xpath expr="//sheet/div[@name='button_box']" position="inside">
-          <button name="action_view_payment_requests" type="object" class="oe_stat_button"  groups="account.group_account_manager" icon="fa-money" invisible="payment_request_count == 0">
+          <button name="action_view_payment_requests" type="object" class="oe_stat_button" groups="account.group_account_manager" icon="fa-money" invisible="payment_request_count == 0">
             <field name="payment_request_count" widget="statinfo" string="Phiếu chi"/>
           </button>
-          <button name="action_view_supplier_invoices" type="object" class="oe_stat_button"  groups="account.group_account_manager" icon="fa-file-text-o" invisible="supplier_invoice_count == 0">
+          <button name="action_view_supplier_invoices" type="object" class="oe_stat_button" groups="account.group_account_manager" icon="fa-file-text-o" invisible="supplier_invoice_count == 0">
             <field name="supplier_invoice_count" widget="statinfo" string="Hóa đơn NCC"/>
           </button>
         </xpath>
@@ -83,6 +83,7 @@
             <button groups="account.group_account_manager" name="action_mark_shipping_in_progress" type="object" string="Đang giao" class="btn-secondary" invisible="(state not in ['purchase','done'])
                            or (shipping_status != 'not_shipped')
                            or (payment_status not in ['partial','paid'])"/>
+            <field name="supplier_contract_id" invisible="1"/>
             <button groups="account.group_account_manager" name="action_open_create_supplier_invoice_wizard" type="object" string="Tạo hóa đơn NCC" class="btn-secondary" invisible="state not in ('purchase','done') or not supplier_contract_id"/>
             <!-- Nhận hàng: chỉ khi đang 'Đang giao' -->
             <button groups="account.group_account_manager" name="action_mark_shipping_done" type="object" string="Nhận hàng" class="btn-primary" invisible="(state not in ['purchase','done']) or (shipping_status != 'in_progress')"/>
@@ -148,7 +149,7 @@
           <field name="supplier_contract_id" options="{'no_create_edit': True}"/>
         </xpath>
         <xpath expr="//sheet/div[@name='button_box']" position="inside">
-          <button name="action_view_supplier_contract" type="object" class="oe_stat_button"  groups="account.group_account_manager" icon="fa-file-text-o" invisible="not supplier_contract_id">
+          <button name="action_view_supplier_contract" type="object" class="oe_stat_button" groups="account.group_account_manager" icon="fa-file-text-o" invisible="not supplier_contract_id">
             <field name="supplier_contract_id" widget="statinfo" string="Hợp đồng NCC"/>
           </button>
         </xpath>
