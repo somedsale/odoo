@@ -26,3 +26,30 @@ class SupplierInvoice(models.Model):
     _sql_constraints = [
         ("unique_invoice_name", "unique(name)", "Số hóa đơn đã tồn tại, vui lòng nhập số khác."),
     ]
+class ReportSupplierInvoice(models.AbstractModel):
+    _name = 'report.vendor_debt_management.report_supplier_invoice_view'
+    _description = 'Supplier Invoice Report'
+    def _get_report_values(self, docids, data=None):
+        domain = []
+        if data:
+            date_from = data.get('date_from')
+            date_to = data.get('date_to')
+            if date_from and date_to:
+                domain = [
+                    ('date', '>=', date_from),
+                    ('date', '<=', date_to),
+                ]
+
+        docs = self.env['supplier.invoice'].search(domain, order="date asc")
+
+        return {
+            'doc_ids': docs.ids,
+            'doc_model': 'supplier.invoice',
+            'docs': docs,
+            'date_from': data.get('date_from'),
+            'date_to': data.get('date_to'),
+            'filter_type': data.get('filter_type'),
+            'year': data.get('year'),
+            'month': data.get('month'),
+            'quarter': data.get('quarter'),
+        }

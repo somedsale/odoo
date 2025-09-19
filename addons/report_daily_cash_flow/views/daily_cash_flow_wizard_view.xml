@@ -28,5 +28,5 @@
         <field name="target">new</field>
     </record>
 
-    <menuitem id="menu_cash_flow_report_daily" name="Báo cáo thu chi hàng ngày" parent="custom_account_menu.menu_accounting_reporting" action="action_daily_cash_flow_report_wizard" sequence="100"/>
+    <menuitem id="menu_cash_flow_report_daily" name="Báo cáo thu chi hàng ngày" parent="expense_proposal.menu_expense_proposal_root" action="action_daily_cash_flow_report_wizard" sequence="100"/>
 </odoo>

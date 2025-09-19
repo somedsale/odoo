@@ -17,10 +17,10 @@ export class FieldSignature extends BinaryField {
             'color': '#000',
             'background-color': '#fff',
             'height': '150',
-            'width': '550',
+            'width': '300',
         };
         this.orm = useService("orm");
-        
+
         onWillStart(async () => {
             await loadJS("/web_digital_sign/static/lib/jSignature/jSignatureCustom.js");
         });
@@ -70,7 +70,7 @@ export class FieldSignature extends BinaryField {
                     'color': '#000',
                     'background-color': '#fff',
                     'height': '150',
-                    'width': '550',
+                    'width': '300',
                 };
             }
         } else if (this.mode === 'create') {
@@ -82,7 +82,7 @@ export class FieldSignature extends BinaryField {
                     'color': '#000',
                     'background-color': '#fff',
                     'height': '150',
-                    'width': '550',
+                    'width': '300',
                 });
             }
         }
@@ -110,7 +110,7 @@ export class FieldSignature extends BinaryField {
             'color': '#000',
             'background-color': '#fff',
             'height': '150',
-            'width': '550',
+            'width': '300',
             'clear': true,
         };
         $(".signature").jSignature(sign_options);
