@@ -6,6 +6,7 @@
             <tree >
                 <field name="currency_id" optional="hide"/>
                 <field name="name" string="Mã phiếu chi"/>
+                <field name="note" string="Nội dung chi"/>
                 <field name="proposal_sheet_id" string="Phiếu đề xuất"/>
                 <field name ="project_id" string="Dự án" class="project_value"/>
                 <field name="create_date" string="Ngày tạo"/>

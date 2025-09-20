@@ -81,7 +81,7 @@ class ContractManagement(models.Model):
                         except ValueError:
                             raise UserError(f"Task stage {ref} not found. Please ensure all task stages are defined.")
                     if contract.sale_order_id.x_project_name:
-                        name_project = f"Số HĐ {contract.num_contract} - {contract.sale_order_id.x_project_name}"
+                        name_project = f"Số HĐ {contract.num_contract or '...'} - {contract.sale_order_id.x_project_name}"
                     else:
                         name_project = contract.sale_order_id.name
                     # Create project when stage is 'Đang thực hiện'

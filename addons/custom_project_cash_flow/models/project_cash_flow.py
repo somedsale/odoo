@@ -21,11 +21,10 @@ class ProjectCashFlow(models.Model):
     account_payment_id = fields.Many2one('account.payment.request', string='Phiếu chi')
 
     note = fields.Text(string='Ghi chú')
-    total_in_all = fields.Monetary(string="Tổng Thu Toàn Bộ", compute="_compute_totals_all", store=True)
-    total_out_all = fields.Monetary(string="Tổng Chi Toàn Bộ", compute="_compute_totals_all", store=True)
-    balance_all = fields.Monetary(string="Số dư Toàn Bộ", compute="_compute_totals_all", store=True)
+    total_in_all = fields.Monetary(string="Tổng Thu Toàn Bộ", compute="_compute_totals_all")
+    total_out_all = fields.Monetary(string="Tổng Chi Toàn Bộ", compute="_compute_totals_all", )
+    balance_all = fields.Monetary(string="Số dư Toàn Bộ", compute="_compute_totals_all")
 
-    @api.depends()
     def _compute_totals_all(self):
         total_in = sum(self.env['project.cash.flow'].search([]).filtered(lambda r: r.type=='in').mapped('amount'))
         total_out = sum(self.env['project.cash.flow'].search([]).filtered(lambda r: r.type=='out').mapped('amount'))

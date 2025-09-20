@@ -14,9 +14,9 @@
                 <field name="receipt_id" optional="show"/>
                 <field name="account_payment_id" optional="show"/>
                 <field name ="currency_id" optional="hide"/>
-                <field name="total_in_all" invisible="1" nolabel="1" width="0px" />
-                <field name="total_out_all" invisible="1" nolabel="1" width="0px" />
-                <field name="balance_all" invisible="1" nolabel="1" width="0px" />
+                <field name="total_in_all" column_invisible="1" />
+                <field name="total_out_all" column_invisible="1" />
+                <field name="balance_all" column_invisible="1" />
             </tree>
         </field>
     </record>
