@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="view_purchase_create_supplier_invoice_wizard_form" model="ir.ui.view">
+    <field name="name">purchase.create.supplier.invoice.wizard.form</field>
+    <field name="model">purchase.create.supplier.invoice.wizard</field>
+    <field name="arch" type="xml">
+      <form string="Tạo hóa đơn NCC" create="false" edit="false">
+        <sheet>
+          <group>
+            <group>
+              <!-- các field dùng trong domain/phụ thuộc phải có trong view -->
+              <field name="purchase_id" invisible="1"/>
+              <field name="partner_id" invisible="1"/>
+              <field name="currency_id" invisible="1"/>
+
+              <field name="name"/>
+              <field name="contract_id"
+                     required="1"
+                     domain="[('partner_id', '=', partner_id),
+                              ('project_id', '=', purchase_id.proposal_sheet_id.project_id)]"/>
+              <field name="settlement_id" domain="[('contract_id', '=', contract_id)]"/>
+            </group>
+            <group>
+              <field name="date"/>
+              <field name="due_date"/>
+              <field name="amount"/>
+              <field name="note"/>
+            </group>
+          </group>
+
+          <group string="Liên kết Phiếu chi">
+            <field name="auto_link_payments"/>
+            <!-- Ẩn khi bật tự động liên kết -->
+            <field name="payment_request_ids"
+                   invisible="auto_link_payments"
+                   domain="[('purchase_id','=', purchase_id),
+                            ('invoice_id','=', False),
+                            ('state','in', ('post','done','confirmed'))]"/>
+            <field name="suggest_payment_total" readonly="1"/>
+          </group>
+        </sheet>
+        <footer>
+          <button name="action_confirm" type="object" class="btn-primary" string="Tạo hóa đơn"/>
+          <button class="btn-secondary" special="cancel" string="Hủy"/>
+        </footer>
+      </form>
+    </field>
+  </record>
+</odoo>

@@ -1,10 +1,23 @@
 from odoo import models, fields, api
-
+from datetime import datetime, date
+def _as_date(v):
+    """Trả về kiểu datetime.date cho mọi giá trị ngày/ngày-giờ."""
+    if not v:
+        return None
+    if isinstance(v, datetime):
+        return v.date()
+    if isinstance(v, date):
+        return v
+    # Trường hợp string (hiếm khi), cố parse qua fields.Date
+    try:
+        return fields.Date.from_string(v)
+    except Exception:
+        return None
 class SupplierContract(models.Model):
     _name = "supplier.contract"
     _description = "Supplier Contract"
 
-    name = fields.Char("Số Hợp đồng")
+    name = fields.Char("Mã")
     partner_id = fields.Many2one("res.partner", string="Nhà cung cấp", required=True, domain=[("supplier_rank", ">", 0)])
     project_id = fields.Many2one("project.project", string="Dự án", required=True)
     interpretation = fields.Char("Diễn giải")
@@ -25,21 +38,26 @@ class SupplierContract(models.Model):
     )
     settlement_ids = fields.One2many("supplier.settlement", "contract_id", string="Hồ sơ quyết toán")
     invoice_ids = fields.One2many("supplier.invoice", "contract_id", string="Hóa đơn")
-    @api.depends("invoice_ids.due_date", "invoice_ids.amount", "account_payment_request_ids.total")
+    number_contract = fields.Char("Số hợp đồng", store=True)
+    @api.depends("invoice_ids.due_date", "invoice_ids.amount", "account_payment_request_ids.total", "advance_amount")
     def _compute_due_date(self):
         for record in self:
             dates = []
-            for invoice in record.invoice_ids:
-                payments = record.account_payment_request_ids.filtered(lambda r: r.invoice_id == invoice)
-                total = sum(p.total for p in payments)
-                temp = invoice.amount - total
-                if temp > 0:
-                    if invoice.due_date:
-                        dates.append(invoice.due_date)
-            if dates:  
-                record.due_date = min(dates)
-            else:
+            if record.advance_amount > 0:
                 record.due_date = False
+            else:
+                for invoice in record.invoice_ids:
+                    payments = record.account_payment_request_ids.filtered(lambda r: r.invoice_id == invoice)
+                    total = sum(p.total for p in payments)
+                    temp = invoice.amount - total
+                    if temp > 0:
+                        if invoice.due_date:
+                            dates.append(invoice.due_date)
+                if dates:  
+                    record.due_date = min(dates)
+                else:
+                    record.due_date = False
+            
     @api.depends("invoice_ids.amount")
     def _compute_total_invoices(self):
         for record in self:
@@ -144,51 +162,61 @@ class SupplierContract(models.Model):
           - 'invoice': record hoặc None
           - 'payment': record hoặc None
           - 'running_balance': số dư còn lại SAU DÒNG NÀY
-                * Nếu có hóa đơn: số tiền còn lại của chính hóa đơn đó (>= có thể âm nếu trả dư)
-                * Nếu KHÔNG có hóa đơn: số dư tạm ứng âm (lũy kế âm theo thời gian)
           - 'is_first_invoice_row': True nếu là dòng đầu tiên của một hóa đơn
         """
         self.ensure_one()
         rows = []
 
-        # 1) Sắp xếp hóa đơn: ngày -> số
+        # ===== 1) Sắp xếp HÓA ĐƠN: theo ngày -> số =====
+        # Chuẩn hoá ngày: inv.date (Date), inv.create_date (Datetime) -> date
         invoices = self.invoice_ids.sorted(
             key=lambda inv: (
-                inv.date or inv.create_date or fields.Date.today(),
+                _as_date(inv.date)                                   # có thể là Date
+                or (_as_date(inv.create_date)                        # create_date (Datetime) -> date
+                    or fields.Date.today()),                         # fallback an toàn
                 inv.name or ''
             )
         )
 
-        # 2) Sắp xếp thanh toán: ưu tiên ngày HĐ (nếu có), rồi ngày trả
-        payments = self.account_payment_request_ids.sorted(
-            key=lambda p: (
-                (getattr(p, 'invoice_id', False) and
-                 (p.invoice_id.date or p.invoice_id.create_date or fields.Date.today()))
-                or (p.date_payment or p.create_date or fields.Datetime.now()),
-                p.date_payment or p.create_date or fields.Datetime.now(),
-                p.id or 0
-            )
-        )
+        # ===== 2) Sắp xếp THANH TOÁN =====
+        # Ưu tiên ngày của hoá đơn gắn kèm (nếu có) -> ngày thanh toán -> id
+        def _payment_sort_key(p):
+            inv_date = None
+            if getattr(p, 'invoice_id', False) and p.invoice_id:
+                inv_date = _as_date(getattr(p.invoice_id, 'date', None)) \
+                           or _as_date(getattr(p.invoice_id, 'create_date', None))
 
-        # 3) Gom theo invoice_id (False = không gắn hóa đơn)
+            pay_primary = inv_date or _as_date(p.date_payment) \
+                          or _as_date(p.create_date) \
+                          or fields.Date.today()
+
+            pay_secondary = _as_date(p.date_payment) \
+                            or _as_date(p.create_date) \
+                            or fields.Date.today()
+
+            return (pay_primary, pay_secondary, p.id or 0)
+
+        payments = self.account_payment_request_ids.sorted(key=_payment_sort_key)
+
+        # ===== 3) Gom theo invoice_id (False = không gắn hoá đơn) =====
         by_inv = {}
         for p in payments:
             key = p.invoice_id.id if getattr(p, 'invoice_id', False) else False
             by_inv.setdefault(key, []).append(p)
 
-        # 4) Cho từng hóa đơn: tính running balance của HÓA ĐƠN
+        # ===== 4) Cho từng hoá đơn: tính running balance của HOÁ ĐƠN =====
         for inv in invoices:
             plist = by_inv.pop(inv.id, [])
-            # Thứ tự lũy kế theo ngày trả + id
+            # Thứ tự lũy kế theo ngày trả + id (đã dùng _payment_sort_key, nhưng giữ rõ ràng ở đây)
             plist = sorted(plist, key=lambda p: (
-                p.date_payment or p.create_date or fields.Datetime.now(),
+                _as_date(p.date_payment) or _as_date(p.create_date) or fields.Date.today(),
                 p.id or 0
             ))
 
             running = float(inv.amount or 0.0)  # bắt đầu từ số tiền hóa đơn
             if plist:
                 for idx, p in enumerate(plist):
-                    running = running - float(p.total or 0.0)   # cho phép âm (trả dư)
+                    running -= float(p.total or 0.0)   # cho phép âm (trả dư)
                     rows.append({
                         'invoice': inv,
                         'payment': p,
@@ -204,15 +232,15 @@ class SupplierContract(models.Model):
                     'is_first_invoice_row': True,
                 })
 
-        # 5) Thanh toán KHÔNG gắn hóa đơn: lũy kế âm (tạm ứng)
+        # ===== 5) Thanh toán KHÔNG gắn hoá đơn: lũy kế âm (tạm ứng) =====
         unlinked = by_inv.get(False, [])
         unlinked = sorted(unlinked, key=lambda p: (
-            p.date_payment or p.create_date or fields.Datetime.now(),
+            _as_date(p.date_payment) or _as_date(p.create_date) or fields.Date.today(),
             p.id or 0
         ))
         advance_running = 0.0  # lũy kế âm
         for p in unlinked:
-            advance_running = advance_running - float(p.total or 0.0)  # tăng âm
+            advance_running -= float(p.total or 0.0)  # tăng âm
             rows.append({
                 'invoice': None,                 # phần hóa đơn trống
                 'payment': p,

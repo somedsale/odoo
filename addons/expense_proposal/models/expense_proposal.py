@@ -1,5 +1,6 @@
 from odoo import models, fields, api
 from odoo.exceptions import UserError
+from markupsafe import Markup
 
 class ExpenseProposal(models.Model):
     _name = 'expense.proposal'
@@ -20,17 +21,78 @@ class ExpenseProposal(models.Model):
         ('completed', 'Hoàn tất',),
         ('rejected', 'Từ chối'),
     ], string='Status', default='draft', track_visibility='onchange')
+    currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
     director_user_id = fields.Many2one('res.users', string="Giám Đốc", default=lambda self: self._default_director_user(), readonly=True)
     @api.model
     def _default_director_user(self):
         group = self.env.ref('custom_director_role.group_director')  # đổi lại module ID cho đúng
         users = self.env['res.users'].search([('groups_id', 'in', group.id)], limit=1)
         return users.id if users else False
+    def _send_notification(self, message, partner_ids=None):
+        """
+        Gửi thông báo vào Chatter + Discuss.
+        :param message: Nội dung thông báo (HTML)
+        :param partner_ids: Danh sách partner_id nhận thông báo (list[int])
+        """
+        self.ensure_one()
+
+        if not partner_ids:
+            partner_ids = []
+
+        # Xóa follower cũ (nếu cần thiết, có thể bỏ nếu không muốn mất lịch sử)
+        # self.message_follower_ids.sudo().unlink()
+
+        # Thêm follower mới
+        existing_followers = self.message_partner_ids.ids
+        new_partners = [pid for pid in partner_ids if pid not in existing_followers]
+        if new_partners:
+            self.message_subscribe(partner_ids=new_partners)
+
+        # Gửi vào chatter + discuss
+        self.message_post(
+            body=Markup(message),
+            message_type="comment",
+            subtype_xmlid="mail.mt_comment",
+            partner_ids=partner_ids,
+        )
     def action_submit(self):
-        self.write({'state': 'submitted'})
+        for rec in self:
+            if not rec.expense_proposal_lines:
+                raise UserError("❌ Phiếu chưa có dòng chi phí nào. Vui lòng thêm ít nhất một dòng trước khi gửi duyệt.")
+            invalid_lines = rec.expense_proposal_lines.filtered(lambda l: l.amount <= 0)
+            if invalid_lines:
+                raise UserError("❌ Có dòng chi phí có số tiền = 0. Vui lòng kiểm tra lại trước khi gửi duyệt.")
+            if rec.amount <= 0:
+                raise UserError("❌ Không thể gửi duyệt vì tổng số tiền bằng 0.")
+        # ✅ Check các dòng chi tiết
+            rec.write({'state': 'submitted'})
+            if rec.director_user_id and rec.director_user_id.partner_id:
+                rec._send_notification(
+                    f"📌 Phiếu <b>{rec.name}</b> đã được gửi duyệt và đang chờ Giám đốc xác nhận.",
+                    [rec.director_user_id.partner_id.id],  # ✅ fix: lấy partner_id
+                )
 
     def action_approve(self):
-        self.write({'state': 'approved'})
+        for rec in self:
+            rec.write({'state': 'approved'})
+            partner_ids = []
+
+            # Người tạo phiếu
+            if rec.proposer_id.partner_id:
+                partner_ids.append(rec.proposer_id.partner_id.id)
+
+            # Nhóm kế toán
+            group_account = self.env.ref("account.group_account_user", raise_if_not_found=False)
+            if group_account:
+                partner_ids += group_account.users.mapped("partner_id").ids
+
+            if partner_ids:
+                rec._send_notification(
+                    f"✅ Phiếu <b>{rec.name}</b> đã được Giám đốc duyệt.",
+                    partner_ids,
+                )
+
+
 
     def action_reject(self):
         self.write({'state': 'rejected'})

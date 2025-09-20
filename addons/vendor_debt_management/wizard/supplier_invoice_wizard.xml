@@ -1,0 +1,41 @@
+<odoo>
+    <record id="view_supplier_invoice_report_wizard" model="ir.ui.view">
+        <field name="name">supplier.invoice.wizard.form</field>
+        <field name="model">supplier.invoice.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Báo cáo Hóa đơn NCC">
+                <group>
+                    <field name="filter_type"/>
+                </group>
+                <group>                    <!-- Theo ngày -->
+                    <field name="date_from" options="{'warn_future': true}" invisible="filter_type != 'day'" required="filter_type == 'day'"/>
+                    <field name="date_to" options="{'warn_future': true}" invisible="filter_type != 'day'" required="filter_type == 'day'"/>
+                    <!-- Theo tháng -->
+                    <field name="year" widget="yearpicker" invisible="filter_type != 'month'" required="filter_type == 'month'" help="Mặc định lấy năm hiện tại, có thể thay đổi nếu cần."/>
+                    <field name="month" invisible="filter_type != 'month'" required="filter_type == 'month'"/>
+                    <!-- Theo quý -->
+                    <field name="year" widget="yearpicker" invisible="filter_type != 'quarter'" required="filter_type == 'quarter'" help="Mặc định lấy năm hiện tại, có thể thay đổi nếu cần."/>
+                    <field name="quarter" invisible="filter_type != 'quarter'" required="filter_type == 'quarter'"/>
+                    <!-- Theo năm -->
+                    <field name="year" widget="yearpicker" invisible="filter_type != 'year'" required="filter_type == 'year'"/>
+                </group>
+                <footer>
+                    <button name="action_print_report" string="In báo cáo" type="object" class="btn-primary" icon="fa-print"/>
+                    <button name="action_view_report" string="Xem báo cáo" type="object" class="btn-primary" icon="fa-eye"/>
+                    <button name="action_view_all" string="Xem tất cả" type="object" class="btn-primary" icon="fa-list"/>
+                    <button string="Hủy" class="btn-secondary" special="cancel" icon="fa-times"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_supplier_invoice_report_wizard" model="ir.actions.act_window">
+        <field name="name">Báo cáo Hóa đơn NCC</field>
+        <field name="res_model">supplier.invoice.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Menu mở wizard -->
+    <menuitem id="menu_supplier_invoice_report_wizard" name="Báo cáo Hóa đơn NCC" parent="menu_supplier_invoice_root" action="action_supplier_invoice_report_wizard" sequence="5"/>
+</odoo>

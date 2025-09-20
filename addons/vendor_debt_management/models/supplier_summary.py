@@ -57,9 +57,9 @@ class SupplierSummary(models.Model):
         for rec in self:
             if rec.due_date:
                 delta = (rec.due_date - today).days
-                if delta > 0:
+                if delta > 3:
                     rec.due_days_html = f"<span style='color:green;font-weight:bold;'>Còn {delta} ngày - Tính từ {rec.due_date.strftime('%d/%m/%Y')}</span>"
-                elif delta == 0:
+                elif delta > 0 and delta < 4:
                     rec.due_days_html = f"<span style='color:orange;font-weight:bold;'>Đến hạn hôm nay - {rec.due_date.strftime('%d/%m/%Y')}</span>"
                 else:
                     rec.due_days_html = f"<span style='color:red;font-weight:bold;'>Quá hạn {abs(delta)} ngày - Tính từ {rec.due_date.strftime('%d/%m/%Y')}</span>"

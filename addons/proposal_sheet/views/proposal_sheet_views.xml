@@ -19,6 +19,7 @@
                     <button name="action_manager_approve" type="object" string="Quản Lý Duyệt" class="btn-success" invisible="show_button_manager_approve == False"/>
                     <button name="action_boss_approve" type="object" string="Sếp Duyệt" class="btn-success" invisible="show_button_boss_approve == False"/>
                     <button name="action_waiting_accounting_paid" type="object" string="Chi Tiền" class="btn-info" invisible="show_button_waiting_accounting_paid == False"/>
+                    <button name="action_treasurer_comfirm" type="object" string="Thủ quỹ xác nhận" class="btn-info" invisible="state != 'reviewed_accounting' or treasurer_confirmed" groups="account.group_account_manager"/>
                     <button name="action_accounting_approve" type="object" string="Kế Toán Duyệt" class="btn-info" invisible="not show_button_accounting_approve"/>
                     <button name="%(action_proposal_reject_wizard)d" type="action" string="Từ Chối" class="btn-danger" invisible="show_button_reject == False"/>
                     <button name="action_cancel" type="object" string="Hủy Phiếu" class="btn-warning" invisible="show_button_cancel == False"/>
@@ -30,6 +31,11 @@
 
                 </header>
                 <sheet>
+                        <!-- boolean gốc ẩn đi -->
+                        <field name="treasurer_confirmed" invisible="1"/>
+
+                        <!-- Dòng thông báo ở cột value (không nhãn) -->
+                        <widget name="web_ribbon" title="Đã xác nhận" bg_color="bg-success" invisible="not treasurer_confirmed"/>
                     <div class="oe_title">
                         <h1>
                             <field name="name" readonly="1"/>
@@ -49,6 +55,7 @@
                             <field name="manager_id" widget="many2one_avatar_user" options="{'no_create': True,'no_open':True}" readonly="1"/>
                             <field name="type" widget="selection" readonly="is_type_readonly"/>
                             <field name="create_date" string="Ngày Tạo" readonly="1"/>
+
                         </group>
                     </group>
                     <notebook>
@@ -62,7 +69,7 @@
                                     <field name="price_unit" string="Giá đề xuất" required="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
                                     <field name="estimate_price_total" string="Tổng giá dự toán" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
                                     <field name="price_total" string="Tổng giá đề xuất" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
-                                    <field name="vendor_id" placeholder="Nhà cung cấp đề xuất"/>
+                                    <field name="vendor_id" placeholder="Nhà cung cấp đề xuất" required="1"/>
                                     <field name="description"/>
                                     <field name="currency_id" invisible="1" optional="hide"/>
                                 </tree>

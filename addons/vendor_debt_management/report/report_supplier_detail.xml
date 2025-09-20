@@ -10,7 +10,7 @@
         <field name="print_report_name">'Chi tiết công nợ NCC'</field>
         <field name="paperformat_id" ref="custom_sale_report_a4_portrait"/>
     </record>
-        <record id="custom_sale_report_a4_portrait" model="report.paperformat">
+    <record id="custom_sale_report_a4_portrait" model="report.paperformat">
         <field name="name">Custom Sale Report A4 Landscape</field>
         <field name="format">A4</field>
         <field name="orientation">Landscape</field>
@@ -72,191 +72,194 @@
                     <span t-esc="partner_name"/>
                 </h2>
 
-<table class="styled-table">
-    <colgroup>
-        <col style="width:3%"/>   <!-- 1. STT -->
-        <col style="width:15%"/>  <!-- 2. Dự án -->
-        <col style="width:10%"/>  <!-- 3. Diễn giải -->
-        <col style="width:4%"/>   <!-- 4. HĐ Số/Ngày -->
-        <col style="width:4%"/>   <!-- 5. HĐ Số tiền -->
-        <col style="width:4%"/>   <!-- 6. HSQT Số HS/ngày -->
-        <col style="width:7%"/>   <!-- 7. HSQT Số tiền -->
-        <col style="width:5%"/>   <!-- 8. Hóa đơn Ngày -->
-        <col style="width:5%"/>   <!-- 9. Hóa đơn Số -->
-        <col style="width:7%"/>   <!-- 10. Hóa đơn Số tiền -->
-        <col style="width:6%"/>   <!-- 11. Đã trả Ngày -->
-        <col style="width:7%"/>   <!-- 12. Đã trả Số tiền -->
-        <col style="width:6%"/>   <!-- 13. Còn nợ -->
-        <col style="width:6%"/>   <!-- 14. Ghi chú -->
-        <col style="width:7%"/>   <!-- 15. Hạn T/T -->
-    </colgroup>
+                <table class="styled-table">
+                    <colgroup>
+                        <col style="width:3%"/>
+                        <!-- 1. STT -->
+                        <col style="width:12%"/>
+                        <!-- 2. Dự án -->
+                        <col style="width:8%"/>
+                        <!-- 3. Diễn giải -->
+                        <col style="width:5%"/>
+                        <!-- 4. HĐ Số/Ngày -->
+                        <col style="width:7%"/>
+                        <!-- 5. HĐ Số tiền -->
+                        <col style="width:4%"/>
+                        <!-- 6. HSQT Số HS/ngày -->
+                        <col style="width:7%"/>
+                        <!-- 7. HSQT Số tiền -->
+                        <col style="width:7%"/>
+                        <!-- 8. Hóa đơn Ngày -->
+                        <col style="width:5%"/>
+                        <!-- 9. Hóa đơn Số -->
+                        <col style="width:7%"/>
+                        <!-- 10. Hóa đơn Số tiền -->
+                        <col style="width:6%"/>
+                        <!-- 11. Đã trả Ngày -->
+                        <col style="width:7%"/>
+                        <!-- 12. Đã trả Số tiền -->
+                        <col style="width:7%"/>
+                        <!-- 13. Còn nợ -->
+                        <col style="width:6%"/>
+                        <!-- 14. Ghi chú -->
+                        <col style="width:7%"/>
+                        <!-- 15. Hạn T/T -->
+                    </colgroup>
 
-    <thead>
-        <tr>
-            <th rowspan="2">STT</th>
-            <th rowspan="2">Dự án</th>
-            <th rowspan="2">Diễn giải</th>
-            <th colspan="2">Hợp đồng</th>
-            <th colspan="2">Hồ sơ quyết toán</th>
-            <th colspan="3">Hóa đơn</th>
-            <th colspan="2">Đã trả</th>
-            <th rowspan="2">Số tiền còn nợ</th>
-            <th rowspan="2">Ghi chú</th>
-            <th rowspan="2">Hạn T/T</th>
-        </tr>
-        <tr>
-            <th>Số/ Ngày</th>
-            <th>Số tiền</th>
-            <th>Số HS/ ngày</th>
-            <th>Số tiền</th>
-            <th>Ngày</th>
-            <th>Số</th>
-            <th>Số tiền</th>
-            <th>Ngày trả</th>
-            <th>Số tiền</th>
-        </tr>
-    </thead>
+                    <thead>
+                        <tr>
+                            <th rowspan="2" class="num">STT</th>
+                            <th rowspan="2">Dự án</th>
+                            <th rowspan="2">Diễn giải</th>
+                            <th colspan="2">Hợp đồng</th>
+                            <th colspan="2">Hồ sơ quyết toán</th>
+                            <th colspan="3">Hóa đơn</th>
+                            <th colspan="2">Đã trả</th>
+                            <th rowspan="2">Số tiền còn nợ</th>
+                            <th rowspan="2">Ghi chú</th>
+                            <th rowspan="2">Hạn T/T</th>
+                        </tr>
+                        <tr>
+                            <th>Số/ Ngày</th>
+                            <th>Số tiền</th>
+                            <th>Số HS/ ngày</th>
+                            <th>Số tiền</th>
+                            <th>Ngày</th>
+                            <th>Số</th>
+                            <th>Số tiền</th>
+                            <th>Ngày trả</th>
+                            <th>Số tiền</th>
+                        </tr>
+                    </thead>
 
-    <tbody>
-<!-- Dòng tổng hợp theo từng docs (theo logic running + tạm ứng) -->
-<t t-foreach="docs" t-as="docs">
-    <!-- Tính nhanh số dư tổng: residual_total = invoices - paid (âm = tạm ứng) -->
-    <t t-set="residual_total" t-value="(docs.total_invoices or 0.0) - (docs.paid_amount or 0.0)"/>
-    <t t-set="advance_total" t-value="abs(residual_total) if residual_total &lt; 0 else 0.0"/>
+                    <tbody>
+                        <!-- Dòng tổng hợp theo từng docs (theo logic running + tạm ứng) -->
+                        <t t-foreach="docs" t-as="docs">
+                            <!-- Tính nhanh số dư tổng: residual_total = invoices - paid (âm = tạm ứng) -->
+                            <t t-set="residual_total" t-value="(docs.total_invoices or 0.0) - (docs.paid_amount or 0.0)"/>
+                            <t t-set="advance_total" t-value="abs(residual_total) if residual_total &lt; 0 else 0.0"/>
 
-    <tr style="font-weight:bold">
-        <td></td>   <!-- STT -->
-        <td></td>   <!-- Dự án -->
-        <td></td>   <!-- Diễn giải -->
-        <td></td>   <!-- HĐ Số/Ngày -->
+                            <tr style="font-weight:bold">
+                                <td></td>                                <!-- STT -->
+                                <td></td>                                <!-- Dự án -->
+                                <td></td>                                <!-- Diễn giải -->
+                                <td></td>                                <!-- HĐ Số/Ngày -->
 
-        <!-- 5. Tổng giá trị HĐ -->
-        <td t-esc="docs.total_contracts and format_amount(docs.total_contracts, docs.currency_id) or ''"
-            class="text-right num"/>
+                                <!-- 5. Tổng giá trị HĐ -->
+                                <td t-esc="docs.total_contracts and format_amount(docs.total_contracts, docs.currency_id) or ''" class="text-right num"/>
 
-        <!-- 6-7. Tổng HSQT -->
-        <td></td>
-        <td t-esc="docs.total_settlements and format_amount(docs.total_settlements, docs.currency_id) or ''"
-            class="text-right num"/>
+                                <!-- 6-7. Tổng HSQT -->
+                                <td></td>
+                                <td t-esc="docs.total_settlements and format_amount(docs.total_settlements, docs.currency_id) or ''" class="text-right num"/>
 
-        <!-- 8-10. Tổng Hóa đơn -->
-        <td></td>
-        <td></td>
-        <td t-esc="docs.total_invoices and format_amount(docs.total_invoices, docs.currency_id) or ''"
-            class="text-right num"/>
+                                <!-- 8-10. Tổng Hóa đơn -->
+                                <td></td>
+                                <td></td>
+                                <td t-esc="docs.total_invoices and format_amount(docs.total_invoices, docs.currency_id) or ''" class="text-right num"/>
 
-        <!-- 11-12. Tổng Đã trả -->
-        <td></td>
-        <td t-esc="docs.paid_amount and format_amount(docs.paid_amount, docs.currency_id) or ''"
-            class="text-right num"/>
+                                <!-- 11-12. Tổng Đã trả -->
+                                <td></td>
+                                <td t-esc="docs.paid_amount and format_amount(docs.paid_amount, docs.currency_id) or ''" class="text-right num"/>
 
-        <!-- 13. Còn nợ (có thể âm nếu là tạm ứng) -->
-        <td t-esc="format_amount(residual_total, docs.currency_id)" class="text-right num"/>
+                                <!-- 13. Còn nợ (có thể âm nếu là tạm ứng) -->
+                                <td t-esc="format_amount(residual_total, docs.currency_id)" class="text-right num"/>
 
-        <!-- 14. Ghi chú: nếu âm => hiển thị Tạm ứng -->
-        <td>
-            <t t-if="residual_total &lt; 0">
+                                <!-- 14. Ghi chú: nếu âm => hiển thị Tạm ứng -->
+                                <td>
+                                    <t t-if="residual_total &lt; 0">
                 Tạm ứng: <t t-esc="format_amount(advance_total, docs.currency_id)"/>
-            </t>
-        </td>
+                                    </t>
+                                </td>
 
-        <!-- 15. Hạn T/T -->
-        <td t-esc="docs.due_days or ''"/>
-    </tr>
-</t>
+                                <!-- 15. Hạn T/T -->
+                                <td t-esc="docs.due_days or ''"/>
+                            </tr>
+                        </t>
 
 
-        <!-- Biến đếm STT -->
-        <t t-set="stt" t-value="0"/>
+                        <!-- Biến đếm STT -->
+                        <t t-set="stt" t-value="0"/>
 
-        <!-- Hợp đồng (không gộp ô) -->
-        <t t-set="grouped_contracts" t-value="docs.contract_ids.sorted(key=lambda x: x.project_id.id or x.id)"/>
-        <t t-foreach="grouped_contracts" t-as="line">
-            <!-- Lấy các dòng đã ghép: invoice -> payments, rồi payments không có invoice -->
-            <t t-set="rows" t-value="line.get_report_rows()"/>
-            <!-- Nếu không có invoice/payment nào, vẫn tạo 1 dòng rỗng cho hợp đồng -->
-            <t t-if="not rows">
-                <t t-set="rows" t-value="[{}]"/>
-            </t>
+                        <!-- Hợp đồng (không gộp ô) -->
+                        <t t-set="grouped_contracts" t-value="docs.contract_ids.sorted(key=lambda x: x.project_id.id or x.id)"/>
+                        <t t-foreach="grouped_contracts" t-as="line">
+                            <!-- Lấy các dòng đã ghép: invoice -> payments, rồi payments không có invoice -->
+                            <t t-set="rows" t-value="line.get_report_rows()"/>
+                            <!-- Nếu không có invoice/payment nào, vẫn tạo 1 dòng rỗng cho hợp đồng -->
+                            <t t-if="not rows">
+                                <t t-set="rows" t-value="[{}]"/>
+                            </t>
 
-            <t t-foreach="rows" t-as="row">
-                <t t-set="stt" t-value="stt + 1"/>
-                <tr>
-                    <!-- 1. STT -->
-                    <td t-esc="stt" class="text-center"/>
+                            <t t-foreach="rows" t-as="row">
+                                <t t-set="stt" t-value="stt + 1"/>
+                                <tr>
+                                    <!-- 1. STT -->
+                                    <td t-esc="stt" class="text-center"/>
 
-                    <!-- 2-5. Thông tin hợp đồng: chỉ in ở dòng đầu tiên -->
-                    <t t-if="stt and (stt == 1 or (rows and row == rows[0]))">
-                        <td t-esc="line.project_id.name or line.name or ''" class="text-center" style="vertical-align:middle;"/>
-                        <td t-esc="line.interpretation or ''" class="text-center" style="vertical-align:middle;"/>
-                        <td t-esc="line.name or ''" class="text-center" style="vertical-align:middle;"/>
-                        <td t-esc="line.amount and format_amount(line.amount, line.currency_id or docs.currency_id) or ''" class="text-right num" style="vertical-align:middle;"/>
-                    </t>
-                    <t t-else="">
-                        <td></td><td></td><td></td><td></td>
-                    </t>
+                                    <!-- 2-5. Thông tin hợp đồng: chỉ in ở dòng đầu tiên -->
+                                    <t t-if="stt and (stt == 1 or (rows and row == rows[0]))">
+                                        <td t-esc="line.project_id.name or line.name or ''" class="text-center" style="vertical-align:middle;"/>
+                                        <td t-esc="line.interpretation or ''" class="text-center" style="vertical-align:middle;"/>
+                                        <td t-esc="line.name or ''" class="text-center" style="vertical-align:middle;"/>
+                                        <td t-esc="line.amount and format_amount(line.amount, line.currency_id or docs.currency_id) or ''" class="text-right num" style="vertical-align:middle;"/>
+                                    </t>
+                                    <t t-else="">
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </t>
 
-                    <!-- 6-7. Hồ sơ quyết toán (để nguyên/tuỳ chỉnh nếu cần) -->
-                    <td></td>
-                    <td></td>
+                                    <!-- 6-7. Hồ sơ quyết toán (để nguyên/tuỳ chỉnh nếu cần) -->
+                                    <td></td>
+                                    <td></td>
 
-                    <!-- 8-10. Hóa đơn -->
-                    <td t-esc="row.get('invoice') and (row.get('invoice').date or '') or ''" class="text-center"/>
-                    <td t-esc="row.get('invoice') and (row.get('invoice').name or '') or ''" class="text-center"/>
-                    <td t-esc="row.get('invoice') and row.get('invoice').amount and format_amount(row.get('invoice').amount, (row.get('invoice').currency_id or docs.currency_id)) or ''"
-                        class="text-right num"/>
+                                    <!-- 8-10. Hóa đơn -->
+                                    <td t-esc="row.get('invoice') and row.get('invoice').date and row.get('invoice').date.strftime('%d/%m/%Y') or ''" class="text-center"/>
+                                    <td t-esc="row.get('invoice') and (row.get('invoice').name or '') or ''" class="text-center"/>
+                                    <td t-esc="row.get('invoice') and row.get('invoice').amount and format_amount(row.get('invoice').amount, (row.get('invoice').currency_id or docs.currency_id)) or ''" class="text-right num"/>
 
-                    <!-- 11-12. Đã trả (theo thứ tự hóa đơn; nếu không có hóa đơn -> để trống phần hóa đơn) -->
-                    <td t-esc="row.get('payment') and (row.get('payment').date_payment or '') or ''" class="text-center"/>
-                    <td t-esc="row.get('payment') and row.get('payment').total and format_amount(row.get('payment').total, (row.get('payment').currency_id or docs.currency_id)) or ''"
-                        class="text-right num"/>
+                                    <!-- 11-12. Đã trả (theo thứ tự hóa đơn; nếu không có hóa đơn -> để trống phần hóa đơn) -->
+                                    <td t-esc="row.get('invoice') and row.get('invoice').date and row.get('invoice').date.strftime('%d/%m/%Y') or ''" class="text-center"/>
 
-                    <!-- 13. Còn nợ: số dư còn lại SAU DÒNG NÀY
+                                    <td t-esc="row.get('payment') and row.get('payment').total and format_amount(row.get('payment').total, (row.get('payment').currency_id or docs.currency_id)) or ''" class="text-right num"/>
+
+                                    <!-- 13. Còn nợ: số dư còn lại SAU DÒNG NÀY
                         - Có hóa đơn: số dư của hóa đơn đó sau khi trừ thanh toán đến dòng này
                         - Không có hóa đơn: số dư tạm ứng âm (lũy kế) -->
-                    <t t-if="row.get('running_balance') is not None">
-                        <td t-esc="format_amount(row.get('running_balance'),
-                                                (row.get('invoice') and row.get('invoice').currency_id) or (line.currency_id or docs.currency_id))"
-                            class="text-right num"/>
-                    </t>
-                    <t t-else="">
-                        <td></td>
-                    </t>
+                                    <t t-if="row.get('running_balance') is not None">
+                                        <td t-esc="format_amount(row.get('running_balance'),
+                                                (row.get('invoice') and row.get('invoice').currency_id) or (line.currency_id or docs.currency_id))" class="text-right num"/>
+                                    </t>
+                                    <t t-else="">
+                                        <td></td>
+                                    </t>
 
-                    <!-- 14. Ghi chú -->
-                    <td></td>
+                                    <!-- 14. Ghi chú -->
+                                    <td></td>
 
-<!-- 15. Hạn T/T theo Hóa đơn (supplier.invoice.due_date) -->
-<td class="text-center">
-  <t t-set="inv" t-value="row.get('invoice')"/>
-  <t t-esc="inv and inv.due_date or ''" t-options="{'widget': 'date'}"/>
-</td>
+                                    <!-- 15. Hạn T/T theo Hóa đơn (supplier.invoice.due_date) -->
+                                    <td class="text-center">
+                                        <t t-set="inv" t-value="row.get('invoice')"/>
+                                        <t t-esc="inv and inv.due_date or ''" t-options="{'widget': 'date'}"/>
+                                    </td>
 
-                </tr>
-            </t>
-        </t>
+                                </tr>
+                            </t>
+                        </t>
 
-        <!-- Không có dữ liệu -->
-        <t t-if="not grouped_contracts">
-            <tr>
-                <td colspan="15" class="text-center">Không có dữ liệu</td>
-            </tr>
-        </t>
-    </tbody>
-</table>
+                        <!-- Không có dữ liệu -->
+                        <t t-if="not grouped_contracts">
+                            <tr>
+                                <td colspan="15" class="text-center">Không có dữ liệu</td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
 
 
                 <div style="page-break-inside: avoid; style: font-weight: bold">
                     <div class="row">
-                        <div class="col-6" style="text-align:center;line-height:1.8">
-                            <div>
-                                <span>Người lập biểu</span>
-                            </div>
-                            <div style="height:65px"></div>
-                            <div>
-                                <span t-field="user_id.name"/>
-                            </div>
-                        </div>
                         <div class="col-6" style="text-align:center;line-height:1.8">
                             <div>
     TP Hồ Chí Minh ngày <span t-esc="datetime.datetime.today().day"/>
@@ -264,16 +267,40 @@
     năm <span t-esc="datetime.datetime.today().year"/>
                     </div>
                     <div>
-                                    Giám Đốc
+                        <span>Người lập biểu</span>
                     </div>
-                    <div style="height:65px"></div>
+                    <div style="height:65px">
+                        <t t-if="user_id.digital_signature">
+                            <img t-att-src="'data:image/png;base64,' + (user_id.digital_signature.decode() if isinstance(user_id.digital_signature, bytes) else user_id.digital_signature)" style="max-height:65px; max-width:150px;" />
+                        </t>
+                    </div>
                     <div>
-                        <span> Đỗ Minh Toàn </span>
+                        <span t-field="user_id.name"/>
                     </div>
                 </div>
+                <div class="col-6" style="text-align:center;line-height:1.8">
+                    <div>
+    TP Hồ Chí Minh ngày <span t-esc="datetime.datetime.today().day"/>
+    tháng <span t-esc="datetime.datetime.today().month"/>
+    năm <span t-esc="datetime.datetime.today().year"/>
+            </div>
+            <div>
+                                    Giám Đốc
+            </div>
+            <div style="height:65px">
+                <t t-set="director_group" t-value="env.ref('custom_director_role.group_director')"/>
+                <t t-set="director" t-value="env['res.users'].search([('groups_id', 'in', director_group.id)], limit=1)"/>
+                <t t-if="director and director.digital_signature">
+                    <img t-att-src="'data:image/png;base64,' + (director.digital_signature.decode() if isinstance(director.digital_signature, bytes) else director.digital_signature)" style="max-height:65px; max-width:150px;" />
+                </t>
+            </div>
+            <div>
+                <span> Đỗ Minh Toàn </span>
             </div>
         </div>
     </div>
+</div>
+</div>
 </t>
 </template>
 </odoo>

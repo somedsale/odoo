@@ -8,7 +8,8 @@
                 <field name="name" string="Mã phiếu chi"/>
                 <field name="proposal_sheet_id" string="Phiếu đề xuất"/>
                 <field name ="project_id" string="Dự án" class="project_value"/>
-                <field name="date"/>
+                <field name="create_date" string="Ngày tạo"/>
+                <field name="date_payment" string="Ngày chi"/>
                 <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="1" sum="Tổng"/>
                 <field name="state" widget="badge" decoration-muted="state == 'draft'" decoration-primary="state == 'confirmed'" decoration-success="state == 'done'"/>
                 <field name="status_expense" widget="badge" string="Trạng thái chi tiền" decoration-danger="status_expense == 'not yet'" decoration-success="status_expense == 'paid'"/>
@@ -42,6 +43,7 @@
                             <field name="proposal_sheet_id" domain="[('project_id', '=', project_id)]" readonly="state != 'draft'"/>
                             <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="state != 'draft'"/>
                             <field name="payment_person" widget="many2one_avatar_user" readonly="1"/>
+                            <field name="create_date" string="Ngày tạo" readonly="1"/>
                             <field name="note" readonly="state != 'draft'"/>
                             <field name="currency_id" invisible="1"/>
                         </group>
@@ -50,6 +52,7 @@
                             <field name="expense_category_id"/>
                             <field name="project_id" invisible="cost_classification != 'project'" readonly="state != 'draft'"/>
                             <field name="date" invisible="proposal_person_id == False" readonly="state != 'draft'"/>
+                            <field name="date_payment" string="Ngày chi" invisible="status_expense == 'not yet'" readonly="1"/>
                             <field name="proposal_person_id" widget="many2one_avatar_user" readonly="1" invisible="proposal_person_id == False"/>
                             <field name="expense_type" widget="select" invisible="cost_classification != 'project'" readonly="state != 'draft'"/>
                             <field name="payment_type" widget="select" readonly="state != 'draft'"/>
@@ -76,6 +79,7 @@
                     <field name="project_id" string="Dự án" enable_counters="1" />
                     <field name="state" string="Trạng thái" icon="fa-bullseye" select="multi" enable_counters="1"/>
                     <field name="status_expense" string="Trạng thái chi" icon="fa-bullseye" select="multi" enable_counters="1"/>
+                    <field name="cost_classification" string="Phân loại chi phí" icon="fa-money-check-dollar" select="multi" enable_counters="1"/>
                 </searchpanel>
             </search>
         </field>

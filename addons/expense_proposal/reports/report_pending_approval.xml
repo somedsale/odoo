@@ -36,7 +36,7 @@
                     <br/>
                 SĐT: <span t-esc="res_company.phone_accounting"/>
                 <br/>
-                <!-- Email: <span style="text-transform: lowercase;" t-esc="res_company.email_accounting"/> -->
+                Email: <span style="text-transform: lowercase;" t-esc="res_company.account_email"/>
             </td>
         </tr>
     </table>
@@ -87,7 +87,7 @@
                     padding: 8px 12px;
                     border: 1px solid #000;
                 }
-                <!-- .styled-table tbody tr:nth-of-type(even) {
+                        <!-- .styled-table tbody tr:nth-of-type(even) {
                     background-color: #f3f6fb;
                 } -->
                 .styled-table tbody tr:hover {
@@ -124,7 +124,7 @@
                         <td>KHOẢN VAY NỘI BỘ NHÂN VIÊN</td>
                         <td></td>
                         <td class="text-right">
-                            <t t-esc="grp.get('total_amount_employee', 0)"  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            <t t-esc="grp.get('total_amount_employee', 0)" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                         </td>
                         <td></td>
                         <td></td>
@@ -144,12 +144,12 @@
                 </t>
 
                 <t t-if="grp.get('total_amount_office', 0) > 0">
-                    <tr  class="table-item">
+                    <tr class="table-item">
                         <td class="text-center"></td>
                         <td>CHI PHÍ TẠI CÔNG TY</td>
                         <td></td>
                         <td class="text-right">
-                            <t t-esc="grp.get('total_amount_office', 0)"  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            <t t-esc="grp.get('total_amount_office', 0)" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                         </td>
                         <td></td>
                         <td></td>
@@ -169,12 +169,12 @@
                 </t>
 
                 <t t-if="grp.get('total_amount_project', 0) > 0">
-                    <tr  class="table-item">
+                    <tr class="table-item">
                         <td class="text-center"></td>
                         <td>CHI PHÍ CÁC CÔNG TRÌNH</td>
                         <td></td>
                         <td class="text-right">
-                            <t t-esc="grp.get('total_amount_project', 0)"  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            <t t-esc="grp.get('total_amount_project', 0)" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                         </td>
                         <td></td>
                         <td></td>
@@ -194,12 +194,12 @@
                 </t>
 
                 <t t-if="grp.get('total_amount_estimated_cost', 0) > 0">
-                    <tr  class="table-item">
+                    <tr class="table-item">
                         <td class="text-center"></td>
                         <td>ĐỀ XUẤT CHI PHÍ THEO DỰ TOÁN</td>
                         <td></td>
                         <td class="text-right">
-                            <t t-esc="grp.get('total_amount_estimated_cost', 0)"  t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            <t t-esc="grp.get('total_amount_estimated_cost', 0)" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                         </td>
                         <td></td>
                         <td></td>
@@ -223,8 +223,8 @@
                 <td style="padding: 8px; text-align: right; font-weight: bold;">
                     <t t-esc="total" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                 </td>
-                <td> </td>
-                <td> </td>
+                <td></td>
+                <td></td>
             </tr>
         </tbody>
     </table>
@@ -264,6 +264,7 @@
 <field name="paperformat_id" ref="custom_sale_report_a4_portrait"/>
 </record>
 <!-- Menu -->
-<menuitem id="menu_report_pending_approval_root" name="Các khoản chi chưa duyệt" parent="custom_account_menu.menu_accounting_reporting" action="expense_proposal.action_report_pending_approval"/>
+<menuitem id="menu_expense_proposal_root" name="Đề xuất chi" parent="custom_account_menu.menu_accounting_reporting"/>
+<menuitem id="menu_report_pending_approval_root" name="Các khoản chưa duyệt" parent="menu_expense_proposal_root" action="expense_proposal.action_report_pending_approval"/>
 
 </odoo>

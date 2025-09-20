@@ -125,13 +125,6 @@ class ProposalMaterialLine(models.Model):
         for line in self:
             if line.quantity <= 0:
                 raise ValidationError("Số lượng vật tư phải lớn hơn 0.")
-    @api.constrains('price_unit','estimate_price_unit')
-    def _check_price_unit(self):
-        for line in self:
-            if line.price_unit <= 0:
-                raise ValidationError("Giá vật tư phải lớn hơn 0.")
-            if line.price_unit > line.estimate_price_unit:
-                raise ValidationError("Giá đề xuất không được lớn hơn dự toán")
 
     def archive(self):
         self.write({'active': False})

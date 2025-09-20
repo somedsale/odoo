@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from odoo import models, fields, api
-from odoo.exceptions import UserError
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError, ValidationError
 import logging
+from markupsafe import Markup, escape
 
 _logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ class ContractManagement(models.Model):
     _name = 'contract.management'
     _description = 'Contract Management'
     _inherit = ['mail.thread', 'mail.activity.mixin']  # Enable chatter for tracking
-
+    _order = 'create_date desc'
     name = fields.Char(string='Tên hợp đồng', required=True)
     num_contract = fields.Char(string='Số hợp đồng')
     contract_value = fields.Float(string='Giá trị hợp đồng')
@@ -80,7 +81,7 @@ class ContractManagement(models.Model):
                         except ValueError:
                             raise UserError(f"Task stage {ref} not found. Please ensure all task stages are defined.")
                     if contract.sale_order_id.x_project_name:
-                        name_project = f"Số HĐ ${contract.num_contract} - ${contract.sale_order_id.x_project_name}"
+                        name_project = f"Số HĐ {contract.num_contract} - {contract.sale_order_id.x_project_name}"
                     else:
                         name_project = contract.sale_order_id.name
                     # Create project when stage is 'Đang thực hiện'
@@ -89,6 +90,7 @@ class ContractManagement(models.Model):
                         'partner_id': contract.partner_id.id,
                         'company_id': contract.company_id.id,
                         'contract_id': contract.id,
+                        # 'sale_order_id': contract.sale_order_id.id,
                         'allow_timesheets': False,  # Optional: Disable timesheets if not needed
                         'allow_billable': False,  # Optional: Disable billing if not needed  # Optional: Disable billing if not needed
                         'type_ids': [(6, 0, task_stages.ids)],  # Assign task stages to project
@@ -115,32 +117,6 @@ class ContractManagement(models.Model):
                                 'res_id': project.id,
                             })
 
-                    # Create tasks from sale order lines
-                    default_stage = self.env['project.task.type'].search([
-                        ('name', '=', 'Đơn đặt hàng mới'),
-                        ('project_ids', 'in', project.id)
-                    ], limit=1)
-                    if not default_stage:
-                        raise UserError("Default task stage 'Đơn đặt hàng mới' not found for the project.")
-                    product_task_map = {}
-                    for line in contract.sale_order_id.order_line:
-                        if line.product_id.product_tmpl_id.type == 'consu':  # Ensure product exists
-                            task_vals = {
-                                'name': f"{line.product_id.name} - {line.product_uom_qty} {line.product_uom.name}",
-                                'project_id': project.id,
-                                'partner_id': contract.partner_id.id,
-                                'quantity': line.product_uom_qty,
-                                'uom_id': line.product_uom.id,
-                                'stage_id': default_stage.id,
-                                'allow_billable': False,  # Optional: Disable billing if not needed
-                                'description': line.name,  # Use sale order line description
-                                'user_ids': [(6, 0, [manager_id.user_id.id])] if manager_id.user_id.id else [],
-                            }
-                            task = self.env['project.task'].create(task_vals)
-                            product_task_map[line.product_id.id] = task.id 
-                    
-                    # Tạo nhiệm vụ cho các sản phẩm tiêu dùng trong giai đoạn "Đơn đặt hàng mới"
-
                     
                     if not contract.sale_order_id.cost_estimate_id:
                         # Tạo dự toán
@@ -155,7 +131,7 @@ class ContractManagement(models.Model):
                                     'unit': line.product_uom.id,
                                     'quantity': line.product_uom_qty,
                                     'sale_order_line_id': line.id,
-                                    'task_id': product_task_map.get(line.product_id.id),
+                                    # 'task_id': product_task_map.get(line.product_id.id),
                                 })
                                 for line in contract.sale_order_id.order_line
                                 if line.product_id
@@ -208,58 +184,64 @@ class ContractManagement(models.Model):
 class ProjectTask(models.Model):
     _inherit = 'project.task'
 
-    @api.model
-    def write(self, vals):
-        res = super(ProjectTask, self).write(vals)
-        if 'stage_id' in vals:
-            for task in self:
-                if task.project_id:
-                    # Find the contract linked to the project
-                    contract = self.env['contract.management'].search([
-                        ('project_id', '=', task.project_id.id)
-                    ], limit=1)
-                    if contract and contract.stage not in ['completed', 'canceled']:
-                        # Check if all tasks in the project are in 'Hoàn thành' stage
-                        completed_stage = self.env['project.task.type'].search([
-                            ('name', '=', 'Hoàn thành'),
-                            ('project_ids', 'in', task.project_id.id)
-                        ], limit=1)
-                        if completed_stage:
-                            all_tasks_completed = all(
-                                t.stage_id.id == completed_stage.id
-                                for t in self.env['project.task'].search([
-                                    ('project_id', '=', task.project_id.id)
-                                ])
-                            )
-                            if all_tasks_completed:
-                                # Update contract stage to 'Hoàn thành'
-                                contract.stage = 'completed'
-                                # Update project stage to 'Hoàn tất'
-                                completed_project_stage = self.env['project.project.stage'].search([
-                                    ('name', '=', 'Hoàn tất')
-                                ], limit=1)
-                                if not completed_project_stage:
-                                    raise UserError("Project stage 'Hoàn tất' not found. Please ensure it is defined.")
-                                task.project_id.stage_id = completed_project_stage.id
-        return res
+    sale_order_line_id = fields.Many2one('sale.order.line', string="Bản báo giá", index=True)
+    project_sale_order_id = fields.Many2one(related='project_id.sale_order_id', string="Hạng mục", store=True, readonly=True)
 
+    @api.onchange('project_id')
+    def _onchange_project_id_set_domain_for_sol(self):
+        """Khi chọn/đổi dự án, giới hạn SOL theo SO của dự án."""
+        domain = [('id', '=', 0)]
+        if self.project_id and self.project_id.sale_order_id:
+            domain = [('order_id', '=', self.project_id.sale_order_id.id)]
+        return {'domain': {'sale_order_line_id': domain}}
+
+    @api.onchange('sale_order_line_id')
+    def _onchange_sale_order_line_id(self):
+        for rec in self:
+            sol = rec.sale_order_line_id
+            if not sol:
+                continue
+            if not rec.name or rec.name.lower() in ('new', 'mới', _('New').lower()):
+                rec.name = sol.product_id.name or (sol.product_id.display_name if sol.product_id else False)
+            if not rec.description:
+                txt = sol.product_id.x_thong_so or (sol.product_id.description_sale or '')
+                # escape để an toàn, rồi thay \n bằng <br/> và ghép nhãn “Thông số:”
+                safe_txt = escape(txt).replace('\n', Markup('<br/>'))
+                rec.description = Markup('<strong>Thông số:</strong><br/>') + safe_txt
+            # if not rec.planned_hours:
+            #     rec.planned_hours = sol.product_uom_qty or 0.0
+
+    @api.constrains('sale_order_line_id', 'project_id')
+    def _check_sol_belongs_to_project_so(self):
+        for rec in self:
+            if rec.sale_order_line_id and rec.project_id and rec.project_id.sale_order_id:
+                if rec.sale_order_line_id.order_id != rec.project_id.sale_order_id:
+                    raise ValidationError(_("Dòng đơn bán phải thuộc Đơn bán của Dự án."))
 class ProjectProject(models.Model):
     _inherit = 'project.project'
+
     contract_id = fields.Many2one('contract.management', string='Hợp đồng')
-    @api.model
+    # Tự lấy từ hợp đồng, lưu DB để dùng domain/ tìm kiếm
+    sale_order_id = fields.Many2one(
+        'sale.order',
+        string='Đơn bán',
+        related='contract_id.sale_order_id',
+        store=True, readonly=True
+    )
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        projects = super().create(vals_list)
+        # Đồng bộ SO từ contract (phòng khi chỗ tạo project quên set)
+        for pr in projects:
+            if not pr.sale_order_id and pr.contract_id and pr.contract_id.sale_order_id:
+                pr.sale_order_id = pr.contract_id.sale_order_id.id
+        return projects
+
     def write(self, vals):
-        res = super(ProjectProject, self).write(vals)
-        if 'stage_id' in vals:
-            for project in self:
-                # Find the contract linked to the project
-                contract = self.env['contract.management'].search([
-                    ('project_id', '=', project.id)
-                ], limit=1)
-                if contract and contract.stage not in ['completed', 'canceled']:
-                    # Check if the project stage is 'Đã hủy'
-                    canceled_stage = self.env['project.project.stage'].search([
-                        ('name', '=', 'Đã hủy')
-                    ], limit=1)
-                    if canceled_stage and project.stage_id.id == canceled_stage.id:
-                        contract.stage = 'canceled'
+        res = super().write(vals)
+        # Nếu sau này contract_id mới được gán, tự set sale_order_id theo
+        if 'contract_id' in vals and not vals.get('sale_order_id'):
+            for pr in self.filtered(lambda r: not r.sale_order_id and r.contract_id and r.contract_id.sale_order_id):
+                pr.sale_order_id = pr.contract_id.sale_order_id.id
         return res

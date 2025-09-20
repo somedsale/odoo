@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+
+    <!-- Inject fields hỗ trợ modifiers -->
+    <record id="purchase_order_form_inherit_support_fields" model="ir.ui.view">
+      <field name="name">purchase.order.form.inherit.support.fields</field>
+      <field name="model">purchase.order</field>
+      <field name="inherit_id" ref="purchase.purchase_order_form"/>
+      <field name="arch" type="xml">
+        <xpath expr="//form" position="inside">
+          <field name="shipping_status" invisible="1"/>
+          <field name="payment_status" invisible="1"/>
+          <field name="has_full_request" invisible="1"/>
+          <field name="is_fully_requested" invisible="1"/>
+          <field name="amount_requested" invisible="1"/>
+          <field name="payment_request_count" invisible="1"/>
+        </xpath>
+      </field>
+    </record>
+
+    <!-- Liên kết Proposal/Project/Task + auto-pay + smart button + header button + khối thanh toán -->
+    <record id="purchase_order_form_inherit_ps_links_payment" model="ir.ui.view">
+      <field name="name">purchase.order.form.inherit.ps.links.payment</field>
+      <field name="model">purchase.order</field>
+      <field name="inherit_id" ref="purchase.purchase_order_form"/>
+      <field name="priority" eval="100000"/>
+      <field name="arch" type="xml">
+        <!-- Liên kết -->
+        <xpath expr="//sheet/group/group" position="inside">
+          <field name="proposal_sheet_id" string="Phiếu đề xuất" options="{'no_create_edit': True}" readonly="state in ('purchase','done')"/>
+          <field name="project_id" string="Dự án" readonly="1"/>
+          <field name="task_id" string="Hạng mục" readonly="1"/>
+        </xpath>
+        <!-- Auto-pay khi xác nhận -->
+        <xpath expr="//sheet/notebook" position="before">
+          <group col="3">
+            <group string="Thanh toán khi xác nhận">
+              <field name="auto_payment_on_confirm"/>
+              <field name="payment_on_confirm_type" invisible="not auto_payment_on_confirm"/>
+              <field name="advance_amount_type" invisible="(not auto_payment_on_confirm) or (payment_on_confirm_type != 'advance')"/>
+              <field name="advance_percent" invisible="(not auto_payment_on_confirm) or (payment_on_confirm_type != 'advance') or (advance_amount_type != 'percent')"/>
+              <field name="advance_amount" invisible="(not auto_payment_on_confirm) or (payment_on_confirm_type != 'advance') or (advance_amount_type != 'fixed')"/>
+            </group>
+            <group string="Thanh toán đơn hàng">
+              <field name="amount_total" readonly="1"/>
+              <field name="amount_paid" readonly="1"/>
+              <field name="amount_to_pay" readonly="1"/>
+              <field name="payment_progress" readonly="1"/>
+              <field name="payment_status" readonly="1"/>
+              <field name="is_paid" readonly="1"/>
+            </group>
+            <group string="Phiếu chi">
+              <field name="amount_requested" readonly="1"/>
+              <field name="has_full_request" readonly="1"/>
+              <field name="is_fully_requested" readonly="1"/>
+            </group>
+          </group>
+        </xpath>
+
+        <!-- Smart button Phiếu chi -->
+        <xpath expr="//sheet" position="inside">
+          <div class="oe_button_box" name="button_box" />
+        </xpath>
+        <xpath expr="//sheet/div[@name='button_box']" position="inside">
+          <button name="action_view_payment_requests" type="object" class="oe_stat_button"  groups="account.group_account_manager" icon="fa-money" invisible="payment_request_count == 0">
+            <field name="payment_request_count" widget="statinfo" string="Phiếu chi"/>
+          </button>
+          <button name="action_view_supplier_invoices" type="object" class="oe_stat_button"  groups="account.group_account_manager" icon="fa-file-text-o" invisible="supplier_invoice_count == 0">
+            <field name="supplier_invoice_count" widget="statinfo" string="Hóa đơn NCC"/>
+          </button>
+        </xpath>
+
+        <!-- 2) Thay toàn bộ header bằng header của bạn + đặt lại statusbar 'state' -->
+        <xpath expr="//header" position="replace">
+          <header>
+            <!-- ===== NÚT CORE ODOO (để dùng khi mới tạo / RFQ) ===== -->
+            <!-- Confirm (dùng cho cả draft & sent) -->
+            <button groups="account.group_account_manager" name="button_confirm" type="object" string="Xác nhận đơn hàng" class="oe_highlight" context="{'validate_analytic': True}" invisible="state not in ['draft','sent']"/>
+            <button name="confirm_reminder_mail" string="Xác nhận ngày nhận hàng" type="object" groups="account.group_account_manager" invisible="state not in ('purchase','done') or mail_reminder_confirmed or effective_date"/>
+
+            <!-- Đang giao: hiện khi PO đã xác nhận, còn ở 'Chưa giao' và thanh toán 'partial' hoặc 'paid' -->
+            <button groups="account.group_account_manager" name="action_mark_shipping_in_progress" type="object" string="Đang giao" class="btn-secondary" invisible="(state not in ['purchase','done'])
+                           or (shipping_status != 'not_shipped')
+                           or (payment_status not in ['partial','paid'])"/>
+            <field name="supplier_contract_id" invisible="1"/>
+            <button groups="account.group_account_manager" name="action_open_create_supplier_invoice_wizard" type="object" string="Tạo hóa đơn NCC" class="btn-secondary" invisible="state not in ('purchase','done') or not supplier_contract_id"/>
+            <!-- Nhận hàng: chỉ khi đang 'Đang giao' -->
+            <button groups="account.group_account_manager" name="action_mark_shipping_done" type="object" string="Nhận hàng" class="btn-primary" invisible="(state not in ['purchase','done']) or (shipping_status != 'in_progress')"/>
+
+            <!-- Tạo tạm ứng -->
+            <button groups="account.group_account_manager" name="action_open_advance_wizard" type="object" string="Tạo phiếu chi tạm ứng" class="btn-secondary" invisible="(state not in ['purchase']) or has_full_request or is_fully_requested"/>
+
+            <!-- Thanh toán toàn bộ -->
+            <button groups="account.group_account_manager" name="action_create_payment_request_full" type="object" string="Tạo phiếu chi toàn bộ" class="btn-secondary" invisible="(state not in ['purchase']) or has_full_request or is_fully_requested or (amount_requested > 0)"/>
+
+            <!-- Chi còn lại -->
+            <button groups="account.group_account_manager" name="action_create_payment_request_remaining" type="object" string="Chi còn lại" class="btn-secondary" invisible="(state not in ['purchase']) or has_full_request or is_fully_requested or (amount_requested == 0)"/>
+
+            <!-- PHẢI có lại statusbar state để thỏa các modifiers ở nơi khác -->
+            <field name="state" widget="statusbar" statusbar_visible="draft,sent,purchase" readonly="1"/>
+
+          </header>
+        </xpath>
+
+      </field>
+    </record>
+
+    <!-- Ribbons -->
+    <record id="purchase_order_form_inherit_ribbons" model="ir.ui.view">
+      <field name="name">purchase.order.form.inherit.ribbons</field>
+      <field name="model">purchase.order</field>
+      <field name="inherit_id" ref="purchase.purchase_order_form"/>
+      <field name="arch" type="xml">
+        <xpath expr="//sheet/div[@name='button_box']" position="before">
+          <!-- Thanh toán -->
+          <widget name="web_ribbon" title="Đã thanh toán" bg_color="bg-success" invisible="payment_status != 'paid'"/>
+          <widget name="web_ribbon" title="Chưa thanh toán" bg_color="bg-danger" invisible="payment_status == 'paid' or state == 'draft'"/>
+
+          <!-- Hàng hóa -->
+          <widget name="web_ribbon" title="Chưa giao" bg_color="bg-secondary" invisible="shipping_status != 'not_shipped'"/>
+          <widget name="web_ribbon" title="Đang giao" bg_color="bg-warning" invisible="shipping_status != 'in_progress'"/>
+          <widget name="web_ribbon" title="Đã giao" bg_color="bg-success" invisible="shipping_status != 'done'"/>
+        </xpath>
+      </field>
+    </record>
+
+    <!-- Inject field để modifiers -->
+    <record id="purchase_order_form_inherit_contract_support" model="ir.ui.view">
+      <field name="name">purchase.order.form.inherit.contract.support</field>
+      <field name="model">purchase.order</field>
+      <field name="inherit_id" ref="purchase.purchase_order_form"/>
+      <field name="arch" type="xml">
+        <xpath expr="//form" position="inside">
+          <field name="supplier_contract_id" invisible="1"/>
+        </xpath>
+      </field>
+    </record>
+
+    <!-- Hiển thị Hợp đồng + Smart button -->
+    <record id="purchase_order_form_inherit_contract_fields_buttons" model="ir.ui.view">
+      <field name="name">purchase.order.form.inherit.contract.fields.buttons</field>
+      <field name="model">purchase.order</field>
+      <field name="inherit_id" ref="purchase.purchase_order_form"/>
+      <field name="arch" type="xml">
+
+        <!-- Hiển thị field Hợp đồng trong sheet/group đầu tiên -->
+        <!-- <xpath expr="//sheet/group" position="inside">
+          <field name="supplier_contract_id" options="{'no_create_edit': True}"/>
+        </xpath> -->
+        <xpath expr="//sheet/div[@name='button_box']" position="inside">
+          <button name="action_view_supplier_contract" type="object" class="oe_stat_button"  groups="account.group_account_manager" icon="fa-file-text-o" invisible="not supplier_contract_id">
+            <field name="supplier_contract_id" widget="statinfo" string="Hợp đồng NCC"/>
+          </button>
+        </xpath>
+
+      </field>
+    </record>
+
+  </data>
+</odoo>
