@@ -83,6 +83,7 @@
             <button groups="account.group_account_manager" name="action_mark_shipping_in_progress" type="object" string="Đang giao" class="btn-secondary" invisible="(state not in ['purchase','done'])
                            or (shipping_status != 'not_shipped')
                            or (payment_status not in ['partial','paid'])"/>
+            <field name="supplier_contract_id" invisible="1"/>
             <button groups="account.group_account_manager" name="action_open_create_supplier_invoice_wizard" type="object" string="Tạo hóa đơn NCC" class="btn-secondary" invisible="state not in ('purchase','done') or not supplier_contract_id"/>
             <!-- Nhận hàng: chỉ khi đang 'Đang giao' -->
             <button groups="account.group_account_manager" name="action_mark_shipping_done" type="object" string="Nhận hàng" class="btn-primary" invisible="(state not in ['purchase','done']) or (shipping_status != 'in_progress')"/>
