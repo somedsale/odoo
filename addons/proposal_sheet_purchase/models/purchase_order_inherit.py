@@ -2,6 +2,7 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools import float_compare, float_is_zero
+from markupsafe import Markup
 
 
 # Đổi nếu stage ở module khác:
@@ -263,7 +264,7 @@ class PurchaseOrder(models.Model):
             if po.shipping_status != 'not_shipped':
                 raise UserError(_("PO không ở trạng thái 'Chưa giao'."))
             po.shipping_status = 'in_progress'
-            po.message_post(body=_("Trạng thái hàng hóa chuyển sang <b>Đang giao</b>."))
+            po.message_post(body=Markup("Trạng thái hàng hóa chuyển sang <b>Đang giao</b>."))
         return {'type': 'ir.actions.client', 'tag': 'reload'}
 
     # Khi xác nhận PO, reset shipping_status về 'Chưa giao' (nếu trước đó là done do lặp)
@@ -293,7 +294,7 @@ class PurchaseOrder(models.Model):
             if po.shipping_status != 'in_progress':
                 raise UserError(_("Chỉ có thể 'Nhận hàng' khi trạng thái đang là 'Đang giao'."))
             po.shipping_status = 'done'
-            po.message_post(body=_("Trạng thái hàng hóa chuyển sang <b>Đã giao</b> (cập nhật thủ công)."))
+            po.message_post(body=Markup("Trạng thái hàng hóa chuyển sang <b>Đã giao</b> (cập nhật thủ công)."))
         # Sau khi đã giao, chuyển trạng thái phiếu đề xuất thành hoàn tất
         for po in self:
             po.proposal_sheet_id.action_done()
@@ -377,7 +378,7 @@ class PurchaseOrder(models.Model):
             if po.shipping_status != 'not_shipped':
                 raise UserError(_("PO không ở trạng thái 'Chưa giao'."))
             po.shipping_status = 'in_progress'
-            po.message_post(body=_("Trạng thái hàng hóa ➜ <b>Đang giao</b>."))
+            po.message_post(body=Markup("Trạng thái hàng hóa ➜ <b>Đang giao</b>."))
         # auto move stage
         self._auto_move_task_by_shipping()
         return {'type': 'ir.actions.client', 'tag': 'reload'}
@@ -396,7 +397,7 @@ class PurchaseOrder(models.Model):
             if po.shipping_status != 'in_progress':
                 raise UserError(_("Chỉ có thể 'Nhận hàng' khi trạng thái đang là 'Đang giao'."))
             po.shipping_status = 'done'
-            po.message_post(body=_("Trạng thái hàng hóa ➜ <b>Đã giao</b>."))
+            po.message_post(body=Markup("Trạng thái hàng hóa ➜ <b>Đã giao</b>."))
         # auto move stage
         self._auto_move_task_by_shipping()
         return {'type': 'ir.actions.client', 'tag': 'reload'}
@@ -440,7 +441,7 @@ class PurchaseOrder(models.Model):
                     st = _get_stage(XID_STAGE_DELIVERY)
                     if st and task.stage_id != st:
                         task.sudo().write({'stage_id': st.id})
-                        task.message_post(body=_("Chuyển stage tự động ➜ <b>Giao hàng</b> (PO đang giao)."))
+                        task.message_post(body=Markup("Chuyển stage tự động ➜ <b>Giao hàng</b> (PO đang giao)."))
 
             # ------ Khi ĐÃ GIAO ------
             elif po.shipping_status == 'done':
@@ -449,7 +450,7 @@ class PurchaseOrder(models.Model):
                     st = _get_stage(XID_STAGE_PRODUCTION)
                     if st and task.stage_id != st:
                         task.sudo().write({'stage_id': st.id})
-                        task.message_post(body=_("Chuyển stage tự động ➜ <b>Sản xuất</b> (vật tư đã về)."))
+                        task.message_post(body=Markup("Chuyển stage tự động ➜ <b>Sản xuất</b> (vật tư đã về)."))
                 else:
                     # Không có “Sản xuất”: ưu tiên “Thi công”, nếu không có thì “Nghiệm thu”
                     target_xid = XID_STAGE_INSTALLATION if need_inst else XID_STAGE_ACCEPTANCE
@@ -457,7 +458,7 @@ class PurchaseOrder(models.Model):
                     if st and task.stage_id != st:
                         task.sudo().write({'stage_id': st.id})
                         task.message_post(
-                            body=_("Chuyển stage tự động ➜ <b>%s</b>.") % (st.name,)
+                            body=Markup("Chuyển stage tự động ➜ <b>%s</b>.") % (st.name,)
                         )
     def _compute_supplier_invoice_count(self):
         for po in self:
