@@ -48,6 +48,7 @@ class ExpenseProposal(models.Model):
         if new_partners:
             self.message_subscribe(partner_ids=new_partners)
         odoodbot_partner = self.env.ref("base.partner_root")
+        # record_link = f'<a href="#id={self.id}&model={self._name}">Xem thêm</a>'
 
         # Gửi vào chatter + discuss
         self.message_post(
@@ -57,6 +58,19 @@ class ExpenseProposal(models.Model):
             partner_ids=partner_ids,
             author_id=odoodbot_partner.id,
         )
+        # channel = self.env["discuss.channel"].search([("name", "=", "Kênh Thông báo")], limit=1)
+        # if not channel:
+        #     channel = self.env["discuss.channel"].create({
+        #         "name": "Kênh Thông báo",
+        #         "channel_type": "channel",  # giá trị có thể là 'channel', 'chat'
+        #     })
+        # if channel:
+        #     channel.message_post(
+        #         body=Markup(f"📌 {record_link}: {message}"),
+        #         message_type="comment",
+        #         subtype_xmlid="mail.mt_comment",
+        #         author_id=odoodbot_partner.id,
+        #     )
     def action_submit(self):
         for rec in self:
             if not rec.expense_proposal_lines:
@@ -73,6 +87,27 @@ class ExpenseProposal(models.Model):
                     f"📌 Phiếu <b>{rec.name}</b> đã được gửi duyệt và đang chờ Giám đốc xác nhận.",
                     [rec.director_user_id.partner_id.id],  # ✅ fix: lấy partner_id
                 )
+                rec.activity_schedule(
+                    'mail.mail_activity_data_todo',
+                    user_id=rec.director_user_id.id,
+                    summary=f'Duyệt Phiếu {rec.name}',
+                    note=Markup(f"📌 Phiếu <b>{rec.name}</b> đang chờ duyệt."),
+                    date_deadline=fields.Date.today(),
+                )
+    def _close_activity(self, user, xmlid='mail.mail_activity_data_todo', feedback="Đã xử lý"):
+        self.ensure_one()
+        act_type = self.env.ref(xmlid)
+
+        acts = self.env['mail.activity'].search([
+            ('res_model', '=', self._name),
+            ('res_id', '=', self.id),
+            ('activity_type_id', '=', act_type.id),
+            ('user_id', '=', user.id),
+            ('state', '=', 'planned'),
+        ])
+
+        if acts:
+            acts.action_feedback(feedback=feedback)  # ✅ mark Done
 
     def action_approve(self):
         for rec in self:
@@ -93,6 +128,20 @@ class ExpenseProposal(models.Model):
                     f"✅ Phiếu <b>{rec.name}</b> đã được Giám đốc duyệt.",
                     partner_ids,
                 )
+            if rec.director_user_id:
+                rec._close_activity(
+                    user=rec.director_user_id,
+                    feedback="Đã duyệt"
+                )
+            # if group_account:
+            #     for user in group_account.users:
+            #         rec.activity_schedule(
+            #             'mail.mail_activity_data_todo',
+            #             user_id=user.id,
+            #             summary=f'Xử lý chi cho {rec.name}',
+            #             note=Markup(f"✅ Phiếu <b>{rec.name}</b> đã duyệt. Vui lòng tạo Phiếu chi."),
+            #             date_deadline=fields.Date.today(),
+            #         )
 
 
 

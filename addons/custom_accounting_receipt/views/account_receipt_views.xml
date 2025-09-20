@@ -21,7 +21,7 @@
                                 <field name="amount" widget="monetary"/>
                                 <field name="currency_id" invisible="1" optional="hide"/>
                                 <field name="payment_method"/>
-                                <field name="note"/>
+                                <field name="note" string="Nội dung thu"/>
                             </group>
                             <group>
                                 <field name="project_id"/>
@@ -45,6 +45,7 @@
                 <tree string="Phiếu Thu Kế Toán">
                     <field name="name"/>
                     <field name="date"/>
+                    <field name="note" string="Nội dung thu"/>
                     <field name="partner_id"/>
                     <field name="amount" widget="monetary"/>
                     <field name="currency_id" invisible="1" optional="hide"/>
