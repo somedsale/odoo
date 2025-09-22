@@ -17,4 +17,32 @@
 
         </field>
     </record>
+    <odoo>
+        <record id="view_order_line_tree_inherit_task" model="ir.ui.view">
+            <field name="name">sale.order.line.tree.inherit.hide_delivery_invoice</field>
+            <field name="model">sale.order.line</field>
+            <field name="inherit_id" ref="sale.view_order_line_tree"/>
+            <field name="arch" type="xml">
+
+                <!-- Ẩn số lượng giao hàng -->
+                <xpath expr="//field[@name='qty_delivered']" position="attributes">
+                    <attribute name="column_invisible">1</attribute>
+                </xpath>
+
+                <!-- Ẩn số lượng cần xuất hóa đơn -->
+                <xpath expr="//field[@name='qty_to_invoice']" position="attributes">
+                    <attribute name="column_invisible">1</attribute>
+                </xpath>
+
+                <!-- Ẩn số lượng đã xuất hóa đơn -->
+                <xpath expr="//field[@name='qty_invoiced']" position="attributes">
+                    <attribute name="column_invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='order_id']" position="after">
+                    <field name="product_id" string="Sản phẩm" readonly="1"/>
+                </xpath>
+
+            </field>
+        </record>
+    </odoo>
 </odoo>
