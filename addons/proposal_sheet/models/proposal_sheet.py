@@ -23,8 +23,8 @@ class ProposalSheet(models.Model):
     state = fields.Selection([
         ('draft', 'Nháp'),
         ('reviewed_manager', 'QL Đang trình'),
-        ('reviewed_accounting', 'KTTH Đang trình'),
-        ('approved', 'Sếp Đang trình'),
+        ('reviewed_accounting', 'KTTH Đang kiểm tra'),
+        ('approved', 'Sếp Đang duyệt'),
         ('waiting_accounting_paid', 'Chờ chi tiền (KT)'),
         ('done', 'Hoàn tất'),
         ('rejected', 'Bị từ chối'),
@@ -240,6 +240,11 @@ class ProposalSheet(models.Model):
         message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được duyệt bởi <em>{self.env.user.name}</em>.</p>"
         partner_ids = self._get_approval_partners(include_manager=False, include_boss=False, include_accounting=True)
         self._send_notification(message, partner_ids)
+        if self.director_user_id:
+                self._close_activity(
+                    user=self.director_user_id,
+                    feedback="Đã duyệt"
+                )
 
     def action_waiting_accounting_paid(self):
         if self.state != 'waiting_accounting_paid':
@@ -300,6 +305,29 @@ class ProposalSheet(models.Model):
         partner_ids = self._get_approval_partners(include_manager=False, include_boss=True, include_accounting=False)
         # Gửi thông báo đến giám đốc
         self._send_notification(message, partner_ids)
+        
+        if self.director_user_id:
+            self.activity_schedule(
+                activity_type_id=self.env.ref('mail.mail_activity_data_todo').id,
+                user_id=self.director_user_id.id,
+                summary=f"Duyệt phiếu đề xuất {self.name}",
+                note=f"📌 Phiếu đề xuất <b>{self.name}</b> đang chờ duyệt.",
+                date_deadline=fields.Date.today(),
+            )
+    def _close_activity(self, user, xmlid='mail.mail_activity_data_todo', feedback="Đã xử lý"):
+            self.ensure_one()
+            act_type = self.env.ref(xmlid)
+
+            acts = self.env['mail.activity'].search([
+                ('res_model', '=', self._name),
+                ('res_id', '=', self.id),
+                ('activity_type_id', '=', act_type.id),
+                ('user_id', '=', user.id),
+                ('state', '=', 'planned'),
+            ])
+
+            if acts:
+                acts.action_feedback(feedback=feedback)
     def action_reset_to_draft(self):
         if self.state != 'rejected':
             raise UserError("Chỉ phiếu bị từ chối mới được reset về nháp.")
