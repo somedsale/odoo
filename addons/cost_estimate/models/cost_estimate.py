@@ -59,6 +59,28 @@ class CostEstimate(models.Model):
                 subtype_xmlid='mail.mt_comment',
                 message_type='comment'
             )
+            if rec.director_user_id:
+                rec.activity_schedule(
+                    'mail.mail_activity_data_todo',
+                    user_id=rec.director_user_id.id,
+                    summary=f"Duyệt dự toán {rec.name}",
+                    note=Markup(f"📌 Dự toán chi phí <b>{rec.name}</b> đang chờ duyệt."),
+                    date_deadline=fields.Date.today(),
+                )
+    def _close_activity(self, user, xmlid='mail.mail_activity_data_todo', feedback="Đã xử lý"):
+            self.ensure_one()
+            act_type = self.env.ref(xmlid)
+
+            acts = self.env['mail.activity'].search([
+                ('res_model', '=', self._name),
+                ('res_id', '=', self.id),
+                ('activity_type_id', '=', act_type.id),
+                ('user_id', '=', user.id),
+                ('state', '=', 'planned'),
+            ])
+
+            if acts:
+                acts.action_feedback(feedback=feedback)
     def action_approve(self):
         for rec in self:
             rec.state = 'approved'
@@ -73,6 +95,11 @@ class CostEstimate(models.Model):
                 subtype_xmlid='mail.mt_comment',
                 message_type='comment'
             )
+            if rec.director_user_id:
+                rec._close_activity(
+                    user=rec.director_user_id,
+                    feedback="Đã duyệt"
+                )
     def action_cancel(self):
         for rec in self:
             rec.state = 'cancel'
