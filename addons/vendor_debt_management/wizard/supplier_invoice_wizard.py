@@ -12,6 +12,7 @@ class SupplierInvoiceReportWizard(models.TransientModel):
             ('month', 'Theo tháng'),
             ('quarter', 'Theo quý'),
             ('year', 'Theo năm'),
+            ('view_all', 'Xem tất cả'),
         ],
         string="Kiểu lọc",
         required=True,

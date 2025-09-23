@@ -20,9 +20,9 @@
                     <field name="year" widget="yearpicker" invisible="filter_type != 'year'" required="filter_type == 'year'"/>
                 </group>
                 <footer>
-                    <button name="action_print_report" string="In báo cáo" type="object" class="btn-primary" icon="fa-print"/>
-                    <button name="action_view_report" string="Xem báo cáo" type="object" class="btn-primary" icon="fa-eye"/>
-                    <button name="action_view_all" string="Xem tất cả" type="object" class="btn-primary" icon="fa-list"/>
+                    <button name="action_print_report" string="In báo cáo" type="object" class="btn-primary" icon="fa-print" invisible="filter_type == 'view_all'"/>
+                    <button name="action_view_report" string="Xem báo cáo" type="object" class="btn-primary" icon="fa-eye" invisible="filter_type == 'view_all'" />
+                    <button name="action_view_all" string="Xem tất cả" type="object" class="btn-primary" icon="fa-list" invisible="filter_type != 'view_all'"/>
                     <button string="Hủy" class="btn-secondary" special="cancel" icon="fa-times"/>
                 </footer>
             </form>

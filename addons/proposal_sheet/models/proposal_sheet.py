@@ -22,9 +22,9 @@ class ProposalSheet(models.Model):
     currency_id = fields.Many2one('res.currency', string='Tiền tệ', required=True, default=lambda self: self.env.company.currency_id)
     state = fields.Selection([
         ('draft', 'Nháp'),
-        ('reviewed_manager', 'QL Đang duyệt'),
-        ('reviewed_accounting', 'KTTH Đang duyệt'),
-        ('approved', 'Sếp Đang duyệt'),
+        ('reviewed_manager', 'QL Đang trình'),
+        ('reviewed_accounting', 'KTTH Đang trình'),
+        ('approved', 'Sếp Đang trình'),
         ('waiting_accounting_paid', 'Chờ chi tiền (KT)'),
         ('done', 'Hoàn tất'),
         ('rejected', 'Bị từ chối'),
@@ -226,7 +226,7 @@ class ProposalSheet(models.Model):
             raise UserError("Chỉ phiếu đang xem xét mới được duyệt.")
         self.state = 'reviewed_accounting'
         approver_name = self.env.user.name
-        message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được duyệt bởi <em>{approver_name}</em>.</p>"
+        message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được trình bởi <em>{approver_name}</em>.</p>"
         partner_ids = self._get_approval_partners(include_manager=False, include_boss=False, include_accounting=True)
         self._send_notification(message, partner_ids)
 
@@ -234,7 +234,7 @@ class ProposalSheet(models.Model):
     def action_boss_approve(self):
         for record in self:
             if record.state != 'approved':
-                raise UserError("Chỉ phiếu đang ở trạng thái đang phê duyệt mới được gửi kế toán.")
+                raise UserError("Chỉ phiếu đang ở trạng thái đang kiểm tra mới được gửi kế toán.")
         self.state = 'waiting_accounting_paid'
         # Gửi thông báo đến kế toán
         message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được duyệt bởi <em>{self.env.user.name}</em>.</p>"
@@ -294,9 +294,9 @@ class ProposalSheet(models.Model):
         self._send_notification(message, partner_ids)
     def action_accounting_approve(self):
         if self.state != 'reviewed_accounting':
-            raise UserError("Chỉ phiếu đã được Quản lý duyệt mới được Kế toán duyệt.")
+            raise UserError("Chỉ phiếu đã được Quản lý trình mới được Kế toán kiểm tra.")
         self.state = 'approved'
-        message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được duyệt bởi <em>{self.env.user.name}</em>.</p>"        
+        message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được kiểm tra bởi <em>{self.env.user.name}</em>.</p>"        
         partner_ids = self._get_approval_partners(include_manager=False, include_boss=True, include_accounting=False)
         # Gửi thông báo đến giám đốc
         self._send_notification(message, partner_ids)
