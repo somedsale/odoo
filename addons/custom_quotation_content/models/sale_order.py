@@ -169,6 +169,16 @@ class SaleOrder(models.Model):
 
         # Nếu hợp lệ thì gọi xử lý gốc
         return super(SaleOrder, self).action_confirm()
+    
+    sales_category_id = fields.Many2one(
+        'sale.order.category',
+        string='Hạng mục bán hàng'
+    )
+class SaleOrderCategory(models.Model):
+    _name = 'sale.order.category'
+    _description = 'Hạng mục bán hàng'
+
+    name = fields.Char(string='Tên hạng mục', required=True)
 
 
 
