@@ -72,7 +72,7 @@ Email: <span t-esc="res_company.account_email"/>
             color: #000;
             text-align: center;
         }
-                                                                                                                                                                                                                                                                                                                                                                                                                                <!-- .table-item{
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <!-- .table-item{
             text-transform: uppercase;
             background-color: #E2EFDA;
             font-weight: bold;
@@ -95,137 +95,170 @@ Email: <span t-esc="res_company.account_email"/>
         .text-left   { text-align: left; }
 
         .num { white-space: nowrap; }
+        .total_row:hover{
+            background-color: #D9EAD3;
+        }
     </style>
     <h2 style="text-align:center; margin-bottom: 20px; font-weight:bold; font-size: 24px; text-transform: uppercase;">
-                    Báo cáo Hóa đơn Nhà cung cấp
-    </h2>
-    <table id="reportTable" class="styled-table" style="width: 100%; border-collapse: collapse; border: 1px solid #000;">
-        <colgroup>
-            <col style="width:4%"/>
+    Báo cáo Hóa đơn Nhà cung cấp
+        <t t-if="filter_type == 'day'">
+        (Từ ngày <span t-esc="date_from"/>
+ đến <span t-esc="date_to"/>
+)
+    </t>
+    <t t-if="filter_type == 'month'">
+        (Tháng <span t-esc="month"/>
+/    <span t-esc="year"/>
+)
+</t>
+<t t-if="filter_type == 'quarter'">
+        (Quý <span t-esc="quarter"/>
+/<span t-esc="year"/>
+)
+</t>
+<t t-if="filter_type == 'year'">
+        (Năm <span t-esc="year"/>
+)
+</t>
+<t t-if="not filter_type">
 
-            <col style="width:8%"/>
+</t>
+</h2>
+<table id="reportTable" class="styled-table" style="width: 100%; border-collapse: collapse; border: 1px solid #000;">
+<colgroup>
+<col style="width:4%"/>
 
-            <col style="width:8%"/>
+<col style="width:8%"/>
 
-            <col style="width:10%"/>
+<col style="width:8%"/>
 
-            <col style="width:10%"/>
+<col style="width:10%"/>
 
-            <col style="width:10%"/>
+<col style="width:10%"/>
 
-            <col style="width:10%"/>
+<col style="width:10%"/>
 
-            <col style="width:10%"/>
-            <col style="width:15%"/>
+<col style="width:10%"/>
 
-            <col style="width:10%"/>
+<col style="width:10%"/>
+<col style="width:15%"/>
 
-        </colgroup>
-        <thead>
-            <tr style="background:#C6E0B4; text-align:center;">
-                <th>STT</th>
-                <th>Ngày hóa đơn</th>
-                <th>Số hóa đơn</th>
-                <th>Nhà cung cấp</th>
-                <th>Tổng tiền</th>
-                <th>Dùng cho</th>
-                <th>Chi tiết</th>
-                <th>CT cần lấy</th>
-                <th>CTTT</th>
-                <th>Chứng từ kèm hóa đơn</th>
-            </tr>
-        </thead>
-        <tbody>
-            <t t-set="stt" t-value="0"/>
-            <t t-foreach="docs" t-as="inv">
-                <t t-set="stt" t-value="stt + 1"/>
-                <tr >
-                    <td class="text-center">
-                        <span t-esc="stt"/>
-                    </td>
-                    <td class="text-center">
-                        <span t-field="inv.date"/>
-                    </td>
-                    <td class="text-center">
-                        <span t-field="inv.name"/>
-                    </td>
-                    <td class="text-left">
-                        <span t-field="inv.partner_id.name"/>
-                    </td>
-                    <td class="text-right num">
-                        <t t-if="inv.currency_id and inv.currency_id.name == 'VND'">
-                            <t t-esc="inv.amount and ('{:,.0f}'.format(inv.amount).replace(',', '.'))" />
+<col style="width:10%"/>
+
+</colgroup>
+<thead>
+<tr style="background:#C6E0B4; text-align:center;">
+    <th class="num">STT</th>
+    <th>Ngày hóa đơn</th>
+    <th>Số hóa đơn</th>
+    <th>Nhà cung cấp</th>
+    <th>Tổng tiền</th>
+    <th>Dùng cho</th>
+    <th>Chi tiết</th>
+    <th>CT cần lấy</th>
+    <th>CTTT</th>
+    <th>Chứng từ kèm hóa đơn</th>
+</tr>
+</thead>
+<tbody>
+<tr style="font-weight:bold; text-align:right;" class="total-row">
+    <td colspan="4" class="text-center">Tổng</td>
+    <td class="text-right num">
+        <t t-esc="'{:,.0f}'.format(sum(inv.amount for inv in docs))"/>
  đ
-                        </t>
-                        <t t-else="">
-                            <span t-field="inv.amount" t-options="{'widget': 'monetary', 'display_currency': inv.currency_id}"/>
-                        </t>
-                    </td>
-                    <td class="text-center">
-                        <span t-field="inv.project_id.contract_id.name"/>
-                    </td>
-                    <td class="text-left">
-                        <span t-field="inv.note"/>
-                    </td>
-                    <td></td>
-                    <td>
-                        <t t-foreach="inv.account_payment_request_ids.filtered(lambda p: p.status_expense == 'paid')" t-as="pay">
-                            <t t-if="pay.payment_type == 'cash'">
-            TM 
-                                <t t-if="pay.date_payment">
-                                    <t t-esc="pay.date_payment.strftime('%d/%m')" />
-                                </t>
-                                <t t-if="inv.currency_id and inv.currency_id.name == 'VND'">
-                                    <t t-esc="pay.total and ('{:,.0f}'.format(pay.total).replace(',', '.'))" />
+    </td>
+    <td colspan="5"></td>
+</tr>
+<t t-set="stt" t-value="0"/>
+<t t-foreach="docs" t-as="inv">
+    <t t-set="stt" t-value="stt + 1"/>
+    <tr >
+        <td class="text-center">
+            <span t-esc="stt"/>
+        </td>
+        <td class="text-center num">
+            <span t-field="inv.date"/>
+        </td>
+        <td class="text-center">
+            <span t-field="inv.name"/>
+        </td>
+        <td class="text-left">
+            <span t-field="inv.partner_id.name"/>
+        </td>
+        <td class="text-right num">
+            <t t-if="inv.currency_id and inv.currency_id.name == 'VND'">
+                <t t-esc="inv.amount and ('{:,.0f}'.format(inv.amount).replace(',', '.'))" />
  đ
-                                </t>
-                            </t>
-
-                            <t t-if="pay.payment_type == 'bank'">
-                                <t t-if="pay.bankids">
-                                    <t t-esc="pay.bankids.bank_id.name"/>
-                                </t>
-                                <t t-else="">
-                CK
-                                </t>
-                                <t t-if="pay.date_payment">
-                                    <t t-esc="pay.date_payment.strftime('%d/%m')" />
-                                </t>
-                                <t t-if="inv.currency_id and inv.currency_id.name == 'VND'">
-                                    <t t-esc="pay.total and ('{:,.0f}'.format(pay.total).replace(',', '.'))" />
- đ
-                                </t>
-                            </t>
-                            <br/>
-                        </t>
-                    </td>
-                    <td></td>
-                </tr>
             </t>
-        </tbody>
-    </table>
-    <div style="page-break-inside: avoid; style: font-weight: bold">
-        <div class="row">
-            <div class="col-6" style="text-align:center;line-height:1.8">
-                <div>
+            <t t-else="">
+                <span t-field="inv.amount" t-options="{'widget': 'monetary', 'display_currency': inv.currency_id}"/>
+            </t>
+        </td>
+        <td class="text-center">
+            <span t-field="inv.project_id.contract_id.name"/>
+        </td>
+        <td class="text-left">
+            <span t-field="inv.note"/>
+        </td>
+        <td></td>
+        <td>
+            <t t-foreach="inv.account_payment_request_ids.filtered(lambda p: p.status_expense == 'paid')" t-as="pay">
+                <t t-if="pay.payment_type == 'cash'">
+            TM 
+                    <t t-if="pay.date_payment">
+                        <t t-esc="pay.date_payment.strftime('%d/%m')" />
+                    </t>
+                    <t t-if="inv.currency_id and inv.currency_id.name == 'VND'">
+                        <t t-esc="pay.total and ('{:,.0f}'.format(pay.total).replace(',', '.'))" />
+ đ
+                    </t>
+                </t>
+
+                <t t-if="pay.payment_type == 'bank'">
+                    <t t-if="pay.bankids">
+                        <t t-esc="pay.bankids.bank_id.name"/>
+                    </t>
+                    <t t-else="">
+                CK
+                    </t>
+                    <t t-if="pay.date_payment">
+                        <t t-esc="pay.date_payment.strftime('%d/%m')" />
+                    </t>
+                    <t t-if="inv.currency_id and inv.currency_id.name == 'VND'">
+                        <t t-esc="pay.total and ('{:,.0f}'.format(pay.total).replace(',', '.'))" />
+ đ
+                    </t>
+                </t>
+                <br/>
+            </t>
+        </td>
+        <td></td>
+    </tr>
+</t>
+</tbody>
+</table>
+<div style="page-break-inside: avoid; style: font-weight: bold;margin-top: 20px;">
+<div class="row">
+<div class="col-6" style="text-align:center;line-height:1.8">
+    <div>
     TP Hồ Chí Minh ngày <span t-esc="datetime.datetime.today().day"/>
     tháng <span t-esc="datetime.datetime.today().month"/>
     năm <span t-esc="datetime.datetime.today().year"/>
-        </div>
-        <div>
-            <span>Người lập biểu</span>
-        </div>
-        <div style="height:65px">
-            <t t-if="user_id.digital_signature">
-                <img t-att-src="'data:image/png;base64,' + (user_id.digital_signature.decode() if isinstance(user_id.digital_signature, bytes) else user_id.digital_signature)" style="max-height:65px; max-width:150px;" />
-            </t>
-        </div>
-        <div>
-            <span t-field="user_id.name"/>
-        </div>
-    </div>
-    <div class="col-6" style="text-align:center;line-height:1.8">
-        <div>
+</div>
+<div>
+<span>Người lập biểu</span>
+</div>
+<div style="height:65px">
+<t t-if="user_id.digital_signature">
+    <img t-att-src="'data:image/png;base64,' + (user_id.digital_signature.decode() if isinstance(user_id.digital_signature, bytes) else user_id.digital_signature)" style="max-height:65px; max-width:150px;" />
+</t>
+</div>
+<div>
+<span t-field="user_id.name"/>
+</div>
+</div>
+<div class="col-6" style="text-align:center;line-height:1.8">
+<div>
     TP Hồ Chí Minh ngày <span t-esc="datetime.datetime.today().day"/>
     tháng <span t-esc="datetime.datetime.today().month"/>
     năm <span t-esc="datetime.datetime.today().year"/>
@@ -234,14 +267,14 @@ Email: <span t-esc="res_company.account_email"/>
                                     Giám Đốc
 </div>
 <div style="height:65px">
-    <t t-set="director_group" t-value="env.ref('custom_director_role.group_director')"/>
-    <t t-set="director" t-value="env['res.users'].search([('groups_id', 'in', director_group.id)], limit=1)"/>
-    <t t-if="director and director.digital_signature">
-        <img t-att-src="'data:image/png;base64,' + (director.digital_signature.decode() if isinstance(director.digital_signature, bytes) else director.digital_signature)" style="max-height:65px; max-width:150px;" />
-    </t>
+<t t-set="director_group" t-value="env.ref('custom_director_role.group_director')"/>
+<t t-set="director" t-value="env['res.users'].search([('groups_id', 'in', director_group.id)], limit=1)"/>
+<t t-if="director and director.digital_signature">
+<img t-att-src="'data:image/png;base64,' + (director.digital_signature.decode() if isinstance(director.digital_signature, bytes) else director.digital_signature)" style="max-height:65px; max-width:150px;" />
+</t>
 </div>
 <div>
-    <span> Đỗ Minh Toàn </span>
+<span> Đỗ Minh Toàn </span>
 </div>
 </div>
 </div>
