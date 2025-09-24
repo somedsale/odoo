@@ -103,7 +103,7 @@ class ExpenseProposal(models.Model):
             ('res_id', '=', self.id),
             ('activity_type_id', '=', act_type.id),
             ('user_id', '=', user.id),
-            ('state', '=', 'planned'),
+            # ('state', '=', 'planned'),
         ])
 
         if acts:
