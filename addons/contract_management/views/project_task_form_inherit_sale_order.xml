@@ -9,10 +9,10 @@
             <!-- 2 smart buttons trên header -->
             <xpath expr="//group/group/field[@name=&apos;project_id&apos;]" position="after">
                 <!-- SO của Dự án để người dùng dễ nhìn bối cảnh -->
-                <field name="project_sale_order_id" readonly="1" options="{'no_open': False}"/>
+                <field name="project_sale_order_id" readonly="1" options="{'no_open': True}"/>
 
                 <!-- Chỉ cho chọn line thuộc SO của Dự án -->
-                <field name="sale_order_line_id" domain="[('order_id','=',project_sale_order_id)]" options="{'no_open': False}"/>
+                <field name="sale_order_line_id" domain="[('order_id','=',project_sale_order_id)]" options="{'no_open': False}" />
             </xpath>
 
         </field>

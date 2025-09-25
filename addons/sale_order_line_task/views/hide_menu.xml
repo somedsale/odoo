@@ -1,0 +1,18 @@
+<odoo>
+    <record id="crm.crm_menu_root" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <!-- Ẩn Chi phí -->
+    <record id="hr_expense.menu_hr_expense_root" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+    <record id="hr_timesheet.timesheet_menu_root" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <!-- Ẩn Link Tracker -->
+    <record id="utm.menu_link_tracker_root" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+</odoo>

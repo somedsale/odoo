@@ -226,7 +226,7 @@ class ProposalSheet(models.Model):
             raise UserError("Chỉ phiếu đang xem xét mới được duyệt.")
         self.state = 'reviewed_accounting'
         approver_name = self.env.user.name
-        message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được trình bởi <em>{approver_name}</em>.</p>"
+        message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được xác nhận bởi <em>{approver_name}</em>.</p>"
         partner_ids = self._get_approval_partners(include_manager=False, include_boss=False, include_accounting=True)
         self._send_notification(message, partner_ids)
 
@@ -323,7 +323,7 @@ class ProposalSheet(models.Model):
                 ('res_id', '=', self.id),
                 ('activity_type_id', '=', act_type.id),
                 ('user_id', '=', user.id),
-                ('state', '=', 'planned'),
+                # ('state', '=', 'planned'),
             ])
 
             if acts:
