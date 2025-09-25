@@ -11,7 +11,7 @@ action = {
     "res_model": "assign.user.wizard",
     "view_mode": "form",
     "target": "new",
-    "context": {"active_ids": records.ids},
+    "context": {"active_ids": records.ids, "default_user_ids": False},
 }
         </field>
     </record>

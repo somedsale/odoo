@@ -9,7 +9,7 @@
                 <field name="sale_order_id" invisible="1"/>
             </xpath>
             <header position="inside">
-                <button name="action_open_create_tasks_wizard" string="Tạo nhiều nhiệm vụ" type="object" class="btn-primary" invisible="sale_order_id"/>
+                <button name="action_open_create_tasks_wizard" string="Tạo nhiều nhiệm vụ" type="object" class="btn-primary" invisible="sale_order_id == False"/>
             </header>
         </field>
     </record>
