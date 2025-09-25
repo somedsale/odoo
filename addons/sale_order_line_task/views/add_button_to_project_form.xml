@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_project_form_inherit_create_tasks" model="ir.ui.view">
+        <field name="name">project.project.form.inherit.create.tasks</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <field name="sale_order_id" invisible="1"/>
+            </xpath>
+            <header position="inside">
+                <button name="action_open_create_tasks_wizard" string="Tạo nhiều nhiệm vụ" type="object" class="btn-primary" invisible="sale_order_id == False"/>
+            </header>
+        </field>
+    </record>
+</odoo>
