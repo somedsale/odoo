@@ -57,10 +57,44 @@
                             margin-left: 4px; /* Tạo khoảng cách với nhãn */
                             color: #000 !important;
                         }         
-                        .signature table tr td{
-                           border: none !important;
-                           padding: 5px 10px;
-                        }
+.signature table { table-layout: fixed; border-color: white; border-style: none; outline: none; border-collapse: collapse; width: 100%; }
+.signature td { border-color: white !important; border-style: none; outline: none; border-collapse: collapse; }
+.signature tr { border-color: white !important; border-style: none; outline: none; border-collapse: collapse; }
+.signature td.sig-cell{
+  width: 25%;
+  vertical-align: top !important;
+  text-align: center;
+  padding: 10px 8px !important;
+}
+.signature .role{
+  display:block;
+  font-weight:700;
+  margin-top:6px;
+}
+  .signature .sign-slot {
+    min-height: 80px;               /* chừa chỗ trống ký tay */
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;                      /* khoảng cách giữa các dòng */
+  }
+  .signature .sign-hint {
+    font-style: italic;
+    line-height: 1.4;               /* cao hơn 1 chút */
+    margin-bottom: 6px;             /* cách dòng dưới */
+  }
+  .signature .confirm-stamp {
+    font-weight: bold;
+    text-transform: capitalize;
+    line-height: 1.4;
+    height: 40px;                  /* giữ chỗ nếu có dấu xác nhận */
+  }
+  .signature .sign-name {
+    font-style: italic;
+    line-height: 1.4;
+  }
                     </style>
 
                     <!-- Hàm format tiền -->
@@ -225,9 +259,22 @@
                         </div>
 
                         <!-- Chữ ký -->
+                        <!-- Chữ ký -->
                         <div class="signature" style="margin-top:50px;border:none;font-size:16px;">
+                            <!-- Map state -> index để so sánh cộng dồn -->
+                            <t t-set="stage_index" t-value="{
+       'draft': 0,
+       'reviewed_manager': 1,
+       'reviewed_accounting': 2,
+       'approved': 3,
+       'waiting_accounting_paid': 4,
+       'done': 5,
+       'rejected': -1,
+       'canceled': -1
+     }.get(o.state, 0)"/>
+
                             <table style="width:100%; text-align:center; border-color: white; border-style: none; outline: none; border-collapse: collapse;">
-                                <tr style ="border:none">
+                                <tr style="border:none padding-bottom:20px;">
                                     <td>
                                         <t t-esc="datetime.date.today().strftime('%d/%m/%Y')"/>
                                     </td>
@@ -241,7 +288,8 @@
                                         <t t-esc="datetime.date.today().strftime('%d/%m/%Y')"/>
                                     </td>
                                 </tr>
-                                <tr style ="border:none">
+
+                                <tr style="border:none">
                                     <td>
                                         <strong>NGƯỜI ĐỀ XUẤT</strong>
                                     </td>
@@ -255,23 +303,71 @@
                                         <strong>GIÁM ĐỐC</strong>
                                     </td>
                                 </tr>
-                                <tr style ="border:none">
-                                    <td>
-                                        <em>(Ký, họ tên)</em>
+
+                                <tr style="border:none">
+                                    <td class="sig-cell">
+                                        <div class="sign-hint">(Ký, họ tên)</div>
+                                        <!-- reviewed_manager trở lên -->
+                                        <div class="sign-slot">
+                                            <div class="confirm-stamp">
+                                                <t t-if="stage_index &gt;= 1">
+                                            <i>(Đã xác nhận)</i>
+                                                </t>
+                                            </div>
+                                            <div class="sign-name">
+                                                <t t-esc="o.requested_by.name or ''"/>
+                                            </div>
+                                        </div>
                                     </td>
-                                    <td>
-                                        <em>(Ký, họ tên)</em>
+
+                                    <td class="sig-cell">
+                                        <div class="sign-hint">(Ký, họ tên)</div>
+                                        <!-- reviewed_accounting trở lên -->
+                                        <div class="sign-slot">
+                                            <div class="confirm-stamp">
+                                                <t t-if="stage_index &gt;= 2">
+                                            <i>(Đã xác nhận)</i>
+                                                </t>
+                                            </div>
+                                            <div class="sign-name">
+                                                <t t-esc="(o.manager_id and o.manager_id.name) or ''"/>
+                                            </div>
+                                        </div>
                                     </td>
-                                    <td>
-                                        <em>(Ký, họ tên)</em>
+
+                                    <td class="sig-cell">
+                                        <div class="sign-hint">(Ký, họ tên)</div>
+                                        <!-- approved trở lên -->
+                                        <div class="sign-slot">
+                                            <div class="confirm-stamp">
+                                                <t t-if="stage_index &gt;= 3">
+                                            <i>(Đã xác nhận)</i>
+                                                </t>
+                                            </div>
+                                            <div class="sign-name">
+      Đặng Thị Kiều Oanh
+                                            </div>
+                                        </div>
                                     </td>
-                                    <td>
-                                        <em>(Ký, họ tên)</em>
+
+                                    <td class="sig-cell">
+                                        <div class="sign-hint">(Ký, họ tên)</div>
+                                        <!-- waiting_accounting_paid trở lên -->
+                                        <div class="sign-slot">
+                                            <div class="confirm-stamp">
+                                                <t t-if="stage_index &gt;= 4">
+                                            <i>(Đã xác nhận)</i>
+                                                </t>
+                                            </div>
+                                            <div class="sign-name">
+                                                <t t-esc="o.director_user_id and o.director_user_id.name or ''"/>
+                                            </div>
+                                        </div>
                                     </td>
                                 </tr>
+
                             </table>
                         </div>
-
                         <!-- Ngắt trang -->
                         <t t-if="(idx + 1) &lt; len(docs)">
                             <div style="page-break-before: always;"></div>
