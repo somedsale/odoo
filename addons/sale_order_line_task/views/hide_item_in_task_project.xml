@@ -1,0 +1,25 @@
+<odoo>
+    <record id="view_task_tree_inherit_hide_columns" model="ir.ui.view">
+        <field name="name">project.task.tree.hide.columns</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_tree2"/>
+        <!-- Tree view mặc định -->
+        <field name="arch" type="xml">
+            <!-- Ẩn cột Hoạt động tiếp theo -->
+            <xpath expr="//field[@name='activity_ids']" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='effective_hours']" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </xpath>
+
+            <!-- Ẩn cột Thẻ -->
+            <xpath expr="//field[@name='tag_ids']" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='stage_id']" position="attributes">
+                <attribute name="widget">badge</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
