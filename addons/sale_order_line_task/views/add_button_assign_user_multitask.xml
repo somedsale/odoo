@@ -8,6 +8,7 @@
         <field name="code">
 action = {
     "type": "ir.actions.act_window",
+    "name": "Phân công người phụ trách",
     "res_model": "assign.user.wizard",
     "view_mode": "form",
     "target": "new",
