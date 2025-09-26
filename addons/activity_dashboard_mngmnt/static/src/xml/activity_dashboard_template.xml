@@ -31,7 +31,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- <div class="col-sm-6 col-md-4">
+                <div class="col-sm-6 col-md-4">
                     <div class="activity-dashboard-card planned_activity" t-on-click="show_planned_activities">
                         <div class="activity-dashboard-card__icon-container d-flex">
                             <i class="fa fa-clock-o text-mauve"/>
@@ -40,10 +40,10 @@
                             <t t-esc="len_planned"/>
                         </div>
                         <div class="dashboard-card__detail">
-                            <h2 class="head">Planned Activities</h2>
+                            <h2 class="head">Công việc đang đợi duyệt</h2>
                         </div>
                     </div>
-                </div> -->
+                </div>
                 <div class="col-sm-6 col-md-4">
                     <div class="activity-dashboard-card completed_activity" t-on-click="show_completed_activities">
                         <div class="activity-dashboard-card__icon-container d-flex">
@@ -98,13 +98,11 @@
                 </div> -->
             </div>
         </section>
-        <!-- <div class="table_activity table_planned_activity">
+        <div class="table_activity table_planned_activity">
             <table id="planned-table" cellspacing="10" width="100%">
                 <thead>
                     <tr>
-                        <th colspan="6" class="activity_head">Planned
-                            Activities
-                        </th>
+                        <th colspan="6" class="activity_head">Công việc đang đợi duyệt</th>
                     </tr>
                     <t t-if="planned_activity == ''">
                         <td>No Data Available</td>
@@ -133,7 +131,7 @@
                                 <t t-esc="line['user_id']['1']"/>
                             </td>
                             <td>
-                                <t t-esc="line['date_deadline']"/>
+                                <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
                             </td>
                             <td>
                                 <button t-att-value="line['id']" t-on-click="click_view" class="click-view">
@@ -150,13 +148,12 @@
                 </t>
             </table>
             <div id="pagination-container"/>
-        </div> -->
+        </div>
         <div class="table_activity table_today_activity">
             <table cellspacing="10" width="100%">
                 <thead>
                     <tr>
-                        <th colspan="6" class="activity_head">Today's
-                            Activities
+                        <th colspan="6" class="activity_head">Today's Activities
                         </th>
                     </tr>
                     <t t-if="today_activity == ''">
@@ -186,7 +183,7 @@
                                 <t t-esc="line['user_id']['1']"/>
                             </td>
                             <td>
-                                <t t-esc="line['date_deadline']"/>
+                                <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
                             </td>
                             <td>
                                 <button t-att-value="line['id']" class="click-view" t-on-click="click_view">
@@ -207,8 +204,7 @@
             <table cellspacing="10" width="100%">
                 <thead>
                     <tr>
-                        <th colspan="6" class="activity_head">Completed
-                            Activities
+                        <th colspan="6" class="activity_head">Completed Activities
                         </th>
                     </tr>
                     <t t-if="done_activity == ''">
@@ -238,7 +234,7 @@
                                 <t t-esc="line['user_id']['1']"/>
                             </td>
                             <td>
-                                <t t-esc="line['date_deadline']"/>
+                                <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
                             </td>
                             <td>
                                 <button t-att-value="line['id']" class="click-view" t-on-click="click_view">
@@ -259,9 +255,7 @@
             <table cellspacing="10" width="100%">
                 <thead>
                     <tr>
-                        <th colspan="6" class="activity_head">Overdue
-                            Activities
-                        </th>
+                        <th colspan="6" class="activity_head">Overdue Activities</th>
                     </tr>
                     <t t-if="overdue_activity == ''">
                         <td>No Data Available</td>
@@ -290,7 +284,7 @@
                                 <t t-esc="line['user_id']['1']"/>
                             </td>
                             <td>
-                                <t t-esc="line['date_deadline']"/>
+                                <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
                             </td>
                             <td>
                                 <button t-att-value="line['id']" t-on-click="click_view" class="click-view">
