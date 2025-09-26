@@ -13,7 +13,8 @@
         "views/add_button_to_project_form.xml",
         "views/add_button_assign_user_multitask.xml",
         "views/wizard_assign_user_task.xml",
-        "views/hide_menu.xml"
+        "views/hide_menu.xml",
+        "views/hide_item_in_task_project.xml",
     ],
     "installable": True,
     "application": False,
