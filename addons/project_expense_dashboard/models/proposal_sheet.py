@@ -17,3 +17,11 @@ class ProposalSheet(models.Model):
                 ('project_id', '=', self.project_id.id),
             ], limit=1)
             self.cost_estimate_line_id = line.id if line else False
+    other_estimate_item = fields.Many2one(
+        comodel_name="estimate.item.other",
+        string="Hạng mục khác",
+    )
+    estimate_choice = fields.Selection([
+        ("estimate", "Chọn từ dự toán"),
+        ("other", "Khác"),
+    ], string="Loại hạng mục", default="estimate", required=True)
