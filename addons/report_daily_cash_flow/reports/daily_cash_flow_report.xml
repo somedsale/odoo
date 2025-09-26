@@ -207,6 +207,11 @@
                                                 -                                                
                                                 <t t-esc="payment.project_id.name"/>
                                             </t>
+                                            <t t-else="">
+                                                <t t-if="payment.project_id">
+                                                    <t t-esc="payment.project_id.name"/>
+                                                </t>
+                                            </t>
                                         </t>
                                         <t t-else="">
                                             <t t-if ="payment.expense_category_id">
