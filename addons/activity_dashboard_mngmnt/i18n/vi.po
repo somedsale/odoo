@@ -63,7 +63,7 @@ msgstr "Loại công việc"
 #: code:addons/activity_dashboard_mngmnt/static/src/xml/activity_dashboard_template.xml:0
 #, python-format
 msgid "All Activities"
-msgstr "Tất cả hoạt động"
+msgstr "Tất cả công việc"
 
 #. module: activity_dashboard_mngmnt
 #. odoo-javascript
@@ -212,14 +212,14 @@ msgstr "Xem phiếu"
 #. module: activity_dashboard_mngmnt
 #: model:ir.model.fields.selection,name:activity_dashboard_mngmnt.selection__mail_activity__state__overdue
 msgid "Overdue"
-msgstr ""
+msgstr "Công việc quá hạn"
 
 #. module: activity_dashboard_mngmnt
 #. odoo-javascript
 #: code:addons/activity_dashboard_mngmnt/static/src/xml/activity_dashboard_template.xml:0
 #, python-format
 msgid "Overdue Activities"
-msgstr ""
+msgstr "Công việc quá hạn"
 
 #. module: activity_dashboard_mngmnt
 #. odoo-javascript
@@ -227,19 +227,19 @@ msgstr ""
 #: code:addons/activity_dashboard_mngmnt/static/src/xml/activity_dashboard_template.xml:0
 #, python-format
 msgid "Overdue Activities"
-msgstr "Quá hạn"
+msgstr "Công việc quá hạn"
 
 #. module: activity_dashboard_mngmnt
 #: model:ir.model.fields.selection,name:activity_dashboard_mngmnt.selection__mail_activity__state__planned
 msgid "Planned"
-msgstr ""
+msgstr "Kế hoạch"
 
 #. module: activity_dashboard_mngmnt
 #. odoo-javascript
 #: code:addons/activity_dashboard_mngmnt/static/src/js/activity_dashboard.js:0
 #, python-format
 msgid "Planned Activities"
-msgstr "Kế hoạch"
+msgstr "Đang đợi duyệt"
 
 #. module: activity_dashboard_mngmnt
 #: model:ir.model.fields,help:activity_dashboard_mngmnt.field_mail_activity__activity_tag_ids
@@ -287,7 +287,7 @@ msgstr ""
 #: code:addons/activity_dashboard_mngmnt/static/src/xml/activity_dashboard_template.xml:0
 #, python-format
 msgid "Today's Activities"
-msgstr "Hoạt động hôm nay"
+msgstr "Công việc hôm nay"
 
 #. module: activity_dashboard_mngmnt
 #. odoo-javascript

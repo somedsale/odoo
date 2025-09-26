@@ -69,7 +69,7 @@ class WizardCreateTasks(models.TransientModel):
 
         # đóng wizard
         # return {"type": "ir.actions.act_window_close"}
-        action = self.env.ref("project.act_project_project_2_project_task_all").read()[0]
+        action = self.env.ref("project.act_project_project_2_project_task_all").sudo().read()[0]
         action.update({
             "domain": [("project_id", "=", project.id)],
             "context": dict(self.env.context, default_project_id=project.id),

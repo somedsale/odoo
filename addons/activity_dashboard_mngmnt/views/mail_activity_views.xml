@@ -8,7 +8,7 @@
             <form string="Log an Activity" create="false">
                 <header>
                     <field name="id" invisible="1"/>
-                    <button invisible="chaining_type == 'trigger' or state == 'done'" string="Mark as Done" name="action_done" type="object" class="btn-secondary" data-hotkey="w" context="{'mail_activity_quick_update': True}"/>
+                    <!-- <button invisible="chaining_type == 'trigger' or state == 'done'" string="Mark as Done" name="action_done" type="object" class="btn-secondary" data-hotkey="w" context="{'mail_activity_quick_update': True}"/> -->
                     <field name="state" widget="statusbar" statusbar_visible="planned,today,done"/>
                 </header>
                 <sheet string="Activity">
