@@ -9,6 +9,7 @@
                 <field name="unit" widget="selection" options="{'no_create': True}" string="Đơn vị"/>
                 <field name="category_id"/>
                 <field name="vendor_id"/>
+                <field name="tax_id"/>
                 <field name ="price_unit"/>
             </tree>
         </field>
@@ -26,6 +27,7 @@
                         <field name="unit" options="{'no_create': True}" string="Đơn vị"/>
                         <field name="category_id"/>
                         <field name="vendor_id"/>
+                        <field name="tax_id"/>
                         <field name ="price_unit"/>
                     </group>
                 </sheet>

@@ -48,6 +48,7 @@ class ProposalSheet(models.Model):
         copy=True
     )
     amount_total = fields.Float(string='Tổng Thành Tiền', compute='_compute_amount_total', store=True)
+    amount_total_taxes = fields.Float(string='Tổng Thành Tiền (Có Thuế)', compute='_compute_amount_total_taxes', store=True)
     take_note = fields.Text(string='Ghi Chú', tracking=True)
     treasurer_confirmed_note = fields.Char(
         compute='_compute_treasurer_confirmed_note', store=False
@@ -74,6 +75,13 @@ class ProposalSheet(models.Model):
                 sheet.amount_total = sum(line.price_total for line in sheet.expense_line_ids)
             else:
                 sheet.amount_total = 0.0
+    @api.depends('type', 'material_line_ids.price_total_taxed')
+    def _compute_amount_total_taxes(self):
+        for sheet in self:
+            if sheet.type == 'material':
+                sheet.amount_total_taxes = sum(line.price_total_taxed for line in sheet.material_line_ids)
+            else:
+                sheet.amount_total_taxes = 0.0
     show_button_submit = fields.Boolean(compute='_compute_show_buttons')
     show_button_manager_approve = fields.Boolean(compute='_compute_show_buttons')
     show_button_accounting_approve = fields.Boolean(compute='_compute_show_buttons')
