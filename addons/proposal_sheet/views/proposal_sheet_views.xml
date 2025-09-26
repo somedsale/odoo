@@ -31,11 +31,11 @@
 
                 </header>
                 <sheet>
-                        <!-- boolean gốc ẩn đi -->
-                        <field name="treasurer_confirmed" invisible="1"/>
+                    <!-- boolean gốc ẩn đi -->
+                    <field name="treasurer_confirmed" invisible="1"/>
 
-                        <!-- Dòng thông báo ở cột value (không nhãn) -->
-                        <widget name="web_ribbon" title="Đã xác nhận" bg_color="bg-success" invisible="not treasurer_confirmed"/>
+                    <!-- Dòng thông báo ở cột value (không nhãn) -->
+                    <widget name="web_ribbon" title="Đã xác nhận" bg_color="bg-success" invisible="not treasurer_confirmed"/>
                     <div class="oe_title">
                         <h1>
                             <field name="name" readonly="1"/>
@@ -48,6 +48,7 @@
                             <field name="requested_by" widget="many2one_avatar_user" readonly="1" options="{'no_open':True}"/>
                             <field name="take_note" placeholder="Ghi chú về phiếu đề xuất" readonly="state != 'draft'"/>
                             <field name="amount_total" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="amount_total_taxes" string="Tổng (sau thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                             <field name="currency_id" invisible="1"/>
                         </group>
                         <group>
@@ -65,10 +66,13 @@
                                     <field name="material_id" required="1" />
                                     <field name="quantity" required="1"/>
                                     <field name="unit" />
-                                    <field name="estimate_price_unit" string="Giá dự toán" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
+                                    <field name="estimate_price_unit" string="Giá dự toán" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng" optional="hide"/>
+                                    <field name="estimate_price_total" string="Tổng giá dự toán" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng" optional="hide"/>
                                     <field name="price_unit" string="Giá đề xuất" required="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
-                                    <field name="estimate_price_total" string="Tổng giá dự toán" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
                                     <field name="price_total" string="Tổng giá đề xuất" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
+                                    <field name="price_unit_taxed" string="Giá đề xuất (sau thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" optional="hide" sum="Tổng"/>
+                                    <field name="price_total_taxed" string="Thành tiền (sau thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" optional="hide" sum="Tổng"/>
+                                    <field name="tax_id" />
                                     <field name="vendor_id" placeholder="Nhà cung cấp đề xuất" required="1"/>
                                     <field name="description"/>
                                     <field name="currency_id" invisible="1" optional="hide"/>

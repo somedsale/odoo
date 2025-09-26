@@ -31,6 +31,31 @@ class ProposalMaterialLine(models.Model):
     estimate_price_total = fields.Float(string='Giá Dự Toán', compute='_compute_estimate_price_total', store=False, readonly=True)
     description = fields.Text(string='Ghi Chú')
     type = fields.Selection([('material', 'Vật Tư')], default='material', required=True, readonly=True)
+    tax_id = fields.Many2one('account.tax', string='Thuế áp dụng', compute='_compute_tax_material', store=True)
+    price_unit_taxed = fields.Float(string='Đơn giá (sau thuế)', compute='_compute_price_taxed', store=True)
+    price_total_taxed = fields.Float(string='Thành tiền (sau thuế)', compute='_compute_price_taxed', store=True)
+    @api.depends('material_id')
+    def _compute_tax_material(self):
+        if self.material_id:
+            self.tax_id = self.material_id.tax_id.id if self.material_id.tax_id else False
+        else:
+            self.tax_id = False
+    @api.depends('price_unit', 'quantity', 'tax_id')
+    def _compute_price_taxed(self):
+        for line in self:
+            if line.tax_id:
+                taxes = line.tax_id.compute_all(
+                    line.price_unit,
+                    line.currency_id,
+                    line.quantity,
+                    product=None,
+                    partner=line.vendor_id
+                )
+                line.price_unit_taxed = taxes['total_included'] / line.quantity if line.quantity else 0.0
+                line.price_total_taxed = taxes['total_included']
+            else:
+                line.price_unit_taxed = line.price_unit
+                line.price_total_taxed = line.price_total
 
     @api.depends('quantity', 'estimate_price_unit')
     def _compute_estimate_price_total(self):
