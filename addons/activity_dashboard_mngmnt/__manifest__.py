@@ -31,10 +31,9 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': ['mail','hr'],
+    'depends': ['mail'],
     'data': [
         'security/ir.model.access.csv',
-        'security/employee_rule.xml',
         'views/activity_tag_views.xml',
         'views/activity_dashbord_views.xml',
         'views/mail_activity_views.xml'

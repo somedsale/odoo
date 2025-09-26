@@ -6,7 +6,9 @@
         <field name="arch" type="xml">
             <!-- Chèn sau project_id -->
             <xpath expr="//group/group/field[@name='project_id']" position="after">
-                <field name="cost_estimate_line_id" options="{'no_create': True}" domain="[('project_id', '=', project_id)]" string="Hạng mục dự toán" readonly="state != 'draft'"/>
+                <field name="estimate_choice" readonly="state != 'draft'"/>
+                <field name="cost_estimate_line_id" invisible="estimate_choice == 'other'" options="{'no_create': True}" domain="[('project_id', '=', project_id)]" string="Hạng mục dự toán" readonly="state != 'draft'"/>
+                <field name="other_estimate_item" invisible="estimate_choice != 'other'" required="estimate_choice == 'other'"/>
             </xpath>
         </field>
     </record>
