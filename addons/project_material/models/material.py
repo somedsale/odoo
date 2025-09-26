@@ -7,6 +7,7 @@ class ProjectMaterial(models.Model):
     name = fields.Char(string='Tên vật tư', required=True)
     code = fields.Char(string='Mã vật tư')
     description = fields.Text(string='Mô tả')
+    tax_id = fields.Many2one('account.tax', string='Thuế VAT', domain=[('type_tax_use', '=', 'purchase')])
     unit = fields.Many2one('uom.uom', string='Đơn vị', required=True)
     category_id = fields.Many2one('material.category', string='Danh mục')
     price_unit = fields.Float(string='Đơn giá', digits=(16, 0), default=0.0)
@@ -50,8 +51,8 @@ class ProjectMaterial(models.Model):
             'purchase_ok': True,
             'sale_ok': False,
             'categ_id': material_category.id,
-            # 'list_price': material.price_unit,   # Giá bán (nếu có)
-            # 'standard_price': material.price_unit,  # Giá vốn
+            'supplier_taxes_id': [(6, 0, material.tax_id.ids)],
+            'list_price': material.price_unit,   # Giá bán (nếu có)
         }
         product = self.env['product.product'].create(product_vals)
 
