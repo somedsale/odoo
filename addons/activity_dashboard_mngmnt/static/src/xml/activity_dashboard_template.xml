@@ -45,19 +45,6 @@
                     </div>
                 </div>
                 <div class="col-sm-6 col-md-4">
-                    <div class="activity-dashboard-card completed_activity" t-on-click="show_completed_activities">
-                        <div class="activity-dashboard-card__icon-container d-flex">
-                            <i class="fa fa-clock-o text-mauve"/>
-                        </div>
-                        <div>
-                            <t t-esc="len_done"/>
-                        </div>
-                        <div class="dashboard-card__detail">
-                            <h2 class="head">Completed Activities</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-md-4">
                     <div class="activity-dashboard-card today_activity" t-on-click="show_today_activities">
                         <div class="activity-dashboard-card__icon-container d-flex">
                             <i class="fa fa-clock-o text-mauve"/>
@@ -80,6 +67,19 @@
                         </div>
                         <div class="dashboard-card__detail">
                             <h2 class="head">Overdue Activities</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="activity-dashboard-card completed_activity" t-on-click="show_completed_activities">
+                        <div class="activity-dashboard-card__icon-container d-flex">
+                            <i class="fa fa-clock-o text-mauve"/>
+                        </div>
+                        <div>
+                            <t t-esc="len_done"/>
+                        </div>
+                        <div class="dashboard-card__detail">
+                            <h2 class="head">Completed Activities</h2>
                         </div>
                     </div>
                 </div>
@@ -204,6 +204,56 @@
             <table cellspacing="10" width="100%">
                 <thead>
                     <tr>
+                        <th colspan="6" class="activity_head">Overdue Activities</th>
+                    </tr>
+                    <t t-if="overdue_activity == ''">
+                        <td>No Data Available</td>
+                    </t>
+                </thead>
+                <t t-if="overdue_activity != ''">
+                    <thead class="table table-bordered mt32">
+                        <tr class="table_head">
+                            <th class="table_head_">Name</th>
+                            <th class="table_head_">Activity Type</th>
+                            <th class="table_head_">Assigned to</th>
+                            <th class="table_head_">Dead Line Date</th>
+                            <th class="table_head_">View</th>
+                            <th class="table_head_">Origin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="overdue_activity" t-as="line" t-key="line.id">
+                            <td style="width:25%">
+                                <t t-esc="line['display_name']"/>
+                            </td>
+                            <td>
+                                <t t-esc="line['activity_type_id']['1']"/>
+                            </td>
+                            <td>
+                                <t t-esc="line['user_id']['1']"/>
+                            </td>
+                            <td>
+                                <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
+                            </td>
+                            <td>
+                                <button t-att-value="line['id']" t-on-click="click_view" class="click-view">
+                                    View
+                                </button>
+                            </td>
+                            <td>
+                                <button t-att-value="line['id']" class="click-origin-view" t-on-click="click_origin">
+                                    Origin
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </t>
+            </table>
+        </div>
+        <div class="table_activity table_main_view">
+            <table cellspacing="10" width="100%">
+                <thead>
+                    <tr>
                         <th colspan="6" class="activity_head">Completed Activities
                         </th>
                     </tr>
@@ -243,56 +293,6 @@
                             </td>
                             <td>
                                 <button t-att-value="line['id']" t-on-click="click_origin" class="click-origin-view">
-                                    Origin
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </t>
-            </table>
-        </div>
-        <div class="table_activity table_main_view">
-            <table cellspacing="10" width="100%">
-                <thead>
-                    <tr>
-                        <th colspan="6" class="activity_head">Overdue Activities</th>
-                    </tr>
-                    <t t-if="overdue_activity == ''">
-                        <td>No Data Available</td>
-                    </t>
-                </thead>
-                <t t-if="overdue_activity != ''">
-                    <thead class="table table-bordered mt32">
-                        <tr class="table_head">
-                            <th class="table_head_">Name</th>
-                            <th class="table_head_">Activity Type</th>
-                            <th class="table_head_">Assigned to</th>
-                            <th class="table_head_">Dead Line Date</th>
-                            <th class="table_head_">View</th>
-                            <th class="table_head_">Origin</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr t-foreach="overdue_activity" t-as="line" t-key="line.id">
-                            <td style="width:25%">
-                                <t t-esc="line['display_name']"/>
-                            </td>
-                            <td>
-                                <t t-esc="line['activity_type_id']['1']"/>
-                            </td>
-                            <td>
-                                <t t-esc="line['user_id']['1']"/>
-                            </td>
-                            <td>
-                                <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
-                            </td>
-                            <td>
-                                <button t-att-value="line['id']" t-on-click="click_view" class="click-view">
-                                    View
-                                </button>
-                            </td>
-                            <td>
-                                <button t-att-value="line['id']" class="click-origin-view" t-on-click="click_origin">
                                     Origin
                                 </button>
                             </td>
