@@ -59,3 +59,20 @@ class ProjectMaterial(models.Model):
         # Link lại
         material.product_id = product.id
         return material
+    def write(self, vals):
+        res = super(ProjectMaterial, self).write(vals)
+        for material in self:
+            if material.product_id:
+                product_vals = {}
+                if 'name' in vals:
+                    product_vals['name'] = material.name
+                if 'unit' in vals:
+                    product_vals['uom_id'] = material.unit.id
+                    product_vals['uom_po_id'] = material.unit.id
+                if 'price_unit' in vals:
+                    product_vals['list_price'] = material.price_unit
+                if 'tax_id' in vals:
+                    product_vals['supplier_taxes_id'] = [(6, 0, material.tax_id.ids)]
+                if product_vals:
+                    material.product_id.write(product_vals)
+        return res
