@@ -7,9 +7,9 @@
                 <field name="partner_id"/>
                 <field name="total_contracts"/>
                 <field name="total_invoices"/>
-                <field name="paid_amount"/>
-                <field name="residual_amount"/>
-                <field name="advance_amount"/>
+                <field name="paid_amount" sum="Tổng"/>
+                <field name="residual_amount" sum="Tổng"/>
+                <field name="advance_amount" sum="Tổng"/>
                 <field name="due_days" column_invisible="1"/>
                 <field name="due_days_html" widget="html" readonly="1"/>
                 <field name="currency_id" optional="hide" invisible="1"/>
