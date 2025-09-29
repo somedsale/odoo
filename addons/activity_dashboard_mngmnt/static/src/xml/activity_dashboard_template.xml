@@ -95,10 +95,30 @@
 
                 <!-- Sidebar -->
                 <aside class="side-tabs" role="tablist" aria-label="Bộ lọc trạng thái công việc">
-                    <label for="tabbtn-planned" class="tab-pill">Đang đợi duyệt</label>
-                    <label for="tabbtn-today" class="tab-pill">Hôm nay</label>
-                    <label for="tabbtn-overdue" class="tab-pill">Quá hạn</label>
-                    <label for="tabbtn-done" class="tab-pill">Hoàn thành</label>
+                    <label for="tabbtn-planned" class="tab-pill">
+        Đang đợi duyệt
+                        <span class="tab-badge">
+                            <t t-esc="len_planned"/>
+                        </span>
+                    </label>
+                    <label for="tabbtn-today" class="tab-pill">
+        Hôm nay
+                        <span class="tab-badge">
+                            <t t-esc="len_today"/>
+                        </span>
+                    </label>
+                    <label for="tabbtn-overdue" class="tab-pill">
+        Quá hạn
+                        <span class="tab-badge">
+                            <t t-esc="len_overdue"/>
+                        </span>
+                    </label>
+                    <label for="tabbtn-done" class="tab-pill">
+        Hoàn thành
+                        <span class="tab-badge">
+                            <t t-esc="len_done"/>
+                        </span>
+                    </label>
                 </aside>
 
                 <!-- Nội dung -->
@@ -126,6 +146,7 @@
                     <table class="table table-modern" width="100%">
                         <thead>
                             <tr class="table_head">
+                                <th class="text-center" style="width:5%">STT</th>
                                 <th style="width:28%">Tên</th>
                                 <th>Loại công việc</th>
                                 <th>Phân công cho</th>
@@ -136,22 +157,25 @@
                         </thead>
                         <tbody>
                             <tr t-foreach="planned_activity" t-as="line" t-key="line.id">
-                                <td>
+                                <td data-label="STT" class="text-center">
+                                    <t t-esc="line_index + 1"/>
+                                </td>
+                                <td data-label="Tên">
                                     <t t-esc="line['display_name']"/>
                                 </td>
-                                <td>
+                                <td data-label="Loại công việc">
                                     <t t-esc="line['activity_type_id'] ? line['activity_type_id'][1] : ''"/>
                                 </td>
-                                <td>
+                                <td data-label="Phân công cho">
                                     <t t-esc="line['user_id'] ? line['user_id'][1] : ''"/>
                                 </td>
-                                <td>
+                                <td data-label="Ngày tới hạn">
                                     <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
                                 </td>
-                                <td>
+                                <td data-label="Xem">
                                     <button t-att-value="line['id']" t-on-click="click_view" class="btn-pill click-view">Xem</button>
                                 </td>
-                                <td>
+                                <td data-label="Xem phiếu">
                                     <button t-att-value="line['id']" t-on-click="click_origin" class="btn-pill click-origin-view">Xem phiếu</button>
                                 </td>
                             </tr>
@@ -177,6 +201,7 @@
                     <table class="table table-modern" width="100%">
                         <thead>
                             <tr class="table_head">
+                                <th class="text-center" style="width:5%">STT</th>
                                 <th style="width:28%">Tên</th>
                                 <th>Loại công việc</th>
                                 <th>Phân công cho</th>
@@ -187,22 +212,25 @@
                         </thead>
                         <tbody>
                             <tr t-foreach="today_activity" t-as="line" t-key="line.id">
-                                <td>
+                                <td data-label="STT" class="text-center">
+                                    <t t-esc="line_index + 1"/>
+                                </td>
+                                <td data-label="Tên">
                                     <t t-esc="line['display_name']"/>
                                 </td>
-                                <td>
+                                <td data-label="Loại công việc">
                                     <t t-esc="line['activity_type_id'] ? line['activity_type_id'][1] : ''"/>
                                 </td>
-                                <td>
+                                <td data-label="Phân công cho">
                                     <t t-esc="line['user_id'] ? line['user_id'][1] : ''"/>
                                 </td>
-                                <td>
+                                <td data-label="Ngày tới hạn">
                                     <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
                                 </td>
-                                <td>
+                                <td data-label="Xem">
                                     <button t-att-value="line['id']" t-on-click="click_view" class="btn-pill click-view">Xem</button>
                                 </td>
-                                <td>
+                                <td data-label="Xem phiếu">
                                     <button t-att-value="line['id']" t-on-click="click_origin" class="btn-pill click-origin-view">Xem phiếu</button>
                                 </td>
                             </tr>
@@ -228,6 +256,7 @@
                     <table class="table table-modern" width="100%">
                         <thead>
                             <tr class="table_head">
+                                <th class="text-center" style="width:5%">STT</th>
                                 <th style="width:28%">Tên</th>
                                 <th>Loại công việc</th>
                                 <th>Phân công cho</th>
@@ -238,22 +267,25 @@
                         </thead>
                         <tbody>
                             <tr t-foreach="overdue_activity" t-as="line" t-key="line.id">
-                                <td>
+                                <td data-label="STT" class="text-center">
+                                    <t t-esc="line_index + 1"/>
+                                </td>
+                                <td data-label="Tên">
                                     <t t-esc="line['display_name']"/>
                                 </td>
-                                <td>
+                                <td data-label="Loại công việc">
                                     <t t-esc="line['activity_type_id'] ? line['activity_type_id'][1] : ''"/>
                                 </td>
-                                <td>
+                                <td data-label="Phân công cho">
                                     <t t-esc="line['user_id'] ? line['user_id'][1] : ''"/>
                                 </td>
-                                <td>
+                                <td data-label="Ngày tới hạn">
                                     <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
                                 </td>
-                                <td>
+                                <td data-label="Xem">
                                     <button t-att-value="line['id']" t-on-click="click_view" class="btn-pill click-view">Xem</button>
                                 </td>
-                                <td>
+                                <td data-label="Xem phiếu">
                                     <button t-att-value="line['id']" t-on-click="click_origin" class="btn-pill click-origin-view">Xem phiếu</button>
                                 </td>
                             </tr>
@@ -279,6 +311,7 @@
                     <table class="table table-modern" width="100%">
                         <thead>
                             <tr class="table_head">
+                                <th class="text-center" style="width:5%">STT</th>
                                 <th style="width:28%">Tên</th>
                                 <th>Loại công việc</th>
                                 <th>Phân công cho</th>
@@ -290,25 +323,28 @@
                         </thead>
                         <tbody>
                             <tr t-foreach="done_activity" t-as="line" t-key="line.id">
-                                <td>
+                                <td data-label="STT" class="text-center">
+                                    <t t-esc="line_index + 1"/>
+                                </td>
+                                <td data-label="Tên">
                                     <t t-esc="line['display_name']"/>
                                 </td>
-                                <td>
+                                <td data-label="Loại công việc">
                                     <t t-esc="line['activity_type_id'] ? line['activity_type_id'][1] : ''"/>
                                 </td>
-                                <td>
+                                <td data-label="Phân công cho">
                                     <t t-esc="line['user_id'] ? line['user_id'][1] : ''"/>
                                 </td>
-                                <td>
+                                <td data-label="Ngày tới hạn">
                                     <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
                                 </td>
-                                <td>
+                                <td data-label="Ngày hoàn thành">
                                     <t t-esc="line['date_done'] ? (new Date(line['date_done'])).toLocaleDateString('vi-VN') : ''"/>
                                 </td>
-                                <td>
+                                <td data-label="Xem">
                                     <button t-att-value="line['id']" t-on-click="click_view" class="btn-pill click-view">Xem</button>
                                 </td>
-                                <td>
+                                <td data-label="Xem phiếu">
                                     <button t-att-value="line['id']" t-on-click="click_origin" class="btn-pill click-origin-view">Xem phiếu</button>
                                 </td>
                             </tr>

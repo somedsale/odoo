@@ -4,7 +4,7 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto !important; /* cho phép cuộn */
-  overflow-x: hidden;
+  overflow-x: auto !important;
 }
 /* ===== Header ===== */
 .somed-activity-dashboard {
@@ -97,7 +97,8 @@
 
 /* ===== Tabs dọc (sidebar) ===== */
 .layout-two-cols {
-  margin-top: 16px;
+  padding-top: 16px;
+  padding-bottom: 16px;
   display: grid;
   grid-template-columns: 240px 1fr;
   gap: 16px;
@@ -121,25 +122,54 @@
   top: 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 .tab-pill {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 10px 14px;
-  border-radius: 999px;
-  background: #f3f4f6;
+  border-radius: 12px;
+  background: #fff;
   border: 1px solid #e5e7eb;
+  font-weight: 600;
+  color: #374151;
   cursor: pointer;
-  font-weight: 700;
-  color: #111827;
-  user-select: none;
+  transition: all 0.2s ease;
 }
+
+.tab-pill:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.tab-badge {
+  background: #e5e7eb;
+  color: #111827;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 1px 6px;
+  line-height: 1.3;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* Active tab */
 #tabbtn-planned:checked ~ .side-tabs label[for="tabbtn-planned"],
 #tabbtn-today:checked ~ .side-tabs label[for="tabbtn-today"],
 #tabbtn-overdue:checked ~ .side-tabs label[for="tabbtn-overdue"],
 #tabbtn-done:checked ~ .side-tabs label[for="tabbtn-done"] {
-  background: #111827;
+  background: #fff;
+  color: #111827;
+}
+
+#tabbtn-planned:checked ~ .side-tabs label[for="tabbtn-planned"] .tab-badge,
+#tabbtn-today:checked ~ .side-tabs label[for="tabbtn-today"] .tab-badge,
+#tabbtn-overdue:checked ~ .side-tabs label[for="tabbtn-overdue"] .tab-badge,
+#tabbtn-done:checked ~ .side-tabs label[for="tabbtn-done"] .tab-badge {
+  background: #374151; /* xám đậm */
   color: #fff;
-  border-color: #111827;
 }
 
 /* Hiển thị panel tương ứng */
@@ -154,20 +184,21 @@
 }
 
 /* Responsive: dưới 992px chuyển sang tabs ngang */
-// @media (max-width: 991.98px) {
-//   .layout-two-cols {
-//     grid-template-columns: 1fr;
-//   }
-//   .side-tabs {
-//     position: static;
-//     flex-direction: row;
-//     gap: 8px;
-//     overflow: auto;
-//   }
-//   .tab-pill {
-//     white-space: nowrap;
-//   }
-// }
+@media (max-width: 991.98px) {
+  .layout-two-cols {
+    grid-template-columns: 1fr;
+  }
+  .side-tabs {
+    position: static;
+    flex-direction: row;
+    gap: 8px;
+    overflow: auto;
+  }
+  .tab-pill {
+    white-space: nowrap;
+    gap: 4px;
+  }
+}
 
 /* ===== Tables ===== */
 .table_activity {
@@ -271,4 +302,100 @@
 .click-view:hover,
 .click-origin-view:hover {
   filter: brightness(1.03);
+}
+@media (max-width: 767.98px) {
+  /* Header: text nhỏ hơn */
+  .somed-header .head {
+    font-size: 18px;
+  }
+  .somed-subhead {
+    font-size: 12px;
+  }
+
+  /* Cards: full width */
+  .dashboard_main_section .row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .activity-dashboard-card {
+    min-height: auto;
+    padding: 14px;
+  }
+  .activity-dashboard-card__value {
+    font-size: 22px;
+  }
+
+  /* Tabs: ngang cuộn */
+  .layout-two-cols {
+    grid-template-columns: 1fr;
+  }
+  .side-tabs {
+    flex-direction: row;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab-pill {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 8px 12px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+  .tab-badge {
+    font-size: 11px;
+    padding: 1px 6px;
+  }
+
+  /* Table: thành card view */
+  .table-responsive {
+    max-height: none;
+    overflow: visible;
+  }
+  .table-modern,
+  .table-modern thead,
+  .table-modern tbody,
+  .table-modern th,
+  .table-modern td,
+  .table-modern tr {
+    display: block;
+    width: 100%;
+  }
+
+  .table-modern thead {
+    display: none; /* ẩn header */
+  }
+
+  .table-modern tr {
+    margin-bottom: 12px;
+    background: #fff;
+    border: 1px solid #f1f5f9;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .table-modern td {
+    border: none;
+    padding: 6px 8px;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .table-modern td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #374151;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+
+  .btn-pill {
+    padding: 5px 12px;
+    font-size: 12px;
+  }
 }
