@@ -1,305 +1,359 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<templates>
-    <!--    Dashboard template-->
+<templates xml:space="preserve">
+
+    <!-- ======================= DASHBOARD ======================= -->
     <t t-name="ActivityDashboard">
-        <div>
-            <div class="form-group">
-                <h1 class="head" style="margin: 20px;">Activity Dashboard</h1>
+        <div class="somed-activity-dashboard">
+            <!-- Header -->
+            <div class="somed-header">
+                <h1 class="head">Tổng hợp việc cần làm</h1>
+                <div class="somed-subhead">Tổng quan các công việc và hoạt động theo trạng thái</div>
             </div>
-            <div>
-                <div class="table_view">
-                    <t t-call="ManageActivity"/>
-                </div>
-            </div>
-        </div>
-    </t>
-    <t t-name="ManageActivity">
-        <section class="dashboard_main_section">
-            <div class="activity_dash_card row">
-                <div class="col-sm-6 col-md-4">
-                    <div class="activity-dashboard-card activity-my-activity all_activity" t-on-click="show_all_activities">
-                        <div class="activity-dashboard-card__icon-container d-flex">
-                            <i class="fa fa-clock-o text-mauve"/>
-                        </div>
-                        <div>
-                            <t t-esc="len_all"/>
-                        </div>
-                        <div class="dashboard-card__detail">
-                            <h2 class="head">
-                                <t t-translation="on">All Activities</t>
-                            </h2>
+
+            <!-- Cards -->
+            <section class="dashboard_main_section">
+                <div class="row activity_dash_card g-3">
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <div class="activity-dashboard-card all_activity" t-on-click="show_all_activities" role="button">
+                            <div class="card-top">
+                                <div class="activity-dashboard-card__icon-container d-flex align-items-center justify-content-center">
+                                    <i class="fa fa-clock-o text-mauve"/>
+                                </div>
+                                <span class="activity-dashboard-card__value">
+                                    <t t-esc="len_all"/>
+                                </span>
+                            </div>
+                            <h2 class="head">Tất cả công việc</h2>
                         </div>
                     </div>
-                </div>
-                <div class="col-sm-6 col-md-4">
-                    <div class="activity-dashboard-card planned_activity" t-on-click="show_planned_activities">
-                        <div class="activity-dashboard-card__icon-container d-flex">
-                            <i class="fa fa-clock-o text-mauve"/>
-                        </div>
-                        <div>
-                            <t t-esc="len_planned"/>
-                        </div>
-                        <div class="dashboard-card__detail">
+
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <div class="activity-dashboard-card planned_activity" t-on-click="show_planned_activities" role="button">
+                            <div class="card-top">
+                                <div class="activity-dashboard-card__icon-container d-flex align-items-center justify-content-center">
+                                    <i class="fa fa-clock-o text-mauve"/>
+                                </div>
+                                <span class="activity-dashboard-card__value">
+                                    <t t-esc="len_planned"/>
+                                </span>
+                            </div>
                             <h2 class="head">Công việc đang đợi duyệt</h2>
                         </div>
                     </div>
-                </div>
-                <div class="col-sm-6 col-md-4">
-                    <div class="activity-dashboard-card completed_activity" t-on-click="show_completed_activities">
-                        <div class="activity-dashboard-card__icon-container d-flex">
-                            <i class="fa fa-clock-o text-mauve"/>
+
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <div class="activity-dashboard-card today_activity" t-on-click="show_today_activities" role="button">
+                            <div class="card-top">
+                                <div class="activity-dashboard-card__icon-container d-flex align-items-center justify-content-center">
+                                    <i class="fa fa-clock-o text-mauve"/>
+                                </div>
+                                <span class="activity-dashboard-card__value">
+                                    <t t-esc="len_today"/>
+                                </span>
+                            </div>
+                            <h2 class="head">Công việc hôm nay</h2>
                         </div>
-                        <div>
-                            <t t-esc="len_done"/>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <div class="activity-dashboard-card overdue_activity" t-on-click="show_overdue_activities" role="button">
+                            <div class="card-top">
+                                <div class="activity-dashboard-card__icon-container d-flex align-items-center justify-content-center">
+                                    <i class="fa fa-clock-o text-mauve"/>
+                                </div>
+                                <span class="activity-dashboard-card__value">
+                                    <t t-esc="len_overdue"/>
+                                </span>
+                            </div>
+                            <h2 class="head">Công việc quá hạn</h2>
                         </div>
-                        <div class="dashboard-card__detail">
-                            <h2 class="head">Completed Activities</h2>
+                    </div>
+
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <div class="activity-dashboard-card completed_activity" t-on-click="show_completed_activities" role="button">
+                            <div class="card-top">
+                                <div class="activity-dashboard-card__icon-container d-flex align-items-center justify-content-center">
+                                    <i class="fa fa-clock-o text-mauve"/>
+                                </div>
+                                <span class="activity-dashboard-card__value">
+                                    <t t-esc="len_done"/>
+                                </span>
+                            </div>
+                            <h2 class="head">Công việc hoàn thành</h2>
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-6 col-md-4">
-                    <div class="activity-dashboard-card today_activity" t-on-click="show_today_activities">
-                        <div class="activity-dashboard-card__icon-container d-flex">
-                            <i class="fa fa-clock-o text-mauve"/>
-                        </div>
-                        <div>
+            </section>
+
+            <!-- ===== Layout: Tabs dọc + Nội dung ===== -->
+            <div class="layout-two-cols">
+                <!-- Radios (ẩn) -->
+                <input type="radio" name="activityTabs" id="tabbtn-planned" class="tab-radio" checked="checked"/>
+                <input type="radio" name="activityTabs" id="tabbtn-today" class="tab-radio"/>
+                <input type="radio" name="activityTabs" id="tabbtn-overdue" class="tab-radio"/>
+                <input type="radio" name="activityTabs" id="tabbtn-done" class="tab-radio"/>
+
+                <!-- Sidebar -->
+                <aside class="side-tabs" role="tablist" aria-label="Bộ lọc trạng thái công việc">
+                    <label for="tabbtn-planned" class="tab-pill">
+        Đang đợi duyệt
+                        <span class="tab-badge">
+                            <t t-esc="len_planned"/>
+                        </span>
+                    </label>
+                    <label for="tabbtn-today" class="tab-pill">
+        Hôm nay
+                        <span class="tab-badge">
                             <t t-esc="len_today"/>
-                        </div>
-                        <div class="dashboard-card__detail">
-                            <h2 class="head">Today's Activities</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-md-4">
-                    <div class="activity-dashboard-card overdue_activity" t-on-click="show_overdue_activities">
-                        <div class="activity-dashboard-card__icon-container d-flex">
-                            <i class="fa fa-clock-o text-mauve"/>
-                        </div>
-                        <div>
+                        </span>
+                    </label>
+                    <label for="tabbtn-overdue" class="tab-pill">
+        Quá hạn
+                        <span class="tab-badge">
                             <t t-esc="len_overdue"/>
-                        </div>
-                        <div class="dashboard-card__detail">
-                            <h2 class="head">Overdue Activities</h2>
-                        </div>
-                    </div>
-                </div>
-                <!-- <div class="col-sm-6 col-md-4">
-                    <div class="activity-dashboard-card activity_type" t-on-click="show_activity_types">
-                        <div class="activity-dashboard-card__icon-container d-flex">
-                            <i class="fa fa-clock-o text-mauve"/>
-                        </div>
-                        <div>
-                            <t t-esc="activity_type"/>
-                        </div>
-                        <div class="dashboard-card__detail">
-                            <h2 class="head">Activity Types</h2>
-                        </div>
-                    </div>
-                </div> -->
+                        </span>
+                    </label>
+                    <label for="tabbtn-done" class="tab-pill">
+        Hoàn thành
+                        <span class="tab-badge">
+                            <t t-esc="len_done"/>
+                        </span>
+                    </label>
+                </aside>
+
+                <!-- Nội dung -->
+                <section class="tab-content">
+                    <t t-call="ManageActivity"/>
+                </section>
             </div>
-        </section>
-        <div class="table_activity table_planned_activity">
-            <table id="planned-table" cellspacing="10" width="100%">
-                <thead>
-                    <tr>
-                        <th colspan="6" class="activity_head">Công việc đang đợi duyệt</th>
-                    </tr>
-                    <t t-if="planned_activity == ''">
-                        <td>No Data Available</td>
-                    </t>
-                </thead>
-                <t t-if="planned_activity != ''">
-                    <thead class="table table-bordered mt32">
-                        <tr class="table_head">
-                            <th class="table_head_" style="width:25%">Name</th>
-                            <th class="table_head_">Activity Type</th>
-                            <th class="table_head_">Assigned to</th>
-                            <th class="table_head_">Dead Line Date</th>
-                            <th class="table_head_">View</th>
-                            <th class="table_head_">Origin</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr t-foreach="planned_activity" t-as="line" t-key="line.id">
-                            <td>
-                                <t t-esc="line['display_name']"/>
-                            </td>
-                            <td>
-                                <t t-esc="line['activity_type_id']['1']"/>
-                            </td>
-                            <td>
-                                <t t-esc="line['user_id']['1']"/>
-                            </td>
-                            <td>
-                                <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
-                            </td>
-                            <td>
-                                <button t-att-value="line['id']" t-on-click="click_view" class="click-view">
-                                    View
-                                </button>
-                            </td>
-                            <td>
-                                <button t-att-value="line['id']" class="click-origin-view" t-on-click="click_origin">
-                                    Origin
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </t>
-            </table>
-            <div id="pagination-container"/>
-        </div>
-        <div class="table_activity table_today_activity">
-            <table cellspacing="10" width="100%">
-                <thead>
-                    <tr>
-                        <th colspan="6" class="activity_head">Today's Activities
-                        </th>
-                    </tr>
-                    <t t-if="today_activity == ''">
-                        <td>No Data Available</td>
-                    </t>
-                </thead>
-                <t t-if="today_activity != ''">
-                    <thead class="table table-bordered mt32">
-                        <tr class="table_head">
-                            <th class="table_head_" style="width:25%">Name</th>
-                            <th class="table_head_">Activity Type</th>
-                            <th class="table_head_">Assigned to</th>
-                            <th class="table_head_">Dead Line Date</th>
-                            <th class="table_head_">View</th>
-                            <th class="table_head_">Origin</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr t-foreach="today_activity" t-as="line" t-key="line.id">
-                            <td>
-                                <t t-esc="line['display_name']"/>
-                            </td>
-                            <td>
-                                <t t-esc="line['activity_type_id']['1']"/>
-                            </td>
-                            <td>
-                                <t t-esc="line['user_id']['1']"/>
-                            </td>
-                            <td>
-                                <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
-                            </td>
-                            <td>
-                                <button t-att-value="line['id']" class="click-view" t-on-click="click_view">
-                                    View
-                                </button>
-                            </td>
-                            <td>
-                                <button t-att-value="line['id']" class="click-origin-view" t-on-click="click_origin">
-                                    Origin
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </t>
-            </table>
-        </div>
-        <div class="table_activity table_main_view">
-            <table cellspacing="10" width="100%">
-                <thead>
-                    <tr>
-                        <th colspan="6" class="activity_head">Completed Activities
-                        </th>
-                    </tr>
-                    <t t-if="done_activity == ''">
-                        <td>No Data Available</td>
-                    </t>
-                </thead>
-                <t t-if="done_activity != ''">
-                    <thead class="table table-bordered mt32">
-                        <tr class="table_head">
-                            <th class="table_head_">Name</th>
-                            <th class="table_head_">Activity Type</th>
-                            <th class="table_head_">Assigned to</th>
-                            <th class="table_head_">Dead Line Date</th>
-                            <th class="table_head_">View</th>
-                            <th class="table_head_">Origin</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr t-foreach="done_activity" t-as="line" t-key="line.id">
-                            <td style="width:25%">
-                                <t t-esc="line['display_name']"/>
-                            </td>
-                            <td>
-                                <t t-esc="line['activity_type_id']['1']"/>
-                            </td>
-                            <td>
-                                <t t-esc="line['user_id']['1']"/>
-                            </td>
-                            <td>
-                                <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
-                            </td>
-                            <td>
-                                <button t-att-value="line['id']" class="click-view" t-on-click="click_view">
-                                    View
-                                </button>
-                            </td>
-                            <td>
-                                <button t-att-value="line['id']" t-on-click="click_origin" class="click-origin-view">
-                                    Origin
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </t>
-            </table>
-        </div>
-        <div class="table_activity table_main_view">
-            <table cellspacing="10" width="100%">
-                <thead>
-                    <tr>
-                        <th colspan="6" class="activity_head">Overdue Activities</th>
-                    </tr>
-                    <t t-if="overdue_activity == ''">
-                        <td>No Data Available</td>
-                    </t>
-                </thead>
-                <t t-if="overdue_activity != ''">
-                    <thead class="table table-bordered mt32">
-                        <tr class="table_head">
-                            <th class="table_head_">Name</th>
-                            <th class="table_head_">Activity Type</th>
-                            <th class="table_head_">Assigned to</th>
-                            <th class="table_head_">Dead Line Date</th>
-                            <th class="table_head_">View</th>
-                            <th class="table_head_">Origin</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr t-foreach="overdue_activity" t-as="line" t-key="line.id">
-                            <td style="width:25%">
-                                <t t-esc="line['display_name']"/>
-                            </td>
-                            <td>
-                                <t t-esc="line['activity_type_id']['1']"/>
-                            </td>
-                            <td>
-                                <t t-esc="line['user_id']['1']"/>
-                            </td>
-                            <td>
-                                <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
-                            </td>
-                            <td>
-                                <button t-att-value="line['id']" t-on-click="click_view" class="click-view">
-                                    View
-                                </button>
-                            </td>
-                            <td>
-                                <button t-att-value="line['id']" class="click-origin-view" t-on-click="click_origin">
-                                    Origin
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </t>
-            </table>
         </div>
     </t>
+    <!-- ======================= LISTS ======================= -->
+    <t t-name="ManageActivity">
+        <!-- PLANNED -->
+        <div id="tab-planned" class="tab-panel table_activity table_planned_activity">
+            <div class="table_title">Công việc đang đợi duyệt</div>
+
+            <t t-if="!planned_activity || (planned_activity and planned_activity.length == 0)">
+                <div class="empty_state">
+                    <i class="fa fa-check-circle"/>
+                    <div>Không có dữ liệu</div>
+                </div>
+            </t>
+
+            <t t-if="planned_activity and planned_activity.length">
+                <div class="table-responsive">
+                    <table class="table table-modern" width="100%">
+                        <thead>
+                            <tr class="table_head">
+                                <th class="text-center" style="width:5%">STT</th>
+                                <th style="width:28%">Tên</th>
+                                <th>Loại công việc</th>
+                                <th>Phân công cho</th>
+                                <th>Ngày tới hạn</th>
+                                <th>Xem</th>
+                                <th>Xem phiếu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="planned_activity" t-as="line" t-key="line.id">
+                                <td data-label="STT" class="text-center">
+                                    <t t-esc="line_index + 1"/>
+                                </td>
+                                <td data-label="Tên">
+                                    <t t-esc="line['display_name']"/>
+                                </td>
+                                <td data-label="Loại công việc">
+                                    <t t-esc="line['activity_type_id'] ? line['activity_type_id'][1] : ''"/>
+                                </td>
+                                <td data-label="Phân công cho">
+                                    <t t-esc="line['user_id'] ? line['user_id'][1] : ''"/>
+                                </td>
+                                <td data-label="Ngày tới hạn">
+                                    <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
+                                </td>
+                                <td data-label="Xem">
+                                    <button t-att-value="line['id']" t-on-click="click_view" class="btn-pill click-view">Xem</button>
+                                </td>
+                                <td data-label="Xem phiếu">
+                                    <button t-att-value="line['id']" t-on-click="click_origin" class="btn-pill click-origin-view">Xem phiếu</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </div>
+
+        <!-- TODAY -->
+        <div id="tab-today" class="tab-panel table_activity table_today_activity">
+            <div class="table_title">Công việc hôm nay</div>
+
+            <t t-if="!today_activity || (today_activity and today_activity.length == 0)">
+                <div class="empty_state">
+                    <i class="fa fa-calendar-o"/>
+                    <div>Không có dữ liệu</div>
+                </div>
+            </t>
+
+            <t t-if="today_activity and today_activity.length">
+                <div class="table-responsive">
+                    <table class="table table-modern" width="100%">
+                        <thead>
+                            <tr class="table_head">
+                                <th class="text-center" style="width:5%">STT</th>
+                                <th style="width:28%">Tên</th>
+                                <th>Loại công việc</th>
+                                <th>Phân công cho</th>
+                                <th>Ngày tới hạn</th>
+                                <th>Xem</th>
+                                <th>Xem phiếu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="today_activity" t-as="line" t-key="line.id">
+                                <td data-label="STT" class="text-center">
+                                    <t t-esc="line_index + 1"/>
+                                </td>
+                                <td data-label="Tên">
+                                    <t t-esc="line['display_name']"/>
+                                </td>
+                                <td data-label="Loại công việc">
+                                    <t t-esc="line['activity_type_id'] ? line['activity_type_id'][1] : ''"/>
+                                </td>
+                                <td data-label="Phân công cho">
+                                    <t t-esc="line['user_id'] ? line['user_id'][1] : ''"/>
+                                </td>
+                                <td data-label="Ngày tới hạn">
+                                    <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
+                                </td>
+                                <td data-label="Xem">
+                                    <button t-att-value="line['id']" t-on-click="click_view" class="btn-pill click-view">Xem</button>
+                                </td>
+                                <td data-label="Xem phiếu">
+                                    <button t-att-value="line['id']" t-on-click="click_origin" class="btn-pill click-origin-view">Xem phiếu</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </div>
+
+        <!-- OVERDUE -->
+        <div id="tab-overdue" class="tab-panel table_activity table_main_view">
+            <div class="table_title">Công việc quá hạn</div>
+
+            <t t-if="!overdue_activity || (overdue_activity and overdue_activity.length == 0)">
+                <div class="empty_state">
+                    <i class="fa fa-exclamation-circle"/>
+                    <div>Không có dữ liệu</div>
+                </div>
+            </t>
+
+            <t t-if="overdue_activity and overdue_activity.length">
+                <div class="table-responsive">
+                    <table class="table table-modern" width="100%">
+                        <thead>
+                            <tr class="table_head">
+                                <th class="text-center" style="width:5%">STT</th>
+                                <th style="width:28%">Tên</th>
+                                <th>Loại công việc</th>
+                                <th>Phân công cho</th>
+                                <th>Ngày tới hạn</th>
+                                <th>Xem</th>
+                                <th>Xem phiếu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="overdue_activity" t-as="line" t-key="line.id">
+                                <td data-label="STT" class="text-center">
+                                    <t t-esc="line_index + 1"/>
+                                </td>
+                                <td data-label="Tên">
+                                    <t t-esc="line['display_name']"/>
+                                </td>
+                                <td data-label="Loại công việc">
+                                    <t t-esc="line['activity_type_id'] ? line['activity_type_id'][1] : ''"/>
+                                </td>
+                                <td data-label="Phân công cho">
+                                    <t t-esc="line['user_id'] ? line['user_id'][1] : ''"/>
+                                </td>
+                                <td data-label="Ngày tới hạn">
+                                    <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
+                                </td>
+                                <td data-label="Xem">
+                                    <button t-att-value="line['id']" t-on-click="click_view" class="btn-pill click-view">Xem</button>
+                                </td>
+                                <td data-label="Xem phiếu">
+                                    <button t-att-value="line['id']" t-on-click="click_origin" class="btn-pill click-origin-view">Xem phiếu</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </div>
+
+        <!-- DONE -->
+        <div id="tab-done" class="tab-panel table_activity table_main_view">
+            <div class="table_title">Công việc hoàn thành</div>
+
+            <t t-if="!done_activity || (done_activity and done_activity.length == 0)">
+                <div class="empty_state">
+                    <i class="fa fa-flag-checkered"/>
+                    <div>Không có dữ liệu</div>
+                </div>
+            </t>
+
+            <t t-if="done_activity and done_activity.length">
+                <div class="table-responsive">
+                    <table class="table table-modern" width="100%">
+                        <thead>
+                            <tr class="table_head">
+                                <th class="text-center" style="width:5%">STT</th>
+                                <th style="width:28%">Tên</th>
+                                <th>Loại công việc</th>
+                                <th>Phân công cho</th>
+                                <th>Ngày tới hạn</th>
+                                <th>Ngày hoàn thành</th>
+                                <th>Xem</th>
+                                <th>Xem phiếu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="done_activity" t-as="line" t-key="line.id">
+                                <td data-label="STT" class="text-center">
+                                    <t t-esc="line_index + 1"/>
+                                </td>
+                                <td data-label="Tên">
+                                    <t t-esc="line['display_name']"/>
+                                </td>
+                                <td data-label="Loại công việc">
+                                    <t t-esc="line['activity_type_id'] ? line['activity_type_id'][1] : ''"/>
+                                </td>
+                                <td data-label="Phân công cho">
+                                    <t t-esc="line['user_id'] ? line['user_id'][1] : ''"/>
+                                </td>
+                                <td data-label="Ngày tới hạn">
+                                    <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
+                                </td>
+                                <td data-label="Ngày hoàn thành">
+                                    <t t-esc="line['date_done'] ? (new Date(line['date_done'])).toLocaleDateString('vi-VN') : ''"/>
+                                </td>
+                                <td data-label="Xem">
+                                    <button t-att-value="line['id']" t-on-click="click_view" class="btn-pill click-view">Xem</button>
+                                </td>
+                                <td data-label="Xem phiếu">
+                                    <button t-att-value="line['id']" t-on-click="click_origin" class="btn-pill click-origin-view">Xem phiếu</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </div>
+    </t>
+
+
 </templates>

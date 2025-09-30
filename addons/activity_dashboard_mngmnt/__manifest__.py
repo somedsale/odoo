@@ -40,9 +40,7 @@
     ],
     'assets': {
         'web.assets_backend': [
-            'activity_dashboard_mngmnt/static/src/css/dashboard.css',
             'activity_dashboard_mngmnt/static/src/css/style.scss',
-            'activity_dashboard_mngmnt/static/src/css/material-gauge.css',
             'activity_dashboard_mngmnt/static/src/xml/activity_dashboard_template.xml',
             'activity_dashboard_mngmnt/static/src/js/activity_dashboard.js',
         ],
