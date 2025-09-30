@@ -29,10 +29,10 @@ class ProjectExpenseLine(models.Model):
     ('other', 'Chi phí khác')
 ], string="Loại chi phí", default=lambda self: self.env.context.get('default_type'), store=True)
     
-    percent = fields.Float(
-        string='Hệ số (%)',
-        default=0.0,
-        help="Tăng/Giảm theo % trên thành tiền gốc"
+    factor = fields.Float(
+        string='Hệ số',
+        default=1.0,
+        help="Hệ số nhân cho thành tiền gốc (ví dụ 1.08, 1.9 ...)"
     )
 
     @api.onchange('expense_id')
@@ -48,11 +48,11 @@ class ProjectExpenseLine(models.Model):
             self.price_unit = 0.0
             self.type = 'other'
 
-    @api.depends('price_unit', 'quantity', 'percent')
+    @api.depends('price_unit', 'quantity', 'factor')
     def _compute_price_total(self):
         for rec in self:
             base_amount = rec.price_unit * rec.quantity
-            rec.price_total = base_amount * (1 + (rec.percent or 0.0) / 100.0)
+            rec.price_total = base_amount * (rec.factor or 1.0)
 
     @api.model_create_multi
     def create(self, vals_list):
