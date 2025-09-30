@@ -5,3 +5,5 @@ from . import product_material_line
 from . import project_expense_line
 from . import project_expense
 from . import product_template
+from . import cost_additional_expense
+from . import cost_additional_expense_line

@@ -20,7 +20,7 @@
 #
 ################################################################################
 from collections import defaultdict
-from odoo import fields, models
+from odoo import fields, models,api
 
 
 class MailActivity(models.Model):
@@ -35,7 +35,7 @@ class MailActivity(models.Model):
         ('today', 'Today'),
         ('done', 'Done'),
         ('overdue', 'Overdue')], string='State', help='State of the activity',
-        compute='_compute_state', store=True)
+        compute='_compute_state', store=False)
 
     def _action_done(self, feedback=False, attachment_ids=None):
         """Override _action_done to remove the unlink code"""

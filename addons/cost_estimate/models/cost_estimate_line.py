@@ -46,6 +46,42 @@ class CostEstimateLine(models.Model):
     task_id = fields.Many2one('project.task', string='Nhiệm vụ')
     product_type = fields.Selection(related='product_id.detailed_type', store=True)
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
+    tax_id = fields.Many2one(
+        'account.tax',
+        string='Thuế',
+        domain=[('type_tax_use', '=', 'sale')]
+    )
+    price_tax = fields.Float(
+        string='Thuế',
+        compute='_compute_total_with_tax',
+        store=True,
+        digits=(16, 0)
+    )
+    price_total = fields.Float(
+        string='Thành tiền dự toán (sau thuế)',
+        compute='_compute_total_with_tax',
+        store=True,
+        digits=(16, 0)
+    )
+
+    @api.depends('price_subtotal', 'tax_id', 'currency_id')
+    def _compute_total_with_tax(self):
+        for rec in self:
+            subtotal = rec.price_subtotal or 0.0
+            price_tax = 0.0
+            price_total = subtotal
+
+            if subtotal and rec.tax_id:
+                res = rec.tax_id.compute_all(
+                    subtotal,
+                    currency=rec.currency_id,
+                    quantity=1
+                )
+                price_tax = res['total_included'] - res['total_excluded']
+                price_total = res['total_included']
+
+            rec.price_tax = price_tax
+            rec.price_total = price_total
 
 
     @api.depends('sale_order_line_id')
