@@ -113,10 +113,13 @@ class CostEstimateLine(models.Model):
     labor_total_cost = fields.Float(string='Tổng chi phí nhân công', digits=(16, 0), compute='_compute_expense_totals')
     # equipment_total_cost = fields.Float(string='Tổng chi phí máy móc', digits=(16, 0), compute='_compute_expense_totals')
     material_total_cost = fields.Float(string='Tổng chi phí vật tư', digits=(16, 0), compute='_compute_expense_totals')
+    other_total_cost = fields.Float(string='Tổng chi phí khác', digits=(16, 0), compute='_compute_expense_totals')
 
-    @api.depends( 'labor_expense_line_ids.price_total')
+
+    @api.depends( 'labor_expense_line_ids.price_total','material_line_ids.price_total','expense_line_ids.price_total')
     def _compute_expense_totals(self):
         for rec in self:
             rec.labor_total_cost = sum(rec.labor_expense_line_ids.mapped('price_total'))
             # rec.equipment_total_cost = sum(rec.equipment_expense_line_ids.mapped('price_total'))
             rec.material_total_cost = sum(rec.material_line_ids.mapped('price_total'))
+            rec.other_total_cost = sum(rec.expense_line_ids.mapped('price_total'))
