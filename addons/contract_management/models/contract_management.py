@@ -106,7 +106,7 @@ class ContractManagement(models.Model):
                         _logger.info("No Project Manager assigned")
                     
                     # Tạo dự án
-                    project = self.env['project.project'].create(project_vals)
+                    project = self.env['project.project'].sudo().create(project_vals)
                     contract.project_id = project.id
 
                     # Sync attachments to project

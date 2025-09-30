@@ -66,13 +66,13 @@
                                     <field name="material_id" required="1" />
                                     <field name="quantity" required="1"/>
                                     <field name="unit" />
-                                    <field name="estimate_price_unit" string="Giá dự toán" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng" optional="hide"/>
+                                    <field name="estimate_price_unit" string="Giá dự toán" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" optional="hide"/>
                                     <field name="estimate_price_total" string="Tổng giá dự toán" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng" optional="hide"/>
-                                    <field name="price_unit" string="Giá đề xuất" required="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
+                                    <field name="price_unit" string="Giá đề xuất" required="1" widget="monetary" options="{'currency_field': 'currency_id'}" />
                                     <field name="price_total" string="Tổng giá đề xuất" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
-                                    <field name="price_unit_taxed" string="Giá đề xuất (sau thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" optional="hide" sum="Tổng"/>
-                                    <field name="price_total_taxed" string="Thành tiền (sau thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" optional="hide" sum="Tổng"/>
                                     <field name="tax_id" />
+                                    <field name="price_unit_taxed" string="Giá đề xuất (sau thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" optional="show" />
+                                    <field name="price_total_taxed" string="Thành tiền (sau thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" optional="show" sum="Tổng"/>
                                     <field name="vendor_id" placeholder="Nhà cung cấp đề xuất" required="1"/>
                                     <field name="description"/>
                                     <field name="currency_id" invisible="1" optional="hide"/>
