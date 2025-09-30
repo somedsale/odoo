@@ -17,10 +17,10 @@ class ProductMaterialLine(models.Model):
         store=True,
         digits=(16, 0)
     ) 
-    percent = fields.Float(
-        string='Phí (%)',
-        default=0.0,
-        help="Tăng/Giảm theo % trên thành tiền gốc"
+    factor = fields.Float(
+        string='Hệ số',
+        default=1.0,
+        help="Hệ số nhân cho thành tiền gốc (ví dụ 1.08, 1.9 ...)"
     )
     vendor_id = fields.Many2one(
         'res.partner',
@@ -38,11 +38,11 @@ class ProductMaterialLine(models.Model):
             self.price_unit = 0.0
             self.vendor_id = False
 
-    @api.depends('price_unit', 'quantity', 'percent')
+    @api.depends('quantity', 'factor','price_unit','price_total')
     def _compute_price_total(self):
         for rec in self:
             base_amount = rec.price_unit * rec.quantity
-            rec.price_total = base_amount * (1 + (rec.percent or 0.0) / 100.0)
+            rec.price_total = base_amount * (rec.factor or 1.0)
             
 
     
