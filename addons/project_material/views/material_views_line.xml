@@ -5,6 +5,7 @@
         <field name="arch" type="xml">
             <tree editable="bottom">
                 <field name="material_id" required="1" width="30%"/>
+                <field name ="percent" string="Hệ số (%)"/>
                 <field name="quantity" required="1" width="15%"/>
                 <field name="unit" widget="selection" options="{'no_create': True}" required="1" width="15%"/>
                 <field name="price_unit" required="1" width="20%"/>
@@ -21,6 +22,7 @@
             <form>
                 <group>
                     <field name="material_id" required="1"/>
+                    <field name ="percent" string="Hệ số (%)"/>
                     <field name="quantity" required="1"/>
                     <field name="unit" required="1"/>
                     <field name="price_unit" required="1"/>
