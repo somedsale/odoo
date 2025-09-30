@@ -12,7 +12,8 @@
                 <field name="name"/>
                 <field name="sale_order_id"/>
                 <field name="project_id"/>
-                <field name="total_cost" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="total_final_non_tax" string="Tổng dự toán (TT)" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="total_final_tax" string="Tổng dự toán (ST)" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name ="state" widget="badge" decoration-muted="state == 'draft'" decoration-primary="state == 'summitted'" decoration-success="state == 'approved'"/>
                 <field name="currency_id" optional="hide"/>
             </tree>
@@ -48,18 +49,38 @@
                         <group>
                             <field name="code" readonly="1"/>
                             <field name="project_id" readonly="state != 'draft'"/>
-                            <field name="total_cost" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_cost" string="Tổng dự toán sản phẩm (Trước thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="amount_additional_expense" string="Tổng dự toán khác (Trước thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_final_non_tax" string="Tổng dự toán (Trước thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                             <field name="currency_id" invisible="1" optional="hide"/>
                         </group>
                         <group>
                             <field name="create_date" string="Ngày tạo" readonly="1"/>
                             <field name="sale_order_id" readonly="1"/>
+                            <field name="total_cost_with_tax" string="Tổng dự toán sản phẩm (Có thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="amount_additional_expense_with_tax" string="Tổng dự toán khác (Có thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_final_tax" string="Tổng dự toán (Có thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                         </group>
                     </group>
                     <notebook>
-                        <page string="Chi tiết dòng dự toán">
+                        <page string="Chi tiết dự toán sản phẩm">
                             <field name="line_ids" editable="bottom" context="{'default_cost_estimate_id': active_id}" options="{'no_open': True}" readonly="state == 'approved'">
                                 <tree view_id="view_cost_estimate_line_tree"/>
+                            </field>
+                        </page>
+                        <page string="Chi phí dự toán khác">
+                            <field name="additional_expense_line_ids" context="{'default_cost_estimate_id': active_id}" readonly="state == 'approved'">
+                                <tree editable="bottom">
+                                    <field name="expense_id" string ="Tên chi phí"/>
+                                    <field name="quantity"/>
+                                    <field name="uom_id" string="Đơn vị"/>
+                                    <field name="tax_id"/>
+                                    <field name="price_unit" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="price_subtotal" sum="Tổng 1" optional="show" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="price_tax" sum="Tổng 2" optional="show" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="price_total" sum="Tổng 3" optional="show" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="currency_id" string="Tiền tệ" optional="hide"/>
+                                </tree>
                             </field>
                         </page>
                     </notebook>
@@ -77,8 +98,12 @@
                 <field name="product_id" context="{'no_default_code': True}" required="1"/>
                 <field name="quantity" required="1"/>
                 <field name="unit" required="1"/>
-                <field name="price_unit" readonly="1"/>
-                <field name="price_subtotal" readonly="1"/>
+                <field name="tax_id"/>
+                <field name="price_unit" readonly="1" optional="show" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="price_tax" readonly="1" optional="hide" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}" />
+                <field name="price_subtotal" readonly="1" optional="show" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="price_total" readonly="1" optional="show" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="currency_id" invisible="1" optional="hide"/>
             </tree>
         </field>
     </record>
@@ -95,9 +120,10 @@
                             <field name="product_type" invisible="1"/>
                             <field name="product_id" context="{'no_default_code': True}" readonly="is_from_sale_order"/>
                             <field name="quantity" readonly="is_from_sale_order"/>
+                            <field name="tax_id" string="Thuế áp dụng"/>
                             <field name="unit" readonly="is_from_sale_order"/>
-                            <field name="price_unit" string="Giá thành trên 1 sản phẩm" readonly="1"/>
-                            <field name="price_subtotal" readonly="1"/>
+                            <field name="price_unit" string="Giá thành trên 1 sản phẩm" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="price_subtotal" string="Thành tiền dự toán chưa thuế" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                             <field name="currency_id" invisible="1" optional="hide"/>
                         </group>
 
@@ -107,7 +133,7 @@
                             <!-- <field name="equipment_total_cost" readonly="1"/> -->
                         </group>
                     </group>
-                    <group col="2" invisible="product_type != 'service'">
+                    <!-- <group col="2" invisible="product_type != 'service'">
                         <group string="Thông tin dự toán">
                             <field name="is_from_sale_order" invisible="1"/>
                             <field name="product_type" invisible="1"/>
@@ -117,7 +143,7 @@
                             <field name="price_unit" string="Đơn giá" readonly="1"/>
                             <field name="price_subtotal" readonly="1"/>
                         </group>
-                    </group>
+                    </group> -->
                     <notebook>
                         <page string="Chi phí nguyên vật liệu (VT)">
                             <field name="material_line_ids" context="{'default_estimate_line_id': active_id}" mode="tree,form">

@@ -32,6 +32,57 @@ class CostEstimate(models.Model):
         ('rejected', 'Bị từ chối'),
         ('cancel', 'Hủy bỏ')
     ], string='Trạng thái', default='draft', required=True, copy=False)
+    additional_expense_line_ids = fields.One2many(
+        'cost.additional.expense.line',
+        'cost_estimate_id',
+        string='Chi phí bổ sung'
+    )
+    amount_additional_expense = fields.Float(
+        string='Tổng chi phí khác',
+        compute='_compute_amount_additional_expense',
+        store=True
+    )
+    total_final_non_tax = fields.Float(
+        string='Tổng dự toán (Chưa thuế)',
+        compute='_compute_total_final_non_tax',
+        store=True,
+    )
+    total_cost_with_tax = fields.Float(
+        string='Tổng dự toán sản phẩm (Có thuế)',
+        compute='_compute_total_cost_with_tax',
+        store=True,
+    )
+    amount_additional_expense_with_tax = fields.Float(
+        string='Tổng dự toán khác (Có thuế)',
+        compute='_compute_amount_additional_expense_with_tax',
+        store=True
+    )
+    total_final_tax = fields.Float(
+        string='Tổng dự toán (Thuế)',    
+        compute='_compute_total_final_tax',
+        store=True,
+    )
+    @api.depends('total_cost_with_tax', 'amount_additional_expense_with_tax')
+    def _compute_total_final_tax(self):
+        for rec in self:
+            rec.total_final_tax = rec.total_cost_with_tax + rec.amount_additional_expense_with_tax
+    @api.depends('additional_expense_line_ids.price_total')
+    def _compute_amount_additional_expense_with_tax(self):
+        for estimate in self:
+            estimate.amount_additional_expense_with_tax = sum(estimate.additional_expense_line_ids.mapped('price_total'))
+    @api.depends('line_ids.price_total')
+    def _compute_total_cost_with_tax(self):
+        for rec in self:
+            rec.total_cost_with_tax = sum(line.price_total for line in rec.line_ids)
+
+    @api.depends('total_cost', 'amount_additional_expense')
+    def _compute_total_final_non_tax(self):
+        for rec in self:
+            rec.total_final_non_tax = rec.total_cost + rec.amount_additional_expense
+    @api.depends('additional_expense_line_ids.price_subtotal')
+    def _compute_amount_additional_expense(self):
+        for estimate in self:
+            estimate.amount_additional_expense = sum(estimate.additional_expense_line_ids.mapped('price_subtotal'))
     @api.depends('state')
     def _compute_show_button(self):
         for rec in self:
