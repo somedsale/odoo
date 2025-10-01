@@ -9,6 +9,11 @@
         'security/ir.model.access.csv',
         'views/cost_estimate_views.xml',
     ],
+    'assets': {
+    'web.assets_backend': [
+        'cost_estimate/static/src/css/popup.css',
+    ],
+},
     'installable': True,
     'application': False,
 }

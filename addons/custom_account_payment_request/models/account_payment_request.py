@@ -51,10 +51,6 @@ class AccountingPaymentRequest(models.Model):
         ('not yet', 'Chưa chi'),
         ('paid', 'Đã chi'),
     ], default='not yet')
-    document_date = fields.Date(
-    string="Ngày chứng từ",
-    default=fields.Date.context_today,
-)
     @api.model
     def create(self, vals):
         if vals.get('name', '/') == '/':
