@@ -28,8 +28,9 @@
                         <group>
                             <field name="name"/>
                             <field name="purchase_id"/>
-                            <field name="contract_id"/>
+                            <field name="contract_id" required="0"/>
                             <field name="settlement_id"/>
+                            <field name ="project_id"/>
                             <field name="amount"/>
                         </group>
                         <group>
