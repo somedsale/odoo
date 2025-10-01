@@ -12,12 +12,21 @@ class SupplierInvoice(models.Model):
     amount = fields.Monetary("Số tiền", required=True, currency_field="currency_id")
     currency_id = fields.Many2one("res.currency", default=lambda self: self.env.company.currency_id)
     partner_id = fields.Many2one(related="contract_id.partner_id", string="Nhà cung cấp", store=True)
-    project_id = fields.Many2one(related="contract_id.project_id", string="Dự án", store=True)
+    # project_id = fields.Many2one(related="contract_id.project_id", string="Dự án", store=True)
     due_date = fields.Date("Ngày đến hạn")
     note = fields.Text("Diễn giải")
     account_payment_request_ids = fields.One2many("account.payment.request", "invoice_id", string="Phiếu chi")
     purchase_id = fields.Many2one('purchase.order', string="Đơn mua hàng", index=True)
-
+    project_id = fields.Many2one(
+    "project.project",
+    string="Dự án",
+    store=True
+)
+    @api.onchange("contract_id")
+    def _onchange_contract_id(self):
+        for rec in self:
+            if rec.contract_id:
+                rec.project_id = rec.contract_id.project_id.id
     @api.constrains("date", "due_date")
     def _check_due_date(self):
         for record in self:

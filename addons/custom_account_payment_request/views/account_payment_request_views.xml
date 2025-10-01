@@ -45,7 +45,6 @@
                             <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="state != 'draft'"/>
                             <field name="payment_person" widget="many2one_avatar_user" readonly="1"/>
                             <field name="create_date" string="Ngày tạo" readonly="1"/>
-                            <field name="document_date" readonly="state != 'draft'"/>
                             <field name="note" readonly="state != 'draft'"/>
                             <field name="currency_id" invisible="1"/>
                         </group>
@@ -54,7 +53,7 @@
                             <field name="expense_category_id"/>
                             <field name="project_id" invisible="cost_classification != 'project'" readonly="state != 'draft'"/>
                             <field name="date" invisible="proposal_person_id == False" readonly="state != 'draft'"/>
-                            <field name="date_payment" string="Ngày chi" invisible="status_expense == 'not yet'" readonly="1"/>
+                            <field name="date_payment" string="Ngày chi" invisible="status_expense == 'not yet'" />
                             <field name="proposal_person_id" widget="many2one_avatar_user" readonly="1" invisible="proposal_person_id == False"/>
                             <field name="expense_type" widget="select" invisible="cost_classification != 'project'" readonly="state != 'draft'"/>
                             <field name="payment_type" widget="select" readonly="state != 'draft'"/>

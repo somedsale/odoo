@@ -63,6 +63,27 @@ class CostEstimateLine(models.Model):
         store=True,
         digits=(16, 0)
     )
+    sale_order_price_unit = fields.Float(
+    string="Đơn giá báo giá",
+    related="sale_order_line_id.price_unit",
+    store=False,
+    readonly=True,
+    digits=(16, 0),
+)
+    sale_order_price_subtotal = fields.Monetary(
+    string="Thành tiền báo giá trước thuế",
+    related="sale_order_line_id.price_subtotal",
+    store=False,
+    readonly=True,
+    currency_field="currency_id",
+)
+    sale_order_price_total = fields.Monetary(
+    string="Thành tiền báo giá sau thuế",
+    related="sale_order_line_id.price_total",
+    store=False,
+    readonly=True,
+    currency_field="currency_id"    
+)
 
     @api.depends('price_subtotal', 'tax_id', 'currency_id')
     def _compute_total_with_tax(self):
