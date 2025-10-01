@@ -1,6 +1,7 @@
 from odoo import models, fields, api
 from markupsafe import Markup
 from odoo.exceptions import UserError
+from datetime import timedelta
 class CostEstimate(models.Model):
     _name = 'cost.estimate'
     _description = 'Dự toán chi phí Dự án'
@@ -62,6 +63,52 @@ class CostEstimate(models.Model):
         compute='_compute_total_final_tax',
         store=True,
     )
+    sale_order_partner = fields.Many2one(
+        related="sale_order_id.partner_id",
+        string="Khách hàng",
+        store=False,
+        readonly=True,
+    )
+    sale_order_date = fields.Datetime(
+        related="sale_order_id.date_order",
+        string="Ngày đơn hàng",
+        store=False,
+        readonly=True,
+    )
+    sale_order_amount_total = fields.Monetary(
+        related="sale_order_id.amount_total",
+        string="Tổng tiền",
+        store=False,
+        readonly=True,
+        currency_field="currency_id",
+    )
+    contract_id = fields.Many2one(
+        "contract.management",
+        string="Hợp đồng",
+        compute="_compute_contract_id",
+        store=False,
+    )
+
+    contract_value = fields.Monetary(
+        string="Giá trị hợp đồng",
+        compute="_compute_contract_value",
+        currency_field="currency_id",
+        store=False,
+    )
+
+    @api.depends("sale_order_id")
+    def _compute_contract_id(self):
+        for rec in self:
+            contract = self.env["contract.management"].search(
+                [("sale_order_id", "=", rec.sale_order_id.id)],
+                limit=1
+            )
+            rec.contract_id = contract.id if contract else False
+
+    @api.depends("contract_id")
+    def _compute_contract_value(self):
+        for rec in self:
+            rec.contract_value = rec.contract_id.contract_value if rec.contract_id else 0.0
     @api.depends('total_cost_with_tax', 'amount_additional_expense_with_tax')
     def _compute_total_final_tax(self):
         for rec in self:
@@ -116,7 +163,7 @@ class CostEstimate(models.Model):
                     user_id=rec.director_user_id.id,
                     summary=f"Duyệt dự toán {rec.name}",
                     note=Markup(f"📌 Dự toán chi phí <b>{rec.name}</b> đang chờ duyệt."),
-                    date_deadline=fields.Date.today(),
+                    date_deadline=fields.Date.today() + timedelta(days=3),
                 )
     def _close_activity(self, user, xmlid='mail.mail_activity_data_todo', feedback="Đã xử lý"):
             self.ensure_one()

@@ -1,6 +1,7 @@
 from odoo import models, fields, api
 from odoo.exceptions import UserError
 from markupsafe import Markup
+from datetime import timedelta
 
 class ExpenseProposal(models.Model):
     _name = 'expense.proposal'
@@ -92,7 +93,7 @@ class ExpenseProposal(models.Model):
                     user_id=rec.director_user_id.id,
                     summary=f'Duyệt Phiếu {rec.name}',
                     note=Markup(f"📌 Phiếu <b>{rec.name}</b> đang chờ duyệt."),
-                    date_deadline=fields.Date.today(),
+                    date_deadline=fields.Date.today() + timedelta(days=3),
                 )
     def _close_activity(self, user, xmlid='mail.mail_activity_data_todo', feedback="Đã xử lý"):
         self.ensure_one()

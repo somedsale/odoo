@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Inherit Is Customer and Is Vendor -->
+        <record id="view_partner_form_inherit" model="ir.ui.view">
+            <field name="name">view_partner_form_inherit</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='sale']/field[@name='user_id']" position="before">
+                    <field name="is_customer" string="Khách hàng"/>
+                </xpath>
+                <xpath expr="//group[@name='purchase']/field[@name='property_supplier_payment_term_id']" position="before">
+                    <field name="is_supplier" string="Nhà cung cấp"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="res_partner_view_search" model="ir.ui.view">
+            <field name="name">res_partner_view_search</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_res_partner_filter"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='customer']" position="replace">
+                    <filter string="Khách hàng" name="customer" domain="['|',('customer_rank','>', 0),('is_customer','=',True)]"/>
+                </xpath>
+                <xpath expr="//filter[@name='supplier']" position="replace">
+                    <filter string="Nhà cung cấp" name="supplier" domain="['|',('supplier_rank','>', 0),('is_supplier','=',True)]"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

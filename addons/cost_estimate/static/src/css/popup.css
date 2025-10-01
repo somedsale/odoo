@@ -1,0 +1,23 @@
+.popup-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.popup-detail {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 8px 12px;
+  min-width: 220px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  white-space: nowrap;
+  z-index: 99;
+}
+
+.popup-wrapper:hover .popup-detail {
+  display: block !important;
+}

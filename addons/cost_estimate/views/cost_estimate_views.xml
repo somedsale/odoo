@@ -59,7 +59,26 @@
                         </group>
                         <group>
                             <field name="create_date" string="Ngày tạo" readonly="1"/>
-                            <field name="sale_order_id" readonly="1"/>
+                            <!-- <field name="sale_order_id" readonly="1"/> -->
+                            <label for="sale_order_id"/>
+                            <div class="popup-wrapper">
+                                <field name="sale_order_id" readonly="1" nolabel="1" class="popup-trigger"/>
+                                <div class="popup-detail">
+                                    <p>
+                                        <b>Khách hàng: </b>
+                                        <field name="sale_order_partner" readonly="1"/>
+                                    </p>
+                                    <p>
+                                        <b>Ngày đơn hàng: </b>
+                                        <field name="sale_order_date" readonly="1"/>
+                                    </p>
+                                    <p>
+                                        <b>Tổng tiền: </b>
+                                        <field name="sale_order_amount_total" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    </p>
+                                </div>
+                            </div>
+                            <field name="contract_value" string="Giá trị hợp đồng" readonly="1" groups = "custom_director_role.group_director"/>
                         </group>
                     </group>
                     <notebook>
@@ -103,6 +122,9 @@
                 <field name="price_subtotal" readonly="1" optional="show" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="price_tax" readonly="1" string="Tiền thuế" optional="hide" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}" />
                 <field name="price_total" readonly="1" optional="show" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="sale_order_price_unit" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}" groups = "custom_director_role.group_director"/>
+                <field name="sale_order_price_subtotal" sum="Tổng" groups = "custom_director_role.group_director" />
+                <field name="sale_order_price_total" sum="Tổng" groups = "custom_director_role.group_director"/>
                 <field name="currency_id" invisible="1" optional="hide"/>
             </tree>
         </field>

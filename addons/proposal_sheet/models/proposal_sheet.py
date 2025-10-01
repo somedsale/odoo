@@ -3,6 +3,7 @@ from odoo import models, fields, api,_
 from odoo.exceptions import UserError, ValidationError
 from lxml import etree
 import logging
+from datetime import timedelta
 
 _logger = logging.getLogger(__name__)
 
@@ -320,7 +321,7 @@ class ProposalSheet(models.Model):
                 user_id=self.director_user_id.id,
                 summary=f"Duyệt phiếu đề xuất {self.name}",
                 note=f"📌 Phiếu đề xuất <b>{self.name}</b> đang chờ duyệt.",
-                date_deadline=fields.Date.today(),
+                date_deadline=fields.Date.today() + timedelta(days=3),
             )
     def _close_activity(self, user, xmlid='mail.mail_activity_data_todo', feedback="Đã xử lý"):
             self.ensure_one()
