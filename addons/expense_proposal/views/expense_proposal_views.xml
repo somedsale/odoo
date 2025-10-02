@@ -7,9 +7,10 @@
             <tree>
                 <field name="name"/>
                 <field name="date"/>
-                <field name="proposer_id"/>
-                <field name="amount"/>
-                <field name="state" widget="badge" decoration-muted="state == 'draft'" decoration-primary="state == 'submitted'" decoration-success="state == 'approved'" decoration-warning="state == 'posted'" decoration-info="state == 'completed'" decoration-danger="state == 'rejected'"/>
+                <field name="proposer_id" widget="many2one_avatar"/>
+                <field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="currency_id" optional="hide"/>
+                <field name="state" string="Trạng thái" widget="badge" decoration-muted="state == 'draft'" decoration-primary="state == 'submitted'" decoration-success="state == 'approved'" decoration-warning="state == 'posted'" decoration-info="state == 'completed'" decoration-danger="state == 'rejected'"/>
             </tree>
         </field>
     </record>
@@ -31,17 +32,21 @@
                     <group>
                         <field name="name"/>
                         <field name="date"/>
-                        <field name="proposer_id"/>
-                        <field name="amount"/>
+                        <field name="proposer_id" widget="many2one_avatar"/>
+                        <field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        <field name="currency_id" invisible="1"/>
                     </group>
                     <field name="expense_proposal_lines">
                         <tree>
+                            <field name="sequence" widget="handle"/>
                             <field name="content" width="20%"/>
                             <field name="date" width="20%"/>
+                            <field name ="object" width="20%" widget="many2one_avatar"/>
                             <field name="cost_classification" width="20%"/>
-                            <field name="amount" width="20%"/>
+                            <field name="amount" width="20%" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                             <field name="expense_category_id" width="20%"/>
                             <button name="action_view_payment_request" type="object" string="Xem Phiếu Chi" icon="fa-money" invisible="'payment_request_id', '=', False"/>
+                            <field name ="currency_id" optional="hide"/>
                         </tree>
                     </field>
                 </sheet>

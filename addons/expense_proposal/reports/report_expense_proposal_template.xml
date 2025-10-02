@@ -1,0 +1,212 @@
+<odoo>
+    <!-- Layout riêng -->
+    <template id="report_expense_proposal_layout">
+        <t t-call="web.html_container">
+            <div class="header" style="display:flex; justify-content:space-between; font-family:Times New Roman;">
+                <table style="width:100%; border-collapse:collapse; border:1px solid #fff;">
+                    <tr>
+                        <!-- Logo -->
+                        <td style="text-align:left; width:50%; border:none;">
+                            <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id" alt="Company Logo" style="max-width:160px;"/>
+                        </td>
+                        <!-- Company info -->
+                        <td style="text-align:right; font-size:11px; text-transform:capitalize; width:50%; border:none;">
+                            <span t-esc="res_company.name" style="text-transform:uppercase;"/>
+                            <br/>
+ MST: <span t-esc="res_company.partner_id.vat"/>
+                        <br/>
+ Địa chỉ: <span t-esc="res_company.partner_id.street"/>
+                    <br/>
+ SĐT: <span t-esc="res_company.phone_accounting"/>
+                <br/>
+ Email: <span style="text-transform:lowercase;" t-esc="res_company.account_email"/>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div class="article" style="font-family:Times New Roman; font-size:11pt; line-height:1.5;">
+    <t t-raw="0"/>
+</div>
+
+<div class="footer" style="text-align:center; padding:5mm; font-size:10pt;">
+    <p>Trang <span class="page"/>
+ /    <span class="topage"/>
+</p>
+</div>
+</t>
+</template>
+
+<!-- Report template chính -->
+<template id="report_expense_proposal_template">
+<t t-call="expense_proposal.report_expense_proposal_layout">
+<t t-foreach="enumerate(docs)" t-as="doc_with_index">
+<t t-set="o" t-value="doc_with_index[1]"/>
+
+<div class="page" style="font-family:'Times New Roman', serif;">
+    <!-- ===== CSS ===== -->
+    <style>
+                        table.report-table {
+                            width: 100%; border-collapse: collapse;
+                            border: 1px solid black; font-size: 16px;
+                        }
+                        table.report-table th, table.report-table td {
+                            border: 1px solid black; padding: 6px; vertical-align: middle !important;
+                        }
+                        table.report-table th {
+                            background: #f2f2f2; text-align: center; font-weight: bold;
+                        }
+                        table.general_information {
+                            width: 100%; border: none; font-size: 16px;
+                            margin-bottom: 15px; font-family: "Times New Roman", serif;
+                            border:none; !important;
+                        }
+                        table.general_information td {
+                            width: 50%; vertical-align: top; padding: 5px 10px;
+                            background-color: white; border: none;
+                        }
+                        .signature table { width:100%; border:none; border-collapse:collapse; }
+                        .signature td.sig-cell {
+                            width: 50%;
+                            text-align: center;
+                            vertical-align: top;
+                            padding: 10px;
+                        }
+                        .signature .sign-hint {
+                            font-style: italic;
+                            margin-bottom: 6px;
+                        }
+                        .signature .sign-name {
+                            font-style: italic;
+                            margin-top: 20px;
+                        }
+    </style>
+
+    <!-- ===== Tiêu đề ===== -->
+    <h1 style="text-align:center; font-weight:bold; margin-bottom:20px; padding:10px 0">
+                        PHIẾU ĐỀ XUẤT CHI PHÍ
+    </h1>
+
+    <!-- ===== Thông tin chung ===== -->
+    <table class="general_information">
+        <tr>
+            <td>
+                <p>
+                    <b>Số phiếu:</b>
+                    <t t-esc="o.name"/>
+                </p>
+                <p>
+                    <b>Người đề xuất:</b>
+                    <t t-esc="o.proposer_id.name"/>
+                </p>
+            </td>
+            <td>
+                <p>
+                    <b>Ngày:</b>
+                    <t t-esc="o.date"/>
+                </p>
+                <p>
+                    <b>Trạng thái:</b>
+                    <t t-esc="o.state"/>
+                </p>
+            </td>
+        </tr>
+    </table>
+
+    <!-- ===== Bảng chi tiết ===== -->
+    <t t-set="format_vnd" t-value="lambda a: ('{:,.0f}'.format(a)).replace(',', '.') + ' ₫'"/>
+    <table class="report-table">
+        <thead style="background:#27B1FC !important">
+            <tr style="font-weight:bold; color:#000;">
+                <th>STT</th>
+                <th>Nội dung chi</th>
+                <th>Ngày dự chi</th>
+                <th>Số tiền</th>
+                <th>Dự án</th>
+                <th>Đối tượng / NCC</th>
+                <th>Khoản mục</th>
+                <th>Ghi chú</th>
+            </tr>
+        </thead>
+        <tbody>
+            <t t-foreach="enumerate(o.expense_proposal_lines)" t-as="line_with_index">
+                <t t-set="i" t-value="line_with_index[0]"/>
+                <t t-set="line" t-value="line_with_index[1]"/>
+                <tr>
+                    <td class="text-center">
+                        <t t-esc="i+1"/>
+                    </td>
+                    <td>
+                        <t t-esc="line.content"/>
+                    </td>
+                    <td class="text-center">
+                        <t t-esc="line.date"/>
+                    </td>
+                    <td class="text-end">
+                        <t t-esc="format_vnd(line.amount)"/>
+                    </td>
+                    <td>
+                        <t t-esc="line.project_id.name or ''"/>
+                    </td>
+                    <td>
+                        <t t-esc="line.object.name or ''"/>
+                    </td>
+                    <td>
+                        <t t-esc="line.expense_category_id.name or ''"/>
+                    </td>
+                    <td>
+                        <t t-esc="line.note or ''"/>
+                    </td>
+                </tr>
+            </t>
+            <tr style="font-weight:bold;">
+                <td colspan="3" class="text-right">Tổng cộng</td>
+                <td class="text-end">
+                    <t t-esc="format_vnd(o.amount)"/>
+                </td>
+                <td colspan="4"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ===== Chữ ký ===== -->
+    <div class="signature" style="margin-top:50px; font-size:16px;">
+        <table style="width:100%; border:none; border-collapse:collapse;">
+            <tr>
+                <td class="sig-cell">
+                    <strong>NGƯỜI ĐỀ XUẤT</strong>
+                </td>
+                <td class="sig-cell">
+                    <strong>GIÁM ĐỐC</strong>
+                </td>
+            </tr>
+            <tr>
+                <td class="sig-cell">
+                    <div class="sign-hint">(Ký, họ tên)</div>
+                    <div class="sign-slot">
+                        <div class="sign-name">
+                            <t t-esc="o.proposer_id.name"/>
+                        </div>
+                    </div>
+                </td>
+                <td class="sig-cell">
+                    <div class="sign-hint">(Ký, họ tên)</div>
+                    <div class="sign-slot">
+                        <div class="sign-name">
+                            <t t-esc="o.director_user_id.name or ''"/>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Ngắt trang -->
+    <t t-if="(doc_with_index[0] + 1) &lt; len(docs)">
+        <div style="page-break-before: always;"></div>
+    </t>
+</div>
+</t>
+</t>
+</template>
+</odoo>

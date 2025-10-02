@@ -6,9 +6,9 @@
             <form string="Nhóm chi phí">
                 <sheet>
                     <group colspan="2">
-                        <field name="object"/>
+                        <field name="object" widget="many2one_avatar"/>
                         <field name="content"/>
-                        <field name="amount"/>
+                        <field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                         <field name="date"/>
                         <field name="cost_classification"/>
                         <field name="expense_category_id"/>
