@@ -102,7 +102,7 @@ class ProposalSheet(models.Model):
         self.message_post(body=_("Đã tạo %s PO (mỗi NCC 1 đơn) từ Phiếu Đề Xuất.") % len(created_pos))
         # SAU KHI tạo xong PO -> đẩy task sang “Mua Hàng”
         self._push_task_to_purchase_stage()
-        action = self.env.ref("purchase.purchase_form_action").read()[0]
+        action = self.env.ref("purchase.purchase_form_action").sudo().read()[0]
         action["domain"] = [("id", "in", created_pos.ids)]
         if len(created_pos) == 1:
             action.update({"view_mode": "form", "res_id": created_pos.id})
