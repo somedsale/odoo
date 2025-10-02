@@ -71,7 +71,7 @@ class DailyCashFlowWizard(models.TransientModel):
         ])
         receipts = self.env['account.receipt'].search([
             ('date', '=', report_date),
-            ('state', '=', 'done'),
+            ('state', '=', 'posted'),
         ])
 
         # Tính tổng/ tồn cuối -> lưu để hôm sau gợi ý
