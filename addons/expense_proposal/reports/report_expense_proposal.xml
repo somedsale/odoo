@@ -1,0 +1,23 @@
+<odoo>
+    <!-- Action In PDF -->
+    <record id="action_report_expense_proposal_pdf" model="ir.actions.report">
+        <field name="name">In PDF</field>
+        <field name="model">expense.proposal</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">expense_proposal.report_expense_proposal_template</field>
+        <field name="print_report_name">'Expense_Proposal_' + object.name</field>
+        <field name="binding_model_id" ref="model_expense_proposal"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_expense_proposal"/>
+    </record>
+
+    <!-- Action Xem trước PDF -->
+    <record id="action_view_pdf_expense_proposal" model="ir.actions.server">
+        <field name="name">Xem trước PDF</field>
+        <field name="model_id" ref="model_expense_proposal"/>
+        <field name="binding_model_id" ref="model_expense_proposal"/>
+        <field name="binding_type">action</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_view_pdf()</field>
+    </record>
+</odoo>
