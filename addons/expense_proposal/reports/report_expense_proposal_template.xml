@@ -10,7 +10,7 @@
                             <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id" alt="Company Logo" style="max-width:160px;"/>
                         </td>
                         <!-- Company info -->
-                        <td style="text-align:right; font-size:11px; text-transform:capitalize; width:50%; border:none;">
+                        <td style="text-align:right; font-size:12px; text-transform:capitalize; width:50%; border:none;">
                             <span t-esc="res_company.name" style="text-transform:uppercase;"/>
                             <br/>
  MST: <span t-esc="res_company.partner_id.vat"/>
@@ -48,7 +48,7 @@
     <style>
                         table.report-table {
                             width: 100%; border-collapse: collapse;
-                            border: 1px solid black; font-size: 16px;
+                            font-size: 16px;
                         }
                         table.report-table th, table.report-table td {
                             border: 1px solid black; padding: 6px; vertical-align: middle !important;
@@ -57,15 +57,17 @@
                             background: #f2f2f2; text-align: center; font-weight: bold;
                         }
                         table.general_information {
-                            width: 100%; border: none; font-size: 16px;
+                            width: 100%;  font-size: 16px;
                             margin-bottom: 15px; font-family: "Times New Roman", serif;
-                            border:none; !important;
+                            border: 0px solid transparent !important;
                         }
                         table.general_information td {
                             width: 50%; vertical-align: top; padding: 5px 10px;
-                            background-color: white; border: none;
+                            background-color: white; 
                         }
-                        .signature table { width:100%; border:none; border-collapse:collapse; }
+                        .signature table { width:100%;
+                        border: 0px solid transparent !important;
+                         }
                         .signature td.sig-cell {
                             width: 50%;
                             text-align: center;
@@ -89,8 +91,8 @@
 
     <!-- ===== Thông tin chung ===== -->
     <table class="general_information">
-        <tr>
-            <td>
+        <tr style="border:none; !important; border:0 !important;">
+            <td style="border:none; !important; border:0 !important;">
                 <p>
                     <b>Số phiếu:</b>
                     <t t-esc="o.name"/>
@@ -100,10 +102,10 @@
                     <t t-esc="o.proposer_id.name"/>
                 </p>
             </td>
-            <td>
+            <td style="border:none; !important; border:0 !important;">
                 <p>
                     <b>Ngày:</b>
-                    <t t-esc="o.date"/>
+                    <t t-esc="o.date and o.date.strftime('%d/%m/%Y') or ''"/>
                 </p>
                 <p>
                     <b>Trạng thái:</b>
@@ -122,7 +124,6 @@
                 <th>Nội dung chi</th>
                 <th>Ngày dự chi</th>
                 <th>Số tiền</th>
-                <th>Dự án</th>
                 <th>Đối tượng / NCC</th>
                 <th>Khoản mục</th>
                 <th>Ghi chú</th>
@@ -140,13 +141,10 @@
                         <t t-esc="line.content"/>
                     </td>
                     <td class="text-center">
-                        <t t-esc="line.date"/>
+                        <t t-esc="line.date and line.date.strftime('%d/%m/%Y') or ''"/>
                     </td>
                     <td class="text-end">
                         <t t-esc="format_vnd(line.amount)"/>
-                    </td>
-                    <td>
-                        <t t-esc="line.project_id.name or ''"/>
                     </td>
                     <td>
                         <t t-esc="line.object.name or ''"/>
@@ -171,7 +169,7 @@
 
     <!-- ===== Chữ ký ===== -->
     <div class="signature" style="margin-top:50px; font-size:16px;">
-        <table style="width:100%; border:none; border-collapse:collapse;">
+        <table style="width:100%;">
             <tr>
                 <td class="sig-cell">
                     <strong>NGƯỜI ĐỀ XUẤT</strong>
