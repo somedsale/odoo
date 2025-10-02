@@ -12,7 +12,7 @@ class ExpenseProposal(models.Model):
     date = fields.Date(string='Ngày đề xuất', default=fields.Date.today, required=True)
     proposer_id = fields.Many2one('res.users', string='Người đề xuất', default=lambda self: self.env.user, required=True)
     amount = fields.Float(string='Tổng số tiền đề xuất', required=True, compute='_compute_amount', readonly=True)
-    expense_proposal_lines = fields.One2many('expense.proposal.line', 'expense_proposal_id', string='Chi tiết')
+    expense_proposal_lines = fields.One2many('expense.proposal.line', 'expense_proposal_id', string='Chi tiết',order='sequence')
     payment_request_count = fields.Integer(string="Số phiếu chi", compute='_compute_payment_request_count')
     state = fields.Selection([
         ('draft', 'Nháp'),
@@ -224,6 +224,14 @@ class ExpenseProposal(models.Model):
             rec.payment_request_count = self.env['account.payment.request'].search_count([
                 ('expense_proposal_id', '=', rec.id)
             ])
+    def action_view_pdf(self):
+        self.ensure_one()
+        filename = f"Expense_Proposal_{self.name}.pdf"
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/report/pdf/expense_proposal.report_expense_proposal_template/{self.id}?filename={filename}',
+            'target': 'new',
+        }
 class ExpenseProposalLine(models.Model):
     _name = 'expense.proposal.line'
     _description = 'Expense Proposal Line'
@@ -249,6 +257,7 @@ class ExpenseProposalLine(models.Model):
     )
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
     payment_request_id = fields.Many2one('account.payment.request', string='Phiếu Chi', readonly=True)
+    sequence = fields.Integer(string="Thứ tự", default=10)
 
     def action_view_payment_request(self):
         self.ensure_one()
