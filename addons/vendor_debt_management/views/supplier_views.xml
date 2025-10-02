@@ -71,6 +71,19 @@
         <field name="limit">80</field>
         <field name="context">{}</field>
     </record>
+    <record id="res_partner_view_search" model="ir.ui.view">
+        <field name="name">res_partner_view_search</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='customer']" position="replace">
+                <filter string="Khách hàng" name="customer" domain="[('customer_rank','>', 0)]"/>
+            </xpath>
+            <xpath expr="//filter[@name='supplier']" position="replace">
+                <filter string="Nhà cung cấp" name="supplier" domain="[('supplier_rank','>', 0)]"/>
+            </xpath>
+        </field>
+    </record>
     <menuitem id="menu_supplier_summary" name="Tổng hợp công nợ" parent="menu_supplier_contract_root" action="action_supplier_summary" sequence="20"/>
     <menuitem id="menu_supplier_ids" name="Nhà cung cấp" parent="menu_supplier_contract_root" action="account.res_partner_action_supplier" sequence="10"/>
 
