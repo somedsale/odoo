@@ -107,10 +107,6 @@
                     <b>Ngày:</b>
                     <t t-esc="o.date and o.date.strftime('%d/%m/%Y') or ''"/>
                 </p>
-                <p>
-                    <b>Trạng thái:</b>
-                    <t t-esc="o.state"/>
-                </p>
             </td>
         </tr>
     </table>
@@ -181,16 +177,16 @@
             <tr>
                 <td class="sig-cell">
                     <div class="sign-hint">(Ký, họ tên)</div>
-                    <div class="sign-slot">
-                        <div class="sign-name">
+                    <div class="sign-slot" style="height:80px;">                        <!-- chừa chỗ ký -->
+                        <div class="sign-name" style="margin-top:60px;">
                             <t t-esc="o.proposer_id.name"/>
                         </div>
                     </div>
                 </td>
                 <td class="sig-cell">
                     <div class="sign-hint">(Ký, họ tên)</div>
-                    <div class="sign-slot">
-                        <div class="sign-name">
+                    <div class="sign-slot" style="height:80px;">                        <!-- chừa chỗ ký -->
+                        <div class="sign-name" style="margin-top:60px;">
                             <t t-esc="o.director_user_id.name or ''"/>
                         </div>
                     </div>
