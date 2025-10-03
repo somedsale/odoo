@@ -10,8 +10,9 @@
                 <field name="name"/>
                 <field name="invoice_number"/>
                 <field name="date"/>
-                <field name="partner_id"/>
                 <field name="contract_id"/>
+                <field name="project_id"/>
+                <field name="partner_id"/>
                 <field name="amount_total"/>
             </tree>
         </field>
@@ -28,8 +29,9 @@
                         <field name="name"/>
                         <field name="invoice_number"/>
                         <field name="date"/>
-                        <field name="partner_id"/>
                         <field name="contract_id"/>
+                        <field name="project_id"/>
+                        <field name="partner_id"/>
                         <field name="amount_total"/>
                     </group>
                 </sheet>
@@ -54,6 +56,7 @@
                 <searchpanel>
                     <field name="partner_id" string="Khách hàng" select="multi"/>
                     <field name="contract_id" string="Hợp đồng" select="multi"/>
+                    <field name="project_id" string="Dự án" select="multi"/>
                 </searchpanel>
             </search>
         </field>

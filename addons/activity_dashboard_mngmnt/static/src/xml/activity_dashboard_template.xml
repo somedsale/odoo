@@ -307,7 +307,7 @@
             </t>
 
             <t t-if="done_activity and done_activity.length">
-                <div class="table-responsive">
+                <div class="table-responsive-somed">
                     <table class="table table-modern" width="100%">
                         <thead>
                             <tr class="table_head">

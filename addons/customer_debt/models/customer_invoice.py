@@ -17,7 +17,7 @@ class CustomerInvoice(models.Model):
     # Số hóa đơn thật (người dùng nhập tay)
     invoice_number = fields.Char(string="Số hóa đơn", tracking=True)
     date = fields.Date(string="Ngày HĐ", default=fields.Date.today)
-    partner_id = fields.Many2one('res.partner', string="Khách hàng", required=True)
+    partner_id = fields.Many2one('res.partner', string="Khách hàng", required=True,domain="[('customer_rank', '>', 0), ('parent_id', '=', False)]")
     
     # Gắn hợp đồng (nếu có) – không bắt buộc
     contract_id = fields.Many2one(
@@ -32,6 +32,23 @@ class CustomerInvoice(models.Model):
         string="Tiền tệ", 
         default=lambda self: self.env.company.currency_id
     )
+    project_id = fields.Many2one(
+    'project.project',
+    string="Dự án",
+    ondelete="set null"
+)
+    display_name = fields.Char(
+        string="Hiển thị",
+        compute="_compute_display_name",
+        store=True
+    )
+    @api.depends('name', 'invoice_number')
+    def _compute_display_name(self):
+        for rec in self:
+            if rec.invoice_number:
+                rec.display_name = f"[{rec.invoice_number}] {rec.name}"
+            else:
+                rec.display_name = rec.name
     @api.model
     def create(self, vals):
         if vals.get('name', "New") == "New":
@@ -39,23 +56,19 @@ class CustomerInvoice(models.Model):
         return super().create(vals)
     @api.model
     def default_get(self, fields_list):
-        """Khi tạo hóa đơn từ hợp đồng -> gán luôn partner của hợp đồng"""
+        """Khi tạo hóa đơn từ hợp đồng -> gán luôn partner và project"""
         res = super().default_get(fields_list)
         if self.env.context.get('default_contract_id'):
             contract = self.env['customer.contract'].browse(self.env.context['default_contract_id'])
-            if contract and contract.partner_id:
-                res['partner_id'] = contract.partner_id.id
+            if contract:
+                if contract.partner_id:
+                    res['partner_id'] = contract.partner_id.id
+                if contract.project_id:
+                    res['project_id'] = contract.project_id.id
         return res
     @api.onchange('contract_id')
     def _onchange_contract_id(self):
         if self.contract_id:
             self.partner_id = self.contract_id.partner_id
-    def name_get(self):
-            result = []
-            for rec in self:
-                if rec.invoice_number:
-                    display = f"[{rec.invoice_number}] {rec.name}"
-                else:
-                    display = rec.name
-                result.append((rec.id, display))
-            return result
+            self.project_id = self.contract_id.project_id
+    
