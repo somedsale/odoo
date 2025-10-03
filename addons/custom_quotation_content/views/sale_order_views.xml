@@ -31,7 +31,7 @@
                 </xpath>
                 <xpath expr="//field[@name=&apos;date_order&apos;]" position="after">
                     <field name="x_project_name" placeholder="Tên dự án"/>
-                    <field name="sales_category_id" options="{'no_create': False}"/>
+                    <field name="sales_category_ids" widget="many2many_tags" options="{'color_field': 'color'}" />
                     <field name="x_warranty_duration_id" options="{&apos;no_create&apos;: False}"/>
                     <field name="x_delivery_location"/>
                     <field name="x_payment_method_id" options="{&apos;no_create&apos;: False}"/>
