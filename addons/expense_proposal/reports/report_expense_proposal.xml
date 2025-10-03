@@ -5,7 +5,7 @@
         <field name="model">expense.proposal</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">expense_proposal.report_expense_proposal_template</field>
-        <field name="print_report_name">'Expense_Proposal_' + object.name</field>
+        <field name="print_report_name">'DeXuatChiPhi_' + object.name</field>
         <field name="binding_model_id" ref="model_expense_proposal"/>
         <field name="binding_type">report</field>
         <field name="paperformat_id" ref="paperformat_expense_proposal"/>
