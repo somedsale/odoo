@@ -20,7 +20,8 @@ class CustomerContract(models.Model):
         'res.partner', 
         string="Khách hàng", 
         required=True, 
-        tracking=True
+        tracking=True,
+        domain="[('customer_rank', '>', 0), ('parent_id', '=', False)]"
     )
     amount_total = fields.Monetary(
         string="Giá trị HĐ", 
@@ -58,6 +59,11 @@ class CustomerContract(models.Model):
         currency_field="currency_id"
     )
     warranty_time = fields.Integer(string="Thời gian bảo hành (tháng)")
+    project_id = fields.Many2one(
+    'project.project',
+    string="Dự án",
+    ondelete="set null"
+)
     @api.model
     def create(self, vals):
         if vals.get('name', "New") == "New":
@@ -73,12 +79,19 @@ class CustomerContract(models.Model):
             invoiced = sum(contract.invoice_ids.mapped('amount_total'))
             contract.amount_invoiced = invoiced
             contract.amount_due = invoiced
-    def name_get(self):
-        result = []
+    display_name = fields.Char(
+        string="Hiển thị",
+        compute="_compute_display_name",
+        store=True
+    )
+    @api.depends('contract_number', 'name')
+    def _compute_display_name(self):
         for rec in self:
             if rec.contract_number:
-                display = f"[{rec.contract_number}] {rec.name}"
+                rec.display_name = f"[{rec.contract_number}] {rec.name}"
             else:
-                display = rec.name
-            result.append((rec.id, display))
-        return result
+                rec.display_name = rec.name
+    @api.onchange('project_id')
+    def _onchange_project_id(self):
+        if self.project_id and self.project_id.partner_id:
+            self.partner_id = self.project_id.partner_id

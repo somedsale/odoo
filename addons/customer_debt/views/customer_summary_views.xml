@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ================== TREE VIEW ================== -->
+    <record id="view_customer_debt_summary_tree" model="ir.ui.view">
+        <field name="name">customer.debt.summary.tree</field>
+        <field name="model">customer.debt.summary</field>
+        <field name="arch" type="xml">
+            <tree string="Tổng hợp công nợ KH">
+                <field name="partner_id"/>
+                <field name="project_id"/>
+                <field name="contract_id"/>
+                <field name="amount_total" sum="Tổng HĐ"/>
+                <field name="amount_invoiced" sum="Đã xuất HĐ"/>
+                <field name="amount_paid" sum="Đã thanh toán"/>
+                <field name="residual" sum="Còn nợ"/>
+                <field name="currency_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ================== PIVOT VIEW ================== -->
+    <record id="view_customer_debt_summary_pivot" model="ir.ui.view">
+        <field name="name">customer.debt.summary.pivot</field>
+        <field name="model">customer.debt.summary</field>
+        <field name="arch" type="xml">
+            <pivot string="Tổng hợp công nợ KH">
+                <field name="partner_id" type="row"/>
+                <field name="project_id" type="row"/>
+                <field name="contract_id" type="row"/>
+                <field name="amount_total" type="measure"/>
+                <field name="amount_invoiced" type="measure"/>
+                <field name="amount_paid" type="measure"/>
+                <field name="residual" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ================== GRAPH VIEW ================== -->
+    <record id="view_customer_debt_summary_graph" model="ir.ui.view">
+        <field name="name">customer.debt.summary.graph</field>
+        <field name="model">customer.debt.summary</field>
+        <field name="arch" type="xml">
+            <graph string="Tổng hợp công nợ KH" type="bar">
+                <field name="partner_id" type="row"/>
+                <field name="residual" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ================== ACTION ================== -->
+    <record id="action_customer_debt_summary" model="ir.actions.act_window">
+        <field name="name">Tổng hợp công nợ KH</field>
+        <field name="res_model">customer.debt.summary</field>
+        <field name="view_mode">tree,pivot,graph</field>
+        <field name="target">current</field>
+    </record>
+
+    <!-- ================== MENU ================== -->
+
+    <menuitem id="menu_customer_debt_summary" name="Tổng hợp công nợ khách hàng" parent="menu_customer_debt_root" action="action_customer_debt_summary" sequence="100"/>
+
+</odoo>

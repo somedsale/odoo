@@ -9,7 +9,7 @@ class ProjectExpense(models.Model):
     type = fields.Selection([
     ('labor', 'Chi phí nhân công'),
     # ('equipment', 'Chi phí máy móc'),
-    ('other', 'Chi phí sản xuất chung'),
+    ('other', 'Chi phí khác (SXC)'),
 ], default='other', string='Loại chi phí', required=True)
     price_unit = fields.Float(string='Đơn giá', digits='Product Price', default=0.0)
     @api.model
