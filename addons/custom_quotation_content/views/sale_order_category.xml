@@ -1,0 +1,35 @@
+<odoo>
+    <record id="view_sale_order_category_tree" model="ir.ui.view">
+        <field name="name">sale.order.category.tree</field>
+        <field name="model">sale.order.category</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="color" widget="color_picker"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_sale_order_category_form" model="ir.ui.view">
+        <field name="name">sale.order.category.form</field>
+        <field name="model">sale.order.category</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="color" widget="color_picker"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_sale_order_category" model="ir.actions.act_window">
+        <field name="name">Hạng mục bán hàng</field>
+        <field name="res_model">sale.order.category</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_sale_order_category" name="Hạng mục bán hàng" parent="sale.sale_menu_root" action="action_sale_order_category" sequence="20"/>
+</odoo>

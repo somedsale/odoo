@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tree view Hóa đơn -->
+    <record id="view_customer_invoice_tree" model="ir.ui.view">
+        <field name="name">customer.invoice.tree</field>
+        <field name="model">customer.invoice</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="invoice_number"/>
+                <field name="date"/>
+                <field name="partner_id"/>
+                <field name="contract_id"/>
+                <field name="amount_total"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form view Hóa đơn -->
+    <record id="view_customer_invoice_form" model="ir.ui.view">
+        <field name="name">customer.invoice.form</field>
+        <field name="model">customer.invoice</field>
+        <field name="arch" type="xml">
+            <form string="Hóa đơn">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="invoice_number"/>
+                        <field name="date"/>
+                        <field name="partner_id"/>
+                        <field name="contract_id"/>
+                        <field name="amount_total"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_customer_invoice_search" model="ir.ui.view">
+        <field name="name">customer.invoice.search</field>
+        <field name="model">customer.invoice</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm Hóa đơn">
+                <!-- Trường tìm kiếm -->
+                <field name="partner_id" string="Khách hàng"/>
+                <field name="invoice_number" string="Số hóa đơn"/>
+                <field name="date" string="Ngày hóa đơn"/>
+
+                <!-- Bộ lọc nhanh -->
+                <filter name="filter_today" string="Hóa đơn hôm nay" domain="[('date','=',context_today())]"/>
+                <!-- <filter name="filter_this_month" string="Trong tháng này" date="month" type="date" field="date"/> -->
+
+                <!-- Panel bên trái -->
+                <searchpanel>
+                    <field name="partner_id" string="Khách hàng" select="multi"/>
+                    <field name="contract_id" string="Hợp đồng" select="multi"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action mở hóa đơn -->
+    <record id="action_customer_invoice" model="ir.actions.act_window">
+        <field name="name">Hóa đơn</field>
+        <field name="res_model">customer.invoice</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_customer_invoice_search"/>
+    </record>
+    <menuitem id="menu_customer_invoice" name="Hóa đơn" parent="menu_customer_debt_root" action="action_customer_invoice" sequence="30"/>
+</odoo>

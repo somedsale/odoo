@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu cha -->
+
+    <!-- Tree view Hợp đồng -->
+    <record id="view_customer_contract_tree" model="ir.ui.view">
+        <field name="name">customer.contract.tree</field>
+        <field name="model">customer.contract</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="contract_number"/>
+                <field name="date"/>
+                <field name="partner_id"/>
+                <field name="amount_total"/>
+                <field name="amount_invoiced"/>
+                <field name="amount_due"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form view Hợp đồng -->
+    <record id="view_customer_contract_form" model="ir.ui.view">
+        <field name="name">customer.contract.form</field>
+        <field name="model">customer.contract</field>
+        <field name="arch" type="xml">
+            <form string="Hợp đồng">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="contract_number"/>
+                        <field name="date"/>
+                        <field name="partner_id"/>
+                        <field name="amount_total"/>
+                        <field name="warranty_amount"/>
+                        <field name="warranty_time"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Hóa đơn">
+                            <field name="invoice_ids">
+                                <tree editable="bottom">
+                                    <field name="name"/>
+                                    <field name="invoice_number"/>
+                                    <field name="partner_id"/>
+                                    <field name="date"/>
+                                    <field name="amount_total"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action mở hợp đồng -->
+    <record id="action_customer_contract" model="ir.actions.act_window">
+        <field name="name">Hợp đồng</field>
+        <field name="res_model">customer.contract</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="menu_customer_debt_root" name="Công nợ khách hàng" parent="custom_account_menu.menu_accounting_custom_root" sequence="10"/>
+
+    <!-- Menu hợp đồng -->
+    <menuitem id="menu_customer_contract" name="Hợp đồng" parent="menu_customer_debt_root" action="action_customer_contract" sequence="20"/>
+</odoo>
