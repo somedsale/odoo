@@ -12,7 +12,7 @@ Module quản lý công nợ khách hàng:
     'website': "https://somed.vn",
     'category': 'Accounting',
     'version': '1.0',
-    'depends': ['base', 'mail'],
+    'depends': ['base', 'mail', 'project'],
     'data': [
         # Security
         'security/ir.model.access.csv',
@@ -20,6 +20,7 @@ Module quản lý công nợ khách hàng:
         # Views
         'views/contract_views.xml',
         'views/invoice_views.xml',
+        'views/customer_summary_views.xml',
     ],
     'installable': True,
     'application': True,

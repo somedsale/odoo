@@ -250,7 +250,7 @@
 }
 
 /* Bảng chỉ cuộn ngang khi cần */
-.table-responsive {
+.table-responsive-somed {
   width: 100%;
   flex: 1 1 auto;
   max-height: calc(100vh - 320px); /* chỉnh theo header + cards */
@@ -350,7 +350,7 @@
   }
 
   /* Table: thành card view */
-  .table-responsive {
+  .table-responsive-somed {
     max-height: none;
     overflow: visible;
   }

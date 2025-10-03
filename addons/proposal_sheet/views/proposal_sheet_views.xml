@@ -118,7 +118,7 @@
                 <field name="requested_by"/>
                 <field name="department_id"/>
                 <field name="type"/>
-                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-primary="state == 'submitted'" decoration-success="state == 'approved'" decoration-muted="state == 'done'"/>
+                <field name="state" widget="badge" decoration-muted="state == 'draft'" decoration-info="state in ['reviewed_manager', 'reviewed_accounting']" decoration-warning="state == 'waiting_accounting_paid'" decoration-primary="state == 'approved'" decoration-success="state == 'done'" decoration-danger="state in ['rejected', 'canceled']"/>
             </tree>
         </field>
     </record>
