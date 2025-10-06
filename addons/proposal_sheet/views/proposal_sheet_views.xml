@@ -113,11 +113,13 @@
         <field name="arch" type="xml">
             <tree>
                 <field name="name"/>
-                <field name="task_id"/>
+                <!-- <field name="task_id"/> -->
+                <field name ="project_id"/>
                 <field name="create_date" string="Ngày Tạo"/>
                 <field name="requested_by"/>
                 <field name="department_id"/>
                 <field name="type"/>
+                <field name="treasurer_confirmed" string="Thủ quỹ duyệt" readonly="1" groups="account.group_account_manager"/>
                 <field name="state" widget="badge" decoration-muted="state == 'draft'" decoration-info="state in ['reviewed_manager', 'reviewed_accounting']" decoration-warning="state == 'waiting_accounting_paid'" decoration-primary="state == 'approved'" decoration-success="state == 'done'" decoration-danger="state in ['rejected', 'canceled']"/>
             </tree>
         </field>
