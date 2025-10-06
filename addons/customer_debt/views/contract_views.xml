@@ -13,9 +13,10 @@
                 <field name="date"/>
                 <field name="project_id"/>
                 <field name="partner_id"/>
-                <field name="amount_total"/>
-                <field name="amount_invoiced"/>
-                <field name="amount_due"/>
+                <field name="amount_total" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="amount_invoiced" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="amount_due" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="currency_id" string="Tiền tệ" optional="hide"/>
             </tree>
         </field>
     </record>
@@ -47,7 +48,8 @@
                                     <field name="project_id"/>
                                     <field name="partner_id"/>
                                     <field name="date"/>
-                                    <field name="amount_total"/>
+                                    <field name="amount_total" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="currency_id" string="Tiền tệ" optional="hide"/>
                                 </tree>
                             </field>
                         </page>
@@ -56,12 +58,36 @@
             </form>
         </field>
     </record>
+    <record id="view_customer_contract_search" model="ir.ui.view">
+        <field name="name">customer.contract.search</field>
+        <field name="model">customer.contract</field>
+        <field name="arch" type="xml">
+            <search string="Tìm hợp đồng">
+                <!-- Các trường tìm kiếm cơ bản -->
+                <field name="date"/>
+                <field name="partner_id"/>
+                <field name="project_id"/>
+
+                <!-- Bộ lọc nhanh -->
+                <filter string="Hôm nay" name="today" domain="[('date','=', context_today())]"/>
+                <filter string="Ngày ký" name="date_filter" date="date"/>
+                <filter string="Ngày tạo" name="create_date_filter" date="create_date"/>
+                <separator/>
+                <!-- Search Panel -->
+                <searchpanel>
+                    <field name="partner_id" string="Khách hàng" icon="fa-user" enable_counters="1"/>
+                    <field name="project_id" string="Dự án" icon="fa-folder" enable_counters="1"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
 
     <!-- Action mở hợp đồng -->
     <record id="action_customer_contract" model="ir.actions.act_window">
         <field name="name">Hợp đồng</field>
         <field name="res_model">customer.contract</field>
         <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_customer_contract_search"/>
     </record>
     <record id="action_customer_only" model="ir.actions.act_window">
         <field name="name">Khách hàng</field>

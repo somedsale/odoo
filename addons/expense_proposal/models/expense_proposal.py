@@ -24,6 +24,10 @@ class ExpenseProposal(models.Model):
     ], string='Status', default='draft', track_visibility='onchange')
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
     director_user_id = fields.Many2one('res.users', string="Giám Đốc", default=lambda self: self._default_director_user(), readonly=True)
+    general_note = fields.Text(
+    string="Ghi chú / Mục đích tổng quát",
+    help="Mô tả ngắn gọn về lý do hoặc mục đích của phiếu đề xuất chi phí."
+)
     @api.model
     def _default_director_user(self):
         group = self.env.ref('custom_director_role.group_director')  # đổi lại module ID cho đúng

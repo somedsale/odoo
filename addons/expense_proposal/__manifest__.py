@@ -18,6 +18,11 @@
         'reports/report_expense_proposal_template.xml',
         'wizard/view_wizard.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'expense_proposal/static/src/css/style.css',
+        ],
+    },
     'installable': True,
     'application': True,
 }
