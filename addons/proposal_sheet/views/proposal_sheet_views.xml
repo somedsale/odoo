@@ -113,12 +113,17 @@
         <field name="arch" type="xml">
             <tree>
                 <field name="name"/>
-                <field name="task_id"/>
+                <!-- <field name="task_id"/> -->
+                <field name ="project_id"/>
                 <field name="create_date" string="Ngày Tạo"/>
                 <field name="requested_by"/>
                 <field name="department_id"/>
                 <field name="type"/>
+                <field name="amount_total" optional="show" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
+                <field name="amount_total_taxes" string="Tổng (sau thuế)" optional="show" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
+                <field name="treasurer_confirmed" string="Thủ quỹ duyệt" readonly="1" groups="account.group_account_manager"/>
                 <field name="state" widget="badge" decoration-muted="state == 'draft'" decoration-info="state in ['reviewed_manager', 'reviewed_accounting']" decoration-warning="state == 'waiting_accounting_paid'" decoration-primary="state == 'approved'" decoration-success="state == 'done'" decoration-danger="state in ['rejected', 'canceled']"/>
+                <field name="currency_id" string="Tiền tệ" optional="hide"/>
             </tree>
         </field>
     </record>
@@ -141,7 +146,13 @@
                 <group expand="0" string="Nhóm Theo">
                     <filter string="Trạng Thái" name="group_by_state" context="{'group_by': 'state'}"/>
                     <filter string="Loại Đề Xuất" name="group_by_type" context="{'group_by': 'type'}"/>
+                    <filter string="Công trình" name="group_by_project" context="{'group_by': 'project_id'}"/>
                 </group>
+                <searchpanel>
+                    <!-- Nếu proposal.sheet có field project_id -->
+                    <field name="project_id" string="Dự án" icon="fa-building" enable_counters="1"/>
+                    <field name="state" string="Trạng thái" icon="fa-clipboard-list" enable_counters="1"/>
+                </searchpanel>
             </search>
         </field>
     </record>

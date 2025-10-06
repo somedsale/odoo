@@ -13,7 +13,8 @@
                 <field name="contract_id"/>
                 <field name="project_id"/>
                 <field name="partner_id"/>
-                <field name="amount_total"/>
+                <field name="amount_total" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="currency_id" string="Tiền tệ" optional="hide"/>
             </tree>
         </field>
     </record>

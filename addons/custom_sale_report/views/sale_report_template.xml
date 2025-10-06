@@ -4,11 +4,11 @@
         <field name="name">Custom Sale Report A4 Portrait</field>
         <field name="format">A4</field>
         <field name="orientation">Portrait</field>
-        <field name="margin_top">30</field><!-- Điều chỉnh từ 40mm xuống 30mm -->
-        <field name="margin_bottom">30</field><!-- Tăng từ 23mm lên 30mm -->
-        <field name="margin_left">10</field><!-- Tăng từ 7mm lên 10mm -->
-        <field name="margin_right">10</field><!-- Tăng từ 7mm lên 10mm -->
-        <field name="header_spacing">25</field><!-- Giảm từ 35mm xuống 25mm -->
+        <field name="margin_top">30</field>        <!-- Điều chỉnh từ 40mm xuống 30mm -->
+        <field name="margin_bottom">30</field>        <!-- Tăng từ 23mm lên 30mm -->
+        <field name="margin_left">10</field>        <!-- Tăng từ 7mm lên 10mm -->
+        <field name="margin_right">10</field>        <!-- Tăng từ 7mm lên 10mm -->
+        <field name="header_spacing">25</field>        <!-- Giảm từ 35mm xuống 25mm -->
         <field name="dpi">90</field>
     </record>
     <template id="sale_report_layout">
@@ -16,7 +16,8 @@
             <t t-set="o" t-value="o or doc"/>
             <div class="header"></div>
             <div class="article" style="font-family: Times New Roman; font-size: 11pt; line-height: 1.5;">
-                <t t-raw="0"/><!-- Nội dung chính của báo cáo -->
+                <t t-raw="0"/>
+                <!-- Nội dung chính của báo cáo -->
             </div>
             <div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt;">
                 <p>
@@ -24,7 +25,7 @@
                 </p>
             </div>
         </t>
-    </template><!-- Template for Sale Contract Report -->
+    </template>    <!-- Template for Sale Contract Report -->
     <template id="sale_report_template">
         <t t-call="custom_sale_report.sale_report_layout">
             <div class="page" style="font-family: Times New Roman, sans-serif; font-size: 14px; color: #333; padding: 20px;">
@@ -32,35 +33,47 @@
                     <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id" alt="Company Logo" style="max-width: 160px;"/>
                 </div>
                 <h2 style="text-align: center; color: #2c3e50;">Báo cáo Phòng Kinh doanh</h2>
-                <h3 style="text-align: left; color: #34495e;">Báo cáo hàng tuần</h3>
+                <h3 style="text-align: left; color: #34495e;">Báo cáo tháng</h3>
 
                 <!-- Week Table -->
                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
                     <thead>
                         <tr>
                             <th style="width: 40%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px; text-align: center;">Nội dung</th>
-                            <th style="width: 30%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px; text-align: center;">Mô tả chi tiết</th>
+                            <th style="width: 30%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px; text-align: center;">Số lượng</th>
                             <th style="width: 30%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px; text-align: center;">Giá trị trước thuế</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td style="width: 40%; border: 1px solid #ccc; padding: 8px;"><t t-esc="week_data['period']"/></td>
-                            <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: center"><t t-esc="week_data['count']"/></td>
+                            <td style="width: 40%; border: 1px solid #ccc; padding: 8px;">
+                                <t t-esc="week_data['period']"/>
+                            </td>
+                            <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: center">
+                                <t t-esc="week_data['count']"/>
+                            </td>
                             <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right;">
                                 <t t-esc="week_data['total_amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                             </td>
                         </tr>
                         <tr>
-                            <td style="border: 1px solid #ccc; padding: 8px;"><t t-esc="month_data['period']"/></td>
-                            <td style="border: 1px solid #ccc; padding: 8px; text-align: center"><t t-esc="month_data['count']"/></td>
+                            <td style="border: 1px solid #ccc; padding: 8px;">
+                                <t t-esc="month_data['period']"/>
+                            </td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: center">
+                                <t t-esc="month_data['count']"/>
+                            </td>
                             <td style="border: 1px solid #ccc; padding: 8px; text-align: right;">
                                 <t t-esc="month_data['total_amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                             </td>
                         </tr>
                         <tr>
-                            <td style="border: 1px solid #ccc; padding: 8px;"><t t-esc="quarter_data['period']"/></td>
-                            <td style="border: 1px solid #ccc; padding: 8px; text-align: center"><t t-esc="quarter_data['count']"/></td>
+                            <td style="border: 1px solid #ccc; padding: 8px;">
+                                <t t-esc="quarter_data['period']"/>
+                            </td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: center">
+                                <t t-esc="quarter_data['count']"/>
+                            </td>
                             <td style="border: 1px solid #ccc; padding: 8px; text-align: right;">
                                 <t t-esc="quarter_data['total_amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                             </td>
@@ -75,7 +88,7 @@
                         <tr>
                             <th style="width: 40%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Mô tả</th>
                             <th style="width: 30%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Giá trị trước thuế</th>
-                            <th style="width: 30%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Ghi chú</th>
+                            <th style="width: 30%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Trạng thái</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -83,11 +96,15 @@
                         <t t-foreach="contracts" t-as="contract">
                             <t t-set="sum_total_amount" t-value="sum_total_amount + contract.total_amount"/>
                             <tr>
-                                <td style="width: 40%; border: 1px solid #ccc; padding: 8px;"><t t-esc="contract.name"/></td>
+                                <td style="width: 40%; border: 1px solid #ccc; padding: 8px;">
+                                    <t t-esc="contract.name"/>
+                                </td>
                                 <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right;">
                                     <t t-esc="contract.total_amount" t-options="{'widget': 'monetary', 'display_currency': contract.currency_id}"/>
                                 </td>
-                                <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right"><t t-esc="contract.note or ''"/></td>
+                                <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right">
+                                    <t t-esc="contract.note or ''"/>
+                                </td>
                             </tr>
                         </t>
                         <tr>
@@ -95,7 +112,7 @@
                             <td style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
                                 <t t-esc="sum_total_amount" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                             </td>
-                            <td  style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
                             </td>
                         </tr>
                         <t t-if="not contracts">
@@ -113,7 +130,7 @@
                         <tr>
                             <th style="width: 40%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Mô tả</th>
                             <th style="width: 30%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Giá trị trước thuế</th>
-                            <th style="width: 30%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Ghi chú</th>
+                            <th style="width: 30%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Trạng thái</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -121,11 +138,15 @@
                         <t t-foreach="contract_negotiations" t-as="contract">
                             <t t-set="sum_total_amount" t-value="sum_total_amount + contract.total_amount"/>
                             <tr>
-                                <td style="width: 40%; border: 1px solid #ccc; padding: 8px;"><t t-esc="contract.name"/></td>
+                                <td style="width: 40%; border: 1px solid #ccc; padding: 8px;">
+                                    <t t-esc="contract.name"/>
+                                </td>
                                 <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right;">
                                     <t t-esc="contract.total_amount" t-options="{'widget': 'monetary', 'display_currency': contract.currency_id}"/>
                                 </td>
-                                <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right"><t t-esc="contract.note or ''"/></td>
+                                <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right">
+                                    <t t-esc="contract.note or ''"/>
+                                </td>
                             </tr>
                         </t>
                         <tr>
@@ -133,7 +154,7 @@
                             <td style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
                                 <t t-esc="sum_total_amount" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                             </td>
-                            <td  style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
                             </td>
                         </tr>
                         <t t-if="not contract_negotiations">
@@ -151,7 +172,7 @@
                         <tr>
                             <th style="width: 40%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Mô tả</th>
                             <th style="width: 30%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Giá trị trước thuế</th>
-                            <th style="width: 30%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Ghi chú</th>
+                            <th style="width: 30%; background-color: #f2f2f2; border: 1px solid #ccc; padding: 8px;">Trạng thái</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -159,11 +180,15 @@
                         <t t-foreach="project_prospects" t-as="project_prospect">
                             <t t-set="sum_total_amount" t-value="sum_total_amount + project_prospect.total_amount"/>
                             <tr>
-                                <td style="width: 40%; border: 1px solid #ccc; padding: 8px;"><t t-esc="project_prospect.name"/></td>
+                                <td style="width: 40%; border: 1px solid #ccc; padding: 8px;">
+                                    <t t-esc="project_prospect.name"/>
+                                </td>
                                 <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right;">
                                     <t t-esc="project_prospect.total_amount" t-options="{'widget': 'monetary', 'display_currency': project_prospect.currency_id}"/>
                                 </td>
-                                <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right"><t t-esc="project_prospect.note or ''"/></td>
+                                <td style="width: 30%; border: 1px solid #ccc; padding: 8px; text-align: right">
+                                    <t t-esc="project_prospect.note or ''"/>
+                                </td>
                             </tr>
                         </t>
                         <tr>
@@ -171,7 +196,7 @@
                             <td style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
                                 <t t-esc="sum_total_amount" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                             </td>
-                            <td  style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: right; font-weight: bold;">
                             </td>
                         </tr>
                         <t t-if="not project_prospects">
@@ -190,9 +215,9 @@
                         <t t-esc="business_plan or 'Chưa có nội dung kế hoạch.'"/>
                     </div>
                 </div>
-                <div> 
+                <div>
+                </div>
             </div>
-        </div>
         </t>
     </template>
 
