@@ -19,7 +19,7 @@
                 <field name="user_ids" class="o_task_user_field" options="{'no_open': True, 'no_quick_create': True}" widget="many2many_avatar_user" readonly="can_edit == False" />
             </xpath>
             <xpath expr="//sheet/notebook" position="inside">
-                <page string="Thi công" invisible="not (stage_id in [61, 62, 63])">
+                <page string="Thi công">
                     <group>
                         <field name="quantity_uom"/>
                         <field name="produced_quantity_uom" readonly="1"/>
