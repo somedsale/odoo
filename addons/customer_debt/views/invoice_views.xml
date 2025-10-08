@@ -32,7 +32,7 @@
                         <field name="date"/>
                         <field name="contract_id"/>
                         <field name="project_id"/>
-                        <field name="partner_id"/>
+                        <field name="partner_id" require="1"/>
                         <field name="amount_total"/>
                     </group>
                 </sheet>

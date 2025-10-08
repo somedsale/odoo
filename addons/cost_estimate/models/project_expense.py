@@ -7,6 +7,7 @@ class ProjectExpense(models.Model):
     name = fields.Char(string='Tên chi phí', required=True)
     default_unit = fields.Many2one('uom.uom', string='Đơn vị mặc định', required=True)
     type = fields.Selection([
+    ('material', 'Chi phí vật tư'),
     ('labor', 'Chi phí nhân công'),
     # ('equipment', 'Chi phí máy móc'),
     ('other', 'Chi phí khác (SXC)'),

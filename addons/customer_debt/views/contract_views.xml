@@ -15,6 +15,7 @@
                 <field name="partner_id"/>
                 <field name="amount_total" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="amount_invoiced" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="amount_receipt" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="amount_due" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="currency_id" string="Tiền tệ" optional="hide"/>
             </tree>
@@ -32,8 +33,8 @@
                         <field name="name"/>
                         <field name="contract_number"/>
                         <field name="date"/>
-                        <field name="project_id"/>
-                        <field name="partner_id"/>
+                        <field name="project_id" require="1"/>
+                        <field name="partner_id" require="1"/>
                         <field name="amount_total"/>
                         <field name="warranty_amount"/>
                         <field name="warranty_time"/>
@@ -49,6 +50,33 @@
                                     <field name="partner_id"/>
                                     <field name="date"/>
                                     <field name="amount_total" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="currency_id" string="Tiền tệ" optional="hide"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Phiếu thu">
+                            <field name="receipt_ids" context="{'default_contract_id': active_id}">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="partner_id"/>
+                                    <field name="project_id"/>
+                                    <field name="amount" sum="Tổng tiền" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="payment_method"/>
+                                    <field name="state"/>
+                                    <field name="currency_id" optional="hide"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Hồ sơ quyết toán">
+                            <field name="settlement_ids">
+                                <tree editable="bottom">
+                                    <field name="name"/>
+                                    <field name="settlement_number"/>
+                                    <field name="project_id"/>
+                                    <field name="partner_id"/>
+                                    <field name="date"/>
+                                    <field name="amount_settlement" sum="Tổng quyết toán" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                                     <field name="currency_id" string="Tiền tệ" optional="hide"/>
                                 </tree>
                             </field>
