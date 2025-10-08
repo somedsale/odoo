@@ -1,0 +1,29 @@
+<odoo>
+    <record id="view_project_expense_tree" model="ir.ui.view">
+        <field name="name">project.expense.tree</field>
+        <field name="model">project.expense</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="type"/>
+                <field name="default_unit"/>
+                <field name="price_unit"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_project_expense_search" model="ir.ui.view">
+        <field name="name">project.expense.search</field>
+        <field name="model">project.expense</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm Chi phí">
+                <field name="name" string="Tên chi phí"/>
+                <field name="type" string="Loại chi phí"/>
+                <field name="default_unit" string="Đơn vị"/>
+                <!-- ====== Bộ lọc nhanh ====== -->
+                <filter name="type_material" string="Chi phí vật tư" domain="[('type','=','material')]"/>
+                <filter name="type_labor" string="Chi phí nhân công" domain="[('type','=','labor')]"/>
+                <filter name="type_other" string="Chi phí khác (SXC)" domain="[('type','=','other')]"/>
+            </search>
+        </field>
+    </record>
+</odoo>

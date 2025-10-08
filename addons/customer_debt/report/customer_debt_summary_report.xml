@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Đăng ký report -->
+    <report id="customer_summary_report_action" model="customer.debt.summary" string="Tổng Hợp Công Nợ Khách Hàng" report_type="qweb-html" name="customer_debt.customer_debt_summary_report" file="customer_debt.customer_debt_summary_report" print_report_name="'Cong No Khach Hang'" />
+
+    <record id="custom_sale_report_a4_portrait" model="report.paperformat">
+        <field name="name">Custom Sale Report A4 Portrait</field>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">30</field>        <!-- Điều chỉnh từ 40mm xuống 30mm -->
+        <field name="margin_bottom">30</field>        <!-- Tăng từ 23mm lên 30mm -->
+        <field name="margin_left">10</field>        <!-- Tăng từ 7mm lên 10mm -->
+        <field name="margin_right">10</field>        <!-- Tăng từ 7mm lên 10mm -->
+        <field name="header_spacing">25</field>        <!-- Giảm từ 35mm xuống 25mm -->
+        <field name="dpi">110</field>
+    </record>
+    <!-- Template QWeb -->
+    <template id="report_customer_summary_layout">
+        <t t-call="web.html_container">
+            <t t-set="o" t-value="o or list"/>
+            <div class="header" style="display: flex; justify-content: space-between; font-family: Times New Roman;">
+                <table style="width:100%; border-collapse: collapse; border: 1px solid #fff;">
+                    <tr>
+                        <!-- Cột logo bên trái -->
+                        <td style="text-align: left; vertical-align: middle; border-collapse: collapse; border: 1px solid #fff; width: 50%;">
+                            <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id" alt="Company Logo" style="max-width: 160px;"/>
+                        </td>
+
+                        <!-- Cột thông tin công ty bên phải -->
+                        <td style="text-align: right; vertical-align: middle; border-collapse: collapse; border: 1px solid #fff; font-size: 11px; text-transform: capitalize; width: 50%;">
+                            <span t-esc="res_company.name" style="text-transform: uppercase;"/>
+                            <br/>
+                MST: <span t-esc="res_company.partner_id.vat"/>
+                        <br/>
+                Địa chỉ: <span t-esc="res_company.partner_id.street"/>
+                    <br/>
+                SĐT: <span t-esc="res_company.phone_accounting"/>
+                <br/>
+                Email: <span style="text-transform: lowercase;" t-esc="res_company.account_email"/>
+            </td>
+        </tr>
+    </table>
+
+
+</div>
+<div class="article" style="font-family: Times New Roman; font-size: 11pt; line-height: 1.5; padding-top: 15px;">
+    <t t-raw="0"/>
+    <!-- Nội dung chính của báo cáo -->
+</div>
+<div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt; font-family: Times New Roman;">
+    <p>
+        <span class="page"/>
+    </p>
+</div>
+</t>
+</template><!-- Template for Sale Contract Report -->
+<template id="customer_debt_summary_report">
+<t t-call="customer_debt.report_customer_summary_layout">
+<div class="page">
+    <style> .page { font-family: "Times New Roman"; font-size: 12pt; color: #000; } .styled-table { border-collapse: collapse; margin: 0 auto; font-size: 12pt; width: 100%; border: 1px solid #000; table-layout: fixed; } .styled-table thead tr { background-color: #C6E0B4; font-weight: bold; color: #000; text-align: center; } .table-item{ text-transform: uppercase; background-color: #E2EFDA; font-weight: bold; color: #000; } .styled-table th, .styled-table td { font-size: 10pt; padding: 8px 12px; border: 1px solid #000; vertical-align: middle; overflow: hidden; word-wrap: break-word; overflow-wrap: anywhere; } .styled-table tbody tr:hover { background-color: #D9EAD3; } .text-center { text-align: center; } .text-right { text-align: right; } .num { white-space: nowrap; } </style>
+    <h2 style="text-align:center; margin-bottom: 20px; font-size: 24px; text-transform: uppercase;">Tổng hợp công nợ khách hàng</h2>
+    <table class="styled-table">
+        <colgroup>
+            <col style="width:4%"/>
+            <col style="width:15%"/>
+            <col style="width:12%"/>
+            <col style="width:12%"/>
+            <col style="width:10%"/>
+            <col style="width:10%"/>
+            <col style="width:10%"/>
+            <col style="width:8%"/>
+            <col style="width:8%"/>
+            <col style="width:10%"/>
+            <col style="width:8%"/>
+        </colgroup>
+
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Khách hàng</th>
+                <th>Số tiền Hợp đồng</th>
+                <th>Giá trị Quyết toán</th>
+                <th>Số tiền Hóa đơn</th>
+                <th>Đã thu về</th>
+                <th>Còn nợ</th>
+                <th>Bảo hành</th>
+                <th>Thời gian BH</th>
+                <th>Liên hệ</th>
+                <th>Ghi chú</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <t t-set="stt" t-value="0"/>
+            <t t-foreach="docs" t-as="grp">
+                <t t-set="stt" t-value="stt + 1"/>
+
+                <!-- ====== DÒNG KHÁCH HÀNG + TỔNG CỘNG ====== -->
+                <tr class="table-item" style="background-color:#E2EFDA;font-weight:bold;">
+                    <td class="text-center">
+                        <t t-esc="stt"/>
+                    </td>
+                    <td>
+                        <t t-esc="grp['partner'].display_name"/>
+                    </td>
+                    <td class="text-right">
+                        <span t-esc="grp['summary'].amount_total" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
+                    </td>
+                    <td class="text-right">
+                        <span t-esc="grp['summary'].amount_final or 0.0" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
+                    </td>
+                    <td class="text-right">
+                        <span t-esc="grp['summary'].amount_invoiced" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
+                    </td>
+                    <td class="text-right">
+                        <span t-esc="grp['summary'].amount_paid" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
+                    </td>
+                    <td class="text-right">
+                        <span t-esc="grp['summary'].residual" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
+                    </td>
+                    <td class="text-right">
+                        <span t-esc="grp['summary'].warranty_amount or 0.0" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
+                    </td>
+                    <td class="text-center">
+                        <t t-esc="grp['summary'].warranty_period or ''"/>
+                    </td>
+                    <td colspan="2">
+                        <t t-esc="grp['summary'].note or ''"/>
+                    </td>
+                </tr>
+
+                <!-- ====== CÁC HỢP ĐỒNG CHI TIẾT ====== -->
+                <t t-if="grp['contracts']">
+                    <t t-foreach="grp['contracts']" t-as="ct">
+                        <tr>
+                            <td></td>
+                            <td>
+                                <t t-if="ct['project']">
+                                    <t t-esc="ct['project'].display_name"/>
+ – 
+                                </t>
+                                <t t-esc="ct['name']"/>
+                            </td>
+
+                            <td class="text-right">
+                                <span t-esc="ct['amount_total']" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
+                            </td>
+                            <td class="text-right">
+                                <span t-esc="ct['amount_final']" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
+                            </td>
+                            <td class="text-right">
+                                <span t-esc="ct['amount_invoiced']" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
+                            </td>
+                            <td class="text-right">
+                                <span t-esc="ct['amount_paid']" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
+                            </td>
+                            <td class="text-right">
+                                <span t-esc="ct['amount_due']" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
+                            </td>
+                            <td class="text-right">
+                                <span t-esc="ct['warranty_amount']" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
+                            </td>
+                            <td class="text-center">
+                                <t t-esc="ct['warranty_period']"/>
+                            </td>
+                            <td colspan="2">
+                                <t t-esc="ct['note']"/>
+                            </td>
+                        </tr>
+                    </t>
+                </t>
+            </t>
+        </tbody>
+    </table>
+    <div style="page-break-inside: avoid; style: font-weight: bold">
+        <div class="row">
+            <div class="col-6" style="text-align:center;line-height:1.8">
+                <div> TP Hồ Chí Minh ngày <span t-esc="datetime.datetime.today().day"/>
+ tháng <span t-esc="datetime.datetime.today().month"/>
+ năm <span t-esc="datetime.datetime.today().year"/>
+        </div>
+        <div>
+            <span>Người lập biểu</span>
+        </div>
+        <div style="height:65px">
+            <t t-if="user_id.digital_signature">
+                <img t-att-src="'data:image/png;base64,' + (user_id.digital_signature.decode() if isinstance(user_id.digital_signature, bytes) else user_id.digital_signature)" style="max-height:65px; max-width:150px;" />
+            </t>
+        </div>
+        <div>
+            <span t-field="user_id.name"/>
+        </div>
+    </div>
+    <div class="col-6" style="text-align:center;line-height:1.8">
+        <div> TP Hồ Chí Minh ngày <span t-esc="datetime.datetime.today().day"/>
+ tháng <span t-esc="datetime.datetime.today().month"/>
+ năm <span t-esc="datetime.datetime.today().year"/>
+</div>
+<div> Giám Đốc </div>
+<div style="height:65px">
+    <t t-set="director_group" t-value="env.ref('custom_director_role.group_director')"/>
+    <t t-set="director" t-value="env['res.users'].search([('groups_id', 'in', director_group.id)], limit=1)"/>
+    <t t-if="director and director.digital_signature">
+        <img t-att-src="'data:image/png;base64,' + (director.digital_signature.decode() if isinstance(director.digital_signature, bytes) else director.digital_signature)" style="max-height:65px; max-width:150px;" />
+    </t>
+</div>
+<div>
+    <span> Đỗ Minh Toàn </span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</t>
+</template>
+
+
+
+<record id="action_customer_summary_report" model="ir.actions.report">
+<field name="name">Công Nợ Khách Hàng</field>
+<field name="model">customer.debt.summary</field>
+<field name="report_type">qweb-html</field>
+<field name="report_name">customer_debt.customer_debt_summary_report</field>
+<field name="report_file">customer_debt.customer_debt_summary_report</field>
+<field name="print_report_name">'abc'</field>
+<field name="paperformat_id" ref="custom_sale_report_a4_portrait"/>
+</record>
+
+<!-- Menu -->
+<menuitem id="menu_customer_summary_root" name="Tổng hợp công nợ khách hàng" parent="custom_account_menu.menu_accounting_reporting"/>
+
+<menuitem id="menu_customer_summary_report" name="Báo cáo Công nợ khách hàng" parent="menu_customer_summary_root" action="action_customer_summary_report"/>
+</odoo>

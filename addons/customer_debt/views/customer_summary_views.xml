@@ -1,39 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-    <!-- ================== TREE VIEW ================== -->
+    <!-- ============ TREE VIEW ============ -->
     <record id="view_customer_debt_summary_tree" model="ir.ui.view">
         <field name="name">customer.debt.summary.tree</field>
         <field name="model">customer.debt.summary</field>
         <field name="arch" type="xml">
-            <tree string="Tổng hợp công nợ KH" default_group_by="partner_id" decoration-info="not contract_id">
-                <field name="partner_id" string="Khách hàng" readonly="1"/>
-                <field name="contract_id"/>
-                <field name="project_id"/>
+            <tree string="Tổng hợp công nợ KH" decoration-bf="1">
+                <field name="partner_id" readonly="1"/>
+                <field name="project_ids" widget="many2many_tags" string="Dự án" readonly="1"/>
+                <field name="contract_ids" widget="many2many_tags" string="Hợp đồng" readonly="1"/>
                 <field name="amount_total" sum="Tổng HĐ"/>
                 <field name="amount_invoiced" sum="Đã xuất HĐ"/>
                 <field name="amount_paid" sum="Đã thanh toán"/>
                 <field name="residual" sum="Còn nợ"/>
-                <field name="currency_id"/>
+                <field name="currency_id" optional="hide"/>
             </tree>
         </field>
     </record>
 
-    <!-- ================== PIVOT VIEW ================== -->
+    <!-- ============ FORM VIEW ============ -->
+    <record id="view_customer_debt_summary_form" model="ir.ui.view">
+        <field name="name">customer.debt.summary.form</field>
+        <field name="model">customer.debt.summary</field>
+        <field name="arch" type="xml">
+            <form string="Chi tiết công nợ khách hàng">
+                <sheet>
+                    <group col="2">
+                        <group>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="project_ids" widget="many2many_tags" style="min-width: 500px; white-space: normal; flex-wrap: wrap;"/>
+                            <field name="currency_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="amount_total" string="Tổng giá trị hợp đồng"/>
+                            <field name="amount_invoiced" string="Số tiền hóa đơn"/>
+                            <field name="amount_paid"/>
+                            <field name="residual"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Hợp đồng">
+                            <field name="contract_ids" context="{'default_partner_id': partner_id}" mode="tree">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="contract_number"/>
+                                    <field name="project_id"/>
+                                    <field name="date" string="Ngày Hợp Đồng"/>
+                                    <field name="amount_total"/>
+                                    <field name ="currency_id" optional="hide"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Hóa đơn lẻ">
+                            <field name="standalone_invoice_ids" context="{'default_partner_id': partner_id}" mode="tree">
+                                <tree editable="bottom">
+                                    <field name="name"/>
+                                    <field name="invoice_number"/>
+                                    <field name="project_id"/>
+                                    <field name="date"/>
+                                    <field name="amount_total"/>
+                                    <field name="currency_id" optional="hide"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
 
-
-    <!-- ================== GRAPH VIEW ================== -->
-
-    <!-- ================== ACTION ================== -->
+    <!-- ============ ACTION ============ -->
     <record id="action_customer_debt_summary" model="ir.actions.act_window">
         <field name="name">Tổng hợp công nợ KH</field>
         <field name="res_model">customer.debt.summary</field>
-        <field name="view_mode">tree</field>
+        <field name="view_mode">tree,form</field>
         <field name="target">current</field>
     </record>
 
-    <!-- ================== MENU ================== -->
-
+    <!-- ============ MENU ============ -->
     <menuitem id="menu_customer_debt_summary" name="Tổng hợp công nợ khách hàng" parent="menu_customer_debt_root" action="action_customer_debt_summary" sequence="100"/>
 
 </odoo>

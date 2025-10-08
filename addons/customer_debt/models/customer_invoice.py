@@ -16,7 +16,7 @@ class CustomerInvoice(models.Model):
 
     # Số hóa đơn thật (người dùng nhập tay)
     invoice_number = fields.Char(string="Số hóa đơn", tracking=True)
-    date = fields.Date(string="Ngày HĐ", default=fields.Date.today)
+    date = fields.Date(string="Ngày Hóa Đơn", default=fields.Date.today)
     partner_id = fields.Many2one('res.partner', string="Khách hàng", required=True,domain="[('customer_rank', '>', 0), ('parent_id', '=', False)]")
     
     # Gắn hợp đồng (nếu có) – không bắt buộc

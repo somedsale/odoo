@@ -39,10 +39,26 @@ class CustomerContract(models.Model):
         'contract_id', 
         string="Hóa đơn"
     )
+    settlement_ids = fields.One2many(
+    'customer.settlement',
+    'contract_id',
+    string="Hồ sơ quyết toán"
+)
+    receipt_ids = fields.One2many(
+    'account.receipt',
+    'contract_id',
+    string='Phiếu thu'
+)
 
     # Các trường tính toán
     amount_invoiced = fields.Monetary(
         string="Đã xuất hóa đơn", 
+        currency_field="currency_id",
+        compute="_compute_amounts", 
+        store=True
+    )
+    amount_receipt = fields.Monetary(
+        string="Số tiền đã thu", 
         currency_field="currency_id",
         compute="_compute_amounts", 
         store=True
@@ -62,7 +78,8 @@ class CustomerContract(models.Model):
     project_id = fields.Many2one(
     'project.project',
     string="Dự án",
-    ondelete="set null"
+    ondelete="set null",
+    require=True
 )
     @api.model
     def create(self, vals):
@@ -70,15 +87,20 @@ class CustomerContract(models.Model):
             vals['name'] = self.env['ir.sequence'].next_by_code('customer.contract') or "New"
         return super().create(vals)
 
-    @api.depends('invoice_ids.amount_total')
+    @api.depends('invoice_ids.amount_total', 'receipt_ids.amount')
     def _compute_amounts(self):
         """
-        Tính tổng giá trị hóa đơn & công nợ còn lại của hợp đồng.
+        Tính toán:
+        - Đã xuất hóa đơn = tổng giá trị hóa đơn
+        - Đã thu = tổng giá trị phiếu thu
+        - Còn nợ = Hóa đơn - Thu
         """
         for contract in self:
             invoiced = sum(contract.invoice_ids.mapped('amount_total'))
+            received = sum(contract.receipt_ids.mapped('amount'))
             contract.amount_invoiced = invoiced
-            contract.amount_due = invoiced
+            contract.amount_receipt = received
+            contract.amount_due = invoiced - received
     display_name = fields.Char(
         string="Hiển thị",
         compute="_compute_display_name",
