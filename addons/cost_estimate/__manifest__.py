@@ -8,6 +8,7 @@
         'data/cost_estimate_sequence.xml',
         'security/ir.model.access.csv',
         'views/cost_estimate_views.xml',
+        'views/project_expense_view.xml',
     ],
     'assets': {
     'web.assets_backend': [

@@ -2,7 +2,6 @@ from odoo import api, fields, models
 
 class ProjectTask(models.Model):
     _inherit = "project.task"
-
     @api.model
     def _get_stage_by_name(self, name):
         return self.env['project.task.type'].search([('name', '=', name)], limit=1)
