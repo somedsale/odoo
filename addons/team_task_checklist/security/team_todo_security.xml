@@ -1,0 +1,36 @@
+<odoo>
+    <!-- Quy tắc: người dùng chỉ xem việc của mình -->
+    <record id="rule_team_todo_own" model="ir.rule">
+        <field name="name">Người dùng chỉ xem việc của mình</field>
+        <field name="model_id" ref="model_team_todo"/>
+        <field name="domain_force">
+           ['|', ('create_uid', '=', user.id), ('assigned_ids', 'in', [user.id])]
+        </field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- Quản trị viên xem tất cả -->
+    <record id="rule_team_todo_admin" model="ir.rule">
+        <field name="name">Admin xem tất cả</field>
+        <field name="model_id" ref="model_team_todo"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+    </record>
+    <record id="rule_team_todo_item_user" model="ir.rule">
+        <field name="name">Checklist: chỉ xem mục của mình hoặc trong công việc mình được giao</field>
+        <field name="model_id" ref="model_team_todo_item"/>
+        <field name="domain_force">
+        ['|',
+            ('assigned_id', '=', user.id),
+            ('todo_id.assigned_ids', 'in', [user.id])
+        ]
+        </field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+    <record id="rule_team_todo_item_admin" model="ir.rule">
+        <field name="name">Checklist: Admin xem tất cả</field>
+        <field name="model_id" ref="model_team_todo_item"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+    </record>
+</odoo>

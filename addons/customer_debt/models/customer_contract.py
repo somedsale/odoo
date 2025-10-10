@@ -32,7 +32,12 @@ class CustomerContract(models.Model):
         string="Tiền tệ", 
         default=lambda self: self.env.company.currency_id
     )
-
+    management_id = fields.Many2one(
+        'contract.management',
+        string="Hồ sơ quản lý HĐ (Sale)",
+        ondelete="set null",
+        tracking=True
+    )
     # Liên kết với Hóa đơn
     invoice_ids = fields.One2many(
         'customer.invoice', 
@@ -81,6 +86,12 @@ class CustomerContract(models.Model):
     ondelete="set null",
     require=True
 )
+    contract_type = fields.Selection([
+    ('preparing', 'Công trình đang chuẩn bị thực hiện'),
+    ('done', 'Đã hoàn thành'),
+    ('paused', 'Tạm ngưng'),
+    ('bad_debt', 'Công nợ khó đòi'),
+], string="Loại hợp đồng", default='preparing', tracking=True)
     @api.model
     def create(self, vals):
         if vals.get('name', "New") == "New":
@@ -113,7 +124,41 @@ class CustomerContract(models.Model):
                 rec.display_name = f"[{rec.contract_number}] {rec.name}"
             else:
                 rec.display_name = rec.name
-    @api.onchange('project_id')
-    def _onchange_project_id(self):
-        if self.project_id and self.project_id.partner_id:
-            self.partner_id = self.project_id.partner_id
+    @api.onchange('project_id', 'partner_id')
+    def _onchange_project_or_partner(self):
+        for rec in self:
+            management = False
+
+            if rec.project_id:
+                if rec.project_id.partner_id:
+                    rec.partner_id = rec.project_id.partner_id
+                else:
+                    rec.partner_id = False  
+            else:
+                rec.partner_id = False 
+
+            # 🔹 Ưu tiên tìm hợp đồng bên Sale theo dự án
+            if rec.project_id:
+                management = rec.env['contract.management'].search([
+                    '|',
+                    ('project_id', '=', rec.project_id.id),
+                    ('sale_order_id.project_id', '=', rec.project_id.id),
+                ], limit=1)
+
+            # 🔹 Nếu chưa thấy → tìm theo Khách hàng
+            if not management and rec.partner_id:
+                management = rec.env['contract.management'].search([
+                    ('partner_id', '=', rec.partner_id.id)
+                ], limit=1)
+            # 🔹 Gán dữ liệu nếu tìm thấy
+            if management:
+                rec.management_id = management
+                rec.contract_number = management.num_contract
+                rec.amount_total = management.contract_value or 0.0
+                # đảm bảo đồng bộ khách hàng từ hợp đồng sale
+                rec.partner_id = management.partner_id.id
+            else:
+                rec.management_id = False
+                rec.contract_number = False
+                rec.amount_total = 0.0
+

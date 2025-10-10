@@ -13,6 +13,7 @@
                 <field name="date"/>
                 <field name="project_id"/>
                 <field name="partner_id"/>
+                <field name="contract_type" optional="hide"/>
                 <field name="amount_total" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="amount_invoiced" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="amount_receipt" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
@@ -29,15 +30,23 @@
         <field name="arch" type="xml">
             <form string="Hợp đồng">
                 <sheet>
-                    <group>
-                        <field name="name"/>
-                        <field name="contract_number"/>
-                        <field name="date"/>
-                        <field name="project_id" require="1"/>
-                        <field name="partner_id" require="1"/>
-                        <field name="amount_total"/>
-                        <field name="warranty_amount"/>
-                        <field name="warranty_time"/>
+                    <group col="2">
+                        <group>
+                            <field name="name"/>
+                            <field name="contract_number"/>
+                            <field name="date"/>
+                            <field name="project_id" require="1" options="{'no_create':True}"/>
+                            <field name="partner_id" require="1"/>
+                            <field name="management_id" invisible="1" force_save="1"/>
+                        </group>
+
+                        <group>
+                            <field name="amount_total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="warranty_amount"/>
+                            <field name="warranty_time"/>
+                            <field name="contract_type" />
+                            <field name="currency_id" string="Tiền tệ" />
+                        </group>
                     </group>
 
                     <notebook>
@@ -105,6 +114,7 @@
                 <searchpanel>
                     <field name="partner_id" string="Khách hàng" icon="fa-user" enable_counters="1"/>
                     <field name="project_id" string="Dự án" icon="fa-folder" enable_counters="1"/>
+                    <field name="contract_type" string="Loại" enable_counters="1"/>
                 </searchpanel>
             </search>
         </field>

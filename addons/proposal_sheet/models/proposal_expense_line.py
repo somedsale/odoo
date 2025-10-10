@@ -129,8 +129,6 @@ class ProposalExpenseLine(models.Model):
         for line in self:
             if line.quantity <= 0:
                 raise ValidationError("Số lượng chi phí phải lớn hơn 0.")
-            if line.price_unit <= 0:
-                raise ValidationError("Số tiền chi phí phải lớn hơn 0.")
 
     def archive(self):
         self.write({'active': False})
