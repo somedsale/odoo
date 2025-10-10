@@ -22,8 +22,20 @@ class PurchaseOrder(models.Model):
 
     # Liên kết để hiển thị (nếu bạn đã có thì giữ nguyên)
     proposal_sheet_id = fields.Many2one("proposal.sheet", string="Phiếu Đề Xuất", index=True, ondelete="set null")
-    project_id = fields.Many2one("project.project", string="Dự án", compute="_compute_project_task", store=False, readonly=True)
-    task_id = fields.Many2one("project.task", string="Nhiệm vụ", compute="_compute_project_task", store=False, readonly=True)
+    project_id = fields.Many2one(
+        "project.project",
+        string="Dự án",
+        compute="_compute_project_task",
+        inverse="_inverse_project_task",
+        store=True,
+    )
+    task_id = fields.Many2one(
+        "project.task",
+        string="Nhiệm vụ",
+        compute="_compute_project_task",
+        inverse="_inverse_project_task",
+        store=True,
+    )
     supplier_invoice_ids = fields.One2many("supplier.invoice", "purchase_id", string="Hóa đơn NCC")
     supplier_invoice_count = fields.Integer(string="Số hóa đơn NCC", compute="_compute_supplier_invoice_count")
     # Theo dõi phiếu chi (giữ nguyên nếu bạn đã có)
@@ -64,8 +76,22 @@ class PurchaseOrder(models.Model):
     @api.depends("proposal_sheet_id")
     def _compute_project_task(self):
         for po in self:
-            po.project_id = po.proposal_sheet_id.project_id if po.proposal_sheet_id else False
-            po.task_id = po.proposal_sheet_id.task_id if po.proposal_sheet_id else False
+            if po.proposal_sheet_id:
+                po.project_id = po.proposal_sheet_id.project_id
+                po.task_id = po.proposal_sheet_id.task_id
+            # ⚠ Nếu không có phiếu đề xuất, không gán gì để giữ giá trị user nhập
+            # nên không đặt False ở đây
+            else:
+                # Giữ nguyên nếu người dùng đã chọn thủ công
+                po.project_id = po.project_id
+                po.task_id = po.task_id
+
+    def _inverse_project_task(self):
+        """Cho phép người dùng nhập thủ công khi không có proposal_sheet_id."""
+        for po in self:
+            # Không cần ghi ngược sang proposal_sheet
+            # chỉ cần đảm bảo cho phép ghi giá trị vào model hiện tại
+            pass
 
     def _compute_payment_request_count(self):
         for po in self:
