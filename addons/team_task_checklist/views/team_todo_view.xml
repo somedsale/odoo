@@ -1,0 +1,206 @@
+<odoo>
+    <!-- TREE -->
+    <record id="view_team_todo_tree" model="ir.ui.view">
+        <field name="name">team.todo.tree</field>
+        <field name="model">team.todo</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="state == 'done'" decoration-info="state == 'progress'" decoration-bf="1">
+                <field name="name"/>
+                <field name="create_uid" string="Người tạo" widget="many2one_avatar_user"/>
+                <field name="assigned_ids" widget="many2many_avatar_user"/>
+                <field name="deadline"/>
+                <field name="priority" widget="badge" decoration-muted="priority == '0'" decoration-info="priority == '1'" decoration-warning="priority == '2'" decoration-danger="priority == '3'"/>
+                <field name="progress" widget="progressbar"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- FORM -->
+    <record id="view_team_todo_form" model="ir.ui.view">
+        <field name="name">team.todo.form</field>
+        <field name="model">team.todo</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="new,progress,done,cancel"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Tên công việc tổng..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="create_uid" readonly="1" string="Người tạo" widget="many2one_avatar_user"/>
+                            <field name="assigned_ids" widget="many2many_avatar_user"/>
+                        </group>
+                        <group>
+                            <field name="deadline"/>
+                            <field name="priority" widget="priority"/>
+                            <field name="note"/>
+                        </group>
+                    </group>
+
+                    <separator string="Tiến độ"/>
+                    <field name="progress" widget="progressbar"/>
+
+                    <notebook>
+                        <page string="Công việc chi tiết">
+                            <field name="checklist_item_ids" context="{'default_todo_id': active_id}">
+                                <tree editable="bottom" decoration-success="state == 'done'" decoration-bf="1">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="assigned_id" widget="many2one_avatar_user"/>
+                                    <field name="deadline"/>
+                                    <field name="completed_date" widget="badge"/>
+                                    <button name="action_toggle" type="object" class="text-success" string="Hoàn thành" icon="fa-check" invisible="state == 'done'" />
+                                    <button name="action_toggle" type="object" class="text-danger" icon="fa-undo" string="Hủy" invisible="state != 'done'" />
+                                    <field name="state" widget="badge"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <record id="view_team_todo_kanban" model="ir.ui.view">
+        <field name="name">team.todo.kanban</field>
+        <field name="model">team.todo</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_project_tasks" quick_create="false" create="true">
+
+                <field name="name"/>
+                <field name="assigned_ids"/>
+                <field name="deadline"/>
+                <field name="priority"/>
+                <field name="progress"/>
+                <field name="state"/>
+
+                <templates>
+                    <t t-name="kanban-box">
+                        <!-- ✅ CLICK TO OPEN FORM -->
+                        <div class="oe_kanban_card oe_kanban_global_click shadow-sm rounded-3 p-2" style="background-color:#fff; border:1px solid #ddd;">
+
+                            <!-- Header -->
+
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <!-- Tên bên trái -->
+                                <div style="max-width: 80%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;font-weight: 600; font-size: 16px;">
+                                    <field name="name"/>
+                                </div>
+
+                                <!-- Priority bên phải -->
+                                <div class="ms-2 text-end" style="white-space: nowrap;">
+                                    <!-- Ưu tiên Cao -->
+                                    <t t-if="record.priority.raw_value == '3'">
+                                        <span class="badge bg-danger">
+                                            <i class="fa fa-arrow-up me-1"/>
+ Cao
+                                        </span>
+                                    </t>
+
+                                    <!-- Ưu tiên Bình thường -->
+                                    <t t-if="record.priority.raw_value == '2'">
+                                        <span class="badge bg-primary">
+                                            <i class="fa fa-minus me-1"/>
+ Bình thường
+                                        </span>
+                                    </t>
+
+                                    <!-- Ưu tiên Thấp -->
+                                    <t t-if="record.priority.raw_value == '1'">
+                                        <span class="badge bg-secondary">
+                                            <i class="fa fa-arrow-down me-1"/>
+ Thấp
+                                        </span>
+                                    </t>
+
+                                    <!-- Ẩn khi priority = 0 (Không có) -->
+                                </div>
+                            </div>
+
+
+                            <!-- Deadline -->
+                            <div class="o_kanban_deadline small mb-2" t-if="record.deadline.value">
+                                <i class="fa fa-calendar me-1 text-secondary"/>
+                                <field name="deadline"/>
+                            </div>
+
+                            <!-- Progress -->
+                            <t t-set="p" t-value="Math.round(record.progress.raw_value || 0)"/>
+                            <div class="o_kanban_progress mb-2" t-att-title="p + '%'">
+                                <div class="progress" style="height:8px; border-radius:6px;
+                                        background:linear-gradient(180deg,#f4f4f4,#e9ecef);
+                                        box-shadow:inset 0 1px 2px rgba(0,0,0,0.1);">
+                                    <div t-att-style="'width:' + p + '%; height:8px; border-radius:6px; transition:width 0.6s ease; background:linear-gradient(90deg,' +
+                                    (p == 100 ? '#2ecc71' :
+                                    p >= 60 ? '#007bff' :
+                                    p >= 30 ? '#f1c40f' : '#e74c3c') +
+                                    ',' +
+                                    (p == 100 ? '#27ae60' :
+                                    p >= 60 ? '#0069d9' :
+                                    p >= 30 ? '#f39c12' : '#c0392b') +
+                                    '); box-shadow:0 0 4px rgba(0,0,0,0.15);'" role="progressbar" t-att-aria-valuenow="p" aria-valuemin="0" aria-valuemax="100"/>
+                                </div>
+                                <div class="text-end text-muted small mt-1 fw-semibold" style="letter-spacing:0.3px;">
+                                    <t t-esc="p"/>
+%
+                                </div>
+                            </div>
+
+                            <!-- Footer -->
+                            <div class="o_kanban_footer mt-2 d-flex justify-between align-center">
+                                <!-- Avatar bên trái -->
+                                <div class="o_kanban_avatars d-flex align-center">
+                                    <field name="assigned_ids" widget="many2many_avatar_user"/>
+                                </div>
+
+                                <!-- Indicator trạng thái bên phải -->
+                                <div t-if="record.state.raw_value" t-att-title="
+        (record.state.raw_value === 'new' &amp;&amp; 'Mới') ||
+        (record.state.raw_value === 'progress' &amp;&amp; 'Đang làm') ||
+        (record.state.raw_value === 'done' &amp;&amp; 'Hoàn tất') ||
+        (record.state.raw_value === 'cancel' &amp;&amp; 'Hủy') ||
+        ''" class="rounded-circle ms-2" t-att-style="'background-color:' +
+        (record.state.raw_value === 'new' ? '#adb5bd' :
+         record.state.raw_value === 'progress' ? '#0d6efd' :
+         record.state.raw_value === 'done' ? '#28a745' :
+         record.state.raw_value === 'cancel' ? '#dc3545' : '#ccc') +
+        '; width:16px; height:16px; display:inline-block;'">
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <record id="view_team_todo_calendar" model="ir.ui.view">
+        <field name="name">team.todo.calendar</field>
+        <field name="model">team.todo</field>
+        <field name="arch" type="xml">
+            <calendar string="Lịch công việc" date_start="deadline" color="assigned_ids">
+                <field name="name"/>
+                <field name="assigned_ids"/>
+            </calendar>
+        </field>
+    </record>
+    <!-- ACTION + MENU -->
+    <record id="action_team_todo" model="ir.actions.act_window">
+        <field name="name">Công việc</field>
+        <field name="res_model">team.todo</field>
+        <field name="view_mode">tree,form,kanban,calendar</field>
+    </record>
+
+    <menuitem id="menu_team_todo_root" name="Công việc" sequence="25"/>
+    <menuitem id="menu_team_todo_items" name="Danh sách công việc" parent="menu_team_todo_root" action="action_team_todo"/>
+</odoo>
