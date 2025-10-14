@@ -8,6 +8,6 @@
     </record>
     <!--    Dashboard menu-->
     <menuitem id="activity_management_dashboard_menu" name="Dashboard" parent="activity_menu_root" action="activity_management_dashboard_action" sequence="-100"
-              groups = "custom_director_role.group_director"/>
+              groups = "custom_director_role.group_director,base.group_system"/>
 
 </odoo>
