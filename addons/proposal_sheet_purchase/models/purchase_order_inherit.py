@@ -525,6 +525,12 @@ class PurchaseOrder(models.Model):
         if len(invoices) == 1:
             action.update({"view_mode": "form", "res_id": invoices.id})
         return action
+    @api.ondelete(at_uninstall=False)
+    def _unlink_if_cancelled(self):
+        """Ghi đè lại rule mặc định — cho phép xóa khi draft hoặc cancel"""
+        for order in self:
+            if order.state not in ('draft', 'cancel'):
+                raise UserError(_("Chỉ có thể xóa đơn hàng ở trạng thái Nháp hoặc Đã hủy."))
 
 class PurchaseOrderLine(models.Model):
     _inherit = "purchase.order.line"

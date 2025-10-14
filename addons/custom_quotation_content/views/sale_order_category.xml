@@ -32,4 +32,5 @@
     </record>
 
     <menuitem id="menu_sale_order_category" name="Hạng mục bán hàng" parent="sale.sale_menu_root" action="action_sale_order_category" sequence="20" groups="sales_team.group_sale_salesman,sales_team.group_sale_manager"/>
+    <menuitem id="menu_proposal_sheet_for_sale" name="Phiếu đề xuất" parent="sale.sale_menu_root" action="proposal_sheet.action_proposal_for_sale" sequence ="30" />
 </odoo>

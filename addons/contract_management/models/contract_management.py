@@ -107,7 +107,7 @@ class ContractManagement(models.Model):
                     
                     # Tạo dự án
                     project = self.env['project.project'].sudo().create(project_vals)
-                    contract.project_id = project.id
+                    self.sudo().write({'project_id': project.id})
 
                     # Sync attachments to project
                     if contract.attachment_ids:
