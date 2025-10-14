@@ -74,6 +74,8 @@
         <!-- 2) Thay toàn bộ header bằng header của bạn + đặt lại statusbar 'state' -->
         <xpath expr="//header" position="replace">
           <header>
+            <field name="state" invisible="1"/>
+
             <!-- ===== NÚT CORE ODOO (để dùng khi mới tạo / RFQ) ===== -->
             <!-- Confirm (dùng cho cả draft & sent) -->
             <button groups="account.group_account_manager" name="button_confirm" type="object" string="Xác nhận đơn hàng" class="oe_highlight" context="{'validate_analytic': True}" invisible="state not in ['draft','sent']"/>
@@ -96,7 +98,7 @@
 
             <!-- Chi còn lại -->
             <button groups="account.group_account_manager" name="action_create_payment_request_remaining" type="object" string="Chi còn lại" class="btn-secondary" invisible="(state not in ['purchase']) or has_full_request or is_fully_requested or (amount_requested == 0)"/>
-
+            <button name="button_cancel" string="Hủy" type="object" class="btn-secondary" invisible="state == 'cancel'" confirm="Bạn có chắc muốn hủy không?"/>
             <!-- PHẢI có lại statusbar state để thỏa các modifiers ở nơi khác -->
             <field name="state" widget="statusbar" statusbar_visible="draft,sent,purchase" readonly="1"/>
 
