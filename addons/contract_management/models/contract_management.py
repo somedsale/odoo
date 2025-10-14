@@ -107,12 +107,12 @@ class ContractManagement(models.Model):
                     
                     # Tạo dự án
                     project = self.env['project.project'].sudo().create(project_vals)
-                    self.sudo().write({'project_id': project.id})
+                    contract.sudo().project_id = project
 
                     # Sync attachments to project
                     if contract.attachment_ids:
-                        for attachment in contract.attachment_ids:
-                            attachment.copy({
+                        for attachment in contract.sudo().attachment_ids:
+                            attachment.sudo().copy({
                                 'res_model': 'project.project',
                                 'res_id': project.id,
                             })
