@@ -167,26 +167,38 @@
     <div class="signature" style="margin-top:50px; font-size:16px;">
         <table style="width:100%;">
             <tr>
-                <td class="sig-cell">
+                <td class="sig-cell" style="text-align:center;">
                     <strong>NGƯỜI ĐỀ XUẤT</strong>
                 </td>
-                <td class="sig-cell">
+                <td class="sig-cell" style="text-align:center;">
                     <strong>GIÁM ĐỐC</strong>
                 </td>
             </tr>
             <tr>
-                <td class="sig-cell">
+                <td class="sig-cell" style="text-align:center; vertical-align:top;">
                     <div class="sign-hint">(Ký, họ tên)</div>
-                    <div class="sign-slot" style="height:80px;">                        <!-- chừa chỗ ký -->
-                        <div class="sign-name" style="margin-top:60px;">
-                            <t t-esc="o.proposer_id.name"/>
+                    <div class="sign-slot" style="height:80px; position:relative;">
+                        <!-- Khi phiếu đã duyệt, hiển thị chữ “ĐÃ XÁC NHẬN” -->
+                        <t t-if="o.state in ['approved', 'posted', 'completed']">
+                            <div style= "text-align:center; color:green; font-weight:bold;margin-top:25px;">
+                            ĐÃ XÁC NHẬN
+                            </div>
+                        </t>
+                        <div class="sign-name" style="margin-top:50px;">
+                            <t t-esc="o.proposer_id.name or ''"/>
                         </div>
                     </div>
                 </td>
-                <td class="sig-cell">
+
+                <td class="sig-cell" style="text-align:center; vertical-align:top;">
                     <div class="sign-hint">(Ký, họ tên)</div>
-                    <div class="sign-slot" style="height:80px;">                        <!-- chừa chỗ ký -->
-                        <div class="sign-name" style="margin-top:60px;">
+                    <div class="sign-slot" style="height:80px; position:relative;">
+                        <t t-if="o.state in ['approved', 'posted', 'completed']">
+                            <div style= "text-align:center; color:green; font-weight:bold;margin-top:25px;">
+                            ĐÃ XÁC NHẬN
+                            </div>
+                        </t>
+                        <div class="sign-name" style="margin-top:50px;">
                             <t t-esc="o.director_user_id.name or ''"/>
                         </div>
                     </div>
