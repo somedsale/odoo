@@ -18,6 +18,11 @@ class ProjectExpenseDashboard(models.Model):
         string="Dòng dự toán",
         readonly=True,
     )
+    additional_expense_line_ids = fields.One2many(
+        related='cost_estimate_id.additional_expense_line_ids',
+        string="Dòng chi phí gián tiếp",
+        readonly=True,
+    )
     total_estimate = fields.Float(string="Tổng dự toán", compute="_compute_total_estimate", store=True)
     total_actual = fields.Float(string="Tổng chi thực tế", compute="_compute_total_actual", store=True)
     progress = fields.Float( compute="_compute_progress", store=True)

@@ -1,0 +1,10 @@
+<odoo>
+    <!-- Sequence for Account Payment Proposal -->
+    <record id="seq_account_payment_proposal" model="ir.sequence">
+        <field name="name">Giấy đề nghị chi</field>
+        <field name="code">account.payment.proposal</field>
+        <field name="prefix">DN</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>
