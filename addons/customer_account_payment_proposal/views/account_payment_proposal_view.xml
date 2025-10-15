@@ -1,0 +1,81 @@
+<odoo>
+    <record id="view_account_payment_proposal_form" model="ir.ui.view">
+        <field name="name">account.payment.proposal.form</field>
+        <field name="model">account.payment.proposal</field>
+        <field name="arch" type="xml">
+            <form string="Giấy đề nghị giải chi">
+                <header>
+                    <button name="action_submit" string="Gửi duyệt" type="object" class="btn-primary"/>
+                    <button name="action_approve" string="Duyệt" type="object"/>
+                    <button name="action_paid" string="Đã chi" type="object" class="btn-success"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,paid"/>
+                </header>
+
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="date_request"/>
+                            <field name="partner_name"/>
+                            <field name="department"/>
+                            <field name="document_ref"/>
+                        </group>
+                        <group>
+                            <field name="amount_advance"/>
+                            <field name="amount_refund"/>
+                            <field name="amount_remain"/>
+                            <field name="amount_in_words"/>
+                        </group>
+                    </group>
+
+                    <field name="purpose" colspan="2"/>
+
+                    <separator string="Chi tiết chứng từ"/>
+                    <field name="line_ids">
+                        <tree editable="bottom">
+                            <field name="sequence" string="Số"/>
+                            <field name="date" string="Ngày tháng"/>
+                            <field name="content" string="Nội dung"/>
+                            <field name="amount" string="Số tiền"/>
+                            <field name="project" string="Dự án"/>
+                            <field name="note" string="Ghi chú"/>
+                        </tree>
+                    </field>
+
+                    <field name="note" placeholder="Ghi chú thêm..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_account_payment_proposal_tree" model="ir.ui.view">
+        <field name="name">account.payment.proposal.tree</field>
+        <field name="model">account.payment.proposal</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="date_request"/>
+                <field name="partner_name"/>
+                <field name="amount_remain"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ============ ACTION ============ -->
+    <record id="action_account_payment_proposal" model="ir.actions.act_window">
+        <field name="name">Giấy đề nghị chi</field>
+        <field name="res_model">account.payment.proposal</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p>
+                Tạo mới một <b>Giấy đề nghị chi</b> để trình duyệt chi nội bộ hoặc công trình.
+            </p>
+        </field>
+    </record>
+
+    <!-- ============ MENU ============ -->
+    <menuitem id="menu_account_payment_proposal_root" name="Đề nghị giải chi" sequence="90"/>
+
+    <menuitem id="menu_account_payment_proposal" name="Giấy đề nghị chi" parent="menu_account_payment_proposal_root" action="action_account_payment_proposal"/>
+</odoo>

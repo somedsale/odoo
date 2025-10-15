@@ -69,6 +69,21 @@
                                 </tree>
                             </field>
                         </page>
+                        <page string="Chi tiết dự toán chi phí gián tiếp">
+                            <field name="additional_expense_line_ids" context="{'default_cost_estimate_id': active_id}">
+                                <tree editable="bottom">
+                                    <field name="expense_id" string ="Tên chi phí"/>
+                                    <field name="quantity"/>
+                                    <field name="uom_id" string="Đơn vị"/>
+                                    <field name="price_unit" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="price_subtotal" sum="Tổng 1" optional="show" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="tax_id"/>
+                                    <field name="price_tax" sum="Tổng 2" optional="show" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="price_total" sum="Tổng 3" optional="show" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="currency_id" string="Tiền tệ" optional="hide"/>
+                                </tree>
+                            </field>
+                        </page>
                     </notebook>
                 </sheet>
             </form>
