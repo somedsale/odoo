@@ -6,7 +6,7 @@ class SupplierInvoice(models.Model):
     _description = "Supplier Invoice"
 
     name = fields.Char("Số hóa đơn", required=True)
-    contract_id = fields.Many2one("supplier.contract", string="Hợp đồng", required=True)
+    contract_id = fields.Many2one("supplier.contract", string="Hợp đồng")
     settlement_id = fields.Many2one("supplier.settlement", string="Hồ sơ quyết toán")
     date = fields.Date("Ngày hóa đơn", required=True)
     amount = fields.Monetary("Số tiền", required=True, currency_field="currency_id")
