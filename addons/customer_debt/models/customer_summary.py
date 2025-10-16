@@ -29,7 +29,7 @@ class CustomerDebtSummary(models.Model):
     # ======= Các field giá trị =======
     amount_total = fields.Monetary(string="Tổng giá trị HĐ", currency_field="currency_id", readonly=True)
     amount_invoiced = fields.Monetary(string="Đã xuất HĐ", currency_field="currency_id", readonly=True)
-    amount_paid = fields.Monetary(string="Đã thu", currency_field="currency_id", readonly=True)
+    amount_paid = fields.Monetary(string="Đã thu", compute="_compute_amount_paid", currency_field="currency_id", readonly=True)
     residual = fields.Monetary(string="Còn nợ", currency_field="currency_id", readonly=True)
 
     # ======= Các field ảo thêm để render report =======
@@ -38,6 +38,11 @@ class CustomerDebtSummary(models.Model):
     warranty_period = fields.Char(string="Thời gian bảo hành", readonly=True)
     note = fields.Text(string="Ghi chú", readonly=True)
 
+
+    @api.depends("contract_ids.amount_receipt")
+    def _compute_amount_paid(self):
+        for record in self:
+            record.amount_paid = sum(record.contract_ids.mapped("amount_receipt"))
     # ===== COMPUTE FIELDS =====
     @api.depends('standalone_invoice_ids_raw')
     def _compute_invoices(self):
@@ -68,12 +73,6 @@ class CustomerDebtSummary(models.Model):
                     FROM customer_invoice
                     GROUP BY contract_id
                 ),
-                receipt_sum AS (
-                    SELECT contract_id, SUM(amount) AS amount_paid
-                    FROM account_receipt
-                    WHERE state = 'posted'
-                    GROUP BY contract_id
-                ),
                 standalone_invoices AS (
                     SELECT partner_id, STRING_AGG(id::text, ',') AS invoice_ids_raw
                     FROM customer_invoice
@@ -89,8 +88,10 @@ class CustomerDebtSummary(models.Model):
                     c.currency_id,
                     COALESCE(SUM(c.amount_total), 0) AS amount_total,
                     COALESCE(SUM(inv.amount_invoiced), 0) AS amount_invoiced,
-                    COALESCE(SUM(rc.amount_paid), 0) AS amount_paid,
-                    (COALESCE(SUM(inv.amount_invoiced), 0) - COALESCE(SUM(rc.amount_paid), 0)) AS residual,
+
+                    /* 🔹 Vì bỏ phiếu thu nên đặt mặc định 0 */
+                    0.0::numeric AS amount_paid,
+                    (COALESCE(SUM(inv.amount_invoiced), 0)) AS residual,
 
                     /* 🔹 Bổ sung các cột ảo để tránh lỗi template */
                     0.0::numeric AS amount_final,
@@ -100,7 +101,6 @@ class CustomerDebtSummary(models.Model):
 
                 FROM customer_contract c
                 LEFT JOIN invoice_sum inv ON inv.contract_id = c.id
-                LEFT JOIN receipt_sum rc ON rc.contract_id = c.id
                 LEFT JOIN standalone_invoices s ON s.partner_id = c.partner_id
                 GROUP BY c.partner_id, c.currency_id, s.invoice_ids_raw
             )

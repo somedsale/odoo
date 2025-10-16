@@ -21,7 +21,11 @@ Module quản lý công nợ khách hàng:
         'views/contract_views.xml',
         'views/invoice_views.xml',
         'views/customer_summary_views.xml',
+        'views/view_account_receipt_form_inherit.xml',
         'report/customer_debt_summary_report.xml',
+        'report/customer_contract_by_partner_report.xml',
+        # Wizard
+        'wizards/customer_contract_by_partner_wizard_views.xml',
     ],
     'installable': True,
     'application': True,

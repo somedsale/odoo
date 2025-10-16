@@ -10,7 +10,11 @@ class AccountReceiptInherit(models.Model):
         string='Hợp đồng khách hàng',
         ondelete='set null'
     )
-
+    invoice_id = fields.Many2one(
+        'customer.invoice',
+        string='Hóa đơn khách hàng',
+        ondelete='set null'
+    )
     @api.onchange('contract_id')
     def _onchange_contract_id(self):
         """Tự động gán khách hàng & dự án khi chọn hợp đồng"""
