@@ -68,12 +68,6 @@ class CustomerDebtSummary(models.Model):
                     FROM customer_invoice
                     GROUP BY contract_id
                 ),
-                receipt_sum AS (
-                    SELECT contract_id, SUM(amount) AS amount_paid
-                    FROM account_receipt
-                    WHERE state = 'posted'
-                    GROUP BY contract_id
-                ),
                 standalone_invoices AS (
                     SELECT partner_id, STRING_AGG(id::text, ',') AS invoice_ids_raw
                     FROM customer_invoice
@@ -89,8 +83,10 @@ class CustomerDebtSummary(models.Model):
                     c.currency_id,
                     COALESCE(SUM(c.amount_total), 0) AS amount_total,
                     COALESCE(SUM(inv.amount_invoiced), 0) AS amount_invoiced,
-                    COALESCE(SUM(rc.amount_paid), 0) AS amount_paid,
-                    (COALESCE(SUM(inv.amount_invoiced), 0) - COALESCE(SUM(rc.amount_paid), 0)) AS residual,
+
+                    /* 🔹 Vì bỏ phiếu thu nên đặt mặc định 0 */
+                    0.0::numeric AS amount_paid,
+                    (COALESCE(SUM(inv.amount_invoiced), 0)) AS residual,
 
                     /* 🔹 Bổ sung các cột ảo để tránh lỗi template */
                     0.0::numeric AS amount_final,
@@ -100,7 +96,6 @@ class CustomerDebtSummary(models.Model):
 
                 FROM customer_contract c
                 LEFT JOIN invoice_sum inv ON inv.contract_id = c.id
-                LEFT JOIN receipt_sum rc ON rc.contract_id = c.id
                 LEFT JOIN standalone_invoices s ON s.partner_id = c.partner_id
                 GROUP BY c.partner_id, c.currency_id, s.invoice_ids_raw
             )

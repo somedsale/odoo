@@ -1,80 +1,105 @@
 <odoo>
+    <!-- ===================== FORM VIEW ===================== -->
     <record id="view_account_payment_proposal_form" model="ir.ui.view">
         <field name="name">account.payment.proposal.form</field>
         <field name="model">account.payment.proposal</field>
         <field name="arch" type="xml">
-            <form string="Giấy đề nghị giải chi">
+            <form string="Giấy đề nghị giải chi" create="true" edit="true">
                 <header>
-                    <button name="action_submit" string="Gửi duyệt" type="object" class="btn-primary"/>
-                    <button name="action_approve" string="Duyệt" type="object"/>
-                    <button name="action_paid" string="Đã chi" type="object" class="btn-success"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,paid"/>
+                    <field name="can_submit" invisible="1"/>
+                    <field name="can_approve_manager" invisible="1"/>
+                    <field name="can_approve_accountant" invisible="1"/>
+                    <field name="can_approve_director" invisible="1"/>
+                    <field name="can_paid" invisible="1"/>
+                    <button name="action_submit" type="object" string="Gửi duyệt" class="btn-primary" invisible="not can_submit"/>
+                    <button name="action_approve_manager" type="object" string="Trưởng phòng duyệt" class="btn-success" invisible="not can_approve_manager"/>
+                    <button name="action_approve_accountant" type="object" string="Kế toán duyệt" class="btn-success" invisible="not can_approve_accountant"/>
+                    <button name="action_approve_director" type="object" string="Giám đốc duyệt" class="btn-success" invisible="not can_approve_director"/>
+                    <button name="action_paid" type="object" string="Kế toán chi tiền" class="btn-secondary" invisible="not can_paid"/>
+                    <!-- Từ chối -->
+                    <button name="action_reject" type="object" string="Từ chối" class="btn-danger" invisible="not state in ['submitted', 'dept_approved', 'account_approved', 'director_approved']"/>
+                    <!-- Thanh trạng thái -->
+                    <field name="state" widget="statusbar" statusbar_visible="submitted,dept_approved,account_approved,director_approved,paid,rejected"/>
                 </header>
-
                 <sheet>
                     <group>
                         <group>
-                            <field name="name" readonly="1"/>
+                            <field name="name" readonly="1" string="Số phiếu đề nghị"/>
                             <field name="date_request"/>
-                            <field name="partner_name"/>
-                            <field name="department"/>
-                            <field name="document_ref"/>
+                            <field name="user_id" widget="many2one_avatar_user" options="{'no_create': True,'no_open':True}" readonly="1"/>
+                            <field name="department_id" options="{'no_create': True,'no_open':True}" readonly="state !='draft'"/>
+                            <field name ="manager_id" widget="many2one_avatar_user" options="{'no_create': True,'no_open':True}" readonly="1"/>
+                            <field name="currency_id" invisible="1"/>
                         </group>
+
                         <group>
-                            <field name="amount_advance"/>
-                            <field name="amount_refund"/>
-                            <field name="amount_remain"/>
-                            <field name="amount_in_words"/>
+                            <field name="amount_advance" help="Nhập số tiền tạm ứng (nếu có)."/>
+                            <field name="total_amount" readonly="1"/>
+                            <field name="amount_refund" readonly="1"/>
+                            <field name="amount_remain" readonly="1"/>
+                            <field name="amount_in_words" readonly="1"/>
                         </group>
                     </group>
 
-                    <field name="purpose" colspan="2"/>
+                    <separator string="Nội dung đề nghị" colspan="2"/>
+                    <field name="note" placeholder="Nội dung chi tiết mục đích thanh toán"/>
 
-                    <separator string="Chi tiết chứng từ"/>
+                    <separator string="Chi tiết chứng từ" colspan="2"/>
                     <field name="line_ids">
                         <tree editable="bottom">
-                            <field name="sequence" string="Số"/>
-                            <field name="date" string="Ngày tháng"/>
-                            <field name="content" string="Nội dung"/>
-                            <field name="amount" string="Số tiền"/>
-                            <field name="project" string="Dự án"/>
-                            <field name="note" string="Ghi chú"/>
+                            <field name="sequence" widget="handle" string="" width="30"/>
+                            <field name="date" string="Ngày tháng" width="90"/>
+                            <field name="content" string="Nội dung" width="250"/>
+                            <field name="amount" string="Số tiền" width="130" options="{'currency_field': 'currency_id'}"/>
+                            <field name="project_id" string="Dự án" width="200"/>
+                            <field name="attachment_ids" widget="many2many_binary" options="{'no_create': True}" width="160"/>
+                            <field name="note" string="Ghi chú" width="120"/>
+                            <field name="currency_id" optional="hide"/>
                         </tree>
                     </field>
-
-                    <field name="note" placeholder="Ghi chú thêm..."/>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                    </div>
                 </sheet>
             </form>
         </field>
     </record>
 
+    <!-- ===================== TREE VIEW ===================== -->
     <record id="view_account_payment_proposal_tree" model="ir.ui.view">
         <field name="name">account.payment.proposal.tree</field>
         <field name="model">account.payment.proposal</field>
         <field name="arch" type="xml">
-            <tree>
-                <field name="name"/>
+            <tree decoration-success="state=='paid'" decoration-bf="1" decoration-warning="state=='submitted'" decoration-info="state=='approved'">
+                <field name="name" string="Số phiếu đề nghị"/>
                 <field name="date_request"/>
-                <field name="partner_name"/>
-                <field name="amount_remain"/>
-                <field name="state"/>
+                <field name="user_id" readonly="1"/>
+                <field name="department_id"/>
+                <field name="amount_advance" sum="1"/>
+                <field name="total_amount" sum="1"/>
+                <field name="amount_refund" sum="1"/>
+                <field name="amount_remain" sum="1"/>
+                <field name="state" widget="badge"/>
+                <field name="currency_id" optional="hide"/>
             </tree>
         </field>
     </record>
 
-    <!-- ============ ACTION ============ -->
+    <!-- ===================== ACTION ===================== -->
     <record id="action_account_payment_proposal" model="ir.actions.act_window">
-        <field name="name">Giấy đề nghị chi</field>
+        <field name="name">Giấy đề nghị giải chi</field>
         <field name="res_model">account.payment.proposal</field>
         <field name="view_mode">tree,form</field>
         <field name="help" type="html">
             <p>
-                Tạo mới một <b>Giấy đề nghị chi</b> để trình duyệt chi nội bộ hoặc công trình.
+                Tạo mới một <b>Giấy đề nghị giải chi</b> để hoàn tạm ứng hoặc đề nghị thanh toán chi phí công tác.
             </p>
         </field>
     </record>
 
-    <!-- ============ MENU ============ -->
+    <!-- ===================== MENU ===================== -->
     <menuitem id="menu_account_payment_proposal_root" name="Đề nghị giải chi" sequence="90"/>
 
     <menuitem id="menu_account_payment_proposal" name="Giấy đề nghị chi" parent="menu_account_payment_proposal_root" action="action_account_payment_proposal"/>
