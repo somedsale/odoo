@@ -3,12 +3,12 @@
 
     <!-- Action report HTML -->
     <record id="customer_contract_by_partner_report_action_html" model="ir.actions.report">
-        <field name="name">Báo cáo HĐ theo Khách hàng (HTML)</field>
+        <field name="name">Báo cáo Công nợ theo Khách hàng</field>
         <field name="model">res.partner</field>
         <field name="report_type">qweb-html</field>
         <field name="report_name">customer_debt.customer_contract_by_partner_report</field>
         <field name="report_file">customer_debt.customer_contract_by_partner_report</field>
-        <field name="print_report_name">'Bao cao hop dong - ' + (object.name or 'Khach hang')</field>
+        <field name="print_report_name">'Báo cáo công nợ - ' + (object.name or 'Khach hang')</field>
         <field name="paperformat_id" ref="customer_debt.custom_sale_report_a4_portrait"/>
     </record>
 
@@ -29,7 +29,7 @@
                 </style>
 
                 <h2 style="text-align:center; margin-bottom: 20px; font-size: 24px; text-transform: uppercase;">
-                    Báo cáo hợp đồng theo khách hàng
+                    Báo cáo công nợ khách hàng
                 </h2>
 
                 <div style="margin: 4px 0 10px;">
@@ -213,33 +213,12 @@
                                     </t>
                                 </t>
 
-                                <!-- Subtotal: Tổng Còn nợ của NHÓM -->
-                                <tr style="background:#FCE4D6; font-weight:bold;">
-                                    <td></td>
-                                    <td class="text-right">Tổng còn nợ nhóm:</td>
-                                    <td class="text-right"></td>
-                                    <td class="text-center"></td>
-                                    <td class="text-right"></td>
-                                    <td class="text-center"></td>
-                                    <td class="text-center"></td>
-                                    <td class="text-right"></td>
-                                    <td class="text-center"></td>
-                                    <td class="text-right"></td>
-                                    <td class="text-right">
-                                        <t t-if="g['totals']['amount_due']">
-                                            <span t-esc="g['totals']['amount_due']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
-                                        </t>
-                                    </td>
-                                    <td class="text-right"></td>
-                                    <td class="text-center"></td>
-                                </tr>
-
                             </t>
 
                             <!-- Tổng toàn bộ cho KH -->
                             <tr style="background:#DDEBF7; font-weight:bold;">
                                 <td></td>
-                                <td class="text-right">Tổng toàn bộ:</td>
+                                <td class="text-right">TỔNG:</td>
                                 <td class="text-right">
                                     <t t-if="blk['grand_totals']['amount_total']">
                                         <span t-esc="blk['grand_totals']['amount_total']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>

@@ -30,8 +30,11 @@ class ProposalSheet(models.Model):
         ('done', 'Hoàn tất'),
         ('rejected', 'Bị từ chối'),
         ('canceled', 'Đã hủy'),
-    ], string="Trạng thái", default='draft', tracking=True)
-
+    ], string="Trạng thái", default='draft')
+    date_proposal = fields.Date(string='Ngày Đề Xuất')
+    date_reviewed_manager = fields.Date(string='Ngày QL duyệt')
+    date_reviewed_accounting = fields.Date(string='Ngày KTTH kiểm tra')
+    date_approved = fields.Date(string='Ngày Sếp duyệt')
     type = fields.Selection([
         ('material', 'Vật Tư'),
         ('expense', 'Chi Phí'),
@@ -207,14 +210,15 @@ class ProposalSheet(models.Model):
         if self.manager_id.user_id == self.env.user:
             self.state = 'reviewed_accounting'
             _logger.info(">>> Proposal %s chuyển sang trạng thái 'reviewed_accounting'", self.name)
-
+            self.date_proposal = fields.Datetime.now()
+            self.date_reviewed_manager = fields.Datetime.now()
             partner_ids = self._get_approval_partners(include_manager=False, include_boss=False, include_accounting=True)
             message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được gửi duyệt bởi <em>{self.env.user.name}</em>.</p>"
             self._send_notification(message, partner_ids)
         else:
             self.state = 'reviewed_manager'
             _logger.info(">>> Proposal %s chuyển sang trạng thái 'reviewed_manager'", self.name)
-
+            self.date_proposal = fields.Datetime.now()
             partner_ids = self._get_approval_partners(include_manager=True, include_boss=False, include_accounting=False)
             message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được gửi duyệt bởi <em>{self.env.user.name}</em>.</p>"
             self._send_notification(message, partner_ids)
@@ -234,6 +238,7 @@ class ProposalSheet(models.Model):
         if self.state != 'reviewed_manager':
             raise UserError("Chỉ phiếu đang xem xét mới được duyệt.")
         self.state = 'reviewed_accounting'
+        self.date_reviewed_manager = fields.Datetime.now()
         approver_name = self.env.user.name
         message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được xác nhận bởi <em>{approver_name}</em>.</p>"
         partner_ids = self._get_approval_partners(include_manager=False, include_boss=False, include_accounting=True)
@@ -245,6 +250,7 @@ class ProposalSheet(models.Model):
             if record.state != 'approved':
                 raise UserError("Chỉ phiếu đang ở trạng thái đang kiểm tra mới được gửi kế toán.")
         self.state = 'waiting_accounting_paid'
+        self.date_approved = fields.Datetime.now()
         # Gửi thông báo đến kế toán
         message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được duyệt bởi <em>{self.env.user.name}</em>.</p>"
         partner_ids = self._get_approval_partners(include_manager=False, include_boss=False, include_accounting=True)
@@ -310,6 +316,7 @@ class ProposalSheet(models.Model):
         if self.state != 'reviewed_accounting':
             raise UserError("Chỉ phiếu đã được Quản lý trình mới được Kế toán kiểm tra.")
         self.state = 'approved'
+        self.date_reviewed_accounting = fields.Datetime.now()
         message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được kiểm tra bởi <em>{self.env.user.name}</em>.</p>"        
         partner_ids = self._get_approval_partners(include_manager=False, include_boss=True, include_accounting=False)
         # Gửi thông báo đến giám đốc
@@ -359,9 +366,10 @@ class ProposalSheet(models.Model):
         }
     def action_done(self):
         for rec in self:
-            rec.state = 'done' 
-            
-        
+            if rec.state != 'waiting_accounting_paid':
+                raise UserError("Chi phiếu chưa được thanh toán.")
+            rec.state = 'done'            
+            rec.message_post(body="Phiếu đề xuất đã hoàn tất.")
 
     @api.depends('state', 'task_id.project_id.user_id')
     def _compute_show_buttons(self):
@@ -375,7 +383,7 @@ class ProposalSheet(models.Model):
             rec.show_button_accounting_approve = rec.state == 'reviewed_accounting' and is_accounting  and rec.treasurer_confirmed
             rec.show_button_boss_approve = rec.state == 'approved' and is_boss
             rec.show_button_waiting_accounting_paid = rec.state == 'waiting_accounting_paid' and rec.type == 'expense' and is_accounting
-            rec.show_button_done = rec.state == 'done' and is_accounting
+            rec.show_button_done = rec.state == 'waiting_accounting_paid' and is_accounting
             rec.show_button_reject = (
                 (rec.state == 'reviewed_manager' and is_manager) or
                 (rec.state == 'reviewed_accounting' and is_accounting) or

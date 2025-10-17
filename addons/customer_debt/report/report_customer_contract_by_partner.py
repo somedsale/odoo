@@ -61,6 +61,7 @@ class ReportCustomerContractByPartner(models.AbstractModel):
           - Các dòng phiếu thu tiếp theo: chỉ in cột Thu + residual, KHÔNG lặp lại cột hóa đơn.
           - Không có phiếu thu -> 1 dòng, residual = số tiền hóa đơn.
           - HSQT (Số/Ngày + Số tiền) chỉ in 1 lần ở Hóa đơn đầu tiên của HĐ.
+          - **MỚI:** Phiếu thu không gắn hóa đơn (tạm ứng) vẫn hiển thị, residual âm lũy kế.
         """
         # HS quyết toán (in 1 lần/hợp đồng)
         sett_numbers, sett_dates = self._collect_settlement_info(contract)
@@ -73,6 +74,7 @@ class ReportCustomerContractByPartner(models.AbstractModel):
             key=lambda inv: (getattr(inv, 'date', False) or getattr(inv, 'invoice_date', False) or datetime.date.min, inv.id)
         )
 
+        # === 1) In hóa đơn + phiếu thu gắn trực tiếp ===
         for inv in invoices:
             inv_date   = getattr(inv, 'date', False) or getattr(inv, 'invoice_date', False)
             inv_date_s = self._fmt_date(inv_date)
@@ -130,8 +132,43 @@ class ReportCustomerContractByPartner(models.AbstractModel):
 
             first_invoice_of_contract = False
 
-        # Không có hóa đơn -> vẫn trả 1 dòng để hiện hợp đồng
-        if not invoices:
+        # === 2) Thêm PHIẾU THU KHÔNG GẮN HÓA ĐƠN (tạm ứng) ===
+        # Lấy tất cả phiếu thu thuộc hợp đồng nhưng không có invoice_id
+        receipts_unlinked = contract.receipt_ids.filtered(lambda r: not getattr(r, 'invoice_id', False))
+        receipts_unlinked = receipts_unlinked.sorted(
+            key=lambda r: (getattr(r, 'date', False) or getattr(r, 'receipt_date', False) or datetime.date.min, r.id)
+        )
+
+        if receipts_unlinked:
+            advance_running = 0.0  # lũy kế tạm ứng (âm)
+            for idx, r in enumerate(receipts_unlinked):
+                r_date = getattr(r, 'date', False) or getattr(r, 'receipt_date', False) or getattr(r, 'payment_date', False)
+                r_amt  = float(getattr(r, 'amount', 0.0) or 0.0)
+                advance_running += r_amt
+
+                rows.append({
+                    'is_first_line_of_invoice': False,
+
+                    # Không có hóa đơn => để trống các cột hóa đơn
+                    'invoice_date':   '',
+                    'invoice_number': '',
+                    'invoice_amount': None,
+
+                    # Phiếu thu
+                    'receipt_date':   self._fmt_date(r_date),
+                    'receipt_amount': self._safe_num(r_amt),
+
+                    # residual âm lũy kế (tạm ứng)
+                    'residual_after': -advance_running,
+
+                    # HSQT: nếu hợp đồng không có hóa đơn nào -> in 1 lần ở dòng đầu của tạm ứng
+                    'print_contract_columns': (idx == 0 and len(invoices) == 0),
+                    'sett_numbers': sett_numbers if (idx == 0 and len(invoices) == 0) else '',
+                    'sett_dates':   sett_dates   if (idx == 0 and len(invoices) == 0) else '',
+                })
+
+        # Không có hóa đơn & cũng không có phiếu thu -> vẫn trả 1 dòng để hiện hợp đồng
+        if not invoices and not receipts_unlinked:
             rows.append({
                 'is_first_line_of_invoice': True,
                 'invoice_date': '',
@@ -166,6 +203,10 @@ class ReportCustomerContractByPartner(models.AbstractModel):
                     sum(float(getattr(r, 'amount', 0.0) or 0.0) for r in getattr(inv, 'account_receipt_ids', self.env['account.receipt']))
                     for inv in c.invoice_ids
                 ) or 0.0
+                # Cộng thêm các phiếu thu KHÔNG gắn hóa đơn (tạm ứng)
+                amount_paid += sum(float(getattr(r, 'amount', 0.0) or 0.0)
+                                   for r in c.receipt_ids.filtered(lambda x: not getattr(x, 'invoice_id', False))) or 0.0
+
                 amount_due = amount_invoiced - amount_paid
 
                 numbers_str, dates_str = self._collect_settlement_info(c)
@@ -181,7 +222,7 @@ class ReportCustomerContractByPartner(models.AbstractModel):
                     'amount_total': c.amount_total or 0.0,   # Giá trị HĐ
                     'amount_final': amount_final,            # HSQT Số tiền
                     'amount_invoiced': amount_invoiced,      # Hóa đơn: Số tiền
-                    'amount_paid': amount_paid,              # Thu: Số tiền
+                    'amount_paid': amount_paid,              # Thu: Số tiền (kể cả tạm ứng)
                     'amount_due': amount_due,                # Còn nợ
                     'warranty_amount': c.warranty_amount or 0.0,
                     'warranty_period': f"{c.warranty_time or 0} tháng",

@@ -4,7 +4,7 @@
             <main class="o_main">
                 <div style="font-family:'Times New Roman', serif;" class="page">
 
-                    <!-- CSS cho bảng -->
+                    <!-- CSS -->
                     <style>
                         table.report-table {
                             width: 100%;
@@ -23,13 +23,44 @@
                             text-align: center;
                             font-weight: bold;
                         }
-                        table.report-table td.text-center {
-                            text-align: center;
-                        }
-                        table.report-table td.text-left {
-                            text-align: left;
+                        table.report-table td.text-center { text-align: center; }
+                        table.report-table td.text-left { text-align: left; }
+                        table.report-table td.text-end { text-align: right !important; }
+
+                        /* Tbody nhỏ hơn */
+                        table.report-table tbody td {
+                            font-size: 12px !important;
+                            line-height: 1.35;
                         }
 
+                        /* Tỉ lệ cột “đều đẹp” */
+                        table.report-table th.col-stt,
+                        table.report-table td.col-stt { width: 5%; }
+
+                        table.report-table th.col-unit,
+                        table.report-table td.col-unit { width: 8%; }
+
+                        table.report-table th.col-qty,
+                        table.report-table td.col-qty { width: 8%; }
+
+                        /* Nhỏ lại một xíu */
+                        table.report-table th.col-unitprice,
+                        table.report-table td.col-unitprice { width: 13%; }
+
+                        table.report-table th.col-total,
+                        table.report-table td.col-total { width: 15%; }
+
+                        /* NCC to ra một xíu */
+                        table.report-table th.col-ncc,
+                        table.report-table td.col-ncc {
+                            width: 12%;
+                            font-size: 12px !important;
+                            line-height: 1.3;
+                            word-break: break-word;
+                            white-space: normal;
+                        }
+
+                        /* Thông tin chung */
                         table.general_information {
                             width: 100%;
                             border: none;
@@ -49,52 +80,54 @@
                             line-height: 1.4;
                         }
                         table.general_information .label {
-                            font-weight: bold !important; /* Đảm bảo nhãn đậm */
+                            font-weight: bold !important;
                             color: #000 !important;
                         }
                         table.general_information .info-value {
-                            font-weight: normal; /* Giữ giá trị không đậm */
-                            margin-left: 4px; /* Tạo khoảng cách với nhãn */
+                            font-weight: normal;
+                            margin-left: 4px;
                             color: #000 !important;
-                        }         
-.signature table { table-layout: fixed; border-color: white; border-style: none; outline: none; border-collapse: collapse; width: 100%; }
-.signature td { border-color: white !important; border-style: none; outline: none; border-collapse: collapse; }
-.signature tr { border-color: white !important; border-style: none; outline: none; border-collapse: collapse; }
-.signature td.sig-cell{
-  width: 25%;
-  vertical-align: top !important;
-  text-align: center;
-  padding: 10px 8px !important;
-}
-.signature .role{
-  display:block;
-  font-weight:700;
-  margin-top:6px;
-}
-  .signature .sign-slot {
-    min-height: 80px;               /* chừa chỗ trống ký tay */
-    margin-top: 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 10px;                      /* khoảng cách giữa các dòng */
-  }
-  .signature .sign-hint {
-    font-style: italic;
-    line-height: 1.4;               /* cao hơn 1 chút */
-    margin-bottom: 6px;             /* cách dòng dưới */
-  }
-  .signature .confirm-stamp {
-    font-weight: bold;
-    text-transform: capitalize;
-    line-height: 1.4;
-    height: 40px;                  /* giữ chỗ nếu có dấu xác nhận */
-  }
-  .signature .sign-name {
-    font-style: italic;
-    line-height: 1.4;
-  }
+                        }
+
+                        /* Chữ ký */
+                        .signature table { table-layout: fixed; border-color: white; border-style: none; outline: none; border-collapse: collapse; width: 100%; }
+                        .signature td { border-color: white !important; border-style: none; outline: none; border-collapse: collapse; }
+                        .signature tr { border-color: white !important; border-style: none; outline: none; border-collapse: collapse; }
+                        .signature td.sig-cell{
+                          width: 25%;
+                          vertical-align: top !important;
+                          text-align: center;
+                          padding: 10px 8px !important;
+                        }
+                        .signature .role{
+                          display:block;
+                          font-weight:700;
+                          margin-top:6px;
+                        }
+                        .signature .sign-slot {
+                          min-height: 80px;
+                          margin-top: 8px;
+                          display: flex;
+                          flex-direction: column;
+                          align-items: center;
+                          justify-content: flex-start;
+                          gap: 10px;
+                        }
+                        .signature .sign-hint {
+                          font-style: italic;
+                          line-height: 1.4;
+                          margin-bottom: 6px;
+                        }
+                        .signature .confirm-stamp {
+                          font-weight: bold;
+                          text-transform: capitalize;
+                          line-height: 1.4;
+                          height: 40px;
+                        }
+                        .signature .sign-name {
+                          font-style: italic;
+                          line-height: 1.4;
+                        }
                     </style>
 
                     <!-- Hàm format tiền -->
@@ -109,34 +142,26 @@
                         <table class="general_information" style="width:100%; margin-bottom:15px; border:none; border-collapse: collapse;border-color: white;">
                             <tr>
                                 <!-- Cột trái -->
-                                <td style ="width:50%; vertical-align:top;background-color:white !important;border:none !important;">
+                                <td style="width:50%; vertical-align:top; background-color:white !important; border:none !important;">
                                     <p>
                                         <span class="label">Mã Phiếu:</span>
-                                        <span class="info-value">
-                                            <t t-esc="o.name or 'N/A'"/>
-                                        </span>
+                                        <span class="info-value"><t t-esc="o.name or 'N/A'"/></span>
                                     </p>
                                     <p>
                                         <span class="label">Dự Án:</span>
-                                        <span class="info-value">
-                                            <t t-esc="o.project_id.display_name or ''"/>
-                                        </span>
+                                        <span class="info-value"><t t-esc="o.project_id.display_name or ''"/></span>
                                     </p>
                                     <p>
                                         <span class="label">Sản phẩm:</span>
-                                        <span class="info-value">
-                                            <t t-esc="o.task_id.name if o.task_id else ''"/>
-                                        </span>
+                                        <span class="info-value"><t t-esc="o.task_id.name if o.task_id else ''"/></span>
                                     </p>
                                 </td>
 
                                 <!-- Cột phải -->
-                                <td style="width:50%; vertical-align:top;background-color:white !important;border:none !important;">
+                                <td style="width:50%; vertical-align:top; background-color:white !important; border:none !important;">
                                     <p>
                                         <span class="label">Người đề xuất:</span>
-                                        <span class="info-value">
-                                            <t t-esc="o.requested_by.name or ''"/>
-                                        </span>
+                                        <span class="info-value"><t t-esc="o.requested_by.name or ''"/></span>
                                     </p>
                                     <p>
                                         <span class="label">Phòng ban:</span>
@@ -150,21 +175,21 @@
 
                         <!-- Bảng chi tiết -->
                         <table class="report-table">
-                            <thead style ="background-color:#27B1FC !important">
-                                <tr class="table-bordered border-dark border-2" style="color:#000 !important;font-weight: bold;">
-                                    <th>STT</th>
+                            <thead style="background-color:#27B1FC !important">
+                                <tr class="table-bordered border-dark border-2" style="color:#000 !important; font-weight: bold;">
+                                    <th class="col-stt">STT</th>
                                     <t t-if="o.type == 'material'">
                                         <th>Vật Tư</th>
                                     </t>
                                     <t t-if="o.type == 'expense'">
                                         <th>Chi Phí</th>
                                     </t>
-                                    <th>Đơn Vị</th>
-                                    <th>Số Lượng</th>
-                                    <th>Đơn Giá</th>
-                                    <th>Thành Tiền</th>
+                                    <th class="col-unit">Đơn Vị</th>
+                                    <th class="col-qty">Số Lượng</th>
+                                    <th class="col-unitprice">Đơn Giá</th>
+                                    <th class="col-total">Thành Tiền</th>
                                     <t t-if="o.type == 'material'">
-                                        <th>NCC Đề Xuất</th>
+                                        <th class="col-ncc">NCC Đề Xuất</th>
                                     </t>
                                     <th>Ghi chú</th>
                                 </tr>
@@ -176,30 +201,14 @@
                                         <t t-set="i" t-value="line_with_index[0]"/>
                                         <t t-set="line" t-value="line_with_index[1]"/>
                                         <tr class="table-bordered border-dark border-2">
-                                            <td class="text-center">
-                                                <t t-esc="i + 1"/>
-                                            </td>
-                                            <td>
-                                                <t t-esc="line.material_id.name"/>
-                                            </td>
-                                            <td class="text-center">
-                                                <t t-esc="line.unit.name"/>
-                                            </td>
-                                            <td class="text-center">
-                                                <t t-esc="line.quantity"/>
-                                            </td>
-                                            <td class="text-end">
-                                                <t t-esc="format_vnd(line.price_unit)"/>
-                                            </td>
-                                            <td class="text-end">
-                                                <t t-esc="format_vnd(line.price_total)"/>
-                                            </td>
-                                            <td>
-                                                <t t-esc="line.vendor_id.name"/>
-                                            </td>
-                                            <td style="background-color: white !important;">
-                                                <t t-esc="line.description"/>
-                                            </td>
+                                            <td class="text-center col-stt"><t t-esc="i + 1"/></td>
+                                            <td><t t-esc="line.material_id.name"/></td>
+                                            <td class="text-center col-unit"><t t-esc="line.unit.name"/></td>
+                                            <td class="text-center col-qty"><t t-esc="line.quantity"/></td>
+                                            <td class="text-end col-unitprice"><t t-esc="format_vnd(line.price_unit)"/></td>
+                                            <td class="text-end col-total"><t t-esc="format_vnd(line.price_total)"/></td>
+                                            <td class="col-ncc"><t t-esc="line.vendor_id.name"/></td>
+                                            <td style="background-color: white !important;"><t t-esc="line.description"/></td>
                                         </tr>
                                     </t>
                                 </t>
@@ -210,164 +219,90 @@
                                         <t t-set="i" t-value="line_with_index[0]"/>
                                         <t t-set="line" t-value="line_with_index[1]"/>
                                         <tr class="table-bordered border-dark border-2">
-                                            <td class="text-center">
-                                                <t t-esc="i + 1"/>
-                                            </td>
-                                            <td>
-                                                <t t-esc="line.expense_id.name"/>
-                                            </td>
-                                            <td>
-                                                <t t-esc="line.unit.name"/>
-                                            </td>
-                                            <td class="text-center">
-                                                <t t-esc="line.quantity"/>
-                                            </td>
-                                            <td class="text-end">
-                                                <t t-esc="format_vnd(line.price_unit)"/>
-                                            </td>
-                                            <td class="text-end">
-                                                <t t-esc="format_vnd(line.price_total)"/>
-                                            </td>
-                                            <td style="background-color: white !important;">
-                                                <t t-esc="line.description"/>
-                                            </td>
+                                            <td class="text-center col-stt"><t t-esc="i + 1"/></td>
+                                            <td><t t-esc="line.expense_id.name"/></td>
+                                            <td class="text-center col-unit"><t t-esc="line.unit.name"/></td>
+                                            <td class="text-center col-qty"><t t-esc="line.quantity"/></td>
+                                            <td class="text-end col-unitprice"><t t-esc="format_vnd(line.price_unit)"/></td>
+                                            <td class="text-end col-total"><t t-esc="format_vnd(line.price_total)"/></td>
+                                            <td style="background-color: white !important;"><t t-esc="line.description"/></td>
                                         </tr>
                                     </t>
                                 </t>
 
                                 <!-- Tổng -->
-                                <tr class="table-bordered border-dark border-2" style="color:#000 !important;font-weight: bold;">
-                                    <td colspan="5" class="text-left">
-                                        <strong>Tổng:</strong>
-                                    </td>
-                                    <td class="text-end">
-                                        <t t-esc="format_vnd(o.amount_total)"/>
-                                    </td>
+                                <tr class="table-bordered border-dark border-2" style="color:#000 !important; font-weight: bold;">
+                                    <td colspan="5" class="text-left"><strong>Tổng:</strong></td>
+                                    <td class="text-end col-total"><t t-esc="format_vnd(o.amount_total)"/></td>
                                     <td style="background-color: white !important;" colspan="2"></td>
                                 </tr>
                             </tbody>
                         </table>
 
                         <!-- Ghi chú -->
-                        <div style="margin-top: 15px;font-size: 16px;">
+                        <div style="margin-top: 15px; font-size: 16px;">
                             <p>
                                 <strong style="font-weight: bold !important;">Ghi chú:</strong>
-                                <span class="info-value">
-                                    <t t-esc="o.take_note or ''"/>
-                                </span>
+                                <span class="info-value"><t t-esc="o.take_note or ''"/></span>
                             </p>
                         </div>
 
                         <!-- Chữ ký -->
-                        <!-- Chữ ký -->
-                        <div class="signature" style="margin-top:50px;border:none;font-size:16px;">
-                            <!-- Map state -> index để so sánh cộng dồn -->
-                            <t t-set="stage_index" t-value="{
-       'draft': 0,
-       'reviewed_manager': 1,
-       'reviewed_accounting': 2,
-       'approved': 3,
-       'waiting_accounting_paid': 4,
-       'done': 5,
-       'rejected': -1,
-       'canceled': -1
-     }.get(o.state, 0)"/>
+                        <div class="signature" style="margin-top:50px; border:none; font-size:16px;">
+                            <!-- Formatter: nếu d rỗng -> dùng hôm nay; format dd/mm/YYYY -->
+                            <t t-set="fmt_date" t-value="lambda d: ((d or datetime.date.today()).strftime('%d/%m/%Y'))"/>
 
                             <table style="width:100%; text-align:center; border-color: white; border-style: none; outline: none; border-collapse: collapse;">
-                                <tr style="border:none padding-bottom:20px;">
-                                    <td>
-                                        <t t-esc="datetime.date.today().strftime('%d/%m/%Y')"/>
-                                    </td>
-                                    <td>
-                                        <t t-esc="datetime.date.today().strftime('%d/%m/%Y')"/>
-                                    </td>
-                                    <td>
-                                        <t t-esc="datetime.date.today().strftime('%d/%m/%Y')"/>
-                                    </td>
-                                    <td>
-                                        <t t-esc="datetime.date.today().strftime('%d/%m/%Y')"/>
-                                    </td>
+                                <!-- Ngày xác nhận -->
+                                <tr style="border:none; padding-bottom:20px;">
+                                    <td><t t-esc="fmt_date(o.date_proposal)"/></td>
+                                    <td><t t-esc="fmt_date(o.date_reviewed_manager)"/></td>
+                                    <td><t t-esc="fmt_date(o.date_reviewed_accounting)"/></td>
+                                    <td><t t-esc="fmt_date(o.date_approved)"/></td>
                                 </tr>
 
+                                <!-- Vai trò -->
                                 <tr style="border:none">
-                                    <td>
-                                        <strong>NGƯỜI ĐỀ XUẤT</strong>
-                                    </td>
-                                    <td>
-                                        <strong>TRƯỞNG BỘ PHẬN</strong>
-                                    </td>
-                                    <td>
-                                        <strong>KẾ TOÁN TỔNG HỢP</strong>
-                                    </td>
-                                    <td>
-                                        <strong>GIÁM ĐỐC</strong>
-                                    </td>
+                                    <td><strong>NGƯỜI ĐỀ XUẤT</strong></td>
+                                    <td><strong>TRƯỞNG BỘ PHẬN</strong></td>
+                                    <td><strong>KẾ TOÁN TỔNG HỢP</strong></td>
+                                    <td><strong>GIÁM ĐỐC</strong></td>
                                 </tr>
 
+                                <!-- Ô ký -->
                                 <tr style="border:none">
                                     <td class="sig-cell">
-                                        <div class="sign-hint">(Ký, họ tên)</div>
-                                        <!-- reviewed_manager trở lên -->
-                                        <div class="sign-slot">
-                                            <div class="confirm-stamp">
-                                                <t t-if="stage_index &gt;= 1">
-                                            <i>(Đã xác nhận)</i>
-                                                </t>
-                                            </div>
-                                            <div class="sign-name">
-                                                <t t-esc="o.requested_by.name or ''"/>
-                                            </div>
-                                        </div>
+                        <div class="sign-hint">(Ký, họ tên)</div>
+                        <div class="sign-slot">
+                            <div class="confirm-stamp"><i>(Đã xác nhận)</i></div>
+                            <div class="sign-name"><t t-esc="o.requested_by.name or ''"/></div>
+                        </div>
                                     </td>
-
                                     <td class="sig-cell">
-                                        <div class="sign-hint">(Ký, họ tên)</div>
-                                        <!-- reviewed_accounting trở lên -->
-                                        <div class="sign-slot">
-                                            <div class="confirm-stamp">
-                                                <t t-if="stage_index &gt;= 2">
-                                            <i>(Đã xác nhận)</i>
-                                                </t>
-                                            </div>
-                                            <div class="sign-name">
-                                                <t t-esc="(o.manager_id and o.manager_id.name) or ''"/>
-                                            </div>
-                                        </div>
+                        <div class="sign-hint">(Ký, họ tên)</div>
+                        <div class="sign-slot">
+                            <div class="confirm-stamp"><i>(Đã xác nhận)</i></div>
+                            <div class="sign-name"><t t-esc="(o.manager_id and o.manager_id.name) or ''"/></div>
+                        </div>
                                     </td>
-
                                     <td class="sig-cell">
-                                        <div class="sign-hint">(Ký, họ tên)</div>
-                                        <!-- approved trở lên -->
-                                        <div class="sign-slot">
-                                            <div class="confirm-stamp">
-                                                <t t-if="stage_index &gt;= 3">
-                                            <i>(Đã xác nhận)</i>
-                                                </t>
-                                            </div>
-                                            <div class="sign-name">
-      Đặng Thị Kiều Oanh
-                                            </div>
-                                        </div>
+                        <div class="sign-hint">(Ký, họ tên)</div>
+                        <div class="sign-slot">
+                            <div class="confirm-stamp"><i>(Đã xác nhận)</i></div>
+                            <div class="sign-name">Đặng Thị Kiều Oanh</div>
+                        </div>
                                     </td>
-
                                     <td class="sig-cell">
-                                        <div class="sign-hint">(Ký, họ tên)</div>
-                                        <!-- waiting_accounting_paid trở lên -->
-                                        <div class="sign-slot">
-                                            <div class="confirm-stamp">
-                                                <t t-if="stage_index &gt;= 4">
-                                            <i>(Đã xác nhận)</i>
-                                                </t>
-                                            </div>
-                                            <div class="sign-name">
-                                                <t t-esc="o.director_user_id and o.director_user_id.name or ''"/>
-                                            </div>
-                                        </div>
+                        <div class="sign-hint">(Ký, họ tên)</div>
+                        <div class="sign-slot">
+                            <div class="confirm-stamp"><i>(Đã xác nhận)</i></div>
+                            <div class="sign-name"><t t-esc="(o.director_user_id and o.director_user_id.name) or ''"/></div>
+                        </div>
                                     </td>
                                 </tr>
-
                             </table>
                         </div>
+
                         <!-- Ngắt trang -->
                         <t t-if="(idx + 1) &lt; len(docs)">
                             <div style="page-break-before: always;"></div>

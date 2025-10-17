@@ -21,7 +21,7 @@
 
     <!-- Action mở wizard -->
     <record id="action_customer_contract_by_partner_wizard" model="ir.actions.act_window">
-        <field name="name">Báo cáo HĐ theo Khách hàng</field>
+        <field name="name">Báo cáo Công nợ theo Khách hàng</field>
         <field name="res_model">customer.contract.by.partner.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
@@ -31,7 +31,7 @@
     <!-- Menu mở wizard (đặt trong nhóm menu báo cáo của bạn) -->
     <!-- Sửa parent="custom_account_menu.menu_accounting_reporting" theo menu của bạn -->
     <menuitem id="menu_customer_contract_by_partner_wizard"
-              name="Báo cáo HĐ theo Khách hàng (chọn KH)"
+              name="Báo cáo Công nợ theo Khách hàng"
               parent="menu_customer_summary_root"
               action="action_customer_contract_by_partner_wizard"
               sequence="55"/>

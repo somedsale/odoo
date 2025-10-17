@@ -3,7 +3,7 @@ from odoo import models, fields, api
 
 class CustomerContractByPartnerWizard(models.TransientModel):
     _name = 'customer.contract.by.partner.wizard'
-    _description = 'Wizard: Chọn khách hàng để in báo cáo hợp đồng'
+    _description = 'Wizard: Chọn khách hàng để xem báo cáo'
 
     partner_id = fields.Many2one(
         'res.partner',

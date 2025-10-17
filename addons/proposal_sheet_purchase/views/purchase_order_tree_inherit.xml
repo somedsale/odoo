@@ -10,7 +10,12 @@
                 <field name="proposal_sheet_id" optional="show"/>
                 <field name="supplier_contract_id" optional="show"/>
                 <field name="payment_status" widget="badge" optional="show"/>
-                <field name="shipping_status" widget="badge" optional="show"/>
+                <field name="shipping_status" widget="badge" optional="show" decoration-danger="shipping_status == 'not_shipped'" decoration-warning="shipping_status == 'in_process'" decoration-success="shipping_status == 'done'"/>
+            </xpath>
+            <xpath expr="//tree/field[@name='state']" position="attributes">
+                <attributes>
+                    <attribute name="invisible">1</attribute>
+                </attributes>
             </xpath>
         </field>
     </record>
@@ -25,7 +30,18 @@
                 <field name="project_id" optional="show"/>
             </xpath>
             <xpath expr="//tree/field[@name='state']" position="after">
-                <field name="shipping_status" widget="badge" optional="show"/>
+                <field name="note"  optional="show"/>
+                <field name="shipping_status" widget="badge" optional="show" decoration-danger="shipping_status == 'not_shipped'" decoration-warning="shipping_status == 'in_process'" decoration-success="shipping_status == 'done'"/>
+            </xpath>
+                        <xpath expr="//tree/field[@name='state']" position="attributes">
+                <attributes>
+                    <attribute name="column_invisible">1</attribute>
+                </attributes>
+            </xpath>
+            <xpath expr="//tree/field[@name='activity_ids']" position="attributes">
+                <attributes>
+                    <attribute name="column_invisible">1</attribute>
+                </attributes>
             </xpath>
         </field>
     </record>

@@ -17,7 +17,8 @@ class SupplierContract(models.Model):
     _name = "supplier.contract"
     _description = "Supplier Contract"
 
-    name = fields.Char("Mã")
+    name = fields.Char("Mã", default="New", required=True, readonly=True)
+    display_name = fields.Char("Tên hiển thị", compute="_compute_display_name", store=True)
     partner_id = fields.Many2one("res.partner", string="Nhà cung cấp", required=True, domain=[("supplier_rank", ">", 0)])
     project_id = fields.Many2one("project.project", string="Dự án", required=True)
     interpretation = fields.Char("Diễn giải")
@@ -39,6 +40,16 @@ class SupplierContract(models.Model):
     settlement_ids = fields.One2many("supplier.settlement", "contract_id", string="Hồ sơ quyết toán")
     invoice_ids = fields.One2many("supplier.invoice", "contract_id", string="Hóa đơn")
     number_contract = fields.Char("Số hợp đồng", store=True)
+    @api.depends("name", "partner_id.name")
+    def _compute_display_name(self):
+        for record in self:
+            name = record.name or ""
+            project_name = record.project_id.name or ""
+            if project_name:
+                record.display_name = f"{name} - {project_name}"
+            else:
+                record.display_name = name
+
     @api.depends("invoice_ids.due_date", "invoice_ids.amount", "account_payment_request_ids.total", "advance_amount")
     def _compute_due_date(self):
         for record in self:
@@ -249,6 +260,11 @@ class SupplierContract(models.Model):
             })
 
         return rows
+    @api.model
+    def create(self, vals):
+        if vals.get('name', "New") == "New":
+            vals['name'] = self.env['ir.sequence'].next_by_code('supplier.contract') or "New"
+        return super().create(vals)
 class ResPartner(models.Model):
     _inherit = "res.partner"
 
