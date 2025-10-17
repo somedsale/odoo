@@ -27,6 +27,7 @@ class ReportCustomerDebtSummary(models.AbstractModel):
                     'amount_due': c.amount_due or 0.0,
                     'warranty_amount': c.warranty_amount or 0.0,
                     'warranty_period': f"{c.warranty_time or 0} tháng",
+                    'contact': c.contact or '',   # 👈 thêm dòng này
                     'note': '',
                 })
 

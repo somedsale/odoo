@@ -13,6 +13,8 @@
                 <field name="date"/>
                 <field name="project_id"/>
                 <field name="partner_id"/>
+                <field name="contact" />
+
                 <field name="contract_type" optional="hide"/>
                 <field name="amount_total" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="amount_invoiced" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
@@ -37,6 +39,7 @@
                             <field name="date"/>
                             <field name="project_id" require="1" options="{'no_create':True}"/>
                             <field name="partner_id" require="1"/>
+                            <field name="contact" />
                             <field name="management_id" invisible="1" force_save="1"/>
                         </group>
 

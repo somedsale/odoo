@@ -239,7 +239,8 @@
                         <t t-if="ct['warranty_period']"><t t-esc="ct['warranty_period']"/></t>
                         <t t-else=""></t>
                     </td>
-                    <td class="text-center"></td> <!-- Liên hệ -->
+                    <td class="text-center">
+                    <t t-esc="ct['contact']"/> </td> <!-- Liên hệ -->
                     <td>
                         <t t-if="ct['note']"><t t-esc="ct['note']"/></t>
                         <t t-else=""></t>

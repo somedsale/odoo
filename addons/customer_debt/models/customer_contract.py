@@ -23,6 +23,7 @@ class CustomerContract(models.Model):
         tracking=True,
         domain="[('customer_rank', '>', 0), ('parent_id', '=', False)]"
     )
+    contact = fields.Text(string="Liên hệ")
     amount_total = fields.Monetary(
         string="Giá trị HĐ", 
         currency_field="currency_id"
