@@ -71,7 +71,7 @@ class PurchaseOrder(models.Model):
     advance_percent = fields.Float(string="Tạm ứng (%)", default=30.0)
     advance_amount = fields.Monetary(string="Tạm ứng (số tiền)", currency_field="currency_id")
     supplier_contract_id = fields.Many2one("supplier.contract", string="Hợp đồng NCC", index=True)
-
+    note = fields.Text(string="Ghi chú", translate=True)
     # ==== Computes ngắn gọn (bạn có thể giữ code cũ của mình nếu đã có) ====
     @api.depends("proposal_sheet_id")
     def _compute_project_task(self):

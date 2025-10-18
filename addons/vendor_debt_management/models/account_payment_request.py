@@ -4,7 +4,8 @@ class AccountPaymentRequest(models.Model):
 
     supplier_contract_id = fields.Many2one(
         "supplier.contract", 
-        string="Hợp đồng NCC"
+        string="Hợp đồng NCC",
+        domain="[('partner_id', '=', supplier_id)]"
     )
     receive_type = fields.Selection([
         ('supplier', 'Nhà cung cấp'),

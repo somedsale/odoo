@@ -6,7 +6,7 @@
     <record id="custom_sale_report_a4_portrait" model="report.paperformat">
         <field name="name">Custom Sale Report A4 Portrait</field>
         <field name="format">A4</field>
-        <field name="orientation">Portrait</field>
+        <field name="orientation">Landscape</field>
         <field name="margin_top">30</field>        <!-- Điều chỉnh từ 40mm xuống 30mm -->
         <field name="margin_bottom">30</field>        <!-- Tăng từ 23mm lên 30mm -->
         <field name="margin_left">10</field>        <!-- Tăng từ 7mm lên 10mm -->
@@ -89,88 +89,168 @@
                 <th>Ghi chú</th>
             </tr>
         </thead>
+<tbody>
+    <t t-set="stt" t-value="0"/>
 
-        <tbody>
-            <t t-set="stt" t-value="0"/>
-            <t t-foreach="docs" t-as="grp">
-                <t t-set="stt" t-value="stt + 1"/>
+    <!-- ====== NHÓM THEO LOẠI HỢP ĐỒNG ====== -->
+    <t t-foreach="grouped.items()" t-as="grp_type">
+        <t t-set="contract_type" t-value="grp_type[0]"/>
+        <t t-set="partner_map" t-value="grp_type[1]"/>
+        <t t-set="t_total" t-value="totals[contract_type]"/>
 
-                <!-- ====== DÒNG KHÁCH HÀNG + TỔNG CỘNG ====== -->
-                <tr class="table-item" style="background-color:#E2EFDA;font-weight:bold;">
-                    <td class="text-center">
-                        <t t-esc="stt"/>
-                    </td>
+        <!-- === TIÊU ĐỀ LOẠI HỢP ĐỒNG (kèm tổng theo cột) === -->
+        <tr style="background-color:#BDD7EE; font-weight:bold; text-transform:uppercase;">
+            <td colspan="2">
+                <t t-if="contract_type == 'preparing'">Công trình đang chuẩn bị thực hiện</t>
+                <t t-elif="contract_type == 'done'">Đã hoàn thành</t>
+                <t t-elif="contract_type == 'paused'">Tạm ngưng</t>
+                <t t-elif="contract_type == 'bad_debt'">Công nợ khó đòi</t>
+                <t t-else="">Khác</t>
+            </td>
+
+            <td class="text-right">
+                <t t-if="t_total['amount_total']">
+                    <span t-esc="t_total['amount_total']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
+                </t><t t-else=""></t>
+            </td>
+            <td class="text-right">
+                <t t-if="t_total['amount_final']">
+                    <span t-esc="t_total['amount_final']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
+                </t><t t-else=""></t>
+            </td>
+            <td class="text-right">
+                <t t-if="t_total['amount_invoiced']">
+                    <span t-esc="t_total['amount_invoiced']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
+                </t><t t-else=""></t>
+            </td>
+            <td class="text-right">
+                <t t-if="t_total['amount_paid']">
+                    <span t-esc="t_total['amount_paid']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
+                </t><t t-else=""></t>
+            </td>
+            <td class="text-right">
+                <t t-if="t_total['amount_due']">
+                    <span t-esc="t_total['amount_due']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
+                </t><t t-else=""></t>
+            </td>
+            <td class="text-right">
+                <t t-if="t_total['warranty_amount']">
+                    <span t-esc="t_total['warranty_amount']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
+                </t><t t-else=""></t>
+            </td>
+            <td class="text-center"></td> <!-- Liên hệ -->
+            <td class="text-center"></td> <!-- Thời gian BH (đối với dòng loại tổng quát) -->
+            <td></td> <!-- Ghi chú -->
+        </tr>
+
+        <!-- ====== NHÓM KHÁCH HÀNG ====== -->
+        <t t-foreach="partner_map.items()" t-as="grp_partner">
+            <t t-set="partner" t-value="grp_partner[0]"/>
+            <t t-set="partner_data" t-value="grp_partner[1]"/>
+            <t t-set="contracts" t-value="partner_data['contracts']"/>
+            <t t-set="p_total" t-value="partner_data['totals']"/>
+            <t t-set="stt" t-value="stt + 1"/>
+
+            <!-- === DÒNG KHÁCH HÀNG (kèm tổng theo cột) === -->
+            <tr class="table-item" style="background-color:#E2EFDA;">
+                <td class="text-center"><t t-esc="stt"/></td>
+                <td style="font-weight:bold;">
+                    <t t-esc="partner.display_name"/>
+                </td>
+
+                <td class="text-right">
+                    <t t-if="p_total['amount_total']">
+                        <span t-esc="p_total['amount_total']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
+                    </t><t t-else=""></t>
+                </td>
+                <td class="text-right">
+                    <t t-if="p_total['amount_final']">
+                        <span t-esc="p_total['amount_final']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
+                    </t><t t-else=""></t>
+                </td>
+                <td class="text-right">
+                    <t t-if="p_total['amount_invoiced']">
+                        <span t-esc="p_total['amount_invoiced']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
+                    </t><t t-else=""></t>
+                </td>
+                <td class="text-right">
+                    <t t-if="p_total['amount_paid']">
+                        <span t-esc="p_total['amount_paid']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
+                    </t><t t-else=""></t>
+                </td>
+                <td class="text-right">
+                    <t t-if="p_total['amount_due']">
+                        <span t-esc="p_total['amount_due']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
+                    </t><t t-else=""></t>
+                </td>
+                <td class="text-right">
+                    <t t-if="p_total['warranty_amount']">
+                        <span t-esc="p_total['warranty_amount']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
+                    </t><t t-else=""></t>
+                </td>
+                <td class="text-center"></td> <!-- Liên hệ -->
+                <td class="text-center"></td> <!-- Thời gian BH (tổng KH) -->
+                <td></td> <!-- Ghi chú -->
+            </tr>
+
+            <!-- === CÁC HỢP ĐỒNG CHI TIẾT === -->
+            <t t-foreach="contracts" t-as="ct">
+                <tr>
+                    <td></td>
                     <td>
-                        <t t-esc="grp['partner'].display_name"/>
+                        <t t-if="ct['project']">
+                            <t t-esc="ct['project'].display_name"/> – 
+                        </t>
+                        <t t-esc="ct['name']"/>
+                    </td>
+
+                    <td class="text-right">
+                        <t t-if="ct['amount_total']">
+                            <span t-esc="ct['amount_total']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
+                        </t><t t-else=""></t>
                     </td>
                     <td class="text-right">
-                        <span t-esc="grp['summary'].amount_total" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
+                        <t t-if="ct['amount_final']">
+                            <span t-esc="ct['amount_final']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
+                        </t><t t-else=""></t>
                     </td>
                     <td class="text-right">
-                        <span t-esc="grp['summary'].amount_final or 0.0" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
+                        <t t-if="ct['amount_invoiced']">
+                            <span t-esc="ct['amount_invoiced']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
+                        </t><t t-else=""></t>
                     </td>
                     <td class="text-right">
-                        <span t-esc="grp['summary'].amount_invoiced" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
+                        <t t-if="ct['amount_paid']">
+                            <span t-esc="ct['amount_paid']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
+                        </t><t t-else=""></t>
                     </td>
                     <td class="text-right">
-                        <span t-esc="grp['summary'].amount_paid" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
+                        <t t-if="ct['amount_due']">
+                            <span t-esc="ct['amount_due']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
+                        </t><t t-else=""></t>
                     </td>
                     <td class="text-right">
-                        <span t-esc="grp['summary'].residual" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
+                        <t t-if="ct['warranty_amount']">
+                            <span t-esc="ct['warranty_amount']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
+                        </t><t t-else=""></t>
                     </td>
-                    <td class="text-right">
-                        <span t-esc="grp['summary'].warranty_amount or 0.0" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
+
+                    <td class="text-center">
+                        <t t-if="ct['warranty_period']"><t t-esc="ct['warranty_period']"/></t>
+                        <t t-else=""></t>
                     </td>
                     <td class="text-center">
-                        <t t-esc="grp['summary'].warranty_period or ''"/>
-                    </td>
-                    <td colspan="2">
-                        <t t-esc="grp['summary'].note or ''"/>
+                    <t t-esc="ct['contact']"/> </td> <!-- Liên hệ -->
+                    <td>
+                        <t t-if="ct['note']"><t t-esc="ct['note']"/></t>
+                        <t t-else=""></t>
                     </td>
                 </tr>
-
-                <!-- ====== CÁC HỢP ĐỒNG CHI TIẾT ====== -->
-                <t t-if="grp['contracts']">
-                    <t t-foreach="grp['contracts']" t-as="ct">
-                        <tr>
-                            <td></td>
-                            <td>
-                                <t t-if="ct['project']">
-                                    <t t-esc="ct['project'].display_name"/>
- – 
-                                </t>
-                                <t t-esc="ct['name']"/>
-                            </td>
-
-                            <td class="text-right">
-                                <span t-esc="ct['amount_total']" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
-                            </td>
-                            <td class="text-right">
-                                <span t-esc="ct['amount_final']" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
-                            </td>
-                            <td class="text-right">
-                                <span t-esc="ct['amount_invoiced']" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
-                            </td>
-                            <td class="text-right">
-                                <span t-esc="ct['amount_paid']" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
-                            </td>
-                            <td class="text-right">
-                                <span t-esc="ct['amount_due']" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
-                            </td>
-                            <td class="text-right">
-                                <span t-esc="ct['warranty_amount']" t-options="{'widget':'monetary','display_currency':grp['summary'].currency_id}"/>
-                            </td>
-                            <td class="text-center">
-                                <t t-esc="ct['warranty_period']"/>
-                            </td>
-                            <td colspan="2">
-                                <t t-esc="ct['note']"/>
-                            </td>
-                        </tr>
-                    </t>
-                </t>
             </t>
-        </tbody>
+        </t>
+    </t>
+</tbody>
+
     </table>
     <div style="page-break-inside: avoid; style: font-weight: bold">
         <div class="row">
