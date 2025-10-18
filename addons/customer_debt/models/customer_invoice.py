@@ -18,7 +18,7 @@ class CustomerInvoice(models.Model):
     invoice_number = fields.Char(string="Số hóa đơn", tracking=True)
     date = fields.Date(string="Ngày Hóa Đơn", default=fields.Date.today)
     partner_id = fields.Many2one('res.partner', string="Khách hàng", required=True,domain="[('customer_rank', '>', 0), ('parent_id', '=', False)]")
-    
+    account_receipt_ids = fields.One2many('account.receipt', 'invoice_id', string="Phiếu thu")
     # Gắn hợp đồng (nếu có) – không bắt buộc
     contract_id = fields.Many2one(
         'customer.contract', 

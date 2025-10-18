@@ -29,7 +29,7 @@ class CustomerDebtSummary(models.Model):
     # ======= Các field giá trị =======
     amount_total = fields.Monetary(string="Tổng giá trị HĐ", currency_field="currency_id", readonly=True)
     amount_invoiced = fields.Monetary(string="Đã xuất HĐ", currency_field="currency_id", readonly=True)
-    amount_paid = fields.Monetary(string="Đã thu", currency_field="currency_id", readonly=True)
+    amount_paid = fields.Monetary(string="Đã thu", compute="_compute_amount_paid", currency_field="currency_id", readonly=True)
     residual = fields.Monetary(string="Còn nợ", currency_field="currency_id", readonly=True)
 
     # ======= Các field ảo thêm để render report =======
@@ -38,6 +38,11 @@ class CustomerDebtSummary(models.Model):
     warranty_period = fields.Char(string="Thời gian bảo hành", readonly=True)
     note = fields.Text(string="Ghi chú", readonly=True)
 
+
+    @api.depends("contract_ids.amount_receipt")
+    def _compute_amount_paid(self):
+        for record in self:
+            record.amount_paid = sum(record.contract_ids.mapped("amount_receipt"))
     # ===== COMPUTE FIELDS =====
     @api.depends('standalone_invoice_ids_raw')
     def _compute_invoices(self):

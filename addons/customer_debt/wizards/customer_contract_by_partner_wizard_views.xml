@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- View form của wizard -->
+    <record id="view_customer_contract_by_partner_wizard_form" model="ir.ui.view">
+        <field name="name">customer.contract.by.partner.wizard.form</field>
+        <field name="model">customer.contract.by.partner.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Chọn khách hàng" create="false" edit="false">
+                <group>
+                    <field name="partner_id" options="{'no_create_edit': True, 'no_create': True}"/>
+                </group>
+                <footer>
+                    <button name="action_print" type="object" class="btn btn-primary"
+                            string="Xem báo cáo"/>
+                    <button string="Hủy" class="btn btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action mở wizard -->
+    <record id="action_customer_contract_by_partner_wizard" model="ir.actions.act_window">
+        <field name="name">Báo cáo Công nợ theo Khách hàng</field>
+        <field name="res_model">customer.contract.by.partner.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- Menu mở wizard (đặt trong nhóm menu báo cáo của bạn) -->
+    <!-- Sửa parent="custom_account_menu.menu_accounting_reporting" theo menu của bạn -->
+    <menuitem id="menu_customer_contract_by_partner_wizard"
+              name="Báo cáo Công nợ theo Khách hàng"
+              parent="menu_customer_summary_root"
+              action="action_customer_contract_by_partner_wizard"
+              sequence="55"/>
+</odoo>
