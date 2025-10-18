@@ -1,0 +1,46 @@
+<odoo>
+    <record id="view_account_payment_proposal_wizard_form" model="ir.ui.view">
+        <field name="name">account.payment.proposal.wizard.form</field>
+        <field name="model">account.payment.proposal.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Tạo Phiếu Thu / Chi từ Giải Chi">
+                <field name="show_receipt_advance" invisible="1"/>
+                <field name="show_receipt_refund" invisible="1"/>
+                <field name="show_payment_request" invisible="1"/>
+                <group>
+                    <field name="payment_proposal_id" readonly="1"/>
+                    <field name="currency_id" invisible="1"/>
+                </group>
+
+                <group>
+                    <group invisible="not show_receipt_advance">
+                        <field name="create_receipt_advance"/>
+                        <field name="amount_receipt_advance" invisible="not create_receipt_advance"/>
+                    </group>
+
+                    <group invisible="not show_receipt_refund">
+                        <field name="create_receipt_refund"/>
+                        <field name="amount_receipt_refund" invisible="not create_receipt_refund"/>
+                    </group>
+
+                    <group invisible="not show_payment_request">
+                        <field name="create_payment_request"/>
+                        <field name="amount_payment_request" invisible="not create_payment_request"/>
+                    </group>
+                </group>
+
+                <footer>
+                    <button string="Tạo Chứng Từ" name="action_create_documents" type="object" class="btn-primary"/>
+                    <button string="Hủy" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_account_payment_proposal_wizard" model="ir.actions.act_window">
+        <field name="name">Tạo Phiếu Thu/Chi</field>
+        <field name="res_model">account.payment.proposal.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

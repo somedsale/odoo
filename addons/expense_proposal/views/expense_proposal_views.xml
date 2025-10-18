@@ -26,6 +26,7 @@
                     <button name="action_approve" string="Duyệt" type="object" class="oe_highlight" invisible="state != 'submitted'" groups="custom_director_role.group_director"/>
                     <button name="action_open_reject_wizard" string="Từ chối" type="object" invisible="state != 'submitted'" groups="custom_director_role.group_director"/>
                     <button name="action_post" string="Tạo phiếu chi" type="object" class="oe_highlight" invisible="state != 'approved'"/>
+                    <button name="action_done" string="Hoàn tất" type="object" class="oe_highlight" invisible="state != 'posted'"/>
                     <button name="action_draft" string="Trở về nháp" type="object" invisible="state != 'rejected'" confirm="Bạn muốn chuyển trạng thái thành nháp ?"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,posted,completed"/>
                 </header>

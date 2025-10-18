@@ -11,17 +11,48 @@
                     <field name="can_approve_accountant" invisible="1"/>
                     <field name="can_approve_director" invisible="1"/>
                     <field name="can_paid" invisible="1"/>
+                    <field name="can_reset_draft" invisible="1"/>
                     <button name="action_submit" type="object" string="Gửi duyệt" class="btn-primary" invisible="not can_submit"/>
                     <button name="action_approve_manager" type="object" string="Trưởng phòng duyệt" class="btn-success" invisible="not can_approve_manager"/>
                     <button name="action_approve_accountant" type="object" string="Kế toán duyệt" class="btn-success" invisible="not can_approve_accountant"/>
                     <button name="action_approve_director" type="object" string="Giám đốc duyệt" class="btn-success" invisible="not can_approve_director"/>
                     <button name="action_paid" type="object" string="Kế toán chi tiền" class="btn-secondary" invisible="not can_paid"/>
-                    <!-- Từ chối -->
+                    <button name ="action_done" type="object" string="Hoàn tất chi" class="btn-success" invisible="not can_paid" confirm="Bạn chắc chắn muốn hoàn tất không?"/>
+                    <button name ="action_reset_draft" type="object" string="Trở về nháp" class="btn-secondary" invisible="not can_reset_draft" confirm="Bạn chắc chắn chuyển thành nhap?"/>
                     <button name="action_reject" type="object" string="Từ chối" class="btn-danger" invisible="not state in ['submitted', 'dept_approved', 'account_approved', 'director_approved']"/>
                     <!-- Thanh trạng thái -->
                     <field name="state" widget="statusbar" statusbar_visible="submitted,dept_approved,account_approved,director_approved,paid,rejected"/>
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+
+                        <!-- 🔹 Phiếu thu -->
+                        <button class="oe_stat_button" name="action_view_receipts" type="object" icon="fa-sign-in">
+                            <div class="o_stat_info text-center" style="display:flex; flex-direction:column; align-items:center; line-height:1.2;">
+                                <span class="o_stat_value" style="font-weight:600;">
+                                    <field name="receipt_total" widget="monetary" nolabel="1"/>
+                                </span>
+                                <span class="o_stat_text" style="font-size:13px; color:#555;">
+                                    <field name="receipt_count" nolabel="1"/>
+ Phiếu thu
+                                </span>
+                            </div>
+                        </button>
+
+                        <!-- 🔹 Phiếu chi -->
+                        <button class="oe_stat_button" name="action_view_payments" type="object" icon="fa-sign-out">
+                            <div class="o_stat_info text-center" style="display:flex; flex-direction:column; align-items:center; line-height:1.2;">
+                                <span class="o_stat_value" style="font-weight:600;">
+                                    <field name="payment_total" widget="monetary" nolabel="1"/>
+                                </span>
+                                <span class="o_stat_text" style="font-size:13px; color:#555;">
+                                    <field name="payment_count" nolabel="1"/>
+ Phiếu chi
+                                </span>
+                            </div>
+                        </button>
+
+                    </div>
                     <group>
                         <group>
                             <field name="name" readonly="1" string="Số phiếu đề nghị"/>
@@ -81,9 +112,44 @@
                 <field name="total_amount" sum="1"/>
                 <field name="amount_refund" sum="1"/>
                 <field name="amount_remain" sum="1"/>
-                <field name="state" widget="badge"/>
+                <field name="state" widget="badge" decoration-muted="state == 'draft'" decoration-warning="state == 'submitted'" decoration-info="state == 'dept_approved'" decoration-primary="state == 'account_approved'" decoration-it="state == 'director_approved'" decoration-success="state == 'paid'" decoration-danger="state == 'rejected'"/>
                 <field name="currency_id" optional="hide"/>
             </tree>
+        </field>
+    </record>
+    <record id="view_account_payment_proposal_search" model="ir.ui.view">
+        <field name="name">account.payment.proposal.search</field>
+        <field name="model">account.payment.proposal</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm Giải chi">
+                <!-- 🔎 Trường tìm kiếm chính -->
+                <field name="name" string="Số phiếu"/>
+                <field name="user_id" string="Người tạo"/>
+                <field name="department_id" string="Phòng ban"/>
+                <field name="state" string="Trạng thái"/>
+                <field name="date_request" string="Ngày đề nghị"/>
+
+                <!-- 🔸 Bộ lọc nhanh -->
+                <filter name="filter_my" string="Của tôi" domain="[('user_id','=',uid)]" icon="fa-user"/>
+                <filter name="filter_draft" string="Nháp" domain="[('state','=','draft')]" icon="fa-pencil"/>
+                <filter name="filter_submitted" string="Chờ duyệt" domain="[('state','in',['submitted','dept_approved','account_approved','director_approved'])]" icon="fa-hourglass-half"/>
+                <filter name="filter_paid" string="Đã chi" domain="[('state','=','paid')]" icon="fa-check-circle"/>
+                <filter name="filter_rejected" string="Từ chối" domain="[('state','=','rejected')]" icon="fa-times-circle"/>
+
+                <!-- 🔽 Bộ nhóm (Group By) -->
+                <group expand="0" string="Nhóm theo">
+                    <filter name="group_department" string="Phòng ban" context="{'group_by':'department_id'}"/>
+                    <filter name="group_user" string="Người tạo" context="{'group_by':'user_id'}"/>
+                    <filter name="group_state" string="Trạng thái" context="{'group_by':'state'}"/>
+                    <filter name="group_date" string="Ngày đề nghị" context="{'group_by':'date_request'}"/>
+                </group>
+
+                <!-- 🔹 Search Panel (bên trái) -->
+                <searchpanel>
+                    <field name="department_id" string="Phòng ban"/>
+                    <field name="state" string="Trạng thái"/>
+                </searchpanel>
+            </search>
         </field>
     </record>
 
@@ -92,6 +158,7 @@
         <field name="name">Giấy đề nghị giải chi</field>
         <field name="res_model">account.payment.proposal</field>
         <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_account_payment_proposal_search"/>
         <field name="help" type="html">
             <p>
                 Tạo mới một <b>Giấy đề nghị giải chi</b> để hoàn tạm ứng hoặc đề nghị thanh toán chi phí công tác.

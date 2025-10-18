@@ -70,24 +70,10 @@ class AccountPaymentProposal(models.Model):
         ],
         default="draft",
         string="Trạng thái",
-        tracking=True,
     )
-    receipt_advance_id = fields.Many2one(
-        "account.receipt",
-        string="Phiếu thu tạm ứng",
-        readonly=True,
-    )
-    receipt_refund_id = fields.Many2one(
-        "account.receipt",
-        string="Phiếu thu hoàn ứng",
-        readonly=True,
-    )
-    payment_request_id = fields.Many2one(
-        "account.payment.request",
-        string="Phiếu chi thanh toán",
-        readonly=True,
-    )
-
+    manager_approved_at   = fields.Datetime(string="TG trưởng phòng duyệt", tracking=True)
+    accountant_approved_at = fields.Datetime(string="TG kế toán duyệt", tracking=True)
+    director_approved_at   = fields.Datetime(string="TG giám đốc duyệt", tracking=True)
     # ========== TÍNH TOÁN ==========
     @api.depends("line_ids.amount", "amount_advance")
     def _compute_totals(self):
@@ -120,13 +106,12 @@ class AccountPaymentProposal(models.Model):
                     rec.amount_in_words = ""
             else:
                 rec.amount_in_words = ""
-
     can_submit = fields.Boolean(compute="_compute_permissions", string="Có thể gửi duyệt")
     can_approve_manager = fields.Boolean(compute="_compute_permissions", string="Trưởng phòng duyệt được")
     can_approve_accountant = fields.Boolean(compute="_compute_permissions", string="Kế toán duyệt được")
     can_approve_director = fields.Boolean(compute="_compute_permissions", string="Giám đốc duyệt được")
     can_paid = fields.Boolean(compute="_compute_permissions", string="Kế toán chi được")
-
+    can_reset_draft = fields.Boolean(compute="_compute_permissions", string="Có thể hóa nháp")
     @api.depends("state", "user_id", "manager_id", "director_user_id")
     def _compute_permissions(self):
         """Xác định ai được thấy nút nào"""
@@ -156,6 +141,9 @@ class AccountPaymentProposal(models.Model):
 
             rec.can_paid = (
                 rec.state == "director_approved" and is_accountant
+            )
+            rec.can_reset_draft = (
+                rec.state == "rejected"
             )
 
     @api.model
@@ -192,6 +180,7 @@ class AccountPaymentProposal(models.Model):
             if rec.state != "submitted":
                 raise UserError(_("Chỉ trưởng phòng có thể duyệt bước này."))
             rec.state = "dept_approved"
+            rec.manager_approved_at = fields.Datetime.now()
             rec._send_notification("✅ Trưởng phòng đã duyệt, chuyển cho kế toán kiểm tra.", rec._get_accountant_partners())
 
     def action_approve_accountant(self):
@@ -199,6 +188,7 @@ class AccountPaymentProposal(models.Model):
             if rec.state != "dept_approved":
                 raise UserError(_("Chỉ kế toán được duyệt bước này."))
             rec.state = "account_approved"
+            rec.accountant_approved_at = fields.Datetime.now()
 
             director_partner = rec.director_user_id.partner_id.id if rec.director_user_id else None
             rec._send_notification("💰 Kế toán đã duyệt, chờ giám đốc xác nhận.", [director_partner] if director_partner else [])
@@ -217,95 +207,36 @@ class AccountPaymentProposal(models.Model):
             if rec.state != "account_approved":
                 raise UserError(_("Chỉ giám đốc được duyệt bước này."))
             rec.state = "director_approved"
+            rec.director_approved_at = fields.Datetime.now()
             rec._send_notification("🏁 Giám đốc đã duyệt, chuyển lại cho kế toán xử lý chi.", rec._get_accountant_partners())
             rec._close_activity(rec.director_user_id)
 
     def action_paid(self):
+        self.ensure_one()
+        if self.state != "director_approved":
+            raise UserError(_("Chỉ được tạo chứng từ sau khi giám đốc duyệt."))
+        return {
+        "type": "ir.actions.act_window",
+        "res_model": "account.payment.proposal.wizard",
+        "view_mode": "form",
+        "target": "new",
+        "context": {
+            "default_payment_proposal_id": self.id,
+        },
+    }
+    def action_done (self):
+        self.ensure_one()
         for rec in self:
             if rec.state != "director_approved":
-                raise UserError(_("Chỉ được đánh dấu 'Đã chi' sau khi giám đốc duyệt."))
-
-            partner_id = rec.user_id.partner_id.id if rec.user_id.partner_id else False
-
-            # ================================
-            # 🔹 1. Tạo phiếu thu hoàn tạm ứng
-            # ================================
-            if rec.amount_advance > 0:
-                receipt_model = self.env["account.receipt"]
-                receipt_advance_vals = {
-                    "partner_id": partner_id,
-                    "date": fields.Date.today(),
-                    "amount": rec.amount_advance,
-                    "note": f"Thu hồi tiền tạm ứng từ giấy đề nghị {rec.name}",
-                    "state": "draft",
-                    "proposal_id": rec.id,
-                }
-                receipt_advance = receipt_model.create(receipt_advance_vals)
-                rec.receipt_advance_id = receipt_advance.id
-
-                rec.message_post(
-                    body=Markup(
-                        f"💰 Đã tạo **phiếu thu hoàn tạm ứng** "
-                        f"<a href='/web#id={receipt_advance.id}&model=account.receipt&view_type=form' target='_blank'>{receipt_advance.name}</a>."
-                    ),
-                    subtype_xmlid="mail.mt_note",
-                )
-
-            # ================================
-            # 🔹 2. Tạo phiếu thu hoàn ứng thêm (nếu có)
-            # ================================
-            if rec.amount_refund > 0:
-                receipt_refund_vals = {
-                    "partner_id": partner_id,
-                    "date": fields.Date.today(),
-                    "amount": rec.amount_refund,
-                    "note": f"Hoàn ứng thêm từ giấy đề nghị {rec.name}",
-                    "state": "draft",
-                    "proposal_id": rec.id,
-                }
-                receipt_refund = self.env["account.receipt"].create(receipt_refund_vals)
-                rec.receipt_refund_id = receipt_refund.id
-
-                rec.message_post(
-                    body=Markup(
-                        f"💵 Đã tạo **phiếu thu hoàn ứng thêm** "
-                        f"<a href='/web#id={receipt_refund.id}&model=account.receipt&view_type=form' target='_blank'>{receipt_refund.name}</a>."
-                    ),
-                    subtype_xmlid="mail.mt_note",
-                )
-
-            # ================================
-            # 🔹 3. Tạo phiếu chi thanh toán thêm (nếu có)
-            # ================================
-            if rec.amount_remain > 0:
-                payment_model = self.env["account.payment.request"]
-                payment_vals = {
-                    "date": fields.Date.today(),
-                    "total": rec.amount_remain,
-                    "note": f"Thanh toán phần còn lại cho giấy đề nghị {rec.name}",
-                    "state": "draft",
-                }
-                payment = payment_model.create(payment_vals)
-                rec.payment_request_id = payment.id
-
-                rec.message_post(
-                    body=Markup(
-                        f"💸 Đã tạo **phiếu chi thanh toán phần còn lại** "
-                        f"<a href='/web#id={payment.id}&model=account.payment.request&view_type=form' target='_blank'>{payment.name}</a>."
-                    ),
-                    subtype_xmlid="mail.mt_note",
-                )
-
-            # ================================
-            # 🔹 4. Cập nhật trạng thái & thông báo
-            # ================================
+                raise UserError(_("Chỉ xong khi giám đốc duyệt bước này."))
             rec.state = "paid"
-            rec._send_notification(
-                "✅ Kế toán đã hoàn tất giải chi — các phiếu thu / chi liên quan đã được tạo tự động.",
-                [partner_id] if partner_id else [],
-            )
+    def action_reset_draft (self):
+        self.ensure_one()
+        for rec in self:
+            if rec.state != "rejected":
+                raise UserError(_("Chỉ reset lại những phiếu bị từ chối "))
+            rec.state = "draft"
 
-            _logger.info(f"✅ Giải chi {rec.name} đã được xử lý → tạo phiếu thu/chi thành công.")
 
 
     def action_reject(self):
@@ -360,3 +291,47 @@ class AccountPaymentProposal(models.Model):
             ("user_id", "=", user.id),
         ])
         acts.action_feedback("Đã duyệt")
+
+    receipt_ids = fields.One2many(
+        "account.receipt", "payment_proposal_id", string="Phiếu thu liên quan"
+    )
+    payment_request_ids = fields.One2many(
+        "account.payment.request", "payment_proposal_id", string="Phiếu chi liên quan"
+    )
+
+    # 🧮 Trường thống kê
+    receipt_count = fields.Integer(string="Số phiếu thu", compute="_compute_related_counts", store=True)
+    receipt_total = fields.Monetary(string="Tổng tiền thu", compute="_compute_related_counts", store=True, currency_field="currency_id")
+
+    payment_count = fields.Integer(string="Số phiếu chi", compute="_compute_related_counts", store=True)
+    payment_total = fields.Monetary(string="Tổng tiền chi", compute="_compute_related_counts", store=True, currency_field="currency_id")
+
+    @api.depends("receipt_ids.amount", "payment_request_ids.total")
+    def _compute_related_counts(self):
+        for rec in self:
+            rec.receipt_count = len(rec.receipt_ids)
+            rec.receipt_total = sum(rec.receipt_ids.mapped("amount"))
+            rec.payment_count = len(rec.payment_request_ids)
+            rec.payment_total = sum(rec.payment_request_ids.mapped("total"))
+
+    def action_view_receipts(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Phiếu thu liên quan",
+            "res_model": "account.receipt",
+            "view_mode": "tree,form",
+            "domain": [("payment_proposal_id", "=", self.id)],
+            "context": {"default_payment_proposal_id": self.id},
+        }
+
+    def action_view_payments(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Phiếu chi liên quan",
+            "res_model": "account.payment.request",
+            "view_mode": "tree,form",
+            "domain": [("payment_proposal_id", "=", self.id)],
+            "context": {"default_payment_proposal_id": self.id},
+        }
