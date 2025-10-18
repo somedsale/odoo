@@ -1,0 +1,43 @@
+<odoo>
+
+    <!-- 🔹 Nhân viên chỉ thấy phiếu do mình tạo -->
+    <record id="rule_payment_proposal_creator" model="ir.rule">
+        <field name="name">Payment Proposal - Only Own Records</field>
+        <field name="model_id" ref="model_account_payment_proposal"/>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- 🔹 Trưởng phòng thấy toàn bộ phiếu trong phòng ban mình -->
+    <record id="rule_payment_proposal_manager" model="ir.rule">
+        <field name="name">Payment Proposal - Department Manager Access</field>
+        <field name="model_id" ref="model_account_payment_proposal"/>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="domain_force">[('department_id.manager_id.user_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- 🔹 Kế toán, giám đốc và hệ thống thấy tất cả -->
+    <record id="rule_payment_proposal_all" model="ir.rule">
+        <field name="name">Payment Proposal - Accounting and Director Full Access</field>
+        <field name="model_id" ref="model_account_payment_proposal"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[
+            (4, ref('account.group_account_manager')),
+            (4, ref('custom_director_role.group_director')),
+            (4, ref('base.group_system'))
+        ]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+</odoo>

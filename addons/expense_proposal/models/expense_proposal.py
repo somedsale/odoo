@@ -216,9 +216,11 @@ class ExpenseProposal(models.Model):
             # )
 
             self.state = 'completed'
-            rec.write({'state': 'posted'})
     def action_draft(self):
         self.write({'state': 'draft'})
+    
+    def action_done(self):
+        self.write({'state': 'completed'})
     @api.depends('expense_proposal_lines.amount')
     def _compute_amount(self):
         for proposal in self:
