@@ -5,6 +5,7 @@ class AccountPaymentRequest(models.Model):
 
     expense_proposal_id = fields.Many2one('expense.proposal', string='Phiếu đề xuất')
     expense_proposal_line_id = fields.Many2one('expense.proposal.line', string='Expense Proposal Line')
+    type_proposal = fields.Selection([('expense_proposal', 'Phiếu đề xuất chi phí'), ('proposal_sheet', 'Phiếu đề xuất')], default='proposal_sheet')
     proposal_display = fields.Char(string='Phiếu đề xuất', compute='_compute_proposal_display',store =True)
     scheduled_date = fields.Date(string='Ngày dự chi', default=fields.Date.today)
     @api.depends('expense_proposal_id', 'proposal_sheet_id')

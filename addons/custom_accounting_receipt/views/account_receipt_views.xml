@@ -9,7 +9,7 @@
                 <form string="Phiếu Thu Kế Toán">
                     <header>
                         <button name="action_post" type="object" string="Ghi sổ" class="oe_highlight" invisible="state != 'draft'"/>
-                        <button name="action_cancel" type="object" string="Hủy" invisible="state == 'cancel'"/>
+                        <!-- <button name="action_cancel" type="object" string="Hủy" invisible="state == 'cancel'"/> -->
                         <field name="state" widget="statusbar" statusbar_visible="draft,posted,cancel"/>
                     </header>
                     <sheet>
@@ -17,7 +17,9 @@
                             <group>
                                 <field name="name"/>
                                 <field name="date"/>
-                                <field name="partner_id"/>
+                                <field name="partner_type" widget="radio"/>
+                                <field name="partner_id" invisible="partner_type !='customer'"/>
+                                <field name ="employee_id" invisible="partner_type !='employee'"/>
                                 <field name="amount" widget="monetary"/>
                                 <field name="currency_id" invisible="1" optional="hide"/>
                                 <field name="payment_method"/>
@@ -47,10 +49,11 @@
                     <field name="date"/>
                     <field name="note" string="Nội dung thu"/>
                     <field name="partner_id"/>
+                    <field name ="employee_id"/>
                     <field name="amount" widget="monetary"/>
                     <field name="currency_id" invisible="1" optional="hide"/>
                     <field name="payment_method"/>
-                    <field name="state"/>
+                    <field name="state" widget="badge" decoration-success="state =='posted'"/>
                 </tree>
             </field>
         </record>

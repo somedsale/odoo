@@ -11,6 +11,8 @@
         "data/sequence.xml",
         "views/account_payment_proposal_view.xml",
         "views/account_payment_proposal_wizard_views.xml",
+        'views/account_payment_proposal_reject_wizard_view.xml',
+        "views/account_receipt_inherit.xml",
         ],
     "installable": True,
     "application": True,

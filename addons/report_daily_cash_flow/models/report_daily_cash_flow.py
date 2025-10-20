@@ -10,6 +10,12 @@ class DailyCashFlowReport(models.AbstractModel):
         payments = self.env['account.payment.request'].browse(data.get('account_payment_ids', []))
         receipts = self.env['account.receipt'].browse(data.get('account_receipt_ids', []))
         currency = self.env['res.currency'].browse(data.get('currency_id'))
+        payments = payments.sorted(
+            key=lambda p: (p.payment_type != 'cash', p.date_payment, p.id)
+        )
+        receipts = receipts.sorted(
+            key=lambda r: (r.payment_method != 'cash', r.date, r.id)
+        )
 
         return {
             'doc_ids': docids,

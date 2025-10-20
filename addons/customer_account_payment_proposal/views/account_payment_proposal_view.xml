@@ -12,6 +12,7 @@
                     <field name="can_approve_director" invisible="1"/>
                     <field name="can_paid" invisible="1"/>
                     <field name="can_reset_draft" invisible="1"/>
+                    <field name="can_reject" invisible="1"/>
                     <button name="action_submit" type="object" string="Gửi duyệt" class="btn-primary" invisible="not can_submit"/>
                     <button name="action_approve_manager" type="object" string="Trưởng phòng duyệt" class="btn-success" invisible="not can_approve_manager"/>
                     <button name="action_approve_accountant" type="object" string="Kế toán duyệt" class="btn-success" invisible="not can_approve_accountant"/>
@@ -19,8 +20,7 @@
                     <button name="action_paid" type="object" string="Kế toán chi tiền" class="btn-secondary" invisible="not can_paid"/>
                     <button name ="action_done" type="object" string="Hoàn tất chi" class="btn-success" invisible="not can_paid" confirm="Bạn chắc chắn muốn hoàn tất không?"/>
                     <button name ="action_reset_draft" type="object" string="Trở về nháp" class="btn-secondary" invisible="not can_reset_draft" confirm="Bạn chắc chắn chuyển thành nhap?"/>
-                    <button name="action_reject" type="object" string="Từ chối" class="btn-danger" invisible="not state in ['submitted', 'dept_approved', 'account_approved', 'director_approved']"/>
-                    <!-- Thanh trạng thái -->
+                    <button name="action_reject" type="object" string="Từ chối" class="btn-danger" invisible="not can_reject"/>
                     <field name="state" widget="statusbar" statusbar_visible="submitted,dept_approved,account_approved,director_approved,paid,rejected"/>
                 </header>
                 <sheet>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- 🌟 Kế thừa form view Phiếu Thu để thêm liên kết với Giấy đề nghị giải chi -->
+        <record id="view_account_receipt_form_inherit_proposal" model="ir.ui.view">
+            <field name="name">account.receipt.form.inherit.proposal</field>
+            <field name="model">account.receipt</field>
+            <field name="inherit_id" ref="custom_accounting_receipt.view_account_receipt_form"/>
+            <field name="arch" type="xml">
+                <!-- Thêm field mới ngay dưới project_id -->
+                <xpath expr="//field[@name='project_id']" position="after">
+                    <field name="payment_proposal_id" options="{'no_create': True}" />
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
