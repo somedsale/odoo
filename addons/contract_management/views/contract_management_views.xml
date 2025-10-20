@@ -1,38 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo>    <!-- Contract Form View -->
+<odoo>
+
+    <!-- Contract Form View (giữ nguyên phần bạn đang dùng) -->
     <record id="view_contract_management_form" model="ir.ui.view">
         <field name="name">contract.management.form</field>
         <field name="model">contract.management</field>
         <field name="arch" type="xml">
             <form string="Contract">
                 <header>
-                    <button name="action_next_stage" string="Chuyển giai đoạn" type="object" class="btn-primary" invisible="stage in (&apos;completed&apos;, &apos;canceled&apos;)"/>
-                    <button name="action_cancel" string="Hủy hợp đồng" type="object" class="btn-danger" invisible="stage in (&apos;completed&apos;, &apos;canceled&apos;)"/>
-                    <field name="stage" widget="statusbar" decoration-info="stage == &apos;negotiating&apos;" decoration-warning="stage == &apos;preparing&apos;" decoration-primary="stage == &apos;executing&apos;" decoration-success="stage == &apos;completed&apos;" statusbar_visible="negotiating,preparing,executing,completed,canceled"/>
+                    <button name="action_cancel" type="object" string="Hủy hợp đồng"
+                            class="btn-danger" invisible="stage in ('completed','canceled')"/>
+                    <button name="action_to_executing" type="object" string="Bắt đầu thực hiện"
+                            class="btn-primary" invisible="stage != 'negotiating'"/>
+                    <button name="action_to_completed" type="object" string="Hoàn thành"
+                            class="btn-success" invisible="stage != 'executing'"/>
+                    <field name="stage" widget="statusbar"
+                           decoration-info="stage == 'negotiating'"
+                           decoration-primary="stage == 'executing'"
+                           decoration-success="stage == 'completed'"
+                           statusbar_visible="negotiating,executing,completed,canceled"/>
                 </header>
+
                 <sheet>
                     <div class="oe_title">
-                        <h2>
-                            <field name="name"/>
-                        </h2>
+                        <h2><field name="name"/></h2>
                     </div>
                     <group>
                         <group>
-                            <field name="sale_order_id" options="{&apos;no_create&apos;: True}" readonly="1"/>
+                            <field name="sale_order_id" options="{'no_create': True}" readonly="1"/>
                             <field name="num_contract"/>
-                            <field name="partner_id" options="{&apos;no_create&apos;: True}" readonly="1"/>
+                            <field name="partner_id" options="{'no_create': True}" readonly="1"/>
                             <field name="project_id" readonly="1"/>
                             <field name="company_id" groups="base.group_multi_company"/>
-                            <field name ="contract_value"/>
+                            <field name="contract_value"/>
+                            <field name="warranty_time"/>
                         </group>
                         <group>
                             <field name="planned_start_date"/>
                             <field name="planned_end_date"/>
+                            <field name="signature_date" string ="Ngày ký hợp đồng"/>
+                            <!-- Hai ngày mới thêm để người dùng nhập -->
+                            <!-- <field name="date_execution"/>
+                            <field name="date_completion"/> -->
                             <field name="description" placeholder="Thêm mô tả cho hợp đồng"/>
                             <field name="attachment_ids" widget="many2many_binary" string="Đính kèm tài liệu"/>
                         </group>
                     </group>
                 </sheet>
+
                 <div class="oe_chatter">
                     <field name="message_follower_ids"/>
                     <field name="activity_ids"/>
@@ -40,7 +55,9 @@
                 </div>
             </form>
         </field>
-    </record>    <!-- Contract Tree View -->
+    </record>
+
+    <!-- Contract Tree View: thêm 2 cột ngày + sửa badge bỏ 'preparing' -->
     <record id="view_contract_management_tree" model="ir.ui.view">
         <field name="name">contract.management.tree</field>
         <field name="model">contract.management</field>
@@ -48,22 +65,90 @@
             <tree string="Contracts">
                 <field name="name"/>
                 <field name="num_contract"/>
-                <field name ="contract_value" sum="Tổng"/>
+                <field name="contract_value" sum="Tổng"/>
                 <field name="sale_order_id"/>
                 <field name="project_id"/>
                 <field name="partner_id"/>
-                <field name="stage" widget="badge" decoration-info="stage == &apos;negotiating&apos;" decoration-warning="stage == &apos;preparing&apos;" decoration-primary="stage == &apos;executing&apos;" decoration-success="stage == &apos;completed&apos;"/>
+                <field name="signature_date"/>
+                <field name="stage" widget="badge"
+                       decoration-info="stage == 'negotiating'"
+                       decoration-primary="stage == 'executing'"
+                       decoration-success="stage == 'completed'"/>
             </tree>
         </field>
-    </record>    <!-- Action for Contract Menu -->
+    </record>
+
+    <!-- 🔍 Contract Search View: bộ lọc theo trạng thái + ngày (Tháng/Quý/Năm/Tuần) -->
+    <record id="view_contract_management_search" model="ir.ui.view">
+        <field name="name">contract.management.search</field>
+        <field name="model">contract.management</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm Hợp đồng">
+                <field name="name"/>
+                <field name="num_contract"/>
+                <field name="partner_id"/>
+                <field name="sale_order_id"/>
+                <field name="project_id"/>
+                <field name="stage"/>
+
+                <!--  Bộ lọc trạng thái nhanh  -->
+                <filter string="Đang thương thảo" name="stg_negotiating" domain="[('stage','=','negotiating')]"/>
+                <filter string="Đang thực hiện"  name="stg_executing"   domain="[('stage','=','executing')]"/>
+                <filter string="Hoàn thành"      name="stg_completed"   domain="[('stage','=','completed')]"/>
+                <filter string="Đã hủy"          name="stg_canceled"    domain="[('stage','=','canceled')]"/>
+
+                <!--  Bộ lọc theo ngày: Odoo sẽ hiện menu (Hôm nay, Tuần này, Tháng này, Quý này, Năm nay, Tùy chọn...)  -->
+                <!-- Ngày thực hiện -->
+                <filter string="Ngày thực hiện" name="date_exec_filter" date="date_execution"/>
+                <!-- Ngày hoàn thành -->
+                <filter string="Ngày hoàn thành" name="date_comp_filter" date="date_completion"/>
+
+                <!--  Nhóm theo (Group By)  -->
+                <group expand="0" string="Nhóm theo">
+                    <!-- Group by Stage -->
+                    <filter string="Trạng thái" name="grp_stage" context="{'group_by':'stage'}"/>
+
+                    <!-- Group by đối tác / đơn bán -->
+                    <filter string="Khách hàng" name="grp_partner" context="{'group_by':'partner_id'}"/>
+                    <filter string="Đơn bán" name="grp_sale_order" context="{'group_by':'sale_order_id'}"/>
+                    <filter string="Dự án" name="grp_project" context="{'group_by':'project_id'}"/>
+
+                    <!-- Group by Ngày thực hiện -->
+                    <filter string="Thực hiện - Năm"   name="grp_exec_year"   context="{'group_by':'date_execution:year'}"/>
+                    <filter string="Thực hiện - Quý"   name="grp_exec_quarter" context="{'group_by':'date_execution:quarter'}"/>
+                    <filter string="Thực hiện - Tháng" name="grp_exec_month"  context="{'group_by':'date_execution:month'}"/>
+                    <filter string="Thực hiện - Tuần"  name="grp_exec_week"   context="{'group_by':'date_execution:week'}"/>
+
+                    <!-- Group by Ngày hoàn thành -->
+                    <filter string="Hoàn thành - Năm"   name="grp_comp_year"   context="{'group_by':'date_completion:year'}"/>
+                    <filter string="Hoàn thành - Quý"   name="grp_comp_quarter" context="{'group_by':'date_completion:quarter'}"/>
+                    <filter string="Hoàn thành - Tháng" name="grp_comp_month"  context="{'group_by':'date_completion:month'}"/>
+                    <filter string="Hoàn thành - Tuần"  name="grp_comp_week"   context="{'group_by':'date_completion:week'}"/>
+                </group>
+
+                <!-- (Tùy chọn) Search Panel cho Stage/Partner -->
+                <searchpanel>
+                    <field name="stage"/>
+                    <field name="partner_id" icon="fa-user"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action for Contract Menu: gắn search view -->
     <record id="action_contract_management" model="ir.actions.act_window">
         <field name="name">Hợp đồng</field>
         <field name="res_model">contract.management</field>
         <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_contract_management_search"/>
         <field name="help" type="html">
             <p class="oe_view_nocontent_create">Click to create a new contract.</p>
         </field>
-    </record>    <!-- Menu Item -->
+    </record>
+
+    <!-- Menu -->
     <menuitem id="menu_contract_management_root" name="Hợp đồng" sequence="10" parent="sale.sale_menu_root"/>
-    <menuitem id="menu_contract_management" name="Hợp đồng" action="action_contract_management" parent="menu_contract_management_root" sequence="10"/>
+    <menuitem id="menu_contract_management" name="Hợp đồng" action="action_contract_management"
+              parent="menu_contract_management_root" sequence="10"/>
+
 </odoo>
