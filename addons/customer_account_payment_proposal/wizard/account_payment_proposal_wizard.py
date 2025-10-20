@@ -61,9 +61,15 @@ class AccountPaymentProposalWizard(models.TransientModel):
         Payment = self.env["account.payment.request"]
 
         # 🔹 Phiếu thu hoàn tạm ứng
+        # 🔹 Phiếu thu hoàn tạm ứng
         if self.create_receipt_advance and self.amount_receipt_advance > 0:
+            employee = rec.user_id.employee_id
+            if not employee:
+                raise UserError(_("Người tạo giấy đề nghị chưa gắn với nhân viên nào."))
+
             rec1 = Receipt.create({
-                "partner_id": partner_id,
+                "partner_type": "employee",  # ✅ loại phiếu thu là nhân viên
+                "employee_id": employee.id,
                 "date": fields.Date.today(),
                 "amount": self.amount_receipt_advance,
                 "note": f"Thu hồi tạm ứng từ giấy đề nghị {rec.name}",
@@ -77,8 +83,13 @@ class AccountPaymentProposalWizard(models.TransientModel):
 
         # 🔹 Phiếu thu hoàn ứng thêm
         if self.create_receipt_refund and self.amount_receipt_refund > 0:
+            employee = rec.user_id.employee_id
+            if not employee:
+                raise UserError(_("Người tạo giấy đề nghị chưa gắn với nhân viên nào."))
+
             rec2 = Receipt.create({
-                "partner_id": partner_id,
+                "partner_type": "employee",  # ✅ loại phiếu thu là nhân viên
+                "employee_id": employee.id,
                 "date": fields.Date.today(),
                 "amount": self.amount_receipt_refund,
                 "note": f"Hoàn ứng giấy đề nghị {rec.name}",

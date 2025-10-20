@@ -112,6 +112,7 @@ class AccountPaymentProposal(models.Model):
     can_approve_director = fields.Boolean(compute="_compute_permissions", string="Giám đốc duyệt được")
     can_paid = fields.Boolean(compute="_compute_permissions", string="Kế toán chi được")
     can_reset_draft = fields.Boolean(compute="_compute_permissions", string="Có thể hóa nháp")
+    can_reject = fields.Boolean(compute="_compute_permissions", string="Có thể từ chối")
     @api.depends("state", "user_id", "manager_id", "director_user_id")
     def _compute_permissions(self):
         """Xác định ai được thấy nút nào"""
@@ -145,6 +146,11 @@ class AccountPaymentProposal(models.Model):
             rec.can_reset_draft = (
                 rec.state == "rejected"
             )
+            rec.can_reject = (
+            (rec.state == "submitted" and rec.manager_id and rec.manager_id.user_id == current_user)
+            or (rec.state == "dept_approved" and is_accountant)
+            or (rec.state == "account_approved" and rec.director_user_id == current_user)
+        )
 
     @api.model
     def _default_director_user(self):
@@ -240,9 +246,15 @@ class AccountPaymentProposal(models.Model):
 
 
     def action_reject(self):
-        for rec in self:
-            rec.state = "rejected"
-            rec._send_notification("❌ Phiếu giải chi đã bị từ chối.", [rec.user_id.partner_id.id])
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Nhập lý do từ chối",
+            "res_model": "account.payment.proposal.reject.wizard",
+            "view_mode": "form",
+            "target": "new",
+            "context": {"default_proposal_id": self.id},
+        }
 
     # ========== THÔNG BÁO & CÔNG CỤ ==========
     def _send_notification(self, message, partner_ids=None):

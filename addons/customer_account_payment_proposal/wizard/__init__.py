@@ -1,1 +1,2 @@
 from . import account_payment_proposal_wizard
+from . import account_payment_proposal_reject_wizard
