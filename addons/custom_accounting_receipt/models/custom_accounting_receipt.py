@@ -9,7 +9,12 @@ class AccountReceipt(models.Model):
     name = fields.Char(string='Số phiếu thu', required=True, readonly=True, default="new")
     date = fields.Date(string='Ngày thu', required=True, default=fields.Date.today)
     project_id = fields.Many2one('project.project', string='Dự án')
-    partner_id = fields.Many2one('res.partner', string='Khách hàng', required=True)
+    partner_type = fields.Selection([
+        ('customer', 'Khách hàng'),
+        ('employee', 'Nhân viên'),
+    ], string="Loại đối tượng", default='customer', required=True)
+    partner_id = fields.Many2one('res.partner', string='Khách hàng')
+    employee_id = fields.Many2one('hr.employee', string='Nhân viên')
     amount = fields.Float(string='Số tiền', required=True)
     currency_id = fields.Many2one('res.currency', string='Tiền tệ', default=lambda self: self.env.company.currency_id)
     payment_method = fields.Selection([
