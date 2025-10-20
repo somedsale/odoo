@@ -183,6 +183,7 @@ class ExpenseProposal(models.Model):
                     'expense_proposal_id': rec.id,
                     'expense_proposal_line_id': line.id,
                     'proposal_person_id': rec.proposer_id.id,
+                    'type_proposal': 'expense_proposal',
                     'total': line.amount,
                     'date': line.date or rec.date,
                     'note': line.content,
