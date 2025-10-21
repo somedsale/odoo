@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ====== TREE VIEW ====== -->
+        <record id="view_account_employee_advance_tree" model="ir.ui.view">
+            <field name="name">account.employee.advance.tree</field>
+            <field name="model">account.employee.advance</field>
+            <field name="arch" type="xml">
+                <tree string="Theo dõi tạm ứng nhân viên">
+                    <field name="employee_id" widget="many2one_avatar"/>
+                    <field name="department_id"/>
+                    <field name="advance_total" sum="1"/>
+                    <field name="refund_total" sum="1"/>
+                    <field name="remain_total" sum="1"/>
+                    <field name ="currency_id" optional="hide"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- ====== FORM VIEW ====== -->
+        <record id="view_account_employee_advance_form" model="ir.ui.view">
+            <field name="name">account.employee.advance.form</field>
+            <field name="model">account.employee.advance</field>
+            <field name="arch" type="xml">
+                <form string="Theo dõi tạm ứng nhân viên" class="form-employee-advance">
+                    <sheet>
+                        <!-- Thông tin tổng quan -->
+                        <group>
+                            <group>
+                                <field name="employee_id" widget="many2one_avatar"/>
+                                <field name="department_id"/>
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="advance_total" widget="monetary" readonly="1"/>
+                                <field name="refund_total" widget="monetary" readonly="1"/>
+                                <field name="remain_total" widget="monetary" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <!-- Bảng tạm ứng / hoàn ứng -->
+                        <div class="advance-container">
+                            <div class="advance-column">
+                                <h4 class="advance-title title-advance">TẠM ỨNG</h4>
+                                <field name="payment_ids" nolabel="1" context="{'default_employee_id': employee_id}">
+                                    <tree >
+                                        <field name="note" string="Nội dung"/>
+                                        <field name="date_payment" string="Ngày chi"/>
+                                        <field name="total" string="Số tiền" widget="monetary" sum='1'/>
+                                        <field name="note_advance" string="Ghi chú"/>
+                                        <field name="state" string="Trạng thái" widget="badge" decoration-success="state in ['approved','paid','done','posted']"/>
+                                        <field name ="currency_id" optional="hide"/>
+                                    </tree>
+                                </field>
+                            </div>
+
+                            <div class="advance-column">
+                                <h4 class="advance-title title-refund">HOÀN ỨNG</h4>
+                                <field name="receipt_ids" nolabel="1" context="{'default_employee_id': employee_id}">
+                                    <tree >
+                                        <field name="note" string="Nội dung"/>
+                                        <field name="date" string="Ngày thu"/>
+                                        <field name="amount" string="Số tiền" widget="monetary" sum='1'/>
+                                        <field name="note_advance_refund" string="Ghi chú"/>
+                                        <field name="state" string="Trạng thái" widget="badge" decoration-success="state in ['posted','done','paid','confirmed']"/>
+                                        <field name ="currency_id" optional="hide"/>
+                                    </tree>
+                                </field>
+                            </div>
+                        </div>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- ====== ACTION ====== -->
+        <record id="action_account_employee_advance" model="ir.actions.act_window">
+            <field name="name">Theo dõi tạm ứng nhân viên</field>
+            <field name="res_model">account.employee.advance</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- ====== MENU ITEM ====== -->
+        <menuitem id="menu_account_employee_advance_root" name="Theo dõi tạm ứng nhân viên" parent="custom_account_menu.menu_accounting_custom_root" action="action_account_employee_advance" sequence="90"/>
+
+    </data>
+</odoo>
