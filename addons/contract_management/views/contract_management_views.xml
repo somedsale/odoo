@@ -134,6 +134,14 @@
             </search>
         </field>
     </record>
+<record id="ir_actions_server_backfill_customer_contracts" model="ir.actions.server">
+    <field name="name">Đồng bộ Customer Contract</field>
+    <field name="model_id" ref="model_contract_management"/>
+    <field name="binding_model_id" ref="model_contract_management"/>
+    <field name="binding_type">action</field>
+    <field name="state">code</field>
+    <field name="code">action = records.action_backfill_customer_contracts()</field>
+</record>
 
     <!-- Action for Contract Menu: gắn search view -->
     <record id="action_contract_management" model="ir.actions.act_window">
