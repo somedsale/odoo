@@ -20,6 +20,7 @@ services:
       pip install openpyxl &&
       pip install xlrd &&
       pip install xlsxwriter &&
+      pip install boto3 &&
       /usr/bin/odoo --config /etc/odoo/odoo.conf
       "
   db:
