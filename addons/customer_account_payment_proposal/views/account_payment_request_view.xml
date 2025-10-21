@@ -1,0 +1,18 @@
+<odoo>
+    <record id="view_account_payment_request_form_inherit_proposal" model="ir.ui.view">
+        <field name="name">account.payment.request.form.inherit.proposal</field>
+        <field name="model">account.payment.request</field>
+        <field name="inherit_id" ref="custom_account_payment_request.view_account_payment_request_form"/>
+        <field name="arch" type="xml">
+
+            <!-- 📌 Chèn sau field payment_type -->
+            <xpath expr="//field[@name='payment_type']" position="after">
+                <field name="payment_proposal_id" options="{'no_create': True}"/>
+                <field name="is_advance"/>
+                <field name="employee_id" options="{'no_create': True}"/>
+                <field name="note_advance" placeholder="Ghi chú tạm ứng"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
