@@ -26,7 +26,8 @@
                                 <field name="note" string="Nội dung thu"/>
                             </group>
                             <group>
-                                <field name="project_id"/>
+                                <field name="type_revenue"/>
+                                <field name="project_id" invisible="type_revenue !='done_revenue' and type_revenue !='advance'"/>
                             </group>
                         </group>
                     </sheet>

@@ -27,7 +27,13 @@ class AccountReceipt(models.Model):
         ('cancel', 'Đã hủy')
     ], string='Trạng thái', default='draft', readonly=True)
     note = fields.Text(string='Ghi chú')
-
+    type_revenue = fields.Selection([
+        ('done_revenue', 'Doanh thu đã thực hiện'),
+        ('advance', 'Doanh thu chưa thực hiện (Tạm ứng)'),
+        ('loan', 'Các khoản vay'),
+        ('explain', 'Giải chi'),
+        ('other', 'Các khoản thu khác'),
+    ], string='Loại doanh thu', required=True, default='done_revenue')
     @api.model
     def create(self, vals):
         if not vals.get('name'):

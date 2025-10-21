@@ -10,6 +10,8 @@
                 <!-- Thêm field mới ngay dưới project_id -->
                 <xpath expr="//field[@name='project_id']" position="after">
                     <field name="payment_proposal_id" options="{'no_create': True}" />
+                    <field name ="is_advance_refund"/>
+                    <field name="note_advance_refund" placeholder="Ghi chú hoàn ứng"/>
                 </xpath>
             </field>
         </record>

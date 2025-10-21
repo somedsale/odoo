@@ -13,6 +13,7 @@
         "views/account_payment_proposal_wizard_views.xml",
         'views/account_payment_proposal_reject_wizard_view.xml',
         "views/account_receipt_inherit.xml",
+        "views/account_payment_request_view.xml",
         ],
     "installable": True,
     "application": True,

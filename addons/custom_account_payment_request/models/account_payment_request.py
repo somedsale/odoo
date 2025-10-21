@@ -22,6 +22,8 @@ class AccountingPaymentRequest(models.Model):
         ('employee', 'Khoản vay nội bộ(nhân viên)'),
         ('office', 'Chi phí tại công ty'),
         ('project', 'Chi phí các công trình'),
+        ('fixed_cost', 'Chi phí cố định'),
+        ('irregular_expenses', 'Chi phí không thường xuyên'),
     ], string="Phân loại chi phí", default='employee',required=True)
     # NEW: Khoản mục
     expense_category_id = fields.Many2one(

@@ -4,6 +4,7 @@ from odoo.exceptions import UserError, ValidationError
 import logging
 from markupsafe import Markup, escape
 import re
+from datetime import date
 
 _logger = logging.getLogger(__name__)
 
@@ -59,7 +60,9 @@ class ContractManagement(models.Model):
     attachment_ids = fields.Many2many('ir.attachment', string='Tài liệu')
     warranty_time = fields.Integer(string="Thời gian bảo hành (tháng)")
     # ---------- Computed Fields ----------
-
+    # Chỉ chấp nhận 2 stage
+    def _eligible_stage_domain(self):
+        return [('stage', 'in', ('executing', 'completed'))]
 
     # ---------- Helpers ----------
     def _ensure_from_stage(self, allowed_stages):
@@ -279,7 +282,113 @@ class ContractManagement(models.Model):
             WHERE date_completion IS NULL;
         """)
         _logger.info("✅ Done updating old contract dates.")
+    # --- Helper dựng vals tạo customer.contract từ 1 contract.management ---
+    def _prepare_customer_contract_vals(self):
+        self.ensure_one()
+        project = self.project_id or (self._create_project_and_sync() if self.stage in ('executing', 'completed') else False)
+        return {
+            'contract_number': self.num_contract or '/',
+            'partner_id': self.partner_id.id,
+            'project_id': project.id if project else False,
+            'amount_total': self.contract_value or 0.0,
+            'currency_id': self.env.company.currency_id.id,
+            'warranty_time': self.warranty_time or 0,
+            'management_id': self.id,  # LIÊN KẾT NGƯỢC VỀ contract.management
+            'date': self.signature_date or self.planned_start_date or date.today(),
+        }
 
+    def _copy_attachments_to_customer_contract(self, customer_contract):
+        """Copy tài liệu từ Contract sang Customer Contract."""
+        self.ensure_one()
+        for att in (self.attachment_ids or self.env['ir.attachment']):
+            att.sudo().copy({'res_model': 'customer.contract', 'res_id': customer_contract.id})
+
+    @api.model
+    def _missing_customer_contract_domain(self, ids=None):
+        """Domain các contract chưa có customer.contract (theo management_id),
+        và chỉ lấy stage hợp lệ: executing/completed."""
+        base_domain = self._eligible_stage_domain()
+        if ids:
+            base_domain += [('id', 'in', ids)]
+
+        contracts = self.search(base_domain)
+        if not contracts:
+            return [('id', '=', 0)]
+
+        # Lấy các contract đã có customer.contract
+        read = self.env['customer.contract'].read_group(
+            [('management_id', 'in', contracts.ids)],
+            ['management_id'],
+            ['management_id'],
+        )
+        existed_ids = {r['management_id'][0] for r in read if r.get('management_id')}
+        missing_ids = [c.id for c in contracts if c.id not in existed_ids]
+        return [('id', 'in', missing_ids)] if missing_ids else [('id', '=', 0)]
+
+
+    def action_backfill_customer_contracts(self):
+        """
+        Tạo Customer Contract cho các Contract Management đang chọn (self),
+        hoặc tất cả trong hệ thống nếu self trống, với điều kiện:
+        - Stage ∈ {executing, completed}
+        - Chưa có customer.contract
+        """
+        # Nếu người dùng chọn bản ghi → lọc stage hợp lệ trước
+        ids_ctx = self.filtered_domain(self._eligible_stage_domain()).ids if self else None
+        domain = self._missing_customer_contract_domain(ids_ctx)
+        missing = self.search(domain)
+
+        if not missing:
+            raise UserError(_("Không có hợp đồng nào ở trạng thái 'Đang thực hiện' hoặc 'Hoàn thành' cần đồng bộ."))
+
+        created = self.env['customer.contract']
+        skipped = 0
+
+        for rec in missing:
+            # Bảo vệ dữ liệu thiếu
+            if not rec.partner_id:
+                _logger.warning("BỎ QUA: %s chưa có khách hàng.", rec.display_name)
+                skipped += 1
+                continue
+
+            # Chuẩn bị và tạo
+            vals = rec._prepare_customer_contract_vals()
+            cc = self.env['customer.contract'].sudo().create(vals)
+            rec._copy_attachments_to_customer_contract(cc)
+            created |= cc
+
+            rec.message_post(
+                body=Markup(
+                    "📄 Đã backfill **Hợp đồng khách hàng** "
+                    f"<a href='/web#id={cc.id}&model=customer.contract&view_type=form' target='_blank'>{escape(cc.display_name)}</a>."
+                )
+            )
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _("Hoàn tất đồng bộ"),
+                'message': _("Tạo mới: %s, Bỏ qua: %s") % (len(created), skipped),
+                'sticky': False,
+                'type': 'success',
+            },
+        }
+
+
+    # (TUYỆN CHỌN) CRON tự động backfill định kỳ
+    @api.model
+    def cron_backfill_customer_contracts(self):
+        domain = self._missing_customer_contract_domain()
+        missing = self.search(domain)
+        for rec in missing:
+            try:
+                vals = rec._prepare_customer_contract_vals()
+                cc = self.env['customer.contract'].sudo().create(vals)
+                rec._copy_attachments_to_customer_contract(cc)
+                rec.message_post(body=_("Cron: đã tạo Customer Contract tự động."))
+            except Exception as e:
+                _logger.exception("Cron backfill lỗi cho %s: %s", rec.display_name, e)
 
 
 class ProjectTask(models.Model):

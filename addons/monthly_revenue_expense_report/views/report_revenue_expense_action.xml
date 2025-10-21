@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Wizard form -->
+    <record id="view_monthly_revenue_expense_wizard" model="ir.ui.view">
+        <field name="name">monthly.revenue.expense.report.form</field>
+        <field name="model">monthly.revenue.expense.report</field>
+        <field name="arch" type="xml">
+            <form string="Báo cáo Doanh thu - Chi phí hàng tháng">
+                <group>
+                    <field name="month"/>
+                    <field name="year"/>
+                </group>
+                <footer>
+                    <button string="Xem Báo cáo" type="object" name="action_view_report"
+                            class="btn-primary"/>
+                    <button string="Đóng" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action mở wizard -->
+    <record id="action_monthly_revenue_expense_wizard" model="ir.actions.act_window">
+        <field name="name">Báo cáo Doanh thu - Chi phí</field>
+        <field name="res_model">monthly.revenue.expense.report</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_report_revenue_expense_root"
+              name="Báo cáo Doanh thu - Chi phí"
+              parent="custom_account_menu.menu_accounting_reporting"
+              action="action_monthly_revenue_expense_wizard"
+              sequence="20"/>
+    <record id="revenue_report_a4_landscape" model="report.paperformat">
+        <field name="name">Report A4 Landscape</field>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">30</field>        <!-- Điều chỉnh từ 40mm xuống 30mm -->
+        <field name="margin_bottom">30</field>        <!-- Tăng từ 23mm lên 30mm -->
+        <field name="margin_left">10</field>        <!-- Tăng từ 7mm lên 10mm -->
+        <field name="margin_right">10</field>        <!-- Tăng từ 7mm lên 10mm -->
+        <field name="header_spacing">25</field>        <!-- Giảm từ 35mm xuống 25mm -->
+        <field name="dpi">110</field>
+    </record>
+    <!-- QWeb report definition -->
+<record id="report_monthly_revenue_expense_action_html" model="ir.actions.report">
+    <field name="name">Báo cáo Doanh thu - Chi phí</field>
+    <field name="model">monthly.revenue.expense.report</field>
+    <field name="report_type">qweb-html</field>
+    <field name="report_name">monthly_revenue_expense_report.report_template</field>
+    <field name="report_file">monthly_revenue_expense_report.report_template</field>
+    <field name="paperformat_id" ref="revenue_report_a4_landscape"/>
+</record>
+
+</odoo>
