@@ -43,7 +43,7 @@
                         <div class="advance-container">
                             <div class="advance-column">
                                 <h4 class="advance-title title-advance">TẠM ỨNG</h4>
-                                <field name="payment_ids" nolabel="1" context="{'default_employee_id': employee_id}">
+                                <field name="payment_ids" nolabel="1" context="{'default_employee_id': employee_id,'default_is_advance': True}">
                                     <tree >
                                         <field name="note" string="Nội dung"/>
                                         <field name="date_payment" string="Ngày chi"/>
@@ -57,7 +57,7 @@
 
                             <div class="advance-column">
                                 <h4 class="advance-title title-refund">HOÀN ỨNG</h4>
-                                <field name="receipt_ids" nolabel="1" context="{'default_employee_id': employee_id}">
+                                <field name="receipt_ids" nolabel="1" context="{'default_employee_id': employee_id,'default_is_advance_refund': True}">
                                     <tree >
                                         <field name="note" string="Nội dung"/>
                                         <field name="date" string="Ngày thu"/>
