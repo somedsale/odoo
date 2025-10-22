@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <!-- ACTION cần khai báo trước khi menu dùng -->
+  <record id="action_management_document_s3" model="ir.actions.act_window">
+    <field name="name">Tài liệu S3</field>
+    <field name="res_model">management.document.s3</field>
+    <field name="view_mode">tree,form</field>
+    <field name="target">current</field>
+  </record>
+
+  <menuitem id="menu_s3doc_root" name="S3 Documents" sequence="10"/>
+  <menuitem id="menu_s3doc_doc" name="Tài liệu S3"
+            parent="menu_s3doc_root"
+            action="document_s3.action_management_document_s3"/>
+
+<record id="view_management_document_s3_tree" model="ir.ui.view">
+  <field name="name">management.document.s3.tree</field>
+  <field name="model">management.document.s3</field>
+  <field name="arch" type="xml">
+    <tree>
+      <field name="name"/>
+      <field name="s3_key"/>
+      <field name="content_type" optional="hide"/>
+      <field name="size" optional="hide"/>
+    </tree>
+  </field>
+</record>
+
+
+  <record id="view_management_document_s3_form" model="ir.ui.view">
+    <field name="name">management.document.s3.form</field>
+    <field name="model">management.document.s3</field>
+    <field name="arch" type="xml">
+      <form string="Tài liệu S3">
+<header>
+  <button name="action_open_inline" type="object" string="Xem" class="btn-primary"
+          invisible="not s3_key"/>
+  <button name="action_download" type="object" string="Tải về" class="btn-secondary"
+          invisible="not s3_key"/>
+  <button name="action_upload_to_s3" type="object" string="Upload to S3" class="btn-success"
+          invisible="not file_upload"/>
+</header>
+
+<sheet>
+  <group>
+    <field name="name"/>
+    <field name="s3_key" readonly="1"/>
+  </group>
+
+  <group string="Upload">
+    <field name="file_upload" filename="file_upload_fname"/>
+    <field name="file_upload_fname"/>
+  </group>
+
+  <group string="Thông tin" invisible="not s3_key">
+    <field name="content_type" readonly="1"/>
+    <field name="size" readonly="1"/>
+  </group>
+
+  <group string="Xem nhanh" invisible="not preview">
+    <field name="preview" filename="preview_filename" class="oe_avatar" readonly="1"/>
+  </group>
+</sheet>
+
+      </form>
+    </field>
+  </record>
+
+</odoo>
