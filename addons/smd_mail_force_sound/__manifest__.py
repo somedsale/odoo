@@ -12,6 +12,7 @@
     "assets": {
         "web.assets_backend": [
             "smd_mail_force_sound/static/src/js/force_default_sound.js",
+            "smd_mail_force_sound/static/src/audio/my_sound.mp3",
         ],
     },
 }

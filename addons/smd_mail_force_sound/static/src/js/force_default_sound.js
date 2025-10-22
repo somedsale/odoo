@@ -2,7 +2,7 @@
 
 import { registry } from "@web/core/registry";
 
-const SOUND_URL = "/mail/static/src/audio/ting.mp3";
+const SOUND_URL = "/smd_mail_force_sound/static/src/audio/my_sound.mp3";
 let audio = null;
 let lastPlay = 0;
 
