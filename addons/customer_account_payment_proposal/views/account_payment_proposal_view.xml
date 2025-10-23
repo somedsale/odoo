@@ -24,7 +24,7 @@
                     <field name="state" widget="statusbar" statusbar_visible="submitted,dept_approved,account_approved,director_approved,paid,rejected"/>
                 </header>
                 <sheet>
-                    <div class="oe_button_box" name="button_box">
+                    <div class="oe_button_box" name="button_box" groups="base.group_system,account.group_account_manager,custom_director_role.group_director">
 
                         <!-- 🔹 Phiếu thu -->
                         <button class="oe_stat_button" name="action_view_receipts" type="object" icon="fa-sign-in">
@@ -79,9 +79,13 @@
                     <field name="line_ids">
                         <tree editable="bottom">
                             <field name="sequence" widget="handle" string="" width="30"/>
-                            <field name="date" string="Ngày tháng" width="90"/>
+                            <field name="date_from" width="90"/>
+                            <field name="date_to" width="90"/>
                             <field name="content" string="Nội dung" width="250"/>
-                            <field name="amount" string="Số tiền" width="130" options="{'currency_field': 'currency_id'}"/>
+                            <field name ="quantity" string="Số lượng"/>
+                            <field name="uom_id" string="DVT" options="{'no_create':False}"/>
+                            <field name="unit_price" string="Đơn giá" options="{'currency_field': 'currency_id'}"/>
+                            <field name="amount" string="Thành tiền" width="130" options="{'currency_field': 'currency_id'}" sum="1"/>
                             <field name="project_id" string="Dự án" width="200"/>
                             <field name="attachment_ids" widget="many2many_binary" options="{'no_create': True}" width="160"/>
                             <field name="note" string="Ghi chú" width="120"/>
