@@ -8,9 +8,22 @@ class AccountPaymentProposalLine(models.Model):
     _order = "sequence asc"
 
     sequence = fields.Integer(string="STT")
-    date = fields.Date(string="Ngày tháng")
+    date_from = fields.Date(string="Từ ngày")
+    date_to = fields.Date(string="Đến ngày")
     content = fields.Text(string="Nội dung chi")
-    amount = fields.Monetary(string="Số tiền", currency_field="currency_id")
+    quantity = fields.Float(string="Số lượng", default=1.0)
+    uom_id = fields.Many2one(
+        "uom.uom",
+        string="Đơn vị tính",
+        help="Đơn vị tính của khoản chi",
+    )
+    unit_price = fields.Monetary(
+        string="Đơn giá",
+        currency_field="currency_id",
+        default=0.0,
+        help="Đơn giá theo đơn vị tính",
+    )
+    amount = fields.Monetary(string="Tổng tiền", currency_field="currency_id",compute="_compute_amount",  store=True,readonly=True,)
     project_id = fields.Many2one(
         "project.project",
         string="Dự án liên quan",
@@ -28,6 +41,10 @@ class AccountPaymentProposalLine(models.Model):
         domain=[("res_model", "=", "account.payment.proposal.line")],
         string="Tệp đính kèm"
     )
+    @api.depends("quantity", "unit_price")
+    def _compute_amount(self):
+        for rec in self:
+            rec.amount = (rec.quantity or 0.0) * (rec.unit_price or 0.0)
     @api.model
     def create(self, vals):
         # --- Sinh sequence ---
