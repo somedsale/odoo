@@ -111,6 +111,7 @@
             <tree decoration-success="state=='paid'" decoration-bf="1" decoration-warning="state=='submitted'" decoration-info="state=='approved'">
                 <field name="name" string="Số phiếu đề nghị"/>
                 <field name="date_request"/>
+                <field name="project_id" string="Dự án"/>
                 <field name="user_id" readonly="1"/>
                 <field name="department_id"/>
                 <field name="amount_advance" sum="1"/>
