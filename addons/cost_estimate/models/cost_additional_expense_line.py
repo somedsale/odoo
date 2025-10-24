@@ -46,7 +46,18 @@ class CostAdditionalExpenseLine(models.Model):
         string='Thuế áp dụng',
         domain=[('type_tax_use', '=', 'sale')]
     )
+    project_id = fields.Many2one('project.project', string='Dự án', related='cost_estimate_id.project_id', store=True)
+    
+    display_name = fields.Char(
+    string='Tên hiển thị',
+    compute='_compute_display_name',
+    store=True
+)
 
+    @api.depends('expense_id.name')
+    def _compute_display_name(self):
+        for rec in self:
+            rec.display_name = rec.expense_id.name or ''
     @api.onchange('expense_id')
     def _onchange_expense_id(self):
         if self.expense_id:

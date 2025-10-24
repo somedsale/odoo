@@ -31,6 +31,12 @@ class ProposalSheet(models.Model):
         ('rejected', 'Bị từ chối'),
         ('canceled', 'Đã hủy'),
     ], string="Trạng thái", default='draft')
+    cost_additional_expense_line_id = fields.Many2one(
+    'cost.additional.expense.line',
+    string='Dòng chi phí bổ sung',
+    domain="[('project_id', '=', project_id)]",
+    help="Chọn dòng chi phí bổ sung liên quan đến dự án này."
+)
     date_proposal = fields.Date(string='Ngày Đề Xuất')
     date_reviewed_manager = fields.Date(string='Ngày QL duyệt')
     date_reviewed_accounting = fields.Date(string='Ngày KTTH kiểm tra')

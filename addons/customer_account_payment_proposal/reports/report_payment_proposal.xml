@@ -1,0 +1,426 @@
+<odoo>
+    <!-- ========== LAYOUT RIÊNG ========== -->
+    <template id="report_account_payment_proposal_layout">
+        <t t-call="web.html_container">
+            <div class="header" style="display:flex; justify-content:space-between; font-family:'Times New Roman';">
+                <table style="width:100%; border-collapse:collapse; border:1px solid #fff;">
+                    <tr>
+                        <!-- Logo -->
+                        <td style="text-align:left; width:50%; border:none;">
+                            <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id" alt="Company Logo" style="max-width:160px;"/>
+                        </td>
+                        <!-- Company info -->
+                        <td style="text-align:right; font-size:12px; width:50%; border:none;">
+                            <span t-esc="res_company.name" style="text-transform:uppercase;"/>
+                            <br/>
+MST: <span t-esc="res_company.partner_id.vat"/>
+                        <br/>
+Địa chỉ: <span t-esc="res_company.partner_id.street"/>
+                    <br/>
+SĐT: <span t-esc="res_company.phone"/>
+                <br/>
+Email: <span style="text-transform:lowercase;" t-esc="res_company.email"/>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div class="article" style="font-family:'Times New Roman'; font-size:11pt; line-height:1.5;">
+    <t t-raw="0"/>
+</div>
+
+<div class="footer" style="text-align:center; padding:5mm; font-size:10pt;">
+                Trang <span class="page"/>
+ /<span class="topage"/>
+</div>
+</t>
+</template>
+
+<!-- ========== TEMPLATE CHÍNH ========== -->
+<template id="report_account_payment_proposal_template">
+<t t-call="customer_account_payment_proposal.report_account_payment_proposal_layout">
+<t t-foreach="enumerate(docs)" t-as="doc_with_index">
+<t t-set="o" t-value="doc_with_index[1]"/>
+
+<div class="page" style="font-family:'Times New Roman', serif;">
+    <!-- CSS gọn -->
+    <style>
+                        table.report-table{width:100%;border-collapse:collapse;font-size:14px}
+                        table.report-table th,table.report-table td{border:1px solid #000;padding:6px;vertical-align:middle}
+                        table.report-table th{background:#f2f2f2;text-align:center;font-weight:bold}
+                        table.report-table{
+                            width:100%;
+                            border-collapse:collapse;
+                            font-size:13px;
+                            table-layout:fixed; /* QUAN TRỌNG */
+                            }
+                        table.report-table th, table.report-table td{
+                            border:1px solid #000;
+                            padding:4px;
+                            vertical-align:middle;
+                            word-break:break-word;
+                            }
+                        .text-center{ text-align:center; }
+                        .text-end{ text-align:right; }
+                        .nowrap{ white-space:nowrap; word-break:keep-all; }
+                        .num{ font-family:"DejaVu Sans","Times New Roman",serif; }
+                        table.general_information{width:100%;font-size:16px;margin-bottom:10px;border:0;border: 0px solid transparent !important;}
+                        table.general_information td{width:50%;vertical-align:top;padding:5px 10px;background:#fff}
+                        table.general_information {
+                            width: 100%;
+                            font-size: 15px;
+                            border: none !important;               /* Ẩn viền bảng */
+                            border-collapse: collapse;
+                        }
+                        table.general_information td {
+                            border: none !important;               /* Ẩn viền từng ô */
+                            padding: 5px 10px;
+                            background-color: white;
+                        }
+                        table.general_information,
+                        table.general_information * {
+                            border: none !important;
+                            outline: none !important;
+                            border-collapse: collapse !important;
+                            border-spacing: 0 !important;
+                        }
+
+                        /* ===== Ẩn sạch viền cho khu chữ ký ===== */
+                        .signature table,
+                        .signature tr,
+                        .signature td,
+                        .signature th {
+                            border: none !important;
+                            outline: none !important;
+                            border-collapse: collapse !important;
+                            border-spacing: 0 !important;
+                        }
+
+                        /* Chống “hairline” khi render PDF: ép màu viền trong suốt */
+                        table.general_information,
+                        table.general_information td,
+                        .signature table,
+                        .signature td,
+                        .signature th {
+                            border-color: transparent !important;
+                            background-clip: padding-box !important;
+                        }
+    </style>
+
+    <!-- Tiêu đề -->
+    <h1 style="text-align:center;font-weight:bold;margin-bottom:20px;padding:10px 0">
+                        PHIẾU ĐỀ NGHỊ GIẢI CHI
+    </h1>
+    <t t-set="fmt_vnd" t-value="lambda a: ('{:,.0f}'.format(a or 0)).replace(',', '.') + '\xa0₫'"/>
+
+    <!-- Thông tin chung -->
+    <table class="general_information">
+        <tr>
+            <!-- Cột trái -->
+            <td>
+                <p>
+                    <b>Số phiếu:</b>
+                    <t t-esc="o.name or ''"/>
+                </p>
+                <p>
+                    <b>Người đề nghị:</b>
+                    <t t-esc="o.user_id.name or ''"/>
+                </p>
+
+                <!-- Tiền bên trái -->
+                <p>
+                    <b>Tổng chi thực tế:</b>
+                    <t t-esc="fmt_vnd(o.total_amount)"/>
+                </p>
+                <p>
+                    <b>Số tiền tạm ứng:</b>
+                    <t t-esc="fmt_vnd(o.amount_advance)"/>
+                </p>
+            </td>
+
+            <!-- Cột phải -->
+            <td>
+                <p>
+                    <b>Ngày:</b>
+                    <t t-esc="(o.date_request and o.date_request.strftime('%d/%m/%Y')) or ''"/>
+                </p>
+                <p>
+                    <b>Phòng ban:</b>
+                    <t t-esc="o.department_id.name or ''"/>
+                </p>
+
+                <!-- Tiền bên phải -->
+                <p>
+                    <b>Số tiền hoàn ứng:</b>
+                    <t t-esc="fmt_vnd(o.amount_refund)"/>
+                </p>
+                <p>
+                    <b>Số tiền còn lại thanh toán:</b>
+                    <t t-esc="fmt_vnd(o.amount_remain)"/>
+                </p>
+            </td>
+        </tr>
+
+        <!-- Bằng chữ: trải rộng 2 cột -->
+        <tr>
+            <td colspan="2">
+                <p>
+                    <b>Bằng chữ:</b>
+                    <t t-esc="o.amount_in_words or ''"/>
+                </p>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Bảng chi tiết -->
+    <t t-set="fmt_vnd" t-value="lambda a: ('{:,.0f}'.format(a or 0)).replace(',', '.') + '\xa0₫'"/>
+    <table class="report-table">
+        <colgroup>
+            <col style="width:5%"/>
+            <!-- STT -->
+            <col style="width:20%"/>
+            <!-- Nội dung chi -->
+            <col style="width:10%"/>
+            <!-- Từ ngày -->
+            <col style="width:10%"/>
+            <!-- Đến ngày -->
+            <col style="width:8%"/>
+            <!-- ĐVT -->
+            <col style="width:8%"/>
+            <!-- Số lượng -->
+            <col style="width:12%"/>
+            <!-- Đơn giá -->
+            <col style="width:12%"/>
+            <!-- Thành tiền -->
+            <col style="width:13%"/>
+            <!-- Dự án -->
+            <col style="width:15%"/>
+            <!-- Ghi chú -->
+        </colgroup>
+        <thead style="background:#27B1FC !important">
+            <tr style="font-weight:bold;color:#000">
+                <th>STT</th>
+                <th>Nội dung chi</th>
+                <th>Từ ngày</th>
+                <th>Đến ngày</th>
+                <th>ĐVT</th>
+                <th>Số lượng</th>
+                <th>Đơn giá</th>
+                <th>Thành tiền</th>
+                <th>Dự án</th>
+                <th>Ghi chú</th>
+            </tr>
+        </thead>
+        <tbody>
+            <t t-foreach="enumerate(o.line_ids)" t-as="lw">
+                <t t-set="i" t-value="lw[0]"/>
+                <t t-set="line" t-value="lw[1]"/>
+                <tr>
+                    <td class="text-center">
+                        <t t-esc="i+1"/>
+                    </td>
+                    <td>
+                        <t t-esc="line.content or ''"/>
+                    </td>
+                    <td class="text-center nowrap">
+                        <t t-esc="(line.date_from and line.date_from.strftime('%d/%m/%Y')) or ''"/>
+                    </td>
+                    <td class="text-center nowrap">
+                        <t t-esc="(line.date_to and line.date_to.strftime('%d/%m/%Y')) or ''"/>
+                    </td>
+                    <td class="text-center">
+                        <t t-esc="line.uom_id and line.uom_id.name or ''"/>
+                    </td>
+                    <td class="text-center">
+                        <t t-esc="line.quantity or 0"/>
+                    </td>
+                    <td class="text-end nowrap num">
+                        <t t-esc="fmt_vnd(line.unit_price)"/>
+                    </td>
+                    <td class="text-end nowrap num">
+                        <t t-esc="fmt_vnd(line.amount)"/>
+                    </td>
+                    <td>
+                        <t t-esc="line.project_id.display_name or ''"/>
+                    </td>
+                    <td>
+                        <t t-esc="line.note or ''"/>
+                    </td>
+                </tr>
+            </t>
+            <!-- Tổng -->
+            <tr style="font-weight:bold;">
+                <!-- span đến trước cột 'Thành tiền' (cột thứ 8) -->
+                <td colspan="7" class="text-right">Tổng cộng</td>
+                <td class="text-end nowrap num">
+                    <t t-esc="fmt_vnd(o.total_amount)"/>
+                </td>
+                <td colspan="2"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Ghi chú -->
+    <div style="margin-top:15px;font-size:16px;">
+        <b>Ghi chú:</b>
+        <t t-esc="o.note or ''"/>
+    </div>
+
+    <!-- Chữ ký -->
+    <!-- Chữ ký: 4 cột cân bằng -->
+    <div class="signature" style="margin-top:50px; border:none; font-size:16px;">
+        <style>
+        /* ---- cùng phong cách như mẫu ---- */
+        .signature table { table-layout: fixed; b width: 100%; border: 0px solid transparent !important;}
+
+        .signature td.sig-cell{ width: 25%;  text-align: center; }
+
+        .signature .role{ display:block; font-weight:700; margin-top:6px; text-transform: uppercase; }
+        .signature .sign-hint{ font-style: italic; line-height: 1.4; margin-bottom: 6px; color:#333; }
+
+        .signature .sign-slot{
+            min-height: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .signature .confirm-stamp{
+            font-weight: bold;
+            text-transform: capitalize;
+            line-height: 1.4;
+            height: 40px;                      /* giữ chiều cao dấu xác nhận */
+            color: #2e7d32;                    /* xanh xác nhận */
+        }
+        .signature .sign-name{ font-style: italic; line-height: 1.4; margin-top: 6px; }
+        .signature .sig-date{ font-size: 14pt; font-weight: 600; color:#000; padding: 6px 0 2px; }
+        </style>
+
+        <table style="width:100%; text-align:center; border-color: white; border-style: none; outline: none; border-collapse: collapse;">
+            <!-- Hàng 1: Ngày xác nhận (trên cùng) -->
+            <tr style="border:none; padding-bottom:5px;">
+                <td class="sig-cell">
+                    <div class="sig-date">
+                        <t t-esc="(o.date_request and o.date_request.strftime('%d/%m/%Y')) or ''"/>
+                    </div>
+                </td>
+                <td class="sig-cell">
+                    <div class="sig-date">
+                        <t t-esc="(o.manager_approved_at and o.manager_approved_at.strftime('%d/%m/%Y')) or ''"/>
+                    </div>
+                </td>
+                <td class="sig-cell">
+                    <div class="sig-date">
+                        <t t-esc="(o.accountant_approved_at and o.accountant_approved_at.strftime('%d/%m/%Y')) or ''"/>
+                    </div>
+                </td>
+                <td class="sig-cell">
+                    <div class="sig-date">
+                        <t t-esc="(o.director_approved_at and o.director_approved_at.strftime('%d/%m/%Y')) or ''"/>
+                    </div>
+                </td>
+            </tr>
+
+            <!-- Hàng 2: Vai trò -->
+            <tr style="border:none">
+                <td class="sig-cell">
+                    <span class="role">NGƯỜI ĐỀ NGHỊ</span>
+                    <div class="sign-hint">(Ký, họ tên)</div>
+                </td>
+                <td class="sig-cell">
+                    <span class="role">TRƯỞNG BỘ PHẬN</span>
+                    <div class="sign-hint">(Ký, họ tên)</div>
+                </td>
+                <td class="sig-cell">
+                    <span class="role">KẾ TOÁN</span>
+                    <div class="sign-hint">(Ký, họ tên)</div>
+                </td>
+                <td class="sig-cell">
+                    <span class="role">GIÁM ĐỐC</span>
+                    <div class="sign-hint">(Ký, họ tên)</div>
+                </td>
+            </tr>
+
+            <!-- Hàng 3: Ô ký + Tên -->
+            <tr style="border:none">
+                <!-- Người đề nghị -->
+                <td class="sig-cell">
+                    <div class="sign-slot">
+                        <t t-if="o.date_request">
+                            <div class="confirm-stamp">
+                                <i>Đã xác nhận</i>
+                            </div>
+                        </t>
+                    </div>
+                </td>
+
+                <!-- Trưởng bộ phận -->
+                <td class="sig-cell">
+                    <div class="sign-slot">
+                        <t t-if="o.manager_approved_at">
+                            <div class="confirm-stamp">
+                                <i>Đã xác nhận</i>
+                            </div>
+                        </t>
+                    </div>
+                </td>
+
+                <!-- Kế toán -->
+                <td class="sig-cell">
+                    <div class="sign-slot">
+                        <t t-if="o.accountant_approved_at">
+                            <div class="confirm-stamp">
+                                <i>Đã xác nhận</i>
+                            </div>
+                        </t>
+                    </div>
+                </td>
+
+                <!-- Giám đốc -->
+                <td class="sig-cell">
+                    <div class="sign-slot">
+                        <t t-if="o.director_approved_at">
+                            <div class="confirm-stamp">
+                                <i>Đã xác nhận</i>
+                            </div>
+                        </t>
+                    </div>
+                </td>
+            </tr>
+
+            <!-- Hàng 2: chỉ tên (sign-name) -->
+            <tr style="border:none">
+                <td class="sig-cell">
+                    <div class="sign-name">
+                        <t t-esc="o.user_id.name or ''"/>
+                    </div>
+                </td>
+                <td class="sig-cell">
+                    <div class="sign-name">
+                        <t t-esc="o.manager_id.name if o.manager_id else ''"/>
+                    </div>
+                </td>
+                <td class="sig-cell">
+                    <div class="sign-name">
+                        <t t-esc="''"/>
+                    </div>
+                </td>
+                <td class="sig-cell">
+                    <div class="sign-name">
+                        <t t-esc="o.director_user_id.name if o.director_user_id else ''"/>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+
+    <!-- Ngắt trang khi in nhiều bản ghi -->
+    <t t-if="(doc_with_index[0] + 1) &lt; len(docs)">
+        <div style="page-break-before: always;"></div>
+    </t>
+</div>
+</t>
+</t>
+</template>
+</odoo>

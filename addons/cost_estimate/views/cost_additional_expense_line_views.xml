@@ -1,0 +1,19 @@
+<odoo>
+    <record id="view_cost_additional_expense_line_tree" model="ir.ui.view">
+        <field name="name">cost.additional.expense.line.tree</field>
+        <field name="model">cost.additional.expense.line</field>
+        <field name="arch" type="xml">
+            <tree string="Dòng chi phí bổ sung" editable="bottom">
+                <field name="expense_id"/>
+                <field name="cost_estimate_id"/>
+                <field name="quantity"/>
+                <field name="uom_id"/>
+                <field name="price_unit"/>
+                <field name="price_subtotal" sum="Thành tiền trước thuế"/>
+                <field name="price_tax" sum="Thuế VAT"/>
+                <field name="price_total" sum="Thành tiền sau thuế"/>
+                <field name="currency_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+</odoo>
