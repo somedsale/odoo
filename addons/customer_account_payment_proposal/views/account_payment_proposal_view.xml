@@ -82,8 +82,8 @@
                             <field name="date_from" width="90"/>
                             <field name="date_to" width="90"/>
                             <field name="content" string="Nội dung" width="250"/>
-                            <field name ="quantity" string="Số lượng"/>
                             <field name="uom_id" string="DVT" options="{'no_create':False}"/>
+                            <field name ="quantity" string="Số lượng"/>
                             <field name="unit_price" string="Đơn giá" options="{'currency_field': 'currency_id'}"/>
                             <field name="amount" string="Thành tiền" width="130" options="{'currency_field': 'currency_id'}" sum="1"/>
                             <field name="project_id" string="Dự án" width="200"/>
