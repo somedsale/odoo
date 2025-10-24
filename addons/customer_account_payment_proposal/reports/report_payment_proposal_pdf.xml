@@ -1,0 +1,13 @@
+<odoo>
+    <record id="action_report_account_payment_proposal_pdf" model="ir.actions.report">
+        <field name="name">In PDF</field>
+        <field name="model">account.payment.proposal</field>
+        <field name="report_type">qweb-pdf</field>
+        <!-- report_name = <module>.<template_id> -->
+        <field name="report_name">customer_account_payment_proposal.report_account_payment_proposal_template</field>
+        <field name="print_report_name">'GiaiChi_' + (object.name or '')</field>
+        <field name="binding_model_id" ref="model_account_payment_proposal"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="customer_account_payment_proposal.paperformat_account_payment_proposal"/>
+    </record>
+</odoo>
