@@ -10,7 +10,6 @@ services:
       - odoo-web-data:/var/lib/odoo
       - ./addons:/mnt/extra-addons
       - ./config:/etc/odoo
-      - ./s3cache:/var/lib/odoo/.local/share/Odoo/s3cache
 
     environment:
       - HOST=db

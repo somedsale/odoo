@@ -9,8 +9,11 @@ from pathlib import Path
 from urllib.parse import quote as urlquote
 import hashlib
 
-from odoo import models, _, api
+from odoo import models, api, fields, _
 from odoo.exceptions import UserError
+from odoo.http import request
+from werkzeug.utils import redirect  # ✅ dùng redirect đúng chuẩn Odoo 17
+from urllib.parse import quote_plus
 
 _logger = logging.getLogger(__name__)
 
@@ -18,7 +21,7 @@ try:
     import boto3
     from botocore.client import Config
     from botocore.exceptions import ClientError
-except Exception:  # pragma: no cover
+except Exception:
     boto3 = None
     ClientError = Exception
 
@@ -26,11 +29,14 @@ except Exception:  # pragma: no cover
 class IrAttachment(models.Model):
     _inherit = "ir.attachment"
 
+    s3_url = fields.Char("S3 URL", compute="_compute_s3_url", store=False)
+
     # ======================================================
-    # CONFIG / CLIENT
+    # CONFIG
     # ======================================================
     def _s3_enabled(self):
-        return self.env["ir.config_parameter"].sudo().get_param("somed_s3.enabled") == "1"
+        val = self.env["ir.config_parameter"].sudo().get_param("somed_s3.enabled")
+        return str(val or "").strip() == "1"
 
     def _s3_params(self):
         p = self.env["ir.config_parameter"].sudo()
@@ -46,7 +52,7 @@ class IrAttachment(models.Model):
 
     def _s3_client(self):
         if not boto3:
-            raise UserError(_("Thiếu thư viện boto3, hãy cài đặt boto3."))
+            raise UserError(_("Thiếu thư viện boto3."))
         prm = self._s3_params()
         if not (prm["bucket"] and prm["access_key"] and prm["secret_key"]):
             raise UserError(_("Chưa cấu hình đầy đủ thông tin S3."))
@@ -55,17 +61,16 @@ class IrAttachment(models.Model):
             aws_secret_access_key=prm["secret_key"],
             region_name=prm["region"],
         )
-        return session.client("s3", endpoint_url=prm["endpoint_url"], config=Config(s3={"addressing_style": "auto"}))
+        return session.client(
+            "s3", endpoint_url=prm["endpoint_url"], config=Config(s3={"addressing_style": "auto"})
+        )
 
     # ======================================================
-    # FILENAME
+    # HELPERS
     # ======================================================
-    def _safe_filename(self, filename: str) -> str:
+    def _safe_filename(self, filename):
         name = os.path.basename(filename or "file")
         name = name.replace("\\", "_").replace("/", "_")
-        name = "".join(ch if ch.isprintable() else "_" for ch in name)
-        if not name or name in (".", ".."):
-            name = "file"
         root, ext = os.path.splitext(name)
         if not ext:
             guessed = mimetypes.guess_extension(mimetypes.guess_type(name)[0] or "")
@@ -75,114 +80,88 @@ class IrAttachment(models.Model):
             root = root[:160]
         return (root or "file") + (ext or "")
 
-    def _pick_filename(self):
-        candidates = [
-            getattr(self, "name", None),
-            self.env.context.get("filename"),
-            self.env.context.get("default_name"),
-            self.env.context.get("datas_fname"),
-        ]
-        for c in candidates:
-            if c:
-                return c
-        return "file"
+    def _normalize_store_key(self, fname):
+        """Bỏ schema, filestore local path → key S3"""
+        key = str(fname or "").strip()
+        if key.startswith("s3://"):
+            key = key[5:]
+        try:
+            fsroot = self._filestore()
+            db = self.env.cr.dbname
+            for prefix in (fsroot, f"{fsroot}/{db}", f"filestore/{db}", db):
+                if key.startswith(prefix):
+                    key = key[len(prefix):].lstrip("/")
+        except Exception:
+            pass
+        return key.lstrip("/")
 
-    def _build_key_from_filename(self, filename: str) -> str:
+    def _is_s3_key(self, fname):
+        """Chỉ coi là S3 key nếu có prefix hợp lệ, tránh web assets."""
+        if not fname:
+            return False
+        fname_low = fname.lower()
+        # Loại trừ assets, JS, CSS, font, favicon, svg, xml, theme
+        skip_exts = ('.js', '.css', '.xml', '.svg', '.woff', '.ttf', '.less', '.scss')
+        if any(fname_low.endswith(ext) for ext in skip_exts):
+            return False
+        if 'web.assets' in fname_low or 'web/' in fname_low or 'theme_' in fname_low:
+            return False
+        prefix = (self._s3_params().get("prefix") or "odoo/attachments").strip("/")
+        key = self._normalize_store_key(fname)
+        return key.startswith(prefix)
+
+    def _build_key_from_filename(self, filename):
         prm = self._s3_params()
         today = datetime.utcnow().strftime("%Y/%m/%d")
         safe_name = self._safe_filename(filename)
         return f"{prm['prefix']}/{today}/{safe_name}".strip("/")
 
-    def _ensure_unique_key(self, client, bucket: str, key: str) -> str:
-        try:
-            client.head_object(Bucket=bucket, Key=key)
-            root, ext = os.path.splitext(key)
-            return f"{root}-{uuid.uuid4().hex[:8]}{ext}"
-        except ClientError as e:
-            code = getattr(e, "response", {}).get("Error", {}).get("Code")
-            if code in ("404", "NoSuchKey", "NotFound"):
-                return key
-            return key
-
-    # ======================================================
-    # KEY NORMALIZE (handle ABSOLUTE PATHS)
-    # ======================================================
-    def _normalize_store_key(self, fname: str) -> str:
-        """
-        Chuẩn hoá về key S3 tương đối, xử lý được:
-        - s3://...
-        - absolute path: /.../filestore[/<dbname>]/...
-        - 'filestore/<dbname>/...'
-        - còn dư '<dbname>/' ở đầu
-        """
-        key = str(fname or "").strip()
-        # strip schema
-        if key.startswith("s3://"):
-            key = key[5:]
-        # try cut absolute filestore root
-        filestore_root = ""
-        try:
-            filestore_root = self._filestore()  # e.g. /var/lib/odoo/.local/share/Odoo/filestore or .../filestore/<db>
-        except Exception:
-            pass
-        if filestore_root:
-            fs_root = filestore_root.rstrip("/")
-            # TH1: has /filestore/<db> in absolute
-            dbname = self.env.cr.dbname
-            fs_root_with_db = f"{fs_root}/{dbname}"
-            for candidate in (fs_root_with_db, fs_root):
-                c = candidate.lstrip("/")
-                if key.startswith(c + "/"):
-                    key = key[len(c) + 1 :]
-                    break
-        # strip leading slash
-        key = key.lstrip("/")
-        # remove 'filestore/<db>/' if still present
-        fs_prefix = f"filestore/{self.env.cr.dbname}/"
-        if key.startswith(fs_prefix):
-            key = key[len(fs_prefix):]
-        # remove '<db>/' if still present
-        db_prefix = f"{self.env.cr.dbname}/"
-        if key.startswith(db_prefix):
-            key = key[len(db_prefix):]
-        # final trim
-        return key.lstrip("/")
-
-    def _is_s3_key(self, fname) -> bool:
-        if not fname:
-            return False
-        prm = self._s3_params()
-        s3_prefix = (prm.get("prefix") or "odoo/attachments").strip("/")
-        key = self._normalize_store_key(fname)
-        return key.startswith(s3_prefix) or key == s3_prefix
-
-    # ======================================================
-    # DECODE
-    # ======================================================
-    def _decode_bin_data(self, bin_data):
-        if bin_data is None:
+    def _decode_bin_data(self, data):
+        if data is None:
             return b""
-        if isinstance(bin_data, str) and bin_data.startswith("data:"):
+        if isinstance(data, str):
             try:
-                b64 = bin_data.split(",", 1)[1]
-                return base64.b64decode(b64, validate=True)
+                return base64.b64decode(data.split(",")[-1])
             except Exception:
-                return base64.b64decode(b64)
-        if isinstance(bin_data, str):
-            try:
-                return base64.b64decode(bin_data, validate=True)
-            except Exception:
-                return bin_data.encode("utf-8", errors="ignore")
-        if isinstance(bin_data, (bytes, bytearray, memoryview)):
-            bts = bytes(bin_data)
-            try:
-                return base64.b64decode(bts, validate=True)
-            except Exception:
-                return bts
-        return bytes(bin_data)
+                return data.encode("utf-8", errors="ignore")
+        if isinstance(data, (bytes, bytearray, memoryview)):
+            return bytes(data)
+        return bytes(data)
 
     # ======================================================
-    # ORM HOOKS
+    # PRESIGNED URL
+    # ======================================================
+    def _get_s3_url(self, key: str, expires_in=3600):
+        """Trả về presigned URL hợp lệ cho S3."""
+        prm = self._s3_params()
+        client = self._s3_client()
+        try:
+            url = client.generate_presigned_url(
+                "get_object",
+                Params={
+                    "Bucket": prm["bucket"],
+                    "Key": key,
+                    "ResponseContentDisposition": f"inline; filename*=UTF-8''{quote_plus(self.name)}",
+                    "ResponseContentType": self.mimetype or "application/octet-stream",
+                },
+                ExpiresIn=expires_in,
+            )
+            return url
+        except Exception as e:
+            _logger.error("❌ _get_s3_url failed for %s: %s", key, e)
+            return None
+
+    @api.depends("store_fname")
+    def _compute_s3_url(self):
+        for rec in self:
+            if rec._is_s3_key(rec.store_fname):
+                key = rec._normalize_store_key(rec.store_fname)
+                rec.s3_url = rec._get_s3_url(key)
+            else:
+                rec.s3_url = False
+
+    # ======================================================
+    # ORM CREATE/WRITE
     # ======================================================
     @api.model
     def create(self, vals):
@@ -200,165 +179,102 @@ class IrAttachment(models.Model):
             return super().write(vals)
         ctx = dict(self._context or {})
         if not ctx.get("filename"):
-            if vals.get("name"):
-                fname = vals["name"]
-            elif len(self) == 1:
-                fname = self.name or "file"
-            else:
-                fname = "file"
+            fname = vals.get("name") or (self.name if len(self) == 1 else "file")
             if "." not in (fname or ""):
                 mt = vals.get("mimetype") or (self.mimetype if len(self) == 1 else "")
                 ext = mimetypes.guess_extension(mt) or ""
                 fname = f"{fname}{ext}" if ext else fname
             ctx["filename"] = fname
-            if not vals.get("name"):
-                vals["name"] = fname
+            vals.setdefault("name", fname)
         return super(IrAttachment, self.with_context(ctx)).write(vals)
 
     # ======================================================
-    # WRITE (UPLOAD)
+    # FILE WRITE → S3
     # ======================================================
     def _file_write(self, bin_data, checksum):
+        """Upload file lên S3, tránh ghi đè khi trùng tên."""
+        fname = self.env.context.get("filename") or self._safe_filename(self.name)
+        fname_low = fname.lower()
+        skip_exts = ('.js', '.css', '.xml', '.svg', '.woff', '.ttf', '.less', '.scss')
+        if any(fname_low.endswith(ext) for ext in skip_exts) or 'web.assets' in fname_low:
+            return super()._file_write(bin_data, checksum)
+
         if not self._s3_enabled():
             return super()._file_write(bin_data, checksum)
+
         raw = self._decode_bin_data(bin_data)
-        if not isinstance(raw, (bytes, bytearray)):
-            raise UserError(_("Dữ liệu file không hợp lệ."))
-
         prm = self._s3_params()
-        filename = self._pick_filename()
-        key = self._build_key_from_filename(filename)
+        base_key = self._build_key_from_filename(fname)
 
-        _logger.warning("📤 Uploading to S3 bucket=%s key=%s (original=%s size=%s)", prm["bucket"], key, filename, len(raw))
         try:
             client = self._s3_client()
-            key = self._ensure_unique_key(client, prm["bucket"], key)
-            ctype = mimetypes.guess_type(filename)[0] or "application/octet-stream"
-            disp = f'inline; filename="{self._safe_filename(filename)}"; filename*=UTF-8\'\'{urlquote(filename)}'
-            md5_b64 = base64.b64encode(hashlib.md5(raw).digest()).decode("ascii")
+
+            # === kiểm tra tồn tại, nếu có → thêm hậu tố ngẫu nhiên ===
+            unique_key = base_key
+            try:
+                client.head_object(Bucket=prm["bucket"], Key=base_key)
+                root, ext = os.path.splitext(base_key)
+                unique_key = f"{root}-{uuid.uuid4().hex[:8]}{ext}"
+                _logger.info("⚠️ S3 key existed, renamed to %s", unique_key)
+            except ClientError as e:
+                # Nếu file chưa tồn tại → ok
+                code = e.response.get("Error", {}).get("Code")
+                if code not in ("404", "NoSuchKey", "NotFound"):
+                    raise
+
+            ctype = mimetypes.guess_type(fname)[0] or "application/octet-stream"
+            disp = f'inline; filename="{self._safe_filename(fname)}"; filename*=UTF-8\'\'{urlquote(fname)}'
+
             client.put_object(
                 Bucket=prm["bucket"],
-                Key=key,
+                Key=unique_key,
                 Body=raw,
                 ACL=prm["acl"],
                 ContentType=ctype,
                 ContentDisposition=disp,
-                ContentMD5=md5_b64,
             )
-            _logger.warning("✅ Uploaded to S3: %s (md5=%s)", key, md5_b64)
-            return key
-        except ClientError as e:
-            msg = getattr(e, "response", {}).get("Error", {}).get("Message", str(e))
-            _logger.error("❌ S3 ClientError (write): %s", msg)
-            raise UserError(_("Lỗi S3: %s") % msg)
-        except Exception as e:
-            _logger.error("❌ Exception (write): %s", e)
-            raise UserError(_("Lỗi khác khi upload S3: %s") % str(e))
 
+            _logger.info("📤 Uploaded to S3: %s", unique_key)
+            return unique_key
+
+        except Exception as e:
+            _logger.error("❌ Upload S3 failed: %s", e)
+            raise UserError(_("Lỗi upload S3: %s") % e)
     # ======================================================
-    # READ (DOWNLOAD) – base64 cho Odoo
+    # READ (LOG)
     # ======================================================
     def _file_read(self, fname):
-        # đọc từ S3 nếu là S3 key (không phụ thuộc enabled)
         if not self._is_s3_key(fname):
             return super()._file_read(fname)
-        prm = self._s3_params()
         key = self._normalize_store_key(fname)
-        _logger.warning("📥 Reading from S3 bucket=%s key=%s", prm["bucket"], key)
-        try:
-            s3 = self._s3_client()
-            obj = s3.get_object(Bucket=prm["bucket"], Key=key)
-            return base64.b64encode(obj["Body"].read())
-        except ClientError as e:
-            msg = getattr(e, "response", {}).get("Error", {}).get("Message", str(e))
-            _logger.error("❌ S3 ClientError (read): %s", msg)
-            try:
-                return super()._file_read(fname)
-            except Exception:
-                raise UserError(_("Lỗi khi đọc file từ S3: %s") % msg)
-        except Exception as e:
-            _logger.error("❌ Exception (read): %s", e)
-            try:
-                return super()._file_read(fname)
-            except Exception:
-                raise UserError(_("Lỗi khác khi đọc S3: %s") % str(e))
+        _logger.info("🌐 [S3 READ redirect candidate] key=%s", key)
+        return base64.b64encode(b"")
 
     # ======================================================
-    # SIZE
+    # FULL PATH → REDIRECT
     # ======================================================
-    def _read_file_get_size(self, fname):
-        if not self._is_s3_key(fname):
-            return super()._read_file_get_size(fname)
-        try:
-            head = self._s3_client().head_object(
-                Bucket=self._s3_params()["bucket"],
-                Key=self._normalize_store_key(fname),
-            )
-            return int(head.get("ContentLength", 0))
-        except Exception as e:
-            _logger.warning("⚠️ head_object failed for %s: %s", fname, e)
-            return 0
+    def _full_path(self, store_fname):
+        """Chỉ redirect nếu là file S3 (tránh lỗi assets local)."""
+        if not self._is_s3_key(store_fname):
+            return super()._full_path(store_fname)
+        key = self._normalize_store_key(store_fname)
+        url = self._get_s3_url(key)
+        if url:
+            _logger.info("➡️ [S3 REDIRECT] %s", url)
+            return f"s3redirect::{url}"
+        return super()._full_path(store_fname)
 
     # ======================================================
-    # DELETE (S3 + dọn cache)
+    # DELETE
     # ======================================================
     def _file_delete(self, fname):
         if not self._is_s3_key(fname):
             return super()._file_delete(fname)
-
         prm = self._s3_params()
         key = self._normalize_store_key(fname)
-        _logger.warning("🗑️ Deleting S3 object bucket=%s key=%s", prm["bucket"], key)
-
         try:
             self._s3_client().delete_object(Bucket=prm["bucket"], Key=key)
+            _logger.info("🗑️ Deleted S3 object %s", key)
         except Exception as e:
-            _logger.warning("⚠️ Cannot delete S3 object %s: %s", key, e)
-
-        cache_path = self._s3_cache_root() / key
-        try:
-            if cache_path.exists():
-                cache_path.unlink()
-        except Exception as e:
-            _logger.warning("⚠️ Cannot remove cache file %s: %s", cache_path, e)
-
+            _logger.warning("⚠️ Delete failed: %s", e)
         return True
-
-    # ======================================================
-    # FULL PATH (CACHE LOCAL CHO /web/image)
-    # ======================================================
-    def _s3_cache_root(self) -> Path:
-        return Path(os.getenv("ODOO_S3_CACHE_DIR", "/var/lib/odoo/.local/share/Odoo/s3cache"))
-
-    def _download_s3_to_cache(self, key: str) -> str:
-        prm = self._s3_params()
-        client = self._s3_client()
-        cache_root = self._s3_cache_root()
-        local_path = cache_root / key  # GIỮ NGUYÊN cấu trúc thư mục theo key
-        local_path.parent.mkdir(parents=True, exist_ok=True)
-
-        if not local_path.exists() or local_path.stat().st_size == 0:
-            _logger.warning("⬇️  Download S3 to cache: s3://%s/%s -> %s", prm["bucket"], key, local_path)
-            client.download_file(prm["bucket"], key, str(local_path))
-        return str(local_path)
-
-    def _full_path(self, store_fname):
-        # Log chẩn đoán (có thể giữ lại vài ngày đầu để chắc chắn)
-        # key_dbg = self._normalize_store_key(store_fname)
-        # _logger.warning("🔎 _full_path input=%s | normalized=%s | is_s3=%s",
-        #                 store_fname, key_dbg, self._is_s3_key(store_fname))
-
-        if not self._is_s3_key(store_fname):
-            return super()._full_path(store_fname)
-
-        key = self._normalize_store_key(store_fname)
-        try:
-            return self._download_s3_to_cache(key)
-        except ClientError as e:
-            err = getattr(e, "response", {}).get("Error", {}) or {}
-            msg = err.get("Message", str(e))
-            _logger.error("❌ S3 download failed (full_path): %s | key=%s", msg, key)
-            return super()._full_path(store_fname)
-        except Exception as e:
-            _logger.error("❌ Exception (cache full_path): %s", e)
-            return super()._full_path(store_fname)
