@@ -36,6 +36,11 @@ class AccountPaymentProposal(models.Model):
         default=lambda self: self._default_director_user(),
         readonly=True,
     )
+    project_id = fields.Many2one(
+        "project.project",
+        string="Dự án liên quan",
+        help="Chọn dự án hoặc công trình liên quan đến khoản chi này"
+    )
 
     # ========== TIỀN TỆ ==========
     currency_id = fields.Many2one(
