@@ -444,7 +444,32 @@ class ProjectProject(models.Model):
 
     def write(self, vals):
         res = super().write(vals)
-        if 'contract_id' in vals and not vals.get('sale_order_id'):
-            for pr in self.filtered(lambda r: not r.sale_order_id and r.contract_id and r.contract_id.sale_order_id):
-                pr.sale_order_id = pr.contract_id.sale_order_id.id
+
+        # 🔹 Khi Project chuyển sang stage "Hoàn tất" hoặc "Đã hoàn thành"
+        if 'stage_id' in vals:
+            done_stage = self.env['project.project.stage'].search(
+                [('name', 'in', ['Hoàn tất', 'Đã hoàn thành'])], limit=1
+            )
+            if done_stage:
+                for pr in self.filtered(lambda p: p.stage_id.id == done_stage.id and p.contract_id):
+                    contract = pr.contract_id.sudo()
+                    if contract.stage not in ('completed', 'canceled'):
+                        contract.write({
+                            'stage': 'completed',
+                            'date_completion': fields.Datetime.now(),
+                        })
+
+                        # 💬 Thông báo đẹp bằng Markup, có link đến contract
+                        msg = Markup(
+                            "📦 Dự án <b>%s</b> đã <b>Hoàn tất</b>.<br/>"
+                        ) % (
+                            escape(pr.name),
+                            contract.id,
+                            escape(contract.display_name),
+                        )
+
+                        contract.message_post(body=msg)
+                        _logger.info("✅ Auto-completed Contract %s (from Project %s)", contract.name, pr.name)
+            else:
+                _logger.warning("⚠️ Không tìm thấy stage 'Hoàn tất' hoặc 'Đã hoàn thành' trong ProjectProjectStage.")
         return res

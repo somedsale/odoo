@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- KANBAN VIEW -->
+    <record id="view_smd_document_file_kanban" model="ir.ui.view">
+        <field name="name">smd.document.file.kanban</field>
+        <field name="model">smd.document.file</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_view o_attachment_kanban" create="1" edit="1">
+                <field name="name"/>
+                <field name="file_name"/>
+                <field name="file_data"/>
+                <field name="mimetype"/>
+                <field name="attachment_id"/>
+                <field name="workspace_id"/>
+                <field name="owner_id"/>
+                <field name="access_type"/>
+                <field name="create_date"/>
+
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_area o_kanban_attachment o_kanban_record" t-att-data-id="record.id.value">
+                            <div class="o_attachment_image o_kanban_image h-100 d-flex align-items-center justify-content-center">
+                                <t t-set="mtype" t-value="record.mimetype.raw_value or ''"/>
+                                <t t-set="fname" t-value="'' + (record.file_name.raw_value or '')"/>
+
+                                <!-- IMAGE -->
+                                <t t-if="mtype.indexOf('image') != -1 or fname.indexOf('.jpg') != -1 or fname.indexOf('.jpeg') != -1 or fname.indexOf('.png') != -1 or fname.indexOf('.gif') != -1 or fname.indexOf('.bmp') != -1">
+                                    <img t-attf-src="/web/content/#{record.attachment_id.raw_value}?unique=1"
+                                         width="100" height="100"
+                                         class="o_attachment_image rounded shadow-sm border" loading="lazy"/>
+                                </t>
+
+                                <!-- PDF -->
+                                <t t-elif="mtype.indexOf('pdf') != -1 or fname.indexOf('.pdf') != -1">
+                                    <i class="fa fa-file-pdf-o fa-4x text-danger"></i>
+                                </t>
+
+                                <!-- WORD -->
+                                <t t-elif="mtype.indexOf('word') != -1 or fname.indexOf('.doc') != -1 or fname.indexOf('.docx') != -1">
+                                    <i class="fa fa-file-word-o fa-4x text-primary"></i>
+                                </t>
+
+                                <!-- EXCEL -->
+                                <t t-elif="mtype.indexOf('sheet') != -1 or fname.indexOf('.xls') != -1 or fname.indexOf('.xlsx') != -1">
+                                    <i class="fa fa-file-excel-o fa-4x text-success"></i>
+                                </t>
+
+                                <!-- DEFAULT -->
+                                <t t-else="">
+                                    <i class="fa fa-file-o fa-4x text-muted"></i>
+                                </t>
+                            </div>
+
+                            <div class="oe_kanban_details">
+                                <div class="o_kanban_details_wrapper">
+                                    <div class="o_kanban_record_title fw-bold text-truncate" t-att-title="record.name.raw_value">
+                                        <field name="name"/>
+                                    </div>
+                                    <div class="small text-muted text-truncate">
+                                        <t t-esc="record.file_name.value or ''"/>
+                                    </div>
+                                    <div class="o_kanban_record_bottom mt-1 d-flex justify-content-between align-items-center">
+                                        <time class="text-muted small"><field name="create_date" widget="date"/></time>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <field name="owner_id" widget="many2one_avatar_user"/>
+                                            <button name="open_file" type="object" class="btn btn-sm btn-light border" title="Mở / tải xuống">
+                                                <i class="fa fa-external-link"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- TREE VIEW -->
+    <record id="view_smd_document_file_tree" model="ir.ui.view">
+        <field name="name">smd.document.file.tree</field>
+        <field name="model">smd.document.file</field>
+        <field name="arch" type="xml">
+            <tree string="Documents">
+                <field name="name"/>
+                <field name="file_name"/>
+                <field name="mimetype"/>
+                <field name="workspace_id"/>
+                <field name="owner_id"/>
+                <field name="access_type"/>
+                <field name="create_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- FORM VIEW -->
+    <record id="view_smd_document_file_form" model="ir.ui.view">
+        <field name="name">smd.document.file.form</field>
+        <field name="model">smd.document.file</field>
+        <field name="arch" type="xml">
+            <form string="Document File">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="file_data" filename="file_name"/>
+                        <field name="file_name"/>
+                        <field name="mimetype" readonly="1"/>
+                        <field name="workspace_id"/>
+                        <field name="owner_id"/>
+                        <field name="access_type"/>
+                    </group>
+                    <group>
+                        <field name="note"/>
+                    </group>
+                    <group string="Preview">
+                        <field name="preview_html" widget="html" readonly="1"/>
+                    </group>
+                    <footer>
+                        <button name="open_file" type="object" class="btn btn-primary">
+                            <i class="fa fa-external-link"/> Mở / Tải file
+                        </button>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- ========================== SEARCH VIEW ========================== -->
+    <record id="view_smd_document_file_search" model="ir.ui.view">
+        <field name="name">smd.document.file.search</field>
+        <field name="model">smd.document.file</field>
+        <field name="arch" type="xml">
+            <search string="Documents">
+                <field name="name"/>
+                <field name="mimetype"/>
+                <field name="owner_id"/>
+                <field name="workspace_id"/>
+                <field name="file_name"/>
+                <field name="create_date"/>
+                <field name="attachment_id"/>
+                <field name="note"/>
+
+                <!-- Filters -->
+                <filter name="ftr_my_document" string="My Documents" domain="[('owner_id','=',uid)]"/>
+                <separator/>
+                <filter name="ftr_pdf" string="PDF" domain="[('mimetype','ilike','pdf')]"/>
+                <filter name="ftr_img" string="Image" domain="[('mimetype','ilike','image')]"/>
+                <filter name="ftr_video" string="Video" domain="[('mimetype','ilike','video')]"/>
+                <filter name="ftr_word" string="Word" domain="[('mimetype','ilike','word')]"/>
+                <filter name="ftr_excel" string="Excel" domain="[('mimetype','ilike','sheet')]"/>
+                <filter name="ftr_zip" string="Archive" domain="[('mimetype','ilike','zip')]"/>
+                <separator/>
+                <filter name="ftr_public" string="Public" domain="[('access_type','=','public')]"/>
+                <filter name="ftr_private" string="Private" domain="[('access_type','=','private')]"/>
+                <filter name="ftr_team" string="Team" domain="[('access_type','=','team')]"/>
+
+                <!-- Group By -->
+                <group expand="1" string="Group By">
+                    <filter string="Owner" name="grp_owner_id" domain="[]" context="{'group_by':'owner_id'}"/>
+                    <filter string="Workspace" name="grp_workspace_id" domain="[]" context="{'group_by':'workspace_id'}"/>
+                    <filter string="Access Type" name="grp_access_type" domain="[]" context="{'group_by':'access_type'}"/>
+                    <filter string="Mime Type" name="grp_mimetype" domain="[]" context="{'group_by':'mimetype'}"/>
+                    <filter string="Created Date" name="grp_create_date" domain="[]" context="{'group_by':'create_date'}"/>
+                </group>
+
+                <!-- Search Panel -->
+                <searchpanel>
+                    <field name="workspace_id" expand="1" limit="0"/>
+                    <field name="owner_id" select="multi" icon="fa-user" enable_counters="1"/>
+                    <field name="access_type" select="multi" icon="fa-lock" enable_counters="1"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+<record id="action_smd_document_file" model="ir.actions.act_window">
+    <field name="name">Documents</field>
+    <field name="res_model">smd.document.file</field>
+    <field name="view_mode">kanban,tree,form</field>
+    <field name="search_view_id" ref="view_smd_document_file_search"/>
+</record>
+
+</odoo>

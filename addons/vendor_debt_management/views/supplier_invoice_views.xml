@@ -1,16 +1,20 @@
 <odoo>
+    <!-- TREE VIEW -->
     <record id="view_supplier_invoice_tree" model="ir.ui.view">
         <field name="name">supplier.invoice.tree</field>
         <field name="model">supplier.invoice</field>
         <field name="arch" type="xml">
             <tree>
                 <field name="name"/>
+                <field name="invoice_number"/>
                 <field name="partner_id"/>
                 <field name="project_id"/>
                 <field name="contract_id"/>
-                <field name="settlement_id"/>
+                <field name="settlement_id" optional="hide"/>
                 <field name="date"/>
                 <field name="due_date"/>
+                <field name="account_tax_id"/>
+                <field name="amount_untaxed"/>
                 <field name="amount"/>
                 <field name="note"/>
                 <field name="currency_id" optional="hide"/>
@@ -18,6 +22,7 @@
         </field>
     </record>
 
+    <!-- FORM VIEW -->
     <record id="view_supplier_invoice_form" model="ir.ui.view">
         <field name="name">supplier.invoice.form</field>
         <field name="model">supplier.invoice</field>
@@ -27,11 +32,15 @@
                     <group>
                         <group>
                             <field name="name"/>
+                            <field name="invoice_number"/>
                             <field name="purchase_id"/>
                             <field name="partner_id"/>
                             <field name="contract_id" required="0"/>
                             <field name="settlement_id"/>
-                            <field name ="project_id"/>
+                            <field name="project_id"/>
+                            <field name="amount_untaxed"/>
+                            <field name="account_tax_id" widget="many2one"/>
+                            <field name="amount_tax"/>
                             <field name="amount"/>
                         </group>
                         <group>
@@ -41,6 +50,7 @@
                             <field name="currency_id" invisible="1"/>
                         </group>
                     </group>
+
                     <notebook>
                         <page string="Thông tin phiếu chi">
                             <field name="account_payment_request_ids">
@@ -49,9 +59,13 @@
                                     <field name="create_date" string="Ngày tạo"/>
                                     <field name="date_payment" string="Ngày chi"/>
                                     <field name="total"/>
-                                    <field name ="currency_id" optional="hide"/>
-                                    <field name="payment_type" widget="badge" string="Hình thức thanh toán" decoration-primary="payment_type == 'cash'" decoration-success="payment_type == 'bank'"/>
-                                    <field name="state" widget="badge" string="Trạng thái" decoration-primary="state == 'confirmed'" decoration-success="state == 'done'"/>
+                                    <field name="currency_id" optional="hide"/>
+                                    <field name="payment_type" widget="badge" string="Hình thức thanh toán"
+                                        decoration-primary="payment_type == 'cash'"
+                                        decoration-success="payment_type == 'bank'"/>
+                                    <field name="state" widget="badge" string="Trạng thái"
+                                        decoration-primary="state == 'confirmed'"
+                                        decoration-success="state == 'done'"/>
                                 </tree>
                             </field>
                         </page>
@@ -61,10 +75,48 @@
         </field>
     </record>
 
+    <!-- ✅ SEARCH VIEW with SEARCH PANEL -->
+    <record id="view_supplier_invoice_search" model="ir.ui.view">
+        <field name="name">supplier.invoice.search</field>
+        <field name="model">supplier.invoice</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" string="Mã giao dịch"/>
+                <field name="invoice_number" string="Số hóa đơn"/>
+                <field name="partner_id" string="Nhà cung cấp"/>
+                <field name="project_id" string="Dự án"/>
+                <field name="contract_id" string="Hợp đồng"/>
+                <filter name="filter_due_today" string="Đến hạn hôm nay"
+                        domain="[('due_date', '=', context_today())]"/>
+                <filter name="filter_overdue" string="Quá hạn"
+                        domain="[('due_date', '&lt;', context_today())]"/>
+
+                <!-- ✅ Search Panel -->
+                <searchpanel>
+                    <field name="partner_id" string="Nhà cung cấp"/>
+                    <field name="project_id" string="Dự án"/>
+                    <field name="contract_id" string="Hợp đồng"/>
+                    <field name="settlement_id" string="Thanh toán"/>
+                    <field name="account_tax_id" string="Thuế"/>
+                    <field name="currency_id" string="Tiền tệ"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+
+    <!-- ACTION -->
     <record id="action_supplier_invoice" model="ir.actions.act_window">
         <field name="name">Hóa đơn</field>
         <field name="res_model">supplier.invoice</field>
         <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_supplier_invoice_tree"/>
+        <field name="search_view_id" ref="view_supplier_invoice_search"/>
     </record>
-    <menuitem id="menu_supplier_invoice" name="Hóa đơn" parent="menu_supplier_contract_root" action="action_supplier_invoice" sequence="20"/>
+
+    <!-- MENU -->
+    <menuitem id="menu_supplier_invoice"
+              name="Hóa đơn"
+              parent="menu_supplier_contract_root"
+              action="action_supplier_invoice"
+              sequence="20"/>
 </odoo>

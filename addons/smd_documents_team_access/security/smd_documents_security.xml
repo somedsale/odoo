@@ -1,0 +1,11 @@
+<odoo>
+    <record id="group_smd_documents_user" model="res.groups">
+        <field name="name">Documents User</field>
+        <field name="category_id" ref="base.module_category_hidden"/>
+    </record>
+
+    <record id="group_smd_documents_manager" model="res.groups">
+        <field name="name">Documents Manager</field>
+        <field name="implied_ids" eval="[(4, ref('group_smd_documents_user'))]"/>
+    </record>
+</odoo>

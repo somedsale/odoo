@@ -13,6 +13,8 @@
                 <field name="contract_id"/>
                 <field name="project_id"/>
                 <field name="partner_id"/>
+                <field name="account_tax_id"/>
+                <field name="amount_untaxed"/>
                 <field name="amount_total" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="currency_id" string="Tiền tệ" optional="hide"/>
             </tree>
@@ -33,6 +35,9 @@
                         <field name="contract_id"/>
                         <field name="project_id"/>
                         <field name="partner_id" require="1"/>
+                        <field name="account_tax_id"/>
+                        <field name="amount_untaxed"/>
+                        <field name="amount_tax"/>
                         <field name="amount_total"/>
                     </group>
                 </sheet>

@@ -1,0 +1,70 @@
+<odoo>
+    <!-- ========== WORKSPACE KANBAN ========== -->
+    <record id="view_smd_document_workspace_kanban" model="ir.ui.view">
+        <field name="name">smd.document.workspace.kanban</field>
+        <field name="model">smd.document.workspace</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="parent_id" class="o_kanban_mobile">
+                <field name="name"/>
+                <field name="parent_id"/>
+                <field name="team_ids"/>
+                <field name="document_ids"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card o_kanban_record">
+                            <div class="o_kanban_primary_left">
+                                <strong><field name="name"/></strong>
+                                <div><span class="text-muted">Parent:</span> <field name="parent_id"/></div>
+                                <div><span class="text-muted">Teams:</span> <field name="team_ids" widget="many2many_tags"/></div>
+                                <div><span class="text-muted">Documents:</span> 
+                                    <t t-esc="record.document_ids.raw_value.length or 0"/> files
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_smd_document_workspace_tree" model="ir.ui.view">
+        <field name="name">smd.document.workspace.tree</field>
+        <field name="model">smd.document.workspace</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="parent_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_smd_document_workspace_form" model="ir.ui.view">
+        <field name="name">smd.document.workspace.form</field>
+        <field name="model">smd.document.workspace</field>
+        <field name="arch" type="xml">
+            <form string="Workspace">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="parent_id"/>
+                        <field name="team_ids" widget="many2many_tags"/>
+                    </group>
+                    <notebook>
+                        <page string="Documents">
+                            <field name="document_ids"/>
+                        </page>
+                        <page string="Description">
+                            <field name="description"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_smd_document_workspace" model="ir.actions.act_window">
+        <field name="name">Workspaces</field>
+        <field name="res_model">smd.document.workspace</field>
+        <field name="view_mode">kanban,tree,form</field>
+    </record>
+</odoo>

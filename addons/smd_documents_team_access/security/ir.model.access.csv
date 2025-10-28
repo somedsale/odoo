@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_workspace_user,access_workspace_user,model_smd_document_workspace,base.group_user,1,1,1,1
+access_team_user,access_team_user,model_smd_document_team,base.group_user,1,1,1,1
+access_document_file_user,access_document_file_user,model_smd_document_file,base.group_user,1,1,1,1
