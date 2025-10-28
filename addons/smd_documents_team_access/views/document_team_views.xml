@@ -1,0 +1,65 @@
+<odoo>
+    <!-- ========== TEAM KANBAN ========== -->
+    <record id="view_smd_document_team_kanban" model="ir.ui.view">
+        <field name="name">smd.document.team.kanban</field>
+        <field name="model">smd.document.team</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="leader_id" class="o_kanban_mobile">
+                <field name="name"/>
+                <field name="leader_id"/>
+                <field name="member_ids"/>
+                <field name="workspace_ids"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card o_kanban_record">
+                            <div class="o_kanban_primary_left">
+                                <strong><field name="name"/></strong>
+                                <div><span class="text-muted">Leader:</span> <field name="leader_id"/></div>
+                                <div><span class="text-muted">Members:</span> <field name="member_ids" widget="many2many_tags"/></div>
+                                <div><span class="text-muted">Workspaces:</span> 
+                                    <t t-esc="record.workspace_ids.raw_value.length or 0"/> items
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_smd_document_team_tree" model="ir.ui.view">
+        <field name="name">smd.document.team.tree</field>
+        <field name="model">smd.document.team</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="leader_id"/>
+                <field name="member_ids"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_smd_document_team_form" model="ir.ui.view">
+        <field name="name">smd.document.team.form</field>
+        <field name="model">smd.document.team</field>
+        <field name="arch" type="xml">
+            <form string="Document Team">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="leader_id"/>
+                        <field name="member_ids" widget="many2many_tags"/>
+                        <field name="workspace_ids" widget="many2many_tags"/>
+                    </group>
+                    <field name="description" placeholder="Description..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_smd_document_team" model="ir.actions.act_window">
+        <field name="name">Teams</field>
+        <field name="res_model">smd.document.team</field>
+        <field name="view_mode">kanban,tree,form</field>
+    </record>
+</odoo>

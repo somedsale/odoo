@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
 
@@ -6,13 +7,51 @@ class SupplierInvoice(models.Model):
     _name = "supplier.invoice"
     _description = "Supplier Invoice"
 
-    name = fields.Char("Số hóa đơn", required=True)
+    # Mã hóa đơn (sequence)
+    name = fields.Char(
+        string="Mã hóa đơn",
+        required=True,
+        readonly=True,
+        copy=False,
+        default="New",
+    )
+
+    # Số hóa đơn thực tế
+    invoice_number = fields.Char(
+        string="Số hóa đơn",
+        help="Số hóa đơn thật trên chứng từ nhà cung cấp."
+    )
+
     contract_id = fields.Many2one("supplier.contract", string="Hợp đồng")
     settlement_id = fields.Many2one("supplier.settlement", string="Hồ sơ quyết toán")
     date = fields.Date("Ngày hóa đơn", required=True)
-    amount = fields.Monetary("Số tiền", required=True, currency_field="currency_id")
+
+    amount = fields.Monetary("Tổng tiền (sau thuế)", required=True, currency_field="currency_id")
+    amount_untaxed = fields.Monetary(
+        "Giá trị trước thuế",
+        currency_field="currency_id",
+        compute="_compute_amounts",
+        inverse="_inverse_amounts",
+        store=True,
+    )
+    amount_tax = fields.Monetary(
+        "Tiền thuế",
+        currency_field="currency_id",
+        compute="_compute_amounts",
+        inverse="_inverse_amounts",
+        store=True,
+    )
+
+    account_tax_id = fields.Many2one(
+        "account.tax",
+        string="Thuế suất áp dụng",
+        domain=[('type_tax_use', '=', 'purchase')],
+        help="Thuế suất được áp dụng cho hóa đơn này.",
+    )
+
     currency_id = fields.Many2one(
-        "res.currency", default=lambda self: self.env.company.currency_id
+        "res.currency",
+        default=lambda self: self.env.company.currency_id,
     )
 
     partner_id = fields.Many2one(
@@ -31,9 +70,19 @@ class SupplierInvoice(models.Model):
         "account.payment.request", "invoice_id", string="Phiếu chi"
     )
 
+    # ==============================
+    # COMPUTE & ONCHANGE
+    # ==============================
+
+    @api.model
+    def create(self, vals):
+        """Tự động sinh mã hóa đơn nếu chưa có"""
+        if vals.get("name", "New") == "New":
+            vals["name"] = self.env["ir.sequence"].next_by_code("supplier.invoice") or "New"
+        return super().create(vals)
+
     @api.depends("contract_id.partner_id", "purchase_id.partner_id")
     def _compute_partner_id(self):
-        """Tự lấy NCC từ hợp đồng, nếu không có thì lấy từ đơn mua hàng"""
         for rec in self:
             if rec.contract_id and rec.contract_id.partner_id:
                 rec.partner_id = rec.contract_id.partner_id
@@ -49,6 +98,34 @@ class SupplierInvoice(models.Model):
                 rec.project_id = rec.contract_id.project_id.id
                 rec.partner_id = rec.contract_id.partner_id.id
 
+    @api.onchange("account_tax_id", "amount_untaxed")
+    def _onchange_tax_compute(self):
+        for rec in self:
+            if rec.account_tax_id and rec.amount_untaxed:
+                tax = rec.account_tax_id
+                if tax.amount_type == "percent":
+                    rec.amount_tax = rec.amount_untaxed * tax.amount / 100
+                elif tax.amount_type == "fixed":
+                    rec.amount_tax = tax.amount
+                else:
+                    rec.amount_tax = 0.0
+                rec.amount = rec.amount_untaxed + rec.amount_tax
+
+    @api.depends("amount", "amount_tax", "amount_untaxed")
+    def _compute_amounts(self):
+        for rec in self:
+            if rec.amount_untaxed and rec.amount_tax:
+                rec.amount = rec.amount_untaxed + rec.amount_tax
+            elif rec.amount and not (rec.amount_untaxed or rec.amount_tax):
+                rec.amount_untaxed = rec.amount
+                rec.amount_tax = 0.0
+            else:
+                rec.amount = rec.amount_untaxed + rec.amount_tax
+
+    def _inverse_amounts(self):
+        for rec in self:
+            rec.amount = rec.amount_untaxed + rec.amount_tax
+
     @api.constrains("date", "due_date")
     def _check_due_date(self):
         for record in self:
@@ -56,32 +133,5 @@ class SupplierInvoice(models.Model):
                 raise ValidationError("Ngày đến hạn không được nhỏ hơn Ngày hóa đơn.")
 
     _sql_constraints = [
-        ("unique_invoice_name", "unique(name)", "Số hóa đơn đã tồn tại, vui lòng nhập số khác."),
+        ("unique_invoice_number", "unique(invoice_number)", "Số hóa đơn đã tồn tại, vui lòng nhập số khác."),
     ]
-
-
-class ReportSupplierInvoice(models.AbstractModel):
-    _name = "report.vendor_debt_management.report_supplier_invoice_view"
-    _description = "Supplier Invoice Report"
-
-    def _get_report_values(self, docids, data=None):
-        domain = []
-        if data:
-            date_from = data.get("date_from")
-            date_to = data.get("date_to")
-            if date_from and date_to:
-                domain = [("date", ">=", date_from), ("date", "<=", date_to)]
-
-        docs = self.env["supplier.invoice"].search(domain, order="date asc")
-
-        return {
-            "doc_ids": docs.ids,
-            "doc_model": "supplier.invoice",
-            "docs": docs,
-            "date_from": data.get("date_from"),
-            "date_to": data.get("date_to"),
-            "filter_type": data.get("filter_type"),
-            "year": data.get("year"),
-            "month": data.get("month"),
-            "quarter": data.get("quarter"),
-        }

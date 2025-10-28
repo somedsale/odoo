@@ -148,7 +148,7 @@ class CostEstimate(models.Model):
     def action_submit(self):
         for rec in self:
             rec.state = 'submitted'
-            partner_ids = [rec.director_user_id.partner_id.id, rec.requested_by.partner_id.id]
+            partner_ids = [rec.director_user_id.partner_id.id]
             self.message_subscribe(partner_ids=partner_ids)
             self.message_post(
                 body=Markup(
