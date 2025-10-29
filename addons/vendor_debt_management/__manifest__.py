@@ -3,9 +3,10 @@
     "version": "1.0",
     "author": "Your Company",
     "category": "Accounting",
-    "depends": ["base", "project", "contacts", "custom_account_payment_request", "web"],
+    "depends": ["base", "project", "contacts", "custom_account_payment_request", "web", "account"],
     "data": [
         "security/ir.model.access.csv",
+        "data/ir_sequence_data.xml",
         "views/supplier_contract_views.xml",
         "views/supplier_settlement_views.xml",
         "views/supplier_invoice_views.xml",

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- Somed S3 Cloud Storage - Settings block -->
+  <record id="view_res_config_settings_somed_s3" model="ir.ui.view">
+    <field name="name">res.config.settings.somed.s3</field>
+    <field name="model">res.config.settings</field>
+    <!-- Odoo 17: dùng form này -->
+    <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+
+    <field name="arch" type="xml">
+      <!-- Chèn vào container chính -->
+      
+      <xpath expr="//div[@id='companies']" position="after">
+        <div class="app_settings_block" data-string="S3 Cloud Storage" string="S3 Cloud Storage" data-key="somed_s3" groups="base.group_system">
+            <!-- 🧠 Nút Test Connection -->
+      <button name="action_test_s3_connection"
+              type="object"
+              string="🔍 Kiểm tra kết nối S3"
+              class="btn btn-primary"
+              icon="fa-cloud"/>
+          <h2>Kích hoạt S3</h2>
+          
+          <div class="o_setting_box">
+            <!-- Nút bật/tắt bên trái -->
+            <div class="o_setting_left_pane">
+              <field name="somed_s3_enabled"/>
+            </div>
+
+            <!-- Nội dung cấu hình bên phải -->
+            <div class="o_setting_right_pane">
+              <label for="somed_s3_enabled"/>
+              <div class="text-muted">
+                Lưu trữ tệp đính kèm (ir.attachment) trên S3 thay vì filestore local.
+              </div>
+
+              <!-- Nhóm nội dung có label đầy đủ -->
+              <div class="content-group mt16">
+
+                <div class="row mb8">
+                  <div class="col-4">
+                    <label class="o_form_label" for="somed_s3_bucket"/>
+                  </div>
+                  <div class="col-8">
+                    <field name="somed_s3_bucket"/>
+                  </div>
+                </div>
+
+                <div class="row mb8">
+                  <div class="col-4">
+                    <label class="o_form_label" for="somed_s3_region"/>
+                  </div>
+                  <div class="col-8">
+                    <field name="somed_s3_region"/>
+                  </div>
+                </div>
+
+                <div class="row mb8">
+                  <div class="col-4">
+                    <label class="o_form_label" for="somed_s3_access_key"/>
+                  </div>
+                  <div class="col-8">
+                    <field name="somed_s3_access_key" password="True"/>
+                  </div>
+                </div>
+
+                <div class="row mb8">
+                  <div class="col-4">
+                    <label class="o_form_label" for="somed_s3_secret_key"/>
+                  </div>
+                  <div class="col-8">
+                    <field name="somed_s3_secret_key" password="True"/>
+                  </div>
+                </div>
+
+                <div class="row mb8">
+                  <div class="col-4">
+                    <label class="o_form_label" for="somed_s3_endpoint_url"/>
+                  </div>
+                  <div class="col-8">
+                    <field name="somed_s3_endpoint_url"
+                           placeholder="https://s3.amazonaws.com hoặc http://minio:9000"/>
+                  </div>
+                </div>
+
+                <div class="row mb8">
+                  <div class="col-4">
+                    <label class="o_form_label" for="somed_s3_prefix"/>
+                  </div>
+                  <div class="col-8">
+                    <field name="somed_s3_prefix" placeholder="odoo/attachments"/>
+                  </div>
+                </div>
+
+                <div class="row mb8">
+                  <div class="col-4">
+                    <label class="o_form_label" for="somed_s3_acl"/>
+                  </div>
+                  <div class="col-8">
+                    <field name="somed_s3_acl"/>
+                  </div>
+                </div>
+
+                <div class="row mb8">
+                  <div class="col-4">
+                    <label class="o_form_label" for="somed_s3_use_presigned"/>
+                  </div>
+                  <div class="col-8">
+                    <field name="somed_s3_use_presigned"/>
+                  </div>
+                </div>
+
+                <div class="row mb0">
+                  <div class="col-4">
+                    <label class="o_form_label" for="somed_s3_presigned_exp"/>
+                  </div>
+                  <div class="col-8">
+                    <field name="somed_s3_presigned_exp"/>
+                  </div>
+                </div>
+
+              </div> <!-- /content-group -->
+            </div> <!-- /o_setting_right_pane -->
+          </div> <!-- /o_setting_box -->
+        </div> <!-- /app_settings_block -->
+      </xpath>
+    </field>
+  </record>
+  
+</odoo>

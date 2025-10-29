@@ -10,6 +10,7 @@ services:
       - odoo-web-data:/var/lib/odoo
       - ./addons:/mnt/extra-addons
       - ./config:/etc/odoo
+
     environment:
       - HOST=db
       - USER=odoo
@@ -20,6 +21,7 @@ services:
       pip install openpyxl &&
       pip install xlrd &&
       pip install xlsxwriter &&
+      pip install boto3 &&
       /usr/bin/odoo --config /etc/odoo/odoo.conf
       "
   db:

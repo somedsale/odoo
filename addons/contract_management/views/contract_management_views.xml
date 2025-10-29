@@ -12,8 +12,8 @@
                             class="btn-danger" invisible="stage in ('completed','canceled')"/>
                     <button name="action_to_executing" type="object" string="Bắt đầu thực hiện"
                             class="btn-primary" invisible="stage != 'negotiating'"/>
-                    <button name="action_to_completed" type="object" string="Hoàn thành"
-                            class="btn-success" invisible="stage != 'executing'"/>
+                    <!-- <button name="action_to_completed" type="object" string="Hoàn thành"
+                            class="btn-success" invisible="stage != 'executing'"/> -->
                     <field name="stage" widget="statusbar"
                            decoration-info="stage == 'negotiating'"
                            decoration-primary="stage == 'executing'"

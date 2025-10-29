@@ -1,0 +1,39 @@
+<odoo>
+    <!-- ACTIONS -->
+    <record id="action_smd_document_team" model="ir.actions.act_window">
+        <field name="name">Teams</field>
+        <field name="res_model">smd.document.team</field>
+        <field name="view_mode">kanban,tree,form</field>
+    </record>
+
+    <record id="action_smd_document_workspace" model="ir.actions.act_window">
+        <field name="name">Workspaces</field>
+        <field name="res_model">smd.document.workspace</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_smd_document_file" model="ir.actions.act_window">
+        <field name="name">Documents</field>
+        <field name="res_model">smd.document.file</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="search_view_id" ref="view_smd_document_file_search"/>
+    </record>
+
+    <!-- MENUS -->
+    <menuitem id="menu_smd_documents_root" name="Documents" sequence="10"/>
+    <menuitem id="menu_smd_documents_master" name="Master Data"
+              parent="menu_smd_documents_root" sequence="20"/>
+
+    <menuitem id="menu_smd_documents_team" name="Teams"
+              parent="menu_smd_documents_master"
+              action="action_smd_document_team" sequence="1"/>
+
+    <menuitem id="menu_smd_documents_workspace" name="Workspaces"
+              parent="menu_smd_documents_master"
+              action="action_smd_document_workspace" sequence="2"/>
+
+    <menuitem id="menu_smd_documents_files" name="Documents"
+              parent="menu_smd_documents_root"
+              action="action_smd_document_file" sequence="30"/>
+</odoo>
