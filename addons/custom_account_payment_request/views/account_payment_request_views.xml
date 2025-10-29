@@ -27,7 +27,8 @@
                     <button name="action_confirm" string="Xác nhận" type="object" class="btn-primary" invisible="state != &apos;draft&apos;"/>
                     <!-- <button name="action_post" string="Vào sổ bút toán" type="object" class="btn-success" invisible="state != &apos;confirmed&apos;"/> -->
                     <button name="action_payment_request" string="Ghi nhận thanh toán" type="object" class="btn-success" invisible="state != &apos;confirmed&apos;"/>
-                    <!-- <button name="action_cancel" string="Hủy" type="object" class="btn-danger" invisible="state != &apos;draft&apos;"/> -->
+                    <button name="action_cancel" string="Hủy" type="object" class="btn-danger" invisible="state == &apos;cancelled&apos;"/>
+                    <button name="action_reset_to_draft" string="Đặt lại thành nháp" type="object" class="btn-secondary" invisible="state != 'cancelled'"/>
                     <field name="state" widget="statusbar" statusbar_visible="confirmed,done"/>
                 </header>
                 <sheet>
