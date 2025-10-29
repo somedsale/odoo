@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- 📄 Paperformat: dùng lại nếu bạn đã có. Nếu đã khai báo ở module khác rồi thì KHÔNG khai lại block này -->
+    <record id="company_loan_report_a4_portrait" model="report.paperformat">
+        <field name="name">Company Loan Report A4 Portrait</field>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">30</field>
+        <field name="margin_bottom">30</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_spacing">25</field>
+        <field name="dpi">110</field>
+    </record>
+
+    <!-- ========== LAYOUT TEMPLATE (header/footer chung) ========== -->
+    <template id="report_company_loan_layout">
+        <t t-call="web.html_container">
+            <t t-set="o" t-value="o or list"/>
+
+            <!-- Header -->
+            <div class="header" style="display: flex; justify-content: space-between; font-family: Times New Roman;">
+                <table style="width:100%; border-collapse: collapse; border: 1px solid #fff;">
+                    <tr>
+                        <!-- Logo công ty -->
+                        <td style="text-align: left; vertical-align: middle; border-collapse: collapse; border: 1px solid #fff; width: 50%;">
+                            <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id" alt="Company Logo" style="max-width: 160px;"/>
+                        </td>
+
+                        <!-- Thông tin công ty -->
+                        <td style="text-align: right; vertical-align: middle; border-collapse: collapse; border: 1px solid #fff; font-size: 11px; text-transform: capitalize; width: 50%;">
+                            <span t-esc="res_company.name" style="text-transform: uppercase;"/>
+                            <br/>
+                            MST: <span t-esc="res_company.partner_id.vat"/>
+                        <br/>
+                            Địa chỉ: <span t-esc="res_company.partner_id.street"/>
+                    <br/>
+                            SĐT: <span t-esc="res_company.phone_accounting"/>
+                <br/>
+                            Email: <span style="text-transform: lowercase;" t-esc="res_company.account_email"/>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- Body container -->
+<div class="article" style="font-family: Times New Roman; font-size: 11pt; line-height: 1.5; padding-top: 15px;">
+    <t t-raw="0"/>
+</div>
+
+<!-- Footer (số trang) -->
+<div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt; font-family: Times New Roman;">
+    <p>
+        <span class="page"/>
+    </p>
+</div>
+</t>
+</template>
+
+<!-- ========== REPORT TEMPLATE CHÍNH ========== -->
+<template id="report_company_loan_view">
+<t t-call="company_loan_tracker.report_company_loan_layout">
+<div class="page">
+
+    <style>
+                .page { font-family: "Times New Roman"; font-size: 12pt; color: #000; }
+
+                .styled-table {
+                    border-collapse: collapse;
+                    margin: 0 auto;
+                    font-size: 12pt;
+                    width: 100%;
+                    border: 1px solid #000;
+                    table-layout: fixed;
+                }
+
+                .styled-table thead tr {
+                    background-color: #C6E0B4;
+                    font-weight: bold;
+                    color: #000;
+                    text-align: center;
+                }
+
+                .table-total-row {
+                    text-transform: uppercase;
+                    background-color: #E2EFDA;
+                    font-weight: bold;
+                    color: #000;
+                }
+
+                .styled-table th, .styled-table td {
+                    font-size: 10pt;
+                    padding: 8px 12px;
+                    border: 1px solid #000;
+                    vertical-align: middle;
+                    overflow: hidden;
+                    word-wrap: break-word;
+                    overflow-wrap: anywhere;
+                }
+
+                .styled-table tbody tr:hover { background-color: #D9EAD3; }
+
+                .text-center { text-align: center; }
+                .text-right  { text-align: right; }
+                .num { white-space: nowrap; }
+    </style>
+
+    <h2 style="text-align:center; margin-bottom: 20px; font-size: 24px; text-transform: uppercase;">
+                    Báo cáo Tổng Hợp Khoản Vay Công Ty
+    </h2>
+
+    <table class="styled-table">
+        <colgroup>
+            <col style="width:5%"/>
+            <!-- STT -->
+            <col style="width:18%"/>
+            <!-- Người cho vay -->
+            <col style="width:12%"/>
+            <!-- Số tiền vay -->
+            <col style="width:8%"/>
+            <!-- Lãi suất -->
+            <col style="width:12%"/>
+            <!-- Gốc đã thanh toán -->
+            <col style="width:12%"/>
+            <!-- Lãi đã thanh toán -->
+            <col style="width:12%"/>
+            <!-- Gốc còn nợ -->
+            <col style="width:12%"/>
+            <!-- Lãi còn nợ -->
+            <col style="width:9%"/>
+            <!-- Ngày trả lãi/gốc -->
+        </colgroup>
+
+        <thead>
+            <tr>
+                <th rowspan="2">STT</th>
+                <th rowspan="2">Người cho vay</th>
+                <th rowspan="2">Số tiền vay</th>
+                <th rowspan="2">Lãi suất</th>
+
+                <th colspan="2">Số tiền đã thanh toán</th>
+                <th colspan="2">Số tiền còn nợ</th>
+
+                <th rowspan="2">Ngày trả lãi/gốc</th>
+            </tr>
+            <tr>
+                <th>Gốc</th>
+                <th>Lãi</th>
+                <th>Gốc</th>
+                <th>Lãi</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            <!-- DÒNG TỔNG TẤT CẢ -->
+            <tr class="table-total-row">
+                <!-- STT + Người cho vay gộp lại để ghi "TỔNG TẤT CẢ" -->
+                <td colspan="2" class="text-center" style="text-transform: uppercase;">
+                TỔNG TẤT CẢ
+                </td>
+
+                <!-- Số tiền vay (tổng) -->
+                <td class="text-right num">
+                    <span t-esc="grand_total['amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                </td>
+
+                <!-- Lãi suất: tổng không có nghĩa -->
+                <td class="text-center">-</td>
+
+                <!-- Gốc đã thanh toán -->
+                <td class="text-right num">
+                    <span t-esc="grand_total['principal_paid']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                </td>
+
+                <!-- Lãi đã thanh toán -->
+                <td class="text-right num">
+                    <span t-esc="grand_total['interest_paid']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                </td>
+
+                <!-- Gốc còn nợ -->
+                <td class="text-right num">
+                    <span t-esc="grand_total['principal_balance']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                </td>
+
+                <!-- Lãi còn nợ -->
+                <td class="text-right num">
+                    <span t-esc="grand_total['interest_outstanding']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                </td>
+
+                <!-- Ngày trả lãi/gốc tổng? để '-' -->
+                <td class="text-center">-</td>
+            </tr>
+
+
+            <!-- LẶP THEO NHÓM LOAN TYPE -->
+            <t t-foreach="grouped_loans" t-as="grp">
+
+                <!-- SUBTOTAL CHO NHÓM (VD: VAY NGẮN HẠN / VAY TRUNG HẠN / VAY CÁ NHÂN) -->
+                <tr class="table-total-row">
+                    <!-- 2 cột đầu gộp để in tên nhóm -->
+                    <td colspan="2" class="text-left" style="text-transform: uppercase;">
+                        <t t-esc="grp['loan_type_label']"/>
+                    </td>
+
+                    <!-- Tổng số tiền vay trong nhóm -->
+                    <td class="text-right num">
+                        <span t-esc="grp['subtotal']['amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                    </td>
+
+                    <!-- Lãi suất nhóm: không cộng %, để '-' -->
+                    <td class="text-center">-</td>
+
+                    <!-- Tổng gốc đã thanh toán -->
+                    <td class="text-right num">
+                        <span t-esc="grp['subtotal']['principal_paid']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                    </td>
+
+                    <!-- Tổng lãi đã thanh toán -->
+                    <td class="text-right num">
+                        <span t-esc="grp['subtotal']['interest_paid']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                    </td>
+
+                    <!-- Tổng gốc còn nợ -->
+                    <td class="text-right num">
+                        <span t-esc="grp['subtotal']['principal_balance']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                    </td>
+
+                    <!-- Tổng lãi còn nợ -->
+                    <td class="text-right num">
+                        <span t-esc="grp['subtotal']['interest_outstanding']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                    </td>
+
+                    <!-- Ngày trả lãi/gốc (theo nhóm) -> không gom được, để '-' -->
+                    <td class="text-center">-</td>
+                </tr>
+
+                <!-- CHI TIẾT TỪNG KHOẢN TRONG NHÓM -->
+                <t t-set="stt" t-value="0"/>
+                <t t-foreach="grp['aggregated_rows']" t-as="row">
+                    <tr>
+                        <!-- STT trong nhóm -->
+                        <td class="text-center">
+                            <t t-set="stt" t-value="stt + 1"/>
+                            <span t-esc="stt"/>
+                        </td>
+
+                        <!-- Người cho vay (đã gộp) -->
+                        <td>
+                            <span t-esc="row['lender_name']"/>
+                        </td>
+
+                        <!-- Số tiền vay (tổng của lender trong nhóm này) -->
+                        <td class="text-right num">
+                            <span t-esc="row['amount_sum']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                        </td>
+
+                        <!-- Lãi suất: có thể là "12.0 %" hoặc "-" -->
+                        <td class="text-center">
+                            <span t-esc="row['interest_rate_display']"/>
+                        </td>
+
+                        <!-- Gốc đã thanh toán -->
+                        <td class="text-right num">
+                            <span t-esc="row['principal_paid_sum']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                        </td>
+
+                        <!-- Lãi đã thanh toán -->
+                        <td class="text-right num">
+                            <span t-esc="row['interest_paid_sum']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                        </td>
+
+                        <!-- Gốc còn nợ -->
+                        <td class="text-right num">
+                            <span t-esc="row['principal_balance_sum']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                        </td>
+
+                        <!-- Lãi còn nợ -->
+                        <td class="text-right num">
+                            <span t-esc="row['interest_outstanding_sum']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                        </td>
+
+                        <!-- Ngày trả lãi/gốc -->
+                        <td class="text-center">
+                            <span t-esc="row['interest_note_display']"/>
+                        </td>
+                    </tr>
+                </t>
+
+            </t>            <!-- end grouped_loans -->
+
+        </tbody>
+    </table>
+
+    <!-- Chữ ký -->
+    <div style="page-break-inside: avoid; font-weight: bold; margin-top: 32px;">
+        <div class="row">
+            <div class="col-6" style="text-align:center;line-height:1.8">
+                <div>
+                                TP Hồ Chí Minh ngày
+                    <span t-esc="datetime.datetime.today().day"/>
+                                tháng <span t-esc="datetime.datetime.today().month"/>
+                                năm <span t-esc="datetime.datetime.today().year"/>
+            </div>
+            <div>
+                <span>Người lập biểu</span>
+            </div>
+            <div style="height:65px">
+                <t t-if="user_id.digital_signature">
+                    <img t-att-src="'data:image/png;base64,' + (user_id.digital_signature.decode() if isinstance(user_id.digital_signature, bytes) else user_id.digital_signature)" style="max-height:65px; max-width:150px;" />
+                </t>
+            </div>
+            <div>
+                <span t-field="user_id.name"/>
+            </div>
+        </div>
+
+        <div class="col-6" style="text-align:center;line-height:1.8">
+            <div>
+                                TP Hồ Chí Minh ngày
+                <span t-esc="datetime.datetime.today().day"/>
+                                tháng <span t-esc="datetime.datetime.today().month"/>
+                                năm <span t-esc="datetime.datetime.today().year"/>
+        </div>
+        <div>Giám Đốc</div>
+        <div style="height:65px">
+            <t t-set="director_group" t-value="env.ref('custom_director_role.group_director')"/>
+            <t t-set="director" t-value="env['res.users'].search([('groups_id', 'in', director_group.id)], limit=1)"/>
+            <t t-if="director and director.digital_signature">
+                <img t-att-src="'data:image/png;base64,' + (director.digital_signature.decode() if isinstance(director.digital_signature, bytes) else director.digital_signature)" style="max-height:65px; max-width:150px;" />
+            </t>
+        </div>
+        <div>
+            <span> Đỗ Minh Toàn </span>
+        </div>
+    </div>
+</div>
+</div>
+
+</div><!-- /page -->
+</t>
+</template>
+
+<!-- ========== ACTIONS / REPORT DEFINITIONS ========== -->
+
+<!-- ir.actions.report: HTML -->
+<record id="action_company_loan_report" model="ir.actions.report">
+<field name="name">Báo cáo Khoản vay</field>
+<field name="model">company.loan</field>
+<field name="report_type">qweb-html</field>
+<field name="report_name">company_loan_tracker.report_company_loan_view</field>
+<field name="report_file">company_loan_tracker.report_company_loan_view</field>
+<field name="print_report_name">'Bao_cao_khoan_vay'</field>
+<field name="paperformat_id" ref="company_loan_report_a4_portrait"/>
+</record>
+
+
+
+<!-- MENU: đưa báo cáo vào menu Khoản vay -->
+<menuitem id="menu_company_loan_report_root" name="Báo cáo khoản vay" parent="custom_account_menu.menu_accounting_reporting" />
+
+<menuitem id="menu_company_loan_report_html" name="Báo cáo Khoản vay" parent="menu_company_loan_report_root" action="company_loan_tracker.action_company_loan_report"/>
+
+</odoo>

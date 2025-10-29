@@ -12,6 +12,7 @@
         'views/res_partner_view.xml',
         'views/account_payment_request.xml',
         'views/account_receipt.xml',
+        'reports/report_company_loan.xml',
     ],
     'installable': True,
     'application': True,

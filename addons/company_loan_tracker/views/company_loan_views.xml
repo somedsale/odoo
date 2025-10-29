@@ -98,12 +98,46 @@
                 </form>
             </field>
         </record>
+        <record id="view_company_loan_search" model="ir.ui.view">
+            <field name="name">company.loan.search</field>
+            <field name="model">company.loan</field>
+            <field name="arch" type="xml">
+                <search string="Tìm kiếm khoản vay">
+                    <!-- Ô search chính -->
+                    <field name="name" string="Mã giao dịch"/>
+                    <field name="lender_id" string="Người cho vay"/>
+                    <field name="interest_note" string="Ghi chú trả lãi/gốc"/>
+                    <field name="note" string="Ghi chú thêm"/>
+
+                    <!-- Bộ lọc nhanh (Filters dropdown) -->
+                    <filter name="filter_dang_vay" string="Đang vay" domain="[('state', '=', 'ongoing')]"/>
+                    <filter name="filter_da_tat_toan" string="Đã tất toán" domain="[('state', '=', 'done')]"/>
+                    <filter name="filter_qua_han" string="Quá hạn đáo hạn" domain="[('due_date', '&lt;', context_today()), ('state', 'not in', ('done','cancel'))]" help="Các khoản vay đã quá ngày đáo hạn nhưng chưa tất toán"/>
+
+                    <!-- Nhóm theo (Group By dropdown) -->
+                    <group expand="0" string="Nhóm theo">
+                        <filter name="group_by_lender" string="Người cho vay" context="{'group_by': 'lender_id'}"/>
+                        <filter name="group_by_state" string="Trạng thái" context="{'group_by': 'state'}"/>
+                        <filter name="group_by_loan_type" string="Loại vay" context="{'group_by': 'loan_type'}"/>
+                        <filter name="group_by_due_date" string="Ngày đáo hạn" context="{'group_by': 'due_date'}"/>
+                    </group>
+
+                    <!-- Search Panel bên trái list view -->
+                    <searchpanel>
+                        <field name="lender_id" string="Người cho vay" icon="fa-user" />
+                        <field name="loan_type" string="Loại vay" icon="fa-briefcase" />
+                        <field name="state" string="Trạng thái" icon="fa-flag" select="multi" />
+                    </searchpanel>
+                </search>
+            </field>
+        </record>
 
         <!-- ACTION -->
         <record id="action_company_loan" model="ir.actions.act_window">
             <field name="name">Khoản vay của công ty</field>
             <field name="res_model">company.loan</field>
             <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_company_loan_search"/>
         </record>
 
         <!-- MENU -->
