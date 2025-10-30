@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_company_loan_detail_wizard_form" model="ir.ui.view">
+        <field name="name">company.loan.detail.wizard.form</field>
+        <field name="model">company.loan.detail.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Báo cáo chi tiết khoản vay">
+                <group>
+                    <field name="lender_id" context="{'default_is_lender': True}"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                </group>
+                <footer>
+                    <button string="In báo cáo" name="action_print_detail" type="object" class="btn-primary"/>
+                    <button string="Đóng" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_company_loan_detail_wizard" model="ir.actions.act_window">
+        <field name="name">Báo cáo chi tiết khoản vay</field>
+        <field name="res_model">company.loan.detail.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Menu (đặt chỗ bạn muốn) -->
+    <menuitem id="menu_company_loan_detail_wizard" name="Báo cáo chi tiết khoản vay" parent="menu_company_loan_report_root" action="action_company_loan_detail_wizard" sequence="20"/>
+</odoo>

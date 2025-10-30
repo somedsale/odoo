@@ -13,6 +13,8 @@
         'views/account_payment_request.xml',
         'views/account_receipt.xml',
         'reports/report_company_loan.xml',
+        'reports/report_company_loan_detail_templates.xml',
+        'wizard/loan_detail_wizard_views.xml',
     ],
     'installable': True,
     'application': True,
