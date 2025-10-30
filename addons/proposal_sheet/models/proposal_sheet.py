@@ -26,7 +26,7 @@ class ProposalSheet(models.Model):
         ('reviewed_manager', 'QL Đang trình'),
         ('reviewed_accounting', 'KTTH Đang kiểm tra'),
         ('approved', 'Sếp Đang duyệt'),
-        ('waiting_accounting_paid', 'Chờ chi tiền (KT)'),
+        ('waiting_accounting_paid', 'Chờ KT xử lý'),
         ('done', 'Hoàn tất'),
         ('rejected', 'Bị từ chối'),
         ('canceled', 'Đã hủy'),
@@ -44,7 +44,7 @@ class ProposalSheet(models.Model):
     type = fields.Selection([
         ('material', 'Vật Tư'),
         ('expense', 'Chi Phí'),
-    ], required=True, string='Loại Đề Xuất', tracking=True)
+    ], required=True, string='Loại Đề Xuất',default='material', tracking=True)
     material_line_ids = fields.One2many(
         'proposal.material.line', 'sheet_id',
         string='Chi Tiết Vật Tư',

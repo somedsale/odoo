@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_tax_report_root"
+              name="Báo cáo Thuế"
+              parent="custom_account_menu.menu_accounting_reporting"
+              sequence="10"/>
+
+    <menuitem id="menu_tax_report_action"
+              name="Tổng hợp Thuế"
+              parent="menu_tax_report_root"
+              action="action_tax_report_wizard"
+              sequence="10"/>
+</odoo>

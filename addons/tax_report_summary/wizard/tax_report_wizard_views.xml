@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_tax_report_wizard_form" model="ir.ui.view">
+        <field name="name">tax.report.wizard.form</field>
+        <field name="model">tax.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Báo cáo Thuế Đầu Vào / Đầu Ra" class="o_form_tax_report">
+                <group>
+                    <field name="view_type" widget="radio" string="Kiểu xem báo cáo"/>
+                </group>
+
+                <!-- Khoảng thời gian tùy chọn -->
+                <group invisible="view_type != 'period'">
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                </group>
+
+                <!-- Theo tháng -->
+                <group invisible="view_type != 'month'">
+                    <field name="month"/>
+                    <field name="year" widget="yearpicker" />
+                </group>
+
+                <!-- Theo quý -->
+                <group invisible="view_type != 'quarter'">
+                    <field name="quarter"/>
+                    <field name="year" widget="yearpicker" />
+                </group>
+
+                <!-- Theo năm -->
+                <group invisible="view_type != 'year'">
+                    <field name="year" widget="yearpicker" />
+                </group>
+
+                <footer>
+                    <button name="action_print_report"
+                            string="Xem Báo Cáo"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Đóng" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_tax_report_wizard" model="ir.actions.act_window">
+        <field name="name">Báo cáo Thuế</field>
+        <field name="res_model">tax.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

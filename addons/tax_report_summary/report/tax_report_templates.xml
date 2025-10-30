@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ===== PAPER FORMAT ===== -->
+    <record id="tax_report_a4_landscape" model="report.paperformat">
+        <field name="name">Tax Report A4 Landscape</field>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">30</field>
+        <field name="margin_bottom">30</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_spacing">25</field>
+        <field name="dpi">130</field>
+    </record>
+
+    <!-- ===== TEMPLATE ===== -->
+    <template id="tax_report_template">
+        <t t-call="vendor_debt_management.report_supplier_invoice_layout">
+            <div class="page">
+
+                <!-- ===== STYLE ===== -->
+                <style>
+.page {
+  font-family: "Times New Roman";
+  font-size: 12pt;
+  color: #000;
+}
+.styled-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid #000;
+  font-size: 11pt;
+  table-layout: fixed;
+}
+.styled-table thead tr {
+  background-color: #C6E0B4;
+  font-weight: bold;
+  text-align: center;
+  vertical-align: middle;
+}
+.styled-table th, .styled-table td {
+  border: 1px solid #000;
+  padding: 6px 8px;
+  vertical-align: middle;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+.input-cell { background-color: #E2EFDA !important; }
+.output-cell { background-color: #DDEBF7 !important; }
+.diff-cell { background-color: #F2F2F2; font-weight: bold; }
+.day-cell { background-color: #FFF2CC; font-weight: bold; }
+.table-item, .styled-table tfoot tr { background-color: #C6E0B4; font-weight: bold; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.diff-positive { color: #008000; }
+.diff-negative { color: #C00000; }
+                </style>
+
+                <!-- ===== HEADER ===== -->
+                <h2 class="text-center" style="margin-bottom: 10px;">BÁO CÁO TỔNG HỢP THUẾ</h2>
+                <p style="margin-bottom: 5px;">
+                    <b>Từ ngày:</b>
+                    <t t-esc="date_from.strftime('%d/%m/%Y') if date_from else ''"/>
+                    <b>Đến ngày:</b>
+                    <t t-esc="date_to.strftime('%d/%m/%Y') if date_to else ''"/>
+                </p>
+
+                <!-- ===== TABLE ===== -->
+                <table class="styled-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" class="text-center">
+                                <t t-if="view_type == 'year'">Tháng</t>
+                                <t t-else="">Ngày</t>
+                            </th>
+                            <th colspan="3" class="text-center">Hóa đơn đầu vào</th>
+                            <th colspan="3" class="text-center">Hóa đơn đầu ra</th>
+                            <th rowspan="2" class="text-center">Chênh lệch (VNĐ)</th>
+                        </tr>
+                        <tr>
+                            <th>
+                                <t t-if="view_type == 'year'">Nhà cung cấp</t>
+                                <t t-else="">Số HĐ</t>
+                            </th>
+                            <th>
+                                <t t-if="view_type == 'year'">-</t>
+                                <t t-else="">Nhà cung cấp</t>
+                            </th>
+                            <th class="text-right">Thuế (VNĐ)</th>
+                            <th>
+                                <t t-if="view_type == 'year'">Khách hàng</t>
+                                <t t-else="">Số HĐ</t>
+                            </th>
+                            <th>
+                                <t t-if="view_type == 'year'">-</t>
+                                <t t-else="">Khách hàng</t>
+                            </th>
+                            <th class="text-right">Thuế (VNĐ)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <!-- ======= VIEW THEO NĂM (GỘP THEO THÁNG + ĐỐI TƯỢNG) ======= -->
+                        <t t-if="view_type == 'year'">
+                            <t t-foreach="sorted_dates" t-as="m">
+                                <t t-set="sup_list" t-value="grouped[m]['supplier']"/>
+                                <t t-set="cus_list" t-value="grouped[m]['customer']"/>
+                                <t t-set="max_len" t-value="max(len(sup_list), len(cus_list))"/>
+                                <t t-set="sum_in" t-value="sum([s['amount_tax'] for s in sup_list])"/>
+                                <t t-set="sum_out" t-value="sum([c['amount_tax'] for c in cus_list])"/>
+                                <t t-set="diff_month" t-value="sum_out - sum_in"/>
+
+                                <t t-foreach="range(max_len)" t-as="i">
+                                    <tr>
+                                        <t t-if="i == 0">
+                                            <td t-att-rowspan="max_len" class="day-cell text-center">
+                                                <t t-esc="m"/>
+                                            </td>
+                                        </t>
+
+                                        <!-- Đầu vào -->
+                                        <t t-if="i &lt; len(sup_list)">
+                                            <td class="input-cell" colspan="2">
+                                                <t t-esc="sup_list[i]['partner']"/>
+                                            </td>
+                                            <td class="input-cell text-right">
+                                                <t t-esc="'{:,.0f}'.format(sup_list[i]['amount_tax'] or 0.0)"/>
+                                            </td>
+                                        </t>
+                                        <t t-else="">
+                                            <td class="input-cell" colspan="2"></td>
+                                            <td class="input-cell text-right"></td>
+                                        </t>
+
+                                        <!-- Đầu ra -->
+                                        <t t-if="i &lt; len(cus_list)">
+                                            <td class="output-cell" colspan="2">
+                                                <t t-esc="cus_list[i]['partner']"/>
+                                            </td>
+                                            <td class="output-cell text-right">
+                                                <t t-esc="'{:,.0f}'.format(cus_list[i]['amount_tax'] or 0.0)"/>
+                                            </td>
+                                        </t>
+                                        <t t-else="">
+                                            <td class="output-cell" colspan="2"></td>
+                                            <td class="output-cell text-right"></td>
+                                        </t>
+
+                                        <t t-if="i == 0">
+                                            <td t-att-rowspan="max_len"
+                                                t-attf-class="diff-cell text-right #{'diff-positive' if diff_month &gt;= 0 else 'diff-negative'}">
+                                                <t t-esc="'{:,.0f}'.format(diff_month or 0.0)"/>
+                                            </td>
+                                        </t>
+                                    </tr>
+                                </t>
+                            </t>
+                        </t>
+
+                        <!-- ======= VIEW THEO NGÀY (CHI TIẾT HÓA ĐƠN) ======= -->
+                        <t t-else="">
+                            <t t-foreach="sorted_dates" t-as="d">
+                                <t t-set="sup_list" t-value="grouped[d]['supplier']"/>
+                                <t t-set="cus_list" t-value="grouped[d]['customer']"/>
+                                <t t-set="max_len" t-value="max(len(sup_list), len(cus_list))"/>
+                                <t t-set="sum_in" t-value="sum([s.amount_tax for s in sup_list])"/>
+                                <t t-set="sum_out" t-value="sum([c.amount_tax for c in cus_list])"/>
+                                <t t-set="diff_day" t-value="sum_out - sum_in"/>
+
+                                <t t-foreach="range(max_len)" t-as="i">
+                                    <tr>
+                                        <t t-if="i == 0">
+                                            <td t-att-rowspan="max_len" class="day-cell text-center">
+                                                <t t-esc="d.strftime('%d/%m/%Y')"/>
+                                            </td>
+                                        </t>
+
+                                        <!-- Đầu vào -->
+                                        <t t-if="i &lt; len(sup_list)">
+                                            <td class="input-cell">
+                                                <t t-esc="sup_list[i].invoice_number"/>
+                                            </td>
+                                            <td class="input-cell">
+                                                <t t-esc="sup_list[i].partner_id.name"/>
+                                            </td>
+                                            <td class="input-cell text-right">
+                                                <t t-esc="'{:,.0f}'.format(sup_list[i].amount_tax or 0.0)"/>
+                                            </td>
+                                        </t>
+                                        <t t-else="">
+                                            <td class="input-cell"></td>
+                                            <td class="input-cell"></td>
+                                            <td class="input-cell text-right"></td>
+                                        </t>
+
+                                        <!-- Đầu ra -->
+                                        <t t-if="i &lt; len(cus_list)">
+                                            <td class="output-cell">
+                                                <t t-esc="cus_list[i].invoice_number"/>
+                                            </td>
+                                            <td class="output-cell">
+                                                <t t-esc="cus_list[i].partner_id.name"/>
+                                            </td>
+                                            <td class="output-cell text-right">
+                                                <t t-esc="'{:,.0f}'.format(cus_list[i].amount_tax or 0.0)"/>
+                                            </td>
+                                        </t>
+                                        <t t-else="">
+                                            <td class="output-cell"></td>
+                                            <td class="output-cell"></td>
+                                            <td class="output-cell text-right"></td>
+                                        </t>
+
+                                        <t t-if="i == 0">
+                                            <td t-att-rowspan="max_len"
+                                                t-attf-class="diff-cell text-right #{'diff-positive' if diff_day &gt;= 0 else 'diff-negative'}">
+                                                <t t-esc="'{:,.0f}'.format(diff_day or 0.0)"/>
+                                            </td>
+                                        </t>
+                                    </tr>
+                                </t>
+                            </t>
+                        </t>
+
+                        <!-- ===== TỔNG ===== -->
+                        <tr class="table-item">
+                            <td class="text-right">Tổng</td>
+                            <td colspan="2" class="text-right">Thuế đầu vào:</td>
+                            <td class="text-right"><t t-esc="'{:,.0f}'.format(total_supplier_tax or 0.0)"/></td>
+                            <td colspan="2" class="text-right">Thuế đầu ra:</td>
+                            <td class="text-right"><t t-esc="'{:,.0f}'.format(total_customer_tax or 0.0)"/></td>
+                            <td class="text-right"><t t-esc="'{:,.0f}'.format(tax_diff or 0.0)"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- ===== KẾT LUẬN ===== -->
+                <p style="margin-top: 10px; font-size: 12pt;">
+                    <b>Kết luận:</b>
+                    <t t-if="tax_diff &gt; 0">
+                        Số tiền <b style="color:#008000;">được khấu trừ / hoàn thuế</b> là
+                        <b><t t-esc="'{:,.0f}'.format(tax_diff)"/> VNĐ</b>.
+                    </t>
+                    <t t-elif="tax_diff &lt; 0">
+                        Số tiền <b style="color:#C00000;">phải nộp thêm thuế</b> là
+                        <b><t t-esc="'{:,.0f}'.format(abs(tax_diff))"/> VNĐ</b>.
+                    </t>
+                    <t t-else="">
+                        Không phát sinh chênh lệch thuế trong kỳ báo cáo.
+                    </t>
+                </p>
+
+                <!-- ===== CHỮ KÝ ===== -->
+                <div style="page-break-inside: avoid; margin-top: 20px;">
+                    <div class="row" style="display: flex; justify-content: space-between;">
+                        <div style="width:45%; text-align:center; line-height:1.8;">
+                            <div>Người lập biểu</div>
+                            <div style="height:65px"></div>
+                            <div><t t-esc="env.user.name"/></div>
+                        </div>
+                        <div style="width:45%; text-align:center; line-height:1.8;">
+                            <div>
+                                TP Hồ Chí Minh, ngày <t t-esc="datetime.date.today().day"/>
+                                tháng <t t-esc="datetime.date.today().month"/>
+                                năm <t t-esc="datetime.date.today().year"/>
+                            </div>
+                            <div>Giám Đốc</div>
+                            <div style="height:65px"></div>
+                            <div><span>Đỗ Minh Toàn</span></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </t>
+    </template>
+
+    <!-- ===== ACTION REPORT ===== -->
+    <record id="action_report_tax_summary" model="ir.actions.report">
+        <field name="name">Báo cáo Thuế</field>
+        <field name="model">tax.report.wizard</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">tax_report_summary.tax_report_template</field>
+        <field name="report_file">tax_report_summary.tax_report_template</field>
+        <field name="print_report_name">'Báo cáo Thuế'</field>
+        <field name="paperformat_id" ref="tax_report_a4_landscape"/>
+    </record>
+</odoo>

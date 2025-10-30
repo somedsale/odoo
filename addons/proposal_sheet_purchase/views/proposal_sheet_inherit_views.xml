@@ -8,34 +8,70 @@
       <field name="inherit_id" ref="proposal_sheet.view_proposal_sheet_form"/>
       <field name="arch" type="xml">
 
-        <!-- Thêm 2 nút hành động vào HEADER -->
+        <!-- Thêm nút tạo PO vào header của phiếu đề xuất -->
         <xpath expr="//form/header" position="inside">
           <button name="action_create_purchase_orders"
                   type="object"
                   class="btn-primary"
                   string="Tạo Đơn Mua"
-                  invisible="(type != 'material') or (state != 'waiting_accounting_paid')" groups="account.group_account_manager"/>
+                  groups="purchase.group_purchase_user,account.group_account_manager"
+                  invisible="(type != 'material') or (state != 'waiting_accounting_paid')"/>
         </xpath>
 
-        <!-- Bổ sung button box nếu form chưa có -->
+        <!-- Đảm bảo có box smart button -->
         <xpath expr="//form/sheet" position="inside">
           <div class="oe_button_box" name="button_box"/>
         </xpath>
 
-        <!-- Smart button mở DS PO: đặt trong oe_button_box -->
+        <!-- Smart button: mở danh sách PO liên quan -->
         <xpath expr="//form/sheet/div[@name='button_box']" position="inside">
           <button name="action_view_purchase_orders"
                   type="object"
                   class="oe_stat_button"
                   icon="fa-shopping-cart"
-                  invisible="purchase_order_count == 0"
-                  groups="purchase.group_purchase_user,project.group_project_user">
-            <field name="purchase_order_count" widget="statinfo" string="Đơn mua hàng"/>
+                  groups="purchase.group_purchase_user,project.group_project_user"
+                  invisible="purchase_order_count == 0">
+            <field name="purchase_order_count"
+                   widget="statinfo"
+                   string="Đơn mua hàng"/>
           </button>
         </xpath>
 
       </field>
     </record>
+    <!-- Inherit tree view proposal.sheet để thêm nút tạo PO gộp -->
+    <record id="proposal_sheet_tree_inherit_mass_create_po" model="ir.ui.view">
+      <field name="name">proposal.sheet.tree.inherit.mass.create.po</field>
+      <field name="model">proposal.sheet</field>
+      <!-- ĐỔI ref này thành xmlid thực tế của tree view phiếu đề xuất trong module bạn -->
+      <field name="inherit_id" ref="proposal_sheet.view_proposal_sheet_tree"/>
+      <field name="arch" type="xml">
+
+        <!-- Chèn button vào trong <tree> -->
+        <xpath expr="//tree" position="inside">
+          <button
+            name="action_create_purchase_orders"
+            type="object"
+            string="Tạo Đơn Mua (gộp)"
+            class="btn-primary"
+            groups="purchase.group_purchase_user,account.group_account_manager"
+            invisible="['|', ('type','!=','material'), ('state','!=','waiting_accounting_paid')]"
+          />
+        </xpath>
+
+      </field>
+    </record>
+    <!-- Server Action: xuất hiện trong menu "Hành động" (Action) của list view proposal.sheet -->
+<record id="proposal_sheet_mass_create_po_action" model="ir.actions.server">
+    <field name="name">Tạo Đơn Mua (gộp)</field>
+    <field name="model_id" ref="proposal_sheet.model_proposal_sheet"/>
+    <field name="binding_model_id" ref="proposal_sheet.model_proposal_sheet"/>
+    <field name="binding_view_types">list</field>
+    <field name="state">code</field>
+    <field name="code">
+action = records.action_create_purchase_orders()
+    </field>
+</record>
 
   </data>
 </odoo>
