@@ -10,7 +10,7 @@ class CompanyLoan(models.Model):
 
     # --- Thông tin cơ bản ---
     name = fields.Char(
-        string='Mã giao dịch',
+        string='Mã hợp đồng vay',
         required=True,
         copy=False,
         tracking=True,
@@ -119,11 +119,10 @@ class CompanyLoan(models.Model):
 
     # --- Trạng thái ---
     state = fields.Selection([
-        ('draft', 'Nháp'),
         ('ongoing', 'Đang vay'),
         ('done', 'Hoàn tất'),
         ('cancel', 'Hủy'),
-    ], string='Trạng thái', default='draft', tracking=True)
+    ], string='Trạng thái', default='ongoing', tracking=True)
     @api.depends(
         'receipt_ids.amount',
         'receipt_ids.state',

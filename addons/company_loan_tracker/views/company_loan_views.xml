@@ -11,10 +11,10 @@
                     <field name="name"/>
                     <field name="lender_id"/>
                     <field name="loan_type" widget="badge"/>
+                    <field name="interest_rate"/>
                     <field name="amount" sum="Tổng vay" widget="monetary"/>
                     <field name="total_paid" sum="Đã trả" widget="monetary"/>
                     <field name="balance" sum="Còn nợ" widget="monetary"/>
-                    <field name="interest_rate"/>
                     <field name="interest_note"/>
                     <field name="currency_id" optional='hide' string="Tiền tệ"/>
                     <field name="state" widget="badge"/>

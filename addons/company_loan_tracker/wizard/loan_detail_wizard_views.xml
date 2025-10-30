@@ -7,8 +7,6 @@
             <form string="Báo cáo chi tiết khoản vay">
                 <group>
                     <field name="lender_id" context="{'default_is_lender': True}"/>
-                    <field name="date_from"/>
-                    <field name="date_to"/>
                 </group>
                 <footer>
                     <button string="In báo cáo" name="action_print_detail" type="object" class="btn-primary"/>
