@@ -76,7 +76,7 @@
                             </page>
 
                             <page string="Phiếu chi (Trả nợ)">
-                                <field name="payment_request_ids" context="{'default_loan_id': active_id,'default_receive_person':lender_id}" domain="[('loan_id', '=', id)]">
+                                <field name="payment_request_ids" context="{'default_loan_id': active_id,'default_receive_person':lender_id,'default_cost_classification': 'loan_interest'}" domain="[('loan_id', '=', id)]">
                                     <tree>
                                         <field name="name"/>
                                         <field name="loan_payment_kind" widget="badge"/>
