@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Kế thừa form view của res.partner -->
+    <record id="view_partner_form_inherit_lender" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.lender</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <!-- Chèn ngay sau trường VAT (mã số thuế) -->
+            <xpath expr="//sheet//group[2]/field[1]" position="after">
+                <field name="is_lender" widget="boolean_toggle"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

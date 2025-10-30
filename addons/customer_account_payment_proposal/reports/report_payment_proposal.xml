@@ -126,7 +126,10 @@ Email: <span style="text-transform:lowercase;" t-esc="res_company.email"/>
                     <b>Người đề nghị:</b>
                     <t t-esc="o.user_id.name or ''"/>
                 </p>
-
+                <p>
+                    <b>Dự án:</b>
+                    <t t-esc="o.project_id.name or ''"/>
+                </p>
                 <!-- Tiền bên trái -->
                 <p>
                     <b>Tổng chi thực tế:</b>
@@ -158,12 +161,6 @@ Email: <span style="text-transform:lowercase;" t-esc="res_company.email"/>
                     <b>Số tiền còn lại thanh toán:</b>
                     <t t-esc="fmt_vnd(o.amount_remain)"/>
                 </p>
-            </td>
-        </tr>
-
-        <!-- Bằng chữ: trải rộng 2 cột -->
-        <tr>
-            <td colspan="2">
                 <p>
                     <b>Bằng chữ:</b>
                     <t t-esc="o.amount_in_words or ''"/>
@@ -192,8 +189,6 @@ Email: <span style="text-transform:lowercase;" t-esc="res_company.email"/>
             <!-- Đơn giá -->
             <col style="width:12%"/>
             <!-- Thành tiền -->
-            <col style="width:13%"/>
-            <!-- Dự án -->
             <col style="width:15%"/>
             <!-- Ghi chú -->
         </colgroup>
@@ -207,7 +202,6 @@ Email: <span style="text-transform:lowercase;" t-esc="res_company.email"/>
                 <th>Số lượng</th>
                 <th>Đơn giá</th>
                 <th>Thành tiền</th>
-                <th>Dự án</th>
                 <th>Ghi chú</th>
             </tr>
         </thead>
@@ -241,9 +235,6 @@ Email: <span style="text-transform:lowercase;" t-esc="res_company.email"/>
                         <t t-esc="fmt_vnd(line.amount)"/>
                     </td>
                     <td>
-                        <t t-esc="line.project_id.display_name or ''"/>
-                    </td>
-                    <td>
                         <t t-esc="line.note or ''"/>
                     </td>
                 </tr>
@@ -255,7 +246,7 @@ Email: <span style="text-transform:lowercase;" t-esc="res_company.email"/>
                 <td class="text-end nowrap num">
                     <t t-esc="fmt_vnd(o.total_amount)"/>
                 </td>
-                <td colspan="2"></td>
+                <td></td>
             </tr>
         </tbody>
     </table>

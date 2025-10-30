@@ -29,7 +29,7 @@
                     <button name="action_payment_request" string="Ghi nhận thanh toán" type="object" class="btn-success" invisible="state != &apos;confirmed&apos;"/>
                     <button name="action_cancel" string="Hủy" type="object" class="btn-danger" invisible="state == &apos;cancelled&apos;"/>
                     <button name="action_reset_to_draft" string="Đặt lại thành nháp" type="object" class="btn-secondary" invisible="state != 'cancelled'"/>
-                    <button name="action_payment_request" string="Ghi nhận thanh toán" type="object" class="btn-success" invisible="state != &apos;confirmed&apos;" ggroups="account.group_account_manager,base.group_system"/>
+                    <button name="action_payment_request" string="Ghi nhận thanh toán" type="object" class="btn-success" invisible="state != &apos;confirmed&apos;" groups="account.group_account_manager,base.group_system"/>
                     <!-- <button name="action_cancel" string="Hủy" type="object" class="btn-danger" invisible="state != &apos;draft&apos;"/> -->
                     <field name="state" widget="statusbar" statusbar_visible="confirmed,done"/>
                 </header>
@@ -48,6 +48,8 @@
                             <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="state != 'draft'"/>
                             <field name="payment_person" widget="many2one_avatar_user" readonly="1"/>
                             <field name="create_date" string="Ngày tạo" readonly="1"/>
+                            <field name="receive_person" readonly="state != 'draft'"/>
+                            <field name="bankids" invisible="payment_type != 'bank'" readonly="state != 'draft'"/>
                             <field name="note" readonly="state != 'draft'"/>
                             <field name="currency_id" invisible="1"/>
                         </group>
@@ -60,8 +62,6 @@
                             <field name="proposal_person_id" widget="many2one_avatar_user" readonly="1" invisible="proposal_person_id == False"/>
                             <field name="expense_type" widget="select" invisible="cost_classification != 'project'" readonly="state != 'draft'"/>
                             <field name="payment_type" widget="select" readonly="state != 'draft'"/>
-                            <field name="receive_person" invisible="payment_type != 'bank'" readonly="state != 'draft'"/>
-                            <field name="bankids" invisible="payment_type != 'bank'" readonly="state != 'draft'"/>
                         </group>
                     </group>
                 </sheet>
