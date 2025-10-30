@@ -24,7 +24,7 @@ class ReportCustomerDebtSummary(models.AbstractModel):
                     'amount_final': sum(c.settlement_ids.mapped('amount_settlement')) or 0.0,
                     'amount_invoiced': c.amount_invoiced or 0.0,
                     'amount_paid': c.amount_receipt or 0.0,
-                    'amount_due': c.amount_due or 0.0,
+                    'amount_due': rec.residual or 0.0,
                     'warranty_amount': c.warranty_amount or 0.0,
                     'warranty_period': f"{c.warranty_time or 0} tháng",
                     'contact': c.contact or '',   # 👈 thêm dòng này
