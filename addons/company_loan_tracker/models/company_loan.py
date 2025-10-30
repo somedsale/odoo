@@ -6,6 +6,7 @@ from odoo.exceptions import ValidationError
 class CompanyLoan(models.Model):
     _name = 'company.loan'
     _description = 'Khoản vay của công ty'
+    _order="create_date desc"
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
     # --- Thông tin cơ bản ---

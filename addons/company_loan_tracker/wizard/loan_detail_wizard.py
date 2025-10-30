@@ -6,7 +6,7 @@ class CompanyLoanDetailWizard(models.TransientModel):
     _description = 'Tham số báo cáo chi tiết khoản vay theo bên cho vay'
 
     lender_id = fields.Many2one(
-        'res.partner', string='Người cho vay', required=True,
+        'res.partner', string='Bên cho vay', required=True,
         domain=[('is_lender', '=', True)]
     )
     
