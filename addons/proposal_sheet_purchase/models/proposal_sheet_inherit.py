@@ -5,8 +5,13 @@ from odoo.exceptions import UserError, ValidationError
 class ProposalSheet(models.Model):
     _inherit = "proposal.sheet"
 
-    purchase_order_ids = fields.One2many(
-        "purchase.order", "proposal_sheet_id", string="Đơn mua hàng"
+    # ĐỔI: từ One2many -> Many2many vì 1 PO giờ có thể thuộc nhiều phiếu đề xuất
+    purchase_order_ids = fields.Many2many(
+        "purchase.order",
+        "proposal_sheet_purchase_rel",
+        "proposal_sheet_id",
+        "purchase_id",
+        string="Đơn mua hàng",
     )
     purchase_order_count = fields.Integer(
         string="Số PO", compute="_compute_purchase_order_count"
@@ -17,51 +22,107 @@ class ProposalSheet(models.Model):
             rec.purchase_order_count = len(rec.purchase_order_ids)
 
     def action_view_purchase_orders(self):
-        """Mở các PO liên kết với phiếu hiện tại — không đụng tới ir.actions.act_window."""
-        self.ensure_one()
-        domain = [("proposal_sheet_id", "=", self.id)]
+        """
+        Mở danh sách PO liên quan.
+        - Nếu chọn nhiều phiếu đề xuất: hiện tất cả PO của tất cả phiếu.
+        - Nếu chỉ có đúng 1 PO -> mở form luôn.
+        """
+        domain = [("proposal_sheet_ids", "in", self.ids)]
+        # gom tất cả các PO có liên quan
+        pos = self.env["purchase.order"].search(domain)
+
         action = {
             "type": "ir.actions.act_window",
             "name": _("Đơn mua hàng"),
             "res_model": "purchase.order",
             "view_mode": "tree,form",
-            "domain": domain,
-            "context": {"default_proposal_sheet_id": self.id},
+            "domain": [("id", "in", pos.ids)],
+            "context": {
+                # context mặc định khi tạo PO thủ công từ đây
+                "default_proposal_sheet_ids": [(6, 0, self.ids)],
+            },
             "target": "current",
         }
-        if len(self.purchase_order_ids) == 1:
-            action.update({"view_mode": "form", "res_id": self.purchase_order_ids.id})
+        if len(pos) == 1:
+            action.update({
+                "view_mode": "form",
+                "res_id": pos.id,
+            })
         return action
 
+
     def action_create_purchase_orders(self):
-        """(ĐÃ GOM THEO NCC) Tạo 1 PO cho mỗi Nhà cung cấp từ dòng vật tư."""
-        self.ensure_one()
-        confirm = bool(self.env.context.get("confirm"))
+        """
+        Multi: tạo PO gộp từ nhiều Phiếu Đề Xuất.
 
-        if self.type != "material":
-            raise ValidationError(_("Chỉ tạo PO cho phiếu loại 'Vật tư'."))
-        if not self.material_line_ids:
-            raise ValidationError(_("Phiếu vật tư phải có ít nhất 1 dòng vật tư."))
-        if self.purchase_order_ids:
-            raise UserError(_("Phiếu này đã có Đơn mua hàng. Xem smart button 'Đơn mua hàng'."))
+        Điều kiện được phép:
+        - Tất cả phiếu đều type = 'material'
+        - Tất cả phiếu đều state = 'waiting_accounting_paid'
+        - Tất cả phiếu cùng project
+        - Tất cả phiếu cùng currency
 
-        # Gom theo vendor
-        grouped = {}
-        missing_vendor = []
-        for l in self.material_line_ids:
-            if not l.vendor_id:
-                missing_vendor.append(l)
-                continue
-            grouped.setdefault(l.vendor_id, []).append(l)
+        Kết quả:
+        - Gộp theo vendor -> mỗi vendor 1 PO
+        - Mỗi PO chỉ link những phiếu nào thực sự có dòng mua cho vendor đó
+        """
+        if not self:
+            raise UserError(_("Không có phiếu đề xuất nào được chọn."))
 
-        if missing_vendor:
-            names = ", ".join(l.material_id.display_name for l in missing_vendor)
-            raise ValidationError(_("Các dòng sau thiếu Nhà cung cấp đề xuất:\n%s") % names)
+        # 1. Kiểm tra loại phiếu
+        bad_type = self.filtered(lambda s: s.type != "material")
+        if bad_type:
+            raise ValidationError(_("Chỉ tạo Đơn mua cho Phiếu Đề Xuất loại 'Vật Tư'."))
+
+        # 2. Kiểm tra trạng thái phiếu
+        bad_state = self.filtered(lambda s: s.state != "waiting_accounting_paid")
+        if bad_state:
+            raise ValidationError(_("Chỉ tạo Đơn mua cho Phiếu Đề Xuất đang ở trạng thái 'Chờ chi tiền (KT)'."))
+
+        # 3. Kiểm tra cùng dự án
+        projects = self.mapped("project_id")
+        if len(projects) > 1:
+            raise ValidationError(_("Các Phiếu Đề Xuất phải thuộc cùng một Dự án."))
+        common_project = projects[0] if projects else False
+
+        # Nếu tất cả cùng một task -> gán task, nếu khác nhau -> bỏ trống
+        tasks = self.mapped("task_id")
+        common_task = tasks[0] if len(tasks) == 1 else False
+
+        # 4. Kiểm tra cùng loại tiền tệ
+        currencies = self.mapped("currency_id")
+        if len(currencies) > 1:
+            raise ValidationError(_("Các Phiếu Đề Xuất phải cùng loại tiền tệ."))
+        common_currency = currencies[0] if currencies else self.env.company.currency_id
+
+        # 5. Build vendor_groups: {vendor: {"lines": [...], "sheet_ids": set([...])}}
+        vendor_groups = {}
+        for sheet in self:
+            for line in sheet.material_line_ids:
+                if not line.vendor_id:
+                    raise ValidationError(
+                        _("Dòng vật tư '%s' trong phiếu %s chưa có Nhà cung cấp.")
+                        % (line.material_id.display_name, sheet.name)
+                    )
+                vendor = line.vendor_id
+                bucket = vendor_groups.setdefault(vendor, {"lines": [], "sheet_ids": set()})
+                bucket["lines"].append(line)
+                bucket["sheet_ids"].add(sheet.id)
+
+        if not vendor_groups:
+            raise ValidationError(_("Không có dòng vật tư hợp lệ để tạo Đơn mua hàng."))
 
         created_pos = self.env["purchase.order"]
-        for vendor, lines in grouped.items():
-            consolidated = {}  # (product_id, uom_id, price_unit, name) -> qty
-            for l in lines:
+        all_origin_names = ", ".join(self.mapped("name"))
+
+        # 6. Tạo PO cho từng vendor
+        for vendor, data in vendor_groups.items():
+            vendor_lines = data["lines"]
+            sheet_ids_for_vendor = list(data["sheet_ids"])  # [id1, id2, ...]
+            sheets_for_vendor = self.browse(sheet_ids_for_vendor)  # recordset proposal.sheet
+
+            # Gộp line theo (product_id, uom_id, price_unit, name)
+            consolidated = {}
+            for l in vendor_lines:
                 product = getattr(l.material_id, "product_id", False) and l.material_id.product_id or False
                 if not product:
                     product = self.env["product.product"].create({
@@ -72,59 +133,61 @@ class ProposalSheet(models.Model):
                         "purchase_ok": True,
                         "sale_ok": False,
                     })
-                name = l.material_id.display_name or (l.description or "/")
-                key = (product.id, l.unit.id, float(l.price_unit or 0.0), name)
-                consolidated[key] = (consolidated.get(key, 0.0) + (l.quantity or 0.0))
 
-            order_lines = []
-            for (product_id, uom_id, price_unit, name), qty in consolidated.items():
-                order_lines.append((0, 0, {
-                    "name": name,
+                line_name = l.material_id.display_name or (l.description or "/")
+                unit_price = float(l.price_unit or 0.0)
+                qty = l.quantity or 0.0
+
+                key = (product.id, l.unit.id, unit_price, line_name)
+                consolidated[key] = consolidated.get(key, 0.0) + qty
+
+            order_lines_vals = []
+            for (product_id, uom_id, unit_price, line_name), qty_total in consolidated.items():
+                order_lines_vals.append((0, 0, {
+                    "name": line_name,
                     "product_id": product_id,
-                    "product_qty": qty,
+                    "product_qty": qty_total,
                     "product_uom": uom_id,
-                    "price_unit": price_unit,
+                    "price_unit": unit_price,
                     "date_planned": fields.Datetime.now(),
                 }))
 
-            po = self.env["purchase.order"].create({
+            main_sheet = sheets_for_vendor[:1] or self[:1]
+
+            po_vals = {
                 "partner_id": vendor.id,
-                "currency_id": self.currency_id.id,
+                "currency_id": common_currency.id,
                 "company_id": self.env.company.id,
-                "origin": self.name,
-                "proposal_sheet_id": self.id,  # cần field M2o trên purchase.order
-                "order_line": order_lines,
-            })
-            if confirm and hasattr(po, "button_confirm"):
-                po.button_confirm()
+                "origin": all_origin_names,
+
+                # chỉ link các phiếu thực sự có dòng mua từ vendor này
+                "proposal_sheet_ids": [(6, 0, sheets_for_vendor.ids)],
+                "proposal_sheet_id": main_sheet.id,
+
+                "project_id": common_project.id if common_project else False,
+                "task_id": common_task.id if common_task else False,
+
+                "order_line": order_lines_vals,
+            }
+
+            po = self.env["purchase.order"].create(po_vals)
             created_pos |= po
 
-        self.message_post(body=_("Đã tạo %s PO (mỗi NCC 1 đơn) từ Phiếu Đề Xuất.") % len(created_pos))
-        # SAU KHI tạo xong PO -> đẩy task sang “Mua Hàng”
-        self._push_task_to_purchase_stage()
+            # ghi log vào từng phiếu góp hàng cho vendor này
+            for sheet in sheets_for_vendor:
+                sheet.message_post(
+                    body=_("Đã tạo Đơn mua hàng %s cho NCC %s từ phiếu %s.")
+                    % (po.name, vendor.display_name, sheet.name)
+                )
+
+        # 7. Sau khi tạo PO: nếu có hàm đẩy stage task thì gọi
+        for sheet in self:
+            if hasattr(sheet, "_push_task_to_purchase_stage"):
+                sheet._push_task_to_purchase_stage()
+
+        # 8. Trả action mở danh sách PO vừa tạo
         action = self.env.ref("purchase.purchase_form_action").sudo().read()[0]
         action["domain"] = [("id", "in", created_pos.ids)]
         if len(created_pos) == 1:
             action.update({"view_mode": "form", "res_id": created_pos.id})
         return action
-    def _push_task_to_purchase_stage(self):
-        """Đẩy task sang stage 'Mua Hàng' sau khi tạo PO từ phiếu đề xuất."""
-        STAGE_XID = "contract_management.task_type_purchase"  # đổi nếu stage ở module khác
-        for sheet in self:
-            task = sheet.task_id
-            if not task:
-                continue
-            stage = self.env.ref(STAGE_XID, raise_if_not_found=False)
-            if not stage:
-                # Không tìm thấy stage theo XMLID -> bỏ qua (tránh crash)
-                continue
-
-            project = task.project_id
-            if project:
-                # Đảm bảo stage này có link với project (M2M project_ids) để hiện trên Kanban project đó
-                if project.id not in stage.project_ids.ids:
-                    stage.sudo().write({"project_ids": [(4, project.id)]})
-
-            # Gán stage cho task (nếu khác hiện tại)
-            if task.stage_id != stage:
-                task.sudo().write({"stage_id": stage.id})
