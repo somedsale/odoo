@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- PAPERFORMAT -->
+    <record id="company_loan_detail_report_a4" model="report.paperformat">
+        <field name="name">Company Loan Detail A4</field>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">30</field>
+        <field name="margin_bottom">25</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_spacing">20</field>
+        <field name="dpi">100</field>
+    </record>
+
+    <!-- ========== LAYOUT (Header + Footer) ========== -->
+    <template id="report_company_loan_detail_layout">
+        <t t-call="web.html_container">
+            <div class="header" style="font-family:'Times New Roman'; font-size:11pt;">
+                <table style="width:100%; border-collapse: collapse; border: 1px solid #fff;">
+                    <tr>
+                        <!-- Logo -->
+                        <td style="text-align: left; vertical-align: middle; border-collapse: collapse; border: 1px solid #fff; width: 50%;">
+                            <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id" alt="Company Logo" style="max-width: 160px;"/>
+                        </td>
+
+                        <!-- Thông tin công ty -->
+                        <td style="text-align: right; vertical-align: middle; border-collapse: collapse; border: 1px solid #fff; font-size: 11px;">
+                            <span t-esc="res_company.name" style="text-transform: uppercase;"/>
+                            <br/>
+                            MST: <span t-esc="res_company.partner_id.vat"/>
+                        <br/>
+                            Địa chỉ: <span t-esc="res_company.partner_id.street"/>
+                    <br/>
+                            SĐT: <span t-esc="res_company.phone_accounting"/>
+                <br/>
+                            Email: <span style="text-transform: lowercase;" t-esc="res_company.account_email"/>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div class="article" style="font-family: 'Times New Roman'; font-size: 11pt; line-height: 1.5; padding-top: 15px;">
+    <t t-raw="0"/>
+</div>
+
+<div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt; font-family: Times New Roman;">
+    <span class="page"/>
+</div>
+</t>
+</template>
+
+<!-- ========== REPORT BODY ========== -->
+<template id="report_company_loan_detail_view">
+<t t-call="company_loan_tracker.report_company_loan_detail_layout">
+<div class="page">
+
+    <style>
+                    .styled-table {
+                        border-collapse: collapse;
+                        margin: 0 auto;
+                        width: 100%;
+                        font-size: 11pt;
+                        border: 1px solid #000;
+                        table-layout: fixed;
+                    }
+                    .styled-table thead tr {
+                        background-color: #C6E0B4;
+                        font-weight: bold;
+                        color: #000;
+                        text-align: center;
+                        vertical-align: middle;
+                    }
+                    .styled-table th, .styled-table td {
+                        border: 1px solid #000;
+                        padding: 6px 8px;
+                        vertical-align: middle;
+                        overflow-wrap: anywhere;
+                        word-break: break-word;
+                    }
+                    .styled-table tbody tr:hover { background-color: #D9EAD3; }
+                    .table-total-row {
+                        background-color: #E2EFDA;
+                        font-weight: bold;
+                    }
+                    .text-center { text-align: center; vertical-align: middle; }
+                    .text-right { text-align: right; vertical-align: middle; white-space: nowrap; }
+                    .nowrap {
+                        white-space: nowrap;
+                    }
+    </style>
+
+    <h2 style="text-align:center; margin-bottom: 20px; font-size: 24px; text-transform: uppercase;font-weight:bold">
+        <t t-esc="lender.name"/>
+    </h2>
+
+    <table class="styled-table">
+        <colgroup>
+            <col style="width:4%"/>
+            <!-- STT -->
+            <col style="width:12%"/>
+            <!-- Mã giao dịch -->
+            <col style="width:10%"/>
+            <!-- Số tiền vay -->
+            <col style="width:6%"/>
+            <!-- Lãi suất -->
+
+            <!-- Nhóm: Số tiền đã / dự kiến thanh toán -->
+            <col style="width:7%"/>
+            <!-- Loại -->
+            <col style="width:8%"/>
+            <!-- Ngày chi -->
+            <col style="width:8%"/>
+            <!-- Từ ngày -->
+            <col style="width:8%"/>
+            <!-- Đến ngày -->
+            <col style="width:5%"/>
+            <!-- Số ngày -->
+            <col style="width:10%"/>
+            <!-- Số tiền chi -->
+            <col style="width:10%"/>
+            <!-- Lãi phải trả -->
+
+            <!-- Nhóm: Số tiền còn nợ -->
+            <col style="width:10%"/>
+            <!-- Nợ gốc -->
+            <col style="width:10%"/>
+            <!-- Lãi còn nợ -->
+
+            <col style="width:9%"/>
+            <!-- Ngày bắt đầu -->
+            <col style="width:9%"/>
+            <!-- Ngày đáo hạn -->
+        </colgroup>
+        <thead>
+            <tr>
+                <th rowspan="2">STT</th>
+                <th rowspan="2">Mã hợp đồng vay</th>
+                <th rowspan="2">Số tiền vay</th>
+                <th rowspan="2">Lãi suất</th>
+                <th colspan="7">Số tiền đã / dự kiến thanh toán</th>
+                <th colspan="2">Số tiền còn nợ</th>
+                <th rowspan="2" class="nowrap">Bắt đầu</th>
+                <th rowspan="2" class="nowrap">Đáo hạn</th>
+            </tr>
+            <tr>
+                <th>Loại</th>
+                <th>Ngày chi</th>
+                <th>Từ ngày</th>
+                <th>Đến ngày</th>
+                <th>Số ngày</th>
+                <th>Số tiền chi</th>
+                <th>Lãi phải trả</th>
+                <th>Nợ gốc</th>
+                <th>Lãi còn nợ</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <t t-set="stt" t-value="0"/>
+            <t t-foreach="lines" t-as="ln">
+                <t t-set="stt" t-value="stt + 1"/>
+                <tr class="table-total-row">
+                    <td class="text-center">
+                        <t t-esc="stt"/>
+                    </td>
+                    <td>
+                        <t t-esc="ln['loan'].name"/>
+                    </td>
+                    <td class="text-right">
+                        <span t-esc="ln['loan'].amount" t-options="{'widget':'monetary','display_currency': ln['currency']}"/>
+                    </td>
+                    <td class="text-center">
+                        <t t-esc="ln['loan'].interest_rate"/>
+%</td>
+                    <td colspan="5"></td>
+                    <td class="text-right">
+                        <span t-esc="ln['sum_total_paid']" t-options="{'widget':'monetary','display_currency': ln['currency']}"/>
+                    </td>
+                    <td class="text-right">
+                        <span t-esc="ln['sum_interest_expected']" t-options="{'widget':'monetary','display_currency': ln['currency']}"/>
+                    </td>
+                    <td class="text-right">
+                        <span t-esc="ln['final_principal_balance']" t-options="{'widget':'monetary','display_currency': ln['currency']}"/>
+                    </td>
+                    <td class="text-right">
+                        <span t-esc="ln['sum_interest_outstanding']" t-options="{'widget':'monetary','display_currency': ln['currency']}"/>
+                    </td>
+                    <td class="text-center nowrap">
+                        <t t-if="ln['loan'].start_date">
+                            <t t-esc="ln['loan'].start_date.strftime('%d/%m/%Y')"/>
+                        </t>
+                        <t t-else="">-</t>
+                    </td>
+                    <td class="text-center nowrap">
+                        <t t-if="ln['loan'].due_date">
+                            <t t-esc="ln['loan'].due_date.strftime('%d/%m/%Y')"/>
+                        </t>
+                        <t t-else="">-</t>
+                    </td>
+                </tr>
+
+                <!-- Dòng chi tiết phiếu chi -->
+                <t t-foreach="ln['payments']" t-as="p">
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td class="text-center">
+                            <t t-esc="p['kind']=='principal' and 'Trả gốc' or (p['kind']=='interest' and 'Trả lãi' or 'Khác')"/>
+                        </td>
+                        <td class="text-center">
+                            <t t-if="p['date']">
+                                <t t-esc="p['date'].strftime('%d/%m/%Y')"/>
+                            </t>
+                            <t t-else="">-</t>
+                        </td>
+                        <td class="text-center">
+                            <t t-if="p['date_from']">
+                                <t t-esc="p['date_from'].strftime('%d/%m/%Y')"/>
+                            </t>
+                            <t t-else="">-</t>
+                        </td>
+                        <td class="text-center">
+                            <t t-if="p['date_to']">
+                                <t t-esc="p['date_to'].strftime('%d/%m/%Y')"/>
+                            </t>
+                            <t t-else="">-</t>
+                        </td>
+                        <td class="text-center">
+                            <t t-esc="p['interest_days'] or 0"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-esc="p['total']" t-options="{'widget':'monetary','display_currency': ln['currency']}"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-esc="p['interest_expected']" t-options="{'widget':'monetary','display_currency': ln['currency']}"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-esc="p['loan_balance']" t-options="{'widget':'monetary','display_currency': ln['currency']}"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-esc="p['loan_interest_outstanding']" t-options="{'widget':'monetary','display_currency': ln['currency']}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </t>
+            </t>
+        </tbody>
+    </table>
+</div>
+</t>
+</template>
+
+<!-- ACTION -->
+<record id="action_company_loan_detail_report" model="ir.actions.report">
+<field name="name">Báo cáo chi tiết khoản vay</field>
+<field name="model">company.loan</field>
+<field name="report_type">qweb-html</field>
+<field name="report_name">company_loan_tracker.report_company_loan_detail_view</field>
+<field name="report_file">company_loan_tracker.report_company_loan_detail_view</field>
+<field name="paperformat_id" ref="company_loan_detail_report_a4"/>
+</record>
+
+</odoo>
