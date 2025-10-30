@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- 🌟 Kế thừa form view Phiếu Thu để thêm liên kết với Khoản vay -->
+        <record id="view_account_receipt_form_inherit_loan" model="ir.ui.view">
+            <field name="name">account.receipt.form.inherit.loan</field>
+            <field name="model">account.receipt</field>
+            <field name="inherit_id" ref="custom_accounting_receipt.view_account_receipt_form"/>
+            <field name="arch" type="xml">
+
+                <!-- 📌 Chèn sau field total -->
+                <xpath expr="//field[@name='amount']" position="after">
+                    <field name="loan_id" domain="[('lender_id', '=', partner_id)]" options="{'no_create': True, 'no_create_edit': True}"/>
+                </xpath>
+
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -136,8 +136,8 @@ class ProposalSheet(models.Model):
         return res
     def unlink(self):
         for rec in self:
-            if rec.state not in ('draft', 'cancelled'):
-                raise UserError("Chỉ có thể xóa khi phiếu ở trạng thái 'Nháp' hoặc 'Đã hủy'.")
+            if rec.state not in ('draft', 'canceled','rejected'):
+                raise UserError("Chỉ có thể xóa khi phiếu ở trạng thái 'Nháp' hoặc 'Đã hủy' hoặc 'Từ chối'.")
         return super().unlink()
 
     @api.constrains('material_line_ids', 'expense_line_ids', 'type')

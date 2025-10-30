@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- TREE VIEW -->
+        <record id="view_company_loan_tree" model="ir.ui.view">
+            <field name="name">company.loan.tree</field>
+            <field name="model">company.loan</field>
+            <field name="arch" type="xml">
+                <tree string="Khoản vay của công ty">
+                    <field name="name"/>
+                    <field name="lender_id"/>
+                    <field name="loan_type" widget="badge"/>
+                    <field name="interest_rate"/>
+                    <field name="amount" sum="Tổng vay" widget="monetary"/>
+                    <field name="total_paid" sum="Đã trả" widget="monetary"/>
+                    <field name="balance" sum="Còn nợ" widget="monetary"/>
+                    <field name="interest_note"/>
+                    <field name="currency_id" optional='hide' string="Tiền tệ"/>
+                    <field name="state" widget="badge"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- FORM VIEW -->
+        <record id="view_company_loan_form" model="ir.ui.view">
+            <field name="name">company.loan.form</field>
+            <field name="model">company.loan</field>
+            <field name="arch" type="xml">
+                <form string="Khoản vay của công ty">
+                    <header>
+                        <field name="state" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <group col="3">
+                            <group string="Thông tin khoản vay">
+                                <field name="name"/>
+                                <field name="lender_id" context="{'default_is_lender':True}"/>
+                                <field name="loan_type"/>
+                                <field name="interest_rate"/>
+                                <field name="start_date"/>
+                                <field name="due_date"/>
+                            </group>
+                            <group string="Tình trạng gốc">
+                                <field name="amount"/>
+                                <field name="total_paid"/>
+                                <field name="balance" readonly="1"/>
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                            <group string="Tình trạng lãi">
+                                <field name ="total_interest_due"/>
+                                <field name ="interest_outstanding"/>
+                                <field name ="total_interest_paid"/>
+                            </group>
+
+                        </group>
+
+                        <separator string="Thông tin trả nợ" colspan="3"/>
+
+                        <group>
+                            <field name="interest_note" placeholder="VD: Trả lãi ngày 25 hàng tháng"/>
+                            <field name="note" placeholder="Ghi chú thêm..."/>
+                        </group>
+                        <notebook>
+                            <page string="Phiếu thu (Nhận tiền)">
+                                <field name="receipt_ids" context="{'default_loan_id': active_id,'default_partner_id': lender_id}" domain="[('loan_id', '=', id)]">
+                                    <tree>
+                                        <field name="name"/>
+                                        <field name="partner_id"/>
+                                        <field name="amount" sum="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                        <field name="date"/>
+                                        <field name="currency_id" string="Tiền tệ"/>
+                                        <field name="state" string="Trạng thái"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                            <page string="Phiếu chi (Trả nợ)">
+                                <field name="payment_request_ids" context="{'default_loan_id': active_id,'default_receive_person':lender_id}" domain="[('loan_id', '=', id)]">
+                                    <tree>
+                                        <field name="name"/>
+                                        <field name="loan_payment_kind" widget="badge"/>
+                                        <field name="receive_person" string="Bên nhận" optional="hide"/>
+                                        <field name="date_payment"/>
+                                        <field name ="date_from"/>
+                                        <field name="date_to"/>
+                                        <field name="total" sum="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                        <field name="interest_days"/>
+                                        <field name="interest_expected" sum="1"/>
+                                        <field name="interest_shortfall" sum="1"/>
+                                        <field name="currency_id" string="Tiền tệ" optional="hide"/>
+                                        <field name="state" widget="badge" string="Trạng thai"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record id="view_company_loan_search" model="ir.ui.view">
+            <field name="name">company.loan.search</field>
+            <field name="model">company.loan</field>
+            <field name="arch" type="xml">
+                <search string="Tìm kiếm khoản vay">
+                    <!-- Ô search chính -->
+                    <field name="name" string="Mã giao dịch"/>
+                    <field name="lender_id" string="Người cho vay"/>
+                    <field name="interest_note" string="Ghi chú trả lãi/gốc"/>
+                    <field name="note" string="Ghi chú thêm"/>
+
+                    <!-- Bộ lọc nhanh (Filters dropdown) -->
+                    <filter name="filter_dang_vay" string="Đang vay" domain="[('state', '=', 'ongoing')]"/>
+                    <filter name="filter_da_tat_toan" string="Đã tất toán" domain="[('state', '=', 'done')]"/>
+                    <filter name="filter_qua_han" string="Quá hạn đáo hạn" domain="[('due_date', '&lt;', context_today()), ('state', 'not in', ('done','cancel'))]" help="Các khoản vay đã quá ngày đáo hạn nhưng chưa tất toán"/>
+
+                    <!-- Nhóm theo (Group By dropdown) -->
+                    <group expand="0" string="Nhóm theo">
+                        <filter name="group_by_lender" string="Người cho vay" context="{'group_by': 'lender_id'}"/>
+                        <filter name="group_by_state" string="Trạng thái" context="{'group_by': 'state'}"/>
+                        <filter name="group_by_loan_type" string="Loại vay" context="{'group_by': 'loan_type'}"/>
+                        <filter name="group_by_due_date" string="Ngày đáo hạn" context="{'group_by': 'due_date'}"/>
+                    </group>
+
+                    <!-- Search Panel bên trái list view -->
+                    <searchpanel>
+                        <field name="lender_id" string="Người cho vay" icon="fa-user" />
+                        <field name="loan_type" string="Loại vay" icon="fa-briefcase" />
+                        <field name="state" string="Trạng thái" icon="fa-flag" select="multi" />
+                    </searchpanel>
+                </search>
+            </field>
+        </record>
+
+        <!-- ACTION -->
+        <record id="action_company_loan" model="ir.actions.act_window">
+            <field name="name">Khoản vay của công ty</field>
+            <field name="res_model">company.loan</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_company_loan_search"/>
+        </record>
+
+        <!-- MENU -->
+        <menuitem id="menu_company_loan_root" name="Khoản vay của công ty" parent="custom_account_menu.menu_accounting_custom_root" sequence="25"/>
+
+        <menuitem id="menu_company_loan_management" name="Quản lý khoản vay" parent="menu_company_loan_root" action="action_company_loan" sequence="10"/>
+
+    </data>
+</odoo>
