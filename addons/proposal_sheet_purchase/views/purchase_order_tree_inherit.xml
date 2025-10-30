@@ -1,48 +1,86 @@
 <odoo>
-    <!-- Inherit cho “Đơn hàng” -->
+    <!-- Inherit cho Tree view “Đơn mua hàng” (purchase.purchase_order_view_tree) -->
     <record id="view_purchase_order_tree_inherit_po" model="ir.ui.view">
         <field name="name">purchase.order.tree.inherit.po</field>
         <field name="model">purchase.order</field>
         <field name="inherit_id" ref="purchase.purchase_order_view_tree"/>
         <field name="arch" type="xml">
+
+            <!-- Thêm cột sau đối tác -->
             <xpath expr="//tree/field[@name='partner_id']" position="after">
                 <field name="project_id" optional="show"/>
-                <field name="proposal_sheet_id" optional="show"/>
+
+                <!-- Nhiều phiếu đề xuất gốc (Many2many) -->
+                <field name="proposal_sheet_ids"
+                       widget="many2many_tags"
+                       string="Phiếu đề xuất"
+                       optional="show"/>
+
+                <!-- Hợp đồng NCC -->
                 <field name="supplier_contract_id" optional="show"/>
-                <field name="payment_status" widget="badge" optional="show"/>
-                <field name="shipping_status" widget="badge" optional="show" decoration-danger="shipping_status == 'not_shipped'" decoration-warning="shipping_status == 'in_process'" decoration-success="shipping_status == 'done'"/>
+
+                <!-- Thanh toán -->
+                <field name="payment_status"
+                       widget="badge"
+                       optional="show"/>
+
+                <!-- Trạng thái giao hàng -->
+                <field name="shipping_status"
+                       widget="badge"
+                       optional="show"
+                       decoration-danger="shipping_status == 'not_shipped'"
+                       decoration-warning="shipping_status == 'in_progress'"
+                       decoration-success="shipping_status == 'done'"/>
             </xpath>
+
+            <!-- Ẩn cột trạng thái chuẩn của PO để đỡ rối -->
             <xpath expr="//tree/field[@name='state']" position="attributes">
-                <attributes>
-                    <attribute name="invisible">1</attribute>
-                </attributes>
+                <attribute name="invisible">1</attribute>
             </xpath>
+
         </field>
     </record>
 
-    <!-- Inherit cho “Yêu cầu báo giá” (RFQ) -->
+
+    <!-- Inherit cho Tree view RFQ / Yêu cầu báo giá (purchase.purchase_order_kpis_tree) -->
     <record id="view_purchase_order_tree_inherit_rfq" model="ir.ui.view">
         <field name="name">purchase.order.tree.inherit.rfq</field>
         <field name="model">purchase.order</field>
         <field name="inherit_id" ref="purchase.purchase_order_kpis_tree"/>
         <field name="arch" type="xml">
+
+            <!-- Sau nhà cung cấp, show Dự án + Danh sách Phiếu đề xuất -->
             <xpath expr="//tree/field[@name='partner_id']" position="after">
                 <field name="project_id" optional="show"/>
+
+                <field name="proposal_sheet_ids"
+                       widget="many2many_tags"
+                       string="Phiếu đề xuất"
+                       optional="show"/>
             </xpath>
+
+            <!-- Sau cột state gốc, thêm ghi chú + trạng thái giao hàng -->
             <xpath expr="//tree/field[@name='state']" position="after">
-                <field name="note"  optional="show"/>
-                <field name="shipping_status" widget="badge" optional="show" decoration-danger="shipping_status == 'not_shipped'" decoration-warning="shipping_status == 'in_process'" decoration-success="shipping_status == 'done'"/>
+                <field name="note" optional="show"/>
+
+                <field name="shipping_status"
+                       widget="badge"
+                       optional="show"
+                       decoration-danger="shipping_status == 'not_shipped'"
+                       decoration-warning="shipping_status == 'in_progress'"
+                       decoration-success="shipping_status == 'done'"/>
             </xpath>
-                        <xpath expr="//tree/field[@name='state']" position="attributes">
-                <attributes>
-                    <attribute name="column_invisible">1</attribute>
-                </attributes>
+
+            <!-- Ẩn cột state (trạng thái RFQ) để form gọn -->
+            <xpath expr="//tree/field[@name='state']" position="attributes">
+                <attribute name="invisible">1</attribute>
             </xpath>
+
+            <!-- Ẩn cột activity_ids nếu view gốc có (lịch nhắc việc) -->
             <xpath expr="//tree/field[@name='activity_ids']" position="attributes">
-                <attributes>
-                    <attribute name="column_invisible">1</attribute>
-                </attributes>
+                <attribute name="invisible">1</attribute>
             </xpath>
+
         </field>
     </record>
 </odoo>

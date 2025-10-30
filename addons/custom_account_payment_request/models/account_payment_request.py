@@ -84,12 +84,12 @@ class AccountingPaymentRequest(models.Model):
                 # This could involve creating journal entries, etc.
     def action_cancel(self):
         for rec in self:
-            if rec.state in ['draft', 'confirmed']:
                 rec.state = 'cancelled'
-            elif rec.state == 'post':
-                raise UserError("Không thể hủy yêu cầu chi tiền đã vào sổ.")
-            elif rec.state == 'done':
-                raise UserError("Không thể hủy yêu cầu chi tiền đã hoàn tất.")
+    def action_reset_to_draft(self):
+        for rec in self:
+            if rec.state == 'cancelled':
+                rec.state = 'draft'
+        
     def action_payment_request(self):
         for rec in self:
             if rec.state == 'confirmed':
