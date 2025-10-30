@@ -23,14 +23,14 @@
             <form string="Chi phí dự án">
                 <sheet>
                     <group>
-                        <field name="project_id" options="{'no_create': True}"/>
+                        <field name="project_id" options="{'no_create': True}" readonly="1"/>
                         <field name="currency_id" invisible="1" optional="hide"/>
                         <field name="total_cost" widget="monetary"/>
                         <field name="total_spent" widget="monetary"/>
                         <field name="total_not_spent" widget="monetary"/>
                     </group>
 
-                    <field name="payment_request_ids" widget="">
+                    <field name="payment_request_ids" readonly="context.get('readonly_by_ctx', False)">
                         <tree create="false" edit="false" delete="false">
                             <field name="name"/>
                             <field name="proposal_sheet_id"/>
@@ -60,8 +60,16 @@
             </p>
         </field>
     </record>
+    <record id="action_project_expense_readonly" model="ir.actions.act_window">
+        <field name="name">Chi phí dự án</field>
+        <field name="res_model">project.expense.custom</field>
+        <field name="view_mode">tree,form</field>
+        <!-- Context ép readonly -->
+        <field name="context">{'readonly_by_ctx': True}</field>
+    </record>
 
     <!-- Menu -->
     <menuitem id="menu_project_expense" name="Chi phí dự án" parent="custom_account_menu.menu_accounting_project" action="action_project_expense" sequence="10"/>
-
+    <menuitem id="menu_project_expense_in_project" name="Chi phí dự án" parent="project.menu_main_pm" action="action_project_expense_readonly" sequence="50" />
+    <!-- <menuitem id="menu_project_expense_in_project_user" name="Chi phí dự án" parent="custom_project_role.menu_main_pm_user" action="action_project_expense_readonly" sequence="50" /> -->
 </odoo>
