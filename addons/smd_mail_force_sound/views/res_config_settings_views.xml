@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_res_config_settings_smd_force_sound" model="ir.ui.view">
+        <field name="name">res.config.settings.smd.force.sound</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Chèn trước phần "User Default Rights" -->
+            <xpath expr="//block[@id='user_default_rights']" position="before">
+                <block title="Discuss Notification" id="smd_force_sound_settings">
+                    <setting string="Discuss Sound Alert" help="Phát âm thanh 'ting' khi có tin nhắn mới, kể cả khi bật Desktop Notifications.">
+                        <div class="w-50 row">
+                            <label for="smd_force_sound" string="Enable sound for Discuss" class="d-block w-75 py-2"/>
+                            <field name="smd_force_sound" class="d-block w-25 p-0 m-0"/>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
