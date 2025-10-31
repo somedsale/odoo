@@ -32,6 +32,7 @@ class SupplierContract(models.Model):
     paid_amount = fields.Monetary("Tổng giá trị đã thanh toán", compute="_compute_paid_amount", store=True, currency_field="currency_id")
     residual_amount = fields.Monetary("Còn nợ", compute="_compute_residual", store=True, currency_field="currency_id")
     advance_amount = fields.Monetary("Số tiền đã tạm ứng/ chưa hóa đơn", compute="_compute_advance_amount", store=True, currency_field="currency_id")
+    old_debt = fields.Monetary("Công nợ cũ", currency_field="currency_id")
     account_payment_request_ids = fields.One2many(
         "account.payment.request", 
         "supplier_contract_id", 
@@ -81,10 +82,10 @@ class SupplierContract(models.Model):
     def _compute_paid_amount(self):
         for record in self:
             record.paid_amount = sum(request.total for request in record.account_payment_request_ids if request.state == 'done')
-    @api.depends("amount", "paid_amount", "advance_amount", "account_payment_request_ids.total", "account_payment_request_ids.state", "invoice_ids.amount")
+    @api.depends("amount", "paid_amount", "advance_amount", "account_payment_request_ids.total", "account_payment_request_ids.state", "invoice_ids.amount", "old_debt")
     def _compute_residual(self):
         for record in self:
-            residual_amount = record.total_invoices - record.paid_amount
+            residual_amount = record.total_invoices - record.paid_amount + record.old_debt
             if residual_amount < 0:
                 residual_amount = residual_amount
             record.residual_amount = residual_amount

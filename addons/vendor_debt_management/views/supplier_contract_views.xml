@@ -13,6 +13,7 @@
                 <field name="amount"/>
                 <field name="total_invoices"/>
                 <field name="paid_amount"/>
+                <field name="old_debt"/>
                 <field name="residual_amount"/>
                 <field name="due_date"/>
                 <field name="currency_id" optional="hide" invisible="1"/>
@@ -57,6 +58,7 @@
                             <field name="amount"/>
                             <field name="total_invoices" readonly="1"/>
                             <field name="paid_amount" readonly="1"/>
+                            <field name="old_debt"/>
                             <field name="residual_amount" readonly="1"/>
                             <field name="currency_id" invisible="1" optional="hide"/>
                         </group>

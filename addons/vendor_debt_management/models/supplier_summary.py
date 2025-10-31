@@ -32,8 +32,7 @@ class SupplierSummary(models.Model):
     old_debt = fields.Monetary(
         string="Công nợ cũ",
         currency_field="currency_id",
-        compute="_compute_old_debt",
-        inverse="_inverse_old_debt",
+        compute="_compute_old_debts",
         store=False,
         help="Số tiền còn nợ trước đây, sẽ cộng vào Còn nợ hiện tại."
     )
@@ -81,12 +80,16 @@ class SupplierSummary(models.Model):
     def _compute_paid_amount(self):
         for record in self:
             record.paid_amount = sum(record.contract_ids.mapped("paid_amount"))
+    @api.depends("contract_ids.old_debt")
+    def _compute_old_debts(self):
+        for record in self:
+            record.old_debt = sum(record.contract_ids.mapped("old_debt"))
     @api.depends("contract_ids.residual_amount", "old_debt")
     def _compute_residual(self):
         for record in self:
             current_residual = sum(record.contract_ids.mapped("residual_amount"))
             # cộng thêm công nợ cũ (có thể = 0 nếu chưa khai báo)
-            record.residual_amount = (current_residual or 0.0) + (record.old_debt or 0.0)
+            record.residual_amount = (current_residual or 0.0) 
     @api.depends("contract_ids.amount")
     def _compute_total_contracts(self):
         for record in self:
@@ -198,36 +201,36 @@ class SupplierSummary(models.Model):
                     "interpretation": rec.interpretation or False,
                 })
 
-    @api.depends("partner_id", "currency_id")
-    def _compute_old_debt(self):
-        Note = self.env["supplier.summary.note"]
-        for rec in self:
-            if rec.partner_id and rec.currency_id:
-                n = Note.search([
-                    ("partner_id", "=", rec.partner_id.id),
-                    ("currency_id", "=", rec.currency_id.id),
-                ], limit=1)
-                rec.old_debt = n.old_debt if n else 0.0
-            else:
-                rec.old_debt = 0.0
+    # @api.depends("partner_id", "currency_id")
+    # def _compute_old_debt(self):
+    #     Note = self.env["supplier.summary.note"]
+    #     for rec in self:
+    #         if rec.partner_id and rec.currency_id:
+    #             n = Note.search([
+    #                 ("partner_id", "=", rec.partner_id.id),
+    #                 ("currency_id", "=", rec.currency_id.id),
+    #             ], limit=1)
+    #             rec.old_debt = n.old_debt if n else 0.0
+    #         else:
+    #             rec.old_debt = 0.0
 
-    def _inverse_old_debt(self):
-        Note = self.env["supplier.summary.note"]
-        for rec in self:
-            if not (rec.partner_id and rec.currency_id):
-                continue
-            n = Note.search([
-                ("partner_id", "=", rec.partner_id.id),
-                ("currency_id", "=", rec.currency_id.id),
-            ], limit=1)
-            if n:
-                n.old_debt = rec.old_debt or 0.0
-            else:
-                Note.create({
-                    "partner_id": rec.partner_id.id,
-                    "currency_id": rec.currency_id.id,
-                    "old_debt": rec.old_debt or 0.0,
-                })
+    # def _inverse_old_debt(self):
+    #     Note = self.env["supplier.summary.note"]
+    #     for rec in self:
+    #         if not (rec.partner_id and rec.currency_id):
+    #             continue
+    #         n = Note.search([
+    #             ("partner_id", "=", rec.partner_id.id),
+    #             ("currency_id", "=", rec.currency_id.id),
+    #         ], limit=1)
+    #         if n:
+    #             n.old_debt = rec.old_debt or 0.0
+    #         else:
+    #             Note.create({
+    #                 "partner_id": rec.partner_id.id,
+    #                 "currency_id": rec.currency_id.id,
+    #                 "old_debt": rec.old_debt or 0.0,
+    #             })
 
 class ReportSupplierSummary(models.AbstractModel):
     _name = 'report.vendor_debt_management.report_supplier_summary_view'
