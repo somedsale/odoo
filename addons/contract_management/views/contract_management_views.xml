@@ -8,22 +8,17 @@
         <field name="arch" type="xml">
             <form string="Contract">
                 <header>
-                    <button name="action_cancel" type="object" string="Hủy hợp đồng"
-                            class="btn-danger" invisible="stage in ('completed','canceled')"/>
-                    <button name="action_to_executing" type="object" string="Bắt đầu thực hiện"
-                            class="btn-primary" invisible="stage != 'negotiating'"/>
-                    <!-- <button name="action_to_completed" type="object" string="Hoàn thành"
-                            class="btn-success" invisible="stage != 'executing'"/> -->
-                    <field name="stage" widget="statusbar"
-                           decoration-info="stage == 'negotiating'"
-                           decoration-primary="stage == 'executing'"
-                           decoration-success="stage == 'completed'"
-                           statusbar_visible="negotiating,executing,completed,canceled"/>
+                    <button name="action_cancel" type="object" string="Hủy hợp đồng" class="btn-danger" invisible="stage in ('completed','canceled')"/>
+                    <button name="action_to_executing" type="object" string="Bắt đầu thực hiện" class="btn-primary" invisible="stage != 'negotiating'"/>
+                    <!-- <button name="action_to_completed" type="object" string="Hoàn thành" class="btn-success" invisible="stage != 'executing'"/> -->
+                    <field name="stage" widget="statusbar" decoration-info="stage == 'negotiating'" decoration-primary="stage == 'executing'" decoration-success="stage == 'completed'" statusbar_visible="negotiating,executing,completed,canceled"/>
                 </header>
 
                 <sheet>
                     <div class="oe_title">
-                        <h2><field name="name"/></h2>
+                        <h2>
+                            <field name="name"/>
+                        </h2>
                     </div>
                     <group>
                         <group>
@@ -32,6 +27,8 @@
                             <field name="partner_id" options="{'no_create': True}" readonly="1"/>
                             <field name="project_id" readonly="1"/>
                             <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="tax_id" widget="many2many_tags" domain="[('type_tax_use','in',('sale','none')), ('company_id','in', allowed_company_ids)]"/>
+                            <field name="amount_untaxed" />
                             <field name="contract_value"/>
                             <field name="warranty_time"/>
                         </group>
@@ -70,10 +67,7 @@
                 <field name="project_id"/>
                 <field name="partner_id"/>
                 <field name="signature_date"/>
-                <field name="stage" widget="badge"
-                       decoration-info="stage == 'negotiating'"
-                       decoration-primary="stage == 'executing'"
-                       decoration-success="stage == 'completed'"/>
+                <field name="stage" widget="badge" decoration-info="stage == 'negotiating'" decoration-primary="stage == 'executing'" decoration-success="stage == 'completed'"/>
             </tree>
         </field>
     </record>
@@ -93,9 +87,9 @@
 
                 <!--  Bộ lọc trạng thái nhanh  -->
                 <filter string="Đang thương thảo" name="stg_negotiating" domain="[('stage','=','negotiating')]"/>
-                <filter string="Đang thực hiện"  name="stg_executing"   domain="[('stage','=','executing')]"/>
-                <filter string="Hoàn thành"      name="stg_completed"   domain="[('stage','=','completed')]"/>
-                <filter string="Đã hủy"          name="stg_canceled"    domain="[('stage','=','canceled')]"/>
+                <filter string="Đang thực hiện" name="stg_executing" domain="[('stage','=','executing')]"/>
+                <filter string="Hoàn thành" name="stg_completed" domain="[('stage','=','completed')]"/>
+                <filter string="Đã hủy" name="stg_canceled" domain="[('stage','=','canceled')]"/>
 
                 <!--  Bộ lọc theo ngày: Odoo sẽ hiện menu (Hôm nay, Tuần này, Tháng này, Quý này, Năm nay, Tùy chọn...)  -->
                 <!-- Ngày thực hiện -->
@@ -114,16 +108,16 @@
                     <filter string="Dự án" name="grp_project" context="{'group_by':'project_id'}"/>
 
                     <!-- Group by Ngày thực hiện -->
-                    <filter string="Thực hiện - Năm"   name="grp_exec_year"   context="{'group_by':'date_execution:year'}"/>
-                    <filter string="Thực hiện - Quý"   name="grp_exec_quarter" context="{'group_by':'date_execution:quarter'}"/>
-                    <filter string="Thực hiện - Tháng" name="grp_exec_month"  context="{'group_by':'date_execution:month'}"/>
-                    <filter string="Thực hiện - Tuần"  name="grp_exec_week"   context="{'group_by':'date_execution:week'}"/>
+                    <filter string="Thực hiện - Năm" name="grp_exec_year" context="{'group_by':'date_execution:year'}"/>
+                    <filter string="Thực hiện - Quý" name="grp_exec_quarter" context="{'group_by':'date_execution:quarter'}"/>
+                    <filter string="Thực hiện - Tháng" name="grp_exec_month" context="{'group_by':'date_execution:month'}"/>
+                    <filter string="Thực hiện - Tuần" name="grp_exec_week" context="{'group_by':'date_execution:week'}"/>
 
                     <!-- Group by Ngày hoàn thành -->
-                    <filter string="Hoàn thành - Năm"   name="grp_comp_year"   context="{'group_by':'date_completion:year'}"/>
-                    <filter string="Hoàn thành - Quý"   name="grp_comp_quarter" context="{'group_by':'date_completion:quarter'}"/>
-                    <filter string="Hoàn thành - Tháng" name="grp_comp_month"  context="{'group_by':'date_completion:month'}"/>
-                    <filter string="Hoàn thành - Tuần"  name="grp_comp_week"   context="{'group_by':'date_completion:week'}"/>
+                    <filter string="Hoàn thành - Năm" name="grp_comp_year" context="{'group_by':'date_completion:year'}"/>
+                    <filter string="Hoàn thành - Quý" name="grp_comp_quarter" context="{'group_by':'date_completion:quarter'}"/>
+                    <filter string="Hoàn thành - Tháng" name="grp_comp_month" context="{'group_by':'date_completion:month'}"/>
+                    <filter string="Hoàn thành - Tuần" name="grp_comp_week" context="{'group_by':'date_completion:week'}"/>
                 </group>
 
                 <!-- (Tùy chọn) Search Panel cho Stage/Partner -->
@@ -134,14 +128,14 @@
             </search>
         </field>
     </record>
-<record id="ir_actions_server_backfill_customer_contracts" model="ir.actions.server">
-    <field name="name">Đồng bộ Customer Contract</field>
-    <field name="model_id" ref="model_contract_management"/>
-    <field name="binding_model_id" ref="model_contract_management"/>
-    <field name="binding_type">action</field>
-    <field name="state">code</field>
-    <field name="code">action = records.action_backfill_customer_contracts()</field>
-</record>
+    <record id="ir_actions_server_backfill_customer_contracts" model="ir.actions.server">
+        <field name="name">Đồng bộ Customer Contract</field>
+        <field name="model_id" ref="model_contract_management"/>
+        <field name="binding_model_id" ref="model_contract_management"/>
+        <field name="binding_type">action</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_backfill_customer_contracts()</field>
+    </record>
 
     <!-- Action for Contract Menu: gắn search view -->
     <record id="action_contract_management" model="ir.actions.act_window">
@@ -156,7 +150,6 @@
 
     <!-- Menu -->
     <menuitem id="menu_contract_management_root" name="Hợp đồng" sequence="10" parent="sale.sale_menu_root"/>
-    <menuitem id="menu_contract_management" name="Hợp đồng" action="action_contract_management"
-              parent="menu_contract_management_root" sequence="10"/>
+    <menuitem id="menu_contract_management" name="Hợp đồng" action="action_contract_management" parent="menu_contract_management_root" sequence="10"/>
 
 </odoo>

@@ -25,8 +25,11 @@ class CustomerContract(models.Model):
     )
     contact = fields.Text(string="Liên hệ")
     amount_total = fields.Monetary(
-        string="Giá trị HĐ", 
-        currency_field="currency_id"
+        string="Giá trị HĐ",
+        currency_field="currency_id",
+        compute="_compute_amount_total",
+        store=True,
+        tracking=True
     )
     currency_id = fields.Many2one(
         'res.currency', 
@@ -38,6 +41,21 @@ class CustomerContract(models.Model):
         string="Hồ sơ quản lý HĐ (Sale)",
         ondelete="set null",
         tracking=True
+    )
+    amount_untaxed = fields.Monetary(
+        string="Giá trị chưa thuế", 
+        currency_field="currency_id",
+        store=True
+    )
+    tax_id = fields.Many2many(
+        'account.tax', 
+        string="Thuế", 
+        help="Các sắc thuế áp dụng cho hợp đồng."
+    )
+    attachment_ids = fields.Many2many(
+        'ir.attachment', 
+        string="Tài liệu",
+        related='management_id.attachment_ids'
     )
     # Liên kết với Hóa đơn
     invoice_ids = fields.One2many(
@@ -93,6 +111,24 @@ class CustomerContract(models.Model):
     ('paused', 'Tạm ngưng'),
     ('bad_debt', 'Công nợ khó đòi'),
 ], string="Loại hợp đồng", default='preparing', tracking=True)
+    @api.depends('amount_untaxed', 'tax_id')
+    def _compute_amount_total(self):
+        """
+        Giá trị hợp đồng = Giá trị chưa thuế + tổng thuế
+        Nếu hợp đồng cũ chưa có amount_untaxed → mặc định bằng amount_total hiện có
+        """
+        for contract in self:
+            if not contract.amount_untaxed and contract.amount_total:
+                # giữ nguyên giá trị cũ
+                contract.amount_untaxed = contract.amount_total
+
+            taxes_amount = 0.0
+            if contract.tax_id:
+                # Tính tổng % thuế
+                taxes_percent = sum(contract.tax_id.mapped('amount'))
+                taxes_amount = contract.amount_untaxed * taxes_percent / 100
+
+            contract.amount_total = contract.amount_untaxed + taxes_amount
     @api.model
     def create(self, vals):
         if vals.get('name', "New") == "New":
@@ -131,14 +167,11 @@ class CustomerContract(models.Model):
             management = False
 
             if rec.project_id:
-                if rec.project_id.partner_id:
-                    rec.partner_id = rec.project_id.partner_id
-                else:
-                    rec.partner_id = False  
+                rec.partner_id = rec.project_id.partner_id or False
             else:
-                rec.partner_id = False 
+                rec.partner_id = False
 
-            # 🔹 Ưu tiên tìm hợp đồng bên Sale theo dự án
+            # Ưu tiên tìm hợp đồng bên Sale theo dự án
             if rec.project_id:
                 management = rec.env['contract.management'].search([
                     '|',
@@ -146,20 +179,21 @@ class CustomerContract(models.Model):
                     ('sale_order_id.project_id', '=', rec.project_id.id),
                 ], limit=1)
 
-            # 🔹 Nếu chưa thấy → tìm theo Khách hàng
+            # Nếu chưa thấy → tìm theo khách hàng
             if not management and rec.partner_id:
                 management = rec.env['contract.management'].search([
                     ('partner_id', '=', rec.partner_id.id)
                 ], limit=1)
-            # 🔹 Gán dữ liệu nếu tìm thấy
+
+            # Gán dữ liệu nếu tìm thấy
             if management:
                 rec.management_id = management
                 rec.contract_number = management.num_contract
-                rec.amount_total = management.contract_value or 0.0
-                # đảm bảo đồng bộ khách hàng từ hợp đồng sale
+                rec.amount_untaxed = management.contract_value or 0.0
+                rec.amount_total = rec.amount_untaxed
                 rec.partner_id = management.partner_id.id
             else:
                 rec.management_id = False
                 rec.contract_number = False
+                rec.amount_untaxed = 0.0
                 rec.amount_total = 0.0
-
