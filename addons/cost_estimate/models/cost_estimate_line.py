@@ -84,7 +84,24 @@ class CostEstimateLine(models.Model):
     readonly=True,
     currency_field="currency_id"    
 )
-
+    so_name = fields.Text(
+        string='Diễn giải (SO)',
+        related='sale_order_line_id.name',
+        store=True, readonly=True,
+        related_sudo=True,
+    )
+    so_thongso = fields.Text(
+        string='Thông số (SO)',
+        related='sale_order_line_id.x_thongso',
+        store=True, readonly=True,
+        related_sudo=True,
+    )
+    so_xuatxu = fields.Char(
+        string='Xuất xứ (SO)',
+        related='sale_order_line_id.x_xuatxu',
+        store=True, readonly=True,
+        related_sudo=True,
+    )
     @api.depends('price_subtotal', 'tax_id', 'currency_id')
     def _compute_total_with_tax(self):
         for rec in self:
