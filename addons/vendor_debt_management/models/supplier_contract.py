@@ -20,7 +20,7 @@ class SupplierContract(models.Model):
     name = fields.Char("Mã", default="New", required=True, readonly=True)
     display_name = fields.Char("Tên hiển thị", compute="_compute_display_name", store=True)
     partner_id = fields.Many2one("res.partner", string="Nhà cung cấp", required=True, domain=[("supplier_rank", ">", 0)])
-    project_id = fields.Many2one("project.project", string="Dự án", required=True)
+    project_id = fields.Many2one("project.project", string="Dự án")
     interpretation = fields.Char("Diễn giải")
     contract_date = fields.Date("Ngày Hợp đồng")
     amount = fields.Monetary("Giá trị Hợp đồng", currency_field="currency_id")
