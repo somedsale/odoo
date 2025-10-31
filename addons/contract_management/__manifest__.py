@@ -15,6 +15,7 @@
         'views/contract_management_views.xml',
         'views/project_task_views.xml',
         'views/project_task_form_inherit_sale_order.xml',
+        'views/project_project_form_inherit.xml',
 
     ],
     'installable': True,

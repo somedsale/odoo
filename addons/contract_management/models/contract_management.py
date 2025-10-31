@@ -5,7 +5,7 @@ import logging
 from markupsafe import Markup, escape
 import re
 from datetime import date
-
+import base64
 _logger = logging.getLogger(__name__)
 
 
@@ -18,16 +18,46 @@ class SaleOrder(models.Model):
         res = super(SaleOrder, self).action_confirm()
         for order in self:
             if not order.contract_id:
+                # Render PDF...
+                pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
+                    'sale.report_saleorder', [order.id]
+                )
+                filename = f"Bao_gia_{order.name}.pdf"
+                att = self.env['ir.attachment'].sudo().create({
+                    'name': filename,
+                    'res_model': 'sale.order',
+                    'res_id': order.id,
+                    'type': 'binary',
+                    'datas': base64.b64encode(pdf_content),
+                    'mimetype': 'application/pdf',
+                })
+
+                # Lấy thuế từ các dòng SO (unique + đúng công ty)
+                taxes = order.order_line.mapped('tax_id')
+                taxes = taxes.filtered(lambda t: t.company_id == order.company_id)
+                tax_ids = taxes.ids
+
+                # Tiền từ SO
+                amount_untaxed = order.amount_untaxed
+
                 contract_vals = {
                     'name': f'Hợp đồng cho đơn hàng {order.name}',
                     'sale_order_id': order.id,
                     'partner_id': order.partner_id.id,
                     'stage': 'negotiating',
                     'company_id': order.company_id.id,
+                    'attachment_ids': [(6, 0, [att.id])],
+                    # Tiền tệ + số tiền
+                    'currency_id': order.currency_id.id,
+                    'amount_untaxed': amount_untaxed,
+                    'tax_id': [(6, 0, order.order_line.mapped('tax_id').filtered(
+                    lambda t: t.company_id == order.company_id).ids)],
                 }
                 contract = self.env['contract.management'].create(contract_vals)
                 order.contract_id = contract.id
         return res
+
+
 
 
 class ContractManagement(models.Model):
@@ -38,12 +68,32 @@ class ContractManagement(models.Model):
 
     name = fields.Char(string='Tên hợp đồng', required=True, tracking=True)
     num_contract = fields.Char(string='Số hợp đồng')
-    contract_value = fields.Float(string='Giá trị hợp đồng')
+
+    # +++ Số tiền +++
+    currency_id = fields.Many2one(
+        'res.currency', string='Tiền tệ',
+        default=lambda self: self.env.company.currency_id, required=True
+    )
+    amount_untaxed = fields.Monetary(string='Giá trị trước thuế', currency_field='currency_id')
+    amount_tax = fields.Monetary(string='Thuế', currency_field='currency_id')
+        # ➜ Giá trị hợp đồng (sau thuế) = trước thuế + thuế
+    contract_value = fields.Monetary(
+        string='Giá trị hợp đồng (sau thuế)',
+        currency_field='currency_id',
+        compute='_compute_amounts',
+        store=True
+    )
+
+    # Thuế áp dụng (giống sale.order.line.tax_id)
+    tax_id = fields.Many2many(
+        'account.tax', 'contract_tax_rel', 'contract_id', 'tax_id',
+        string='Thuế áp dụng',
+        help='Các sắc thuế áp dụng cho hợp đồng.'
+    )
     sale_order_id = fields.Many2one('sale.order', string='Đơn hàng', required=True, tracking=True)
     partner_id = fields.Many2one('res.partner', string='Khách hàng', required=True, tracking=True)
     date_execution = fields.Date(string='Ngày thực hiện')
     date_completion = fields.Date(string='Ngày hoàn thành')
-    # ❗️ĐÃ BỎ 'preparing'
     stage = fields.Selection([
         ('negotiating', 'Đang thương thảo hợp đồng'),
         ('executing', 'Đang thực hiện'),
@@ -58,8 +108,32 @@ class ContractManagement(models.Model):
     planned_end_date = fields.Date(string='Ngày kết thúc')
     description = fields.Text(string='Mô tả')
     attachment_ids = fields.Many2many('ir.attachment', string='Tài liệu')
-    warranty_time = fields.Integer(string="Thời gian bảo hành (tháng)")
+    warranty_time = fields.Integer(string="Thời gian bảo hành (tháng)", store=True)
+
     # ---------- Computed Fields ----------
+
+    @api.depends('amount_untaxed', 'tax_id', 'currency_id')
+    def _compute_amounts(self):
+        """Tính:
+           - amount_tax = amount_untaxed * (tổng % thuế) + tổng thuế cố định
+           - contract_value = amount_untaxed + amount_tax
+           Ghi chú: bỏ qua price_include, tax-on-tax phức tạp; tính thuần theo %/cố định."""
+        for rec in self:
+            base = rec.amount_untaxed or 0.0
+            total_percent = 0.0
+            total_fixed = 0.0
+            # Mở phẳng thuế nhóm để cộng chính xác % và thuế cố định
+            for tax in rec.tax_id.flatten_taxes_hierarchy():
+                if tax.amount_type == 'percent':
+                    total_percent += tax.amount or 0.0
+                elif tax.amount_type == 'fixed':
+                    # quantity coi là 1 cho hợp đồng
+                    total_fixed += tax.amount or 0.0
+                # 'division', 'python'… bỏ qua theo yêu cầu công thức đơn giản
+
+            tax_amount = base * (total_percent / 100.0) + total_fixed
+            rec.amount_tax = tax_amount
+            rec.contract_value = base + tax_amount
     # Chỉ chấp nhận 2 stage
     def _eligible_stage_domain(self):
         return [('stage', 'in', ('executing', 'completed'))]
@@ -198,6 +272,8 @@ class ContractManagement(models.Model):
                     'amount_total': rec.contract_value or 0.0,
                     'currency_id': rec.env.company.currency_id.id,
                     'warranty_time': rec.warranty_time or 0.0,
+                    'amount_untaxed': rec.amount_untaxed or 0.0,
+                    'tax_id': [(6, 0, rec.tax_id.ids)],
                     'management_id': rec.id,
                     'date': rec.signature_date or fields.Date.today(),
                 }
@@ -429,6 +505,9 @@ class ProjectProject(models.Model):
     _inherit = 'project.project'
 
     contract_id = fields.Many2one('contract.management', string='Hợp đồng')
+    attachment_ids = fields.Many2many(
+        'ir.attachment', string='Tài liệu',
+        related='contract_id.attachment_ids')
     sale_order_id = fields.Many2one(
         'sale.order', string='Đơn bán',
         related='contract_id.sale_order_id', store=True, readonly=True
