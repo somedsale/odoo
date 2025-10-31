@@ -176,4 +176,5 @@
     <menuitem id="menu_account_payment_proposal_root" name="Đề nghị giải chi" sequence="90"/>
 
     <menuitem id="menu_account_payment_proposal" name="Giấy đề nghị chi" parent="menu_account_payment_proposal_root" action="action_account_payment_proposal"/>
+    <menuitem id="menu_account_payment_proposal_for_accounting" name="Giấy đề nghị chi" parent="custom_account_menu.menu_accounting_vouchers" action="action_account_payment_proposal"/>
 </odoo>
