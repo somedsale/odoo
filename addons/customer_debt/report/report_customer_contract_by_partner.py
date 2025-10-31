@@ -192,6 +192,11 @@ class ReportCustomerContractByPartner(models.AbstractModel):
 
         for partner in partners:
             contracts = self.env['customer.contract'].search([('partner_id', '=', partner.id)])
+            debt_summary = self.env['customer.debt.summary'].search([
+                ('partner_id', '=', partner.id)
+            ], limit=1)
+            old_debt = debt_summary.old_debt if debt_summary else 0.0
+            # === 1) Tổng hóa đơn, phiếu thu, dụng thư phiếu, với cơ sở tống hợp đồng ===
             grouped = defaultdict(list)
 
             for c in contracts:
@@ -270,4 +275,6 @@ class ReportCustomerContractByPartner(models.AbstractModel):
             'res_company': self.env.company,
             'user_id': self.env.user,
             'datetime': datetime,
+            'old_debt': old_debt,
+            'residual_total': grand_totals['amount_due'] + old_debt,
         }
