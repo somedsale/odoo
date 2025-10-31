@@ -71,7 +71,9 @@
                 <h2 style="text-align:center; margin-bottom: 20px; font-size: 24px; text-transform: uppercase;">
                     <span t-esc="partner_name"/>
                 </h2>
-
+                <div>
+                    <h6> Công nợ cũ: <span t-esc="format_amount(docs.old_debt, docs.currency_id)"/></h6>
+                </div>
                 <table class="styled-table">
                     <colgroup>
                         <col style="width:3%"/>
@@ -136,7 +138,7 @@
                         <!-- Dòng tổng hợp theo từng docs (theo logic running + tạm ứng) -->
                         <t t-foreach="docs" t-as="docs">
                             <!-- Tính nhanh số dư tổng: residual_total = invoices - paid (âm = tạm ứng) -->
-                            <t t-set="residual_total" t-value="(docs.total_invoices or 0.0) - (docs.paid_amount or 0.0)"/>
+                            <t t-set="residual_total" t-value="(docs.total_invoices or 0.0) - (docs.paid_amount or 0.0) + (docs.old_debt or 0.0)"/>
                             <t t-set="advance_total" t-value="abs(residual_total) if residual_total &lt; 0 else 0.0"/>
 
                             <tr style="font-weight:bold">
@@ -216,7 +218,7 @@
 
                                     <!-- 8-10. Hóa đơn -->
                                     <td t-esc="row.get('invoice') and row.get('invoice').date and row.get('invoice').date.strftime('%d/%m/%Y') or ''" class="text-center"/>
-                                    <td t-esc="row.get('invoice') and (row.get('invoice').name or '') or ''" class="text-center"/>
+                                    <td t-esc="row.get('invoice') and (row.get('invoice').invoice_number or '') or ''" class="text-center"/>
                                     <td t-esc="row.get('invoice') and row.get('invoice').amount and format_amount(row.get('invoice').amount, (row.get('invoice').currency_id or docs.currency_id)) or ''" class="text-right num"/>
 
                                     <!-- 11-12. Đã trả (theo thứ tự hóa đơn; nếu không có hóa đơn -> để trống phần hóa đơn) -->

@@ -36,6 +36,7 @@
                             <field name="amount_total" string="Tổng giá trị hợp đồng"/>
                             <field name="amount_invoiced" string="Số tiền hóa đơn"/>
                             <field name="amount_paid"/>
+                            <field name="old_debt"/>
                             <field name="residual"/>
                         </group>
                     </group>

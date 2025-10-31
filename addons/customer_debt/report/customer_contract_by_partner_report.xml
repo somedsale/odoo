@@ -36,23 +36,40 @@
                     <strong>Khách hàng:</strong>
                     <t t-esc="partners_data and partners_data[0]['partner'].display_name or ''"/>
                 </div>
+                <div style="margin: 4px 0 20px;">
+                    <strong>Công nợ cũ:</strong>
+                    <span t-esc="old_debt" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
 
+                </div>
                 <table class="styled-table">
                     <!-- 13 cột -->
                     <colgroup>
-                        <col style="width:4%"/>   <!-- 1: STT -->
-                        <col style="width:16%"/>  <!-- 2: Hợp đồng (Dự án) -->
-                        <col style="width:10%"/>  <!-- 3: Giá trị HĐ -->
-                        <col style="width:12%"/>  <!-- 4: HSQT: Số/Ngày -->
-                        <col style="width:10%"/>  <!-- 5: HSQT: Số tiền -->
-                        <col style="width:8%"/>   <!-- 6: HĐ: Ngày -->
-                        <col style="width:10%"/>  <!-- 7: HĐ: Số -->
-                        <col style="width:10%"/>  <!-- 8: HĐ: Số tiền -->
-                        <col style="width:8%"/>   <!-- 9: Thu: Ngày nhận -->
-                        <col style="width:10%"/>  <!-- 10: Thu: Số tiền -->
-                        <col style="width:10%"/>  <!-- 11: Còn nợ sau dòng -->
-                        <col style="width:10%"/>  <!-- 12: Bảo hành -->
-                        <col style="width:10%"/>  <!-- 13: Thời gian BH -->
+                        <col style="width:4%"/>
+                        <!-- 1: STT -->
+                        <col style="width:16%"/>
+                        <!-- 2: Hợp đồng (Dự án) -->
+                        <col style="width:10%"/>
+                        <!-- 3: Giá trị HĐ -->
+                        <col style="width:12%"/>
+                        <!-- 4: HSQT: Số/Ngày -->
+                        <col style="width:10%"/>
+                        <!-- 5: HSQT: Số tiền -->
+                        <col style="width:8%"/>
+                        <!-- 6: HĐ: Ngày -->
+                        <col style="width:10%"/>
+                        <!-- 7: HĐ: Số -->
+                        <col style="width:10%"/>
+                        <!-- 8: HĐ: Số tiền -->
+                        <col style="width:8%"/>
+                        <!-- 9: Thu: Ngày nhận -->
+                        <col style="width:10%"/>
+                        <!-- 10: Thu: Số tiền -->
+                        <col style="width:10%"/>
+                        <!-- 11: Còn nợ sau dòng -->
+                        <col style="width:10%"/>
+                        <!-- 12: Bảo hành -->
+                        <col style="width:10%"/>
+                        <!-- 13: Thời gian BH -->
                     </colgroup>
 
                     <thead>
@@ -88,7 +105,9 @@
                                 <!-- Header nhóm: hiển thị tổng theo cột -->
                                 <tr class="table-item" style="background-color:#E2EFDA;">
                                     <td class="text-center"></td>
-                                    <td><t t-esc="g['label']"/></td>
+                                    <td>
+                                        <t t-esc="g['label']"/>
+                                    </td>
 
                                     <td class="text-right">
                                         <t t-if="g['totals']['amount_total']">
@@ -119,8 +138,8 @@
                                     </td>
 
                                     <td class="text-right">
-                                        <t t-if="g['totals']['amount_due']">
-                                            <span t-esc="g['totals']['amount_due']" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
+                                        <t t-if="residual_total">
+                                            <span t-esc="residual_total" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
                                         </t>
                                     </td>
                                     <td class="text-right">
@@ -142,13 +161,17 @@
                                         <tr>
                                             <!-- 1. STT: chỉ dòng đầu của từng HĐ -->
                                             <td class="text-center">
-                                                <t t-if="row_idx == 1"><t t-esc="stt"/></t>
+                                                <t t-if="row_idx == 1">
+                                                    <t t-esc="stt"/>
+                                                </t>
                                             </td>
 
                                             <!-- 2. Hợp đồng (Dự án): chỉ dòng đầu của HĐ -->
                                             <td>
                                                 <t t-if="row_idx == 1">
-                                                    <t t-if="ct['project']"><t t-esc="ct['project'].display_name"/> – </t>
+                                                    <t t-if="ct['project']">
+                                                        <t t-esc="ct['project'].display_name"/>
+ – </t>
                                                     <t t-esc="ct['name']"/>
                                                 </t>
                                             </td>
@@ -163,7 +186,8 @@
                                             <!-- 4. HSQT: Số/Ngày: in 1 lần ở hóa đơn đầu tiên của HĐ -->
                                             <td class="text-center">
                                                 <t t-if="row.get('print_contract_columns')">
-                                                    <t t-esc="ct['sett_numbers'] or '-'"/> <t t-esc="ct['sett_dates'] or '-'"/>
+                                                    <t t-esc="ct['sett_numbers'] or '-'"/>
+                                                    <t t-esc="ct['sett_dates'] or '-'"/>
                                                 </t>
                                             </td>
 
@@ -175,8 +199,12 @@
                                             </td>
 
                                             <!-- 6-8. Hóa đơn: Ngày / Số / Số tiền (chỉ trên dòng đầu của mỗi hóa đơn) -->
-                                            <td class="text-center"><t t-esc="row.get('invoice_date') or ''"/></td>
-                                            <td class="text-center"><t t-esc="row.get('invoice_number') or ''"/></td>
+                                            <td class="text-center">
+                                                <t t-esc="row.get('invoice_date') or ''"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <t t-esc="row.get('invoice_number') or ''"/>
+                                            </td>
                                             <td class="text-right">
                                                 <t t-if="row.get('invoice_amount')">
                                                     <span t-esc="row.get('invoice_amount')" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
@@ -184,7 +212,9 @@
                                             </td>
 
                                             <!-- 9-10. Đã thu: Ngày nhận / Số tiền -->
-                                            <td class="text-center"><t t-esc="row.get('receipt_date') or ''"/></td>
+                                            <td class="text-center">
+                                                <t t-esc="row.get('receipt_date') or ''"/>
+                                            </td>
                                             <td class="text-right">
                                                 <t t-if="row.get('receipt_amount')">
                                                     <span t-esc="row.get('receipt_amount')" t-options="{'widget':'monetary','display_currency':res_company.currency_id}"/>
@@ -207,7 +237,9 @@
 
                                             <!-- 13. Thời gian BH: chỉ dòng đầu của HĐ -->
                                             <td class="text-center">
-                                                <t t-if="row_idx == 1 and ct.get('warranty_period')"><t t-esc="ct['warranty_period']"/></t>
+                                                <t t-if="row_idx == 1 and ct.get('warranty_period')">
+                                                    <t t-esc="ct['warranty_period']"/>
+                                                </t>
                                             </td>
                                         </tr>
                                     </t>
@@ -276,37 +308,43 @@
                                 TP Hồ Chí Minh ngày <span t-esc="datetime.datetime.today().day"/>
                                 tháng <span t-esc="datetime.datetime.today().month"/>
                                 năm <span t-esc="datetime.datetime.today().year"/>
-                            </div>
-                            <div><span>Người lập biểu</span></div>
-                            <div style="height:65px">
-                                <t t-if="user_id.digital_signature">
-                                    <img t-att-src="'data:image/png;base64,' + (user_id.digital_signature.decode() if isinstance(user_id.digital_signature, bytes) else user_id.digital_signature)" style="max-height:65px; max-width:150px;"/>
-                                </t>
-                            </div>
-                            <div><span t-field="user_id.name"/></div>
-                        </div>
-
-                        <div class="col-6" style="text-align:center;line-height:1.8">
-                            <div>
-                                TP Hồ Chí Minh ngày <span t-esc="datetime.datetime.today().day"/>
-                                tháng <span t-esc="datetime.datetime.today().month"/>
-                                năm <span t-esc="datetime.datetime.today().year"/>
-                            </div>
-                            <div> Giám Đốc </div>
-                            <div style="height:65px">
-                                <t t-set="director_group" t-value="env.ref('custom_director_role.group_director')"/>
-                                <t t-set="director" t-value="env['res.users'].search([('groups_id', 'in', director_group.id)], limit=1)"/>
-                                <t t-if="director and director.digital_signature">
-                                    <img t-att-src="'data:image/png;base64,' + (director.digital_signature.decode() if isinstance(director.digital_signature, bytes) else director.digital_signature)" style="max-height:65px; max-width:150px;"/>
-                                </t>
-                            </div>
-                            <div><span> Đỗ Minh Toàn </span></div>
-                        </div>
+                    </div>
+                    <div>
+                        <span>Người lập biểu</span>
+                    </div>
+                    <div style="height:65px">
+                        <t t-if="user_id.digital_signature">
+                            <img t-att-src="'data:image/png;base64,' + (user_id.digital_signature.decode() if isinstance(user_id.digital_signature, bytes) else user_id.digital_signature)" style="max-height:65px; max-width:150px;"/>
+                        </t>
+                    </div>
+                    <div>
+                        <span t-field="user_id.name"/>
                     </div>
                 </div>
 
+                <div class="col-6" style="text-align:center;line-height:1.8">
+                    <div>
+                                TP Hồ Chí Minh ngày <span t-esc="datetime.datetime.today().day"/>
+                                tháng <span t-esc="datetime.datetime.today().month"/>
+                                năm <span t-esc="datetime.datetime.today().year"/>
             </div>
-        </t>
-    </template>
+            <div> Giám Đốc </div>
+            <div style="height:65px">
+                <t t-set="director_group" t-value="env.ref('custom_director_role.group_director')"/>
+                <t t-set="director" t-value="env['res.users'].search([('groups_id', 'in', director_group.id)], limit=1)"/>
+                <t t-if="director and director.digital_signature">
+                    <img t-att-src="'data:image/png;base64,' + (director.digital_signature.decode() if isinstance(director.digital_signature, bytes) else director.digital_signature)" style="max-height:65px; max-width:150px;"/>
+                </t>
+            </div>
+            <div>
+                <span> Đỗ Minh Toàn </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+</t>
+</template>
 
 </odoo>
