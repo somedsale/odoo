@@ -1,96 +1,126 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <t t-name="wt_sales_dashboard.SalesDashboard" owl="1">
-        <div class="o_action_wt_sales_dashboard_dashboard">
-            <div class="o_control_panel">
-                <div class="o_cp_left">
-                    <div class="o_cp_title">
-                        <h1 class="o_breadcrumb">Sales &amp; Inventory Dashboard</h1>
+        <div class="wt-dashboard o_action_wt_sales_dashboard_dashboard">
+            <!-- Thanh tiêu đề -->
+            <div class="o_control_panel wt-cp">
+                <div class="o_cp_left wt-cp-left">
+                    <div class="o_cp_title wt-cp-title">
+                        <h1 class="wt-title o_breadcrumb">Bảng điều khiển Bán hàng</h1>
                     </div>
+                </div>
+                <div class="wt-filters">
+                    <div class="wt-filter-item">
+                        <label>Từ ngày</label>
+                        <input type="date" class="wt-date" t-model="state.filters.date_from"/>
+                    </div>
+                    <div class="wt-filter-item">
+                        <label>Đến ngày</label>
+                        <input type="date" class="wt-date" t-model="state.filters.date_to"/>
+                    </div>
+                    <button class="wt-btn wt-btn--primary" t-on-click="applyFilter">Áp dụng</button>
                 </div>
             </div>
-            <div class="o_content p-4 lg:p-6">
-                <!-- KPI Cards -->
-                <div class="kpi-grid mb-6">
-                    <div class="bg-white p-5 rounded-md shadow-sm border cursor-pointer hover:bg-gray-50" t-on-click="() => this.openTotalSales()">
-                        <h2 class="text-gray-500 text-sm font-medium">Total Sales (30 Days)</h2>
-                        <p class="text-3xl font-bold text-gray-800 mt-2">
-                            <t t-esc="state.kpis.total_sales.toLocaleString('en-US', { style: 'currency', currency: 'USD' })"/>
-                        </p>
-                    </div>
-                    <div class="bg-white p-5 rounded-md shadow-sm border">
-                        <h2 class="text-gray-500 text-sm font-medium">Average Order Value</h2>
-                        <p class="text-3xl font-bold text-gray-800 mt-2">
-                            <t t-esc="state.kpis.avg_order_value.toLocaleString('en-US', { style: 'currency', currency: 'USD' })"/>
-                        </p>
-                    </div>
-                    <div class="bg-white p-5 rounded-md shadow-sm border cursor-pointer hover:bg-gray-50" t-on-click="() => this.openTotalOrders()">
-                        <h2 class="text-gray-500 text-sm font-medium">Total Orders</h2>
-                        <p class="text-3xl font-bold text-gray-800 mt-2">
-                            <t t-esc="state.kpis.order_count"/>
-                        </p>
-                    </div>
-                    <div class="bg-white p-5 rounded-md shadow-sm border cursor-pointer hover:bg-gray-50" t-on-click="() => this.openLowStockProducts()">
-                        <h2 class="text-gray-500 text-sm font-medium">Low Stock Products</h2>
-                        <p class="text-3xl font-bold text-red-500 mt-2">
-                            <t t-esc="state.kpis.low_stock_products"/>
-                        </p>
-                    </div>
+
+            <!-- Nội dung -->
+            <div class="wt-content o_content">
+                <!-- Thẻ KPI -->
+                <div class="wt-kpi-grid">
+                    <div class="wt-card wt-card--click" t-on-click="() => this.openTotalSales()">
+                        <h2 class="wt-card-sub">Doanh thu <span class="wt-kpi-period">(                            <t t-esc="this.periodLabel"/>
+)</span>
+                    </h2>
+                    <p class="wt-card-val">
+                        <t t-esc="state.kpis.total_sales.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })"/>
+                    </p>
                 </div>
 
-                <!-- Charts -->
-                <div class="charts-grid mt-3 mb-6">
-                    <div class="bg-white p-5 rounded-md shadow-sm border">
-                        <h3 class="font-semibold text-lg text-gray-800 mb-4">Sales Trend</h3>
-                        <div class="h-80">
-                            <canvas t-ref="salesTrendChart"/>
-                        </div>
-                    </div>
-                    <div class="bg-white p-5 rounded-md shadow-sm border">
-                        <h3 class="font-semibold text-lg text-gray-800 mb-4">Top 5 Selling Products</h3>
-                        <div class="h-80">
-                            <canvas t-ref="topProductsChart"/>
-                        </div>
-                    </div>
+                <div class="wt-card">
+                    <h2 class="wt-card-sub">Giá trị đơn TB</h2>
+                    <p class="wt-card-val">
+                        <t t-esc="state.kpis.avg_order_value.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })"/>
+                    </p>
                 </div>
 
-                <!-- Recent Orders Table -->
-                <div class="bg-white p-5 mt-3 rounded-md shadow-sm border responsive-table ">
-                    <h3 class="font-semibold text-lg text-gray-800 mb-4">Recent Sales Orders</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead>
-                                <tr class="text-sm text-gray-500 border-b">
-                                    <th class="py-2 px-4 font-semibold">Order #</th>
-                                    <th class="py-2 px-4 font-semibold">Customer</th>
-                                    <th class="py-2 px-4 font-semibold">Date</th>
-                                    <th class="py-2 px-4 font-semibold">Total</th>
-                                    <th class="py-2 px-4 font-semibold">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <t t-foreach="state.recent_orders" t-as="order" t-key="order.id">
-                                    <tr class="hover:bg-gray-50 cursor-pointer border-b" t-on-click="() => this.openSaleOrder(order.id)">
-                                        <td class="py-3 px-4 text-blue-600 font-medium"><t t-esc="order.name"/></td>
-                                        <td class="py-3 px-4"><t t-esc="order.partner"/></td>
-                                        <td class="py-3 px-4"><t t-esc="order.date"/></td>
-                                        <td class="py-3 px-4"><t t-esc="order.total.toLocaleString('en-US', { style: 'currency', currency: 'USD' })"/></td>
-                                        <td class="py-3 px-4">
-                                            <span class="px-2 py-1 text-xs font-semibold rounded-full"
-                                                  t-att-class="{
-                                                    'bg-green-100 text-green-800': order.state === 'Sales Order',
-                                                    'bg-blue-100 text-blue-800': order.state === 'Quotation'
-                                                  }">
-                                                <t t-esc="order.state"/>
-                                            </span>
-                                        </td>
-                                    </tr>
-                                </t>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="wt-card wt-card--click" t-on-click="() => this.openTotalOrders()">
+                    <h2 class="wt-card-sub">Tổng số đơn <span class="wt-kpi-period">(                        <t t-esc="this.periodLabel"/>
+)</span>
+                </h2>
+                <p class="wt-card-val">
+                    <t t-esc="(state.kpis.order_count || 0).toLocaleString('vi-VN')"/>
+                </p>
+            </div>
+
+            <div class="wt-card wt-card--click" t-on-click="() => this.openLowStockProducts()">
+                <h2 class="wt-card-sub">SP sắp hết hàng</h2>
+                <p class="wt-card-val wt-text-danger">
+                    <t t-esc="state.kpis.low_stock_products"/>
+                </p>
+            </div>
+        </div>
+
+        <!-- Biểu đồ -->
+        <div class="wt-charts-grid">
+            <div class="wt-card">
+                <h3 class="wt-card-title">Xu hướng doanh thu</h3>
+                <div class="wt-chart-box">
+                    <canvas t-ref="salesTrendChart"/>
+                </div>
+            </div>
+
+            <div class="wt-card">
+                <h3 class="wt-card-title">Top 5 sản phẩm bán chạy</h3>
+                <div class="wt-chart-box">
+                    <canvas t-ref="topProductsChart"/>
                 </div>
             </div>
         </div>
-    </t>
+
+        <!-- Bảng đơn bán gần đây -->
+        <div class="wt-card wt-table-wrap">
+            <h3 class="wt-card-title">Đơn bán gần đây</h3>
+            <div class="wt-table-scroll">
+                <table class="wt-table">
+                    <thead>
+                        <tr>
+                            <th>Số đơn</th>
+                            <th>Khách hàng</th>
+                            <th>Ngày</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="state.recent_orders" t-as="order" t-key="order.id">
+                            <tr class="wt-row--click" t-on-click="() => this.openSaleOrder(order.id)">
+                                <td class="wt-link">
+                                    <t t-esc="order.name"/>
+                                </td>
+                                <td>
+                                    <t t-esc="order.partner"/>
+                                </td>
+                                <td>
+                                    <t t-esc="order.date"/>
+                                </td>
+                                <td>
+                                    <t t-esc="order.total.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })"/>
+                                </td>
+                                <td>
+                                    <span class="wt-badge" t-att-class="{
+                                                    'wt-badge--success': order.state === 'Sales Order' || order.state === 'Đã xác nhận',
+                                                    'wt-badge--info': order.state === 'Quotation' || order.state === 'Báo giá',
+                                                    'wt-badge--warning': order.state === 'To Invoice' || order.state === 'Chờ xuất hóa đơn'
+                                                  }">
+                                        <t t-esc="order.state"/>
+                                    </span>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</t>
 </templates>

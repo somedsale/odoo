@@ -4,5 +4,5 @@
         <field name="name">Sales &amp; Inventory Dashboard</field>
         <field name="tag">wt_sales_dashboard.dashboard</field>
     </record>
-    <menuitem id="menu_sales_dashboard_main" name="Sales Dashboard" parent="sale.sale_menu_root" action="action_sales_dashboard" sequence="99"/>
+    <menuitem id="menu_sales_dashboard_main" name="Sales Dashboard" parent="sale.sale_menu_root" action="action_sales_dashboard" sequence="0"/>
 </odoo>
