@@ -169,6 +169,15 @@ class SalesDashboard extends Component {
             target: "current",
         });
     }
+    openCategories() {
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: _t("Hạng mục bán hàng"),
+            res_model: "sale.order.category",
+            views: [[false, "list"], [false, "form"]],
+            target: "current",
+        });
+    }
 }
 
 registry.category("actions").add("wt_sales_dashboard.dashboard", SalesDashboard);

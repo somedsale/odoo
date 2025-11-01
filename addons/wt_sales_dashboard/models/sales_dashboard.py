@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import models, api
+from odoo import models, api,fields
 from datetime import datetime, timedelta
 
 class SalesDashboard(models.AbstractModel):
@@ -43,6 +43,7 @@ class SalesDashboard(models.AbstractModel):
             ('type', 'in', ['product', 'consu']),
             ('qty_available', '<=', 10),
         ])
+        category_count = self.env['sale.order.category'].search_count([])
 
         # Sales by day (theo khoảng)
         days = (dt_to.date() - dt_from.date()).days + 1
@@ -77,6 +78,8 @@ class SalesDashboard(models.AbstractModel):
         top_products_labels = [name_map.get(r['product_id'], 'Unknown') for r in tp_rows]
         top_products_values = [r['total_qty'] for r in tp_rows]
         top_products_uoms   = [uom_map.get(r['product_id'], '') for r in tp_rows]
+        SaleOrder = self.env['sale.order']
+        has_order_categories = 'sales_category_ids' in SaleOrder._fields
 
         # Recent orders (theo khoảng)
         recent_orders = self.env['sale.order'].search([
@@ -84,14 +87,24 @@ class SalesDashboard(models.AbstractModel):
             ('date_order', '<=', dt_to),
             ('state', 'in', ['sale', 'done']),
         ], order='date_order desc', limit=5)
-        recent_orders_data = [{
-            'id': o.id,
-            'name': o.name,
-            'partner': o.partner_id.name,
-            'date': o.date_order.strftime('%Y-%m-%d'),
-            'total': o.amount_total,
-            'state': dict(o._fields['state'].selection).get(o.state),
-        } for o in recent_orders]
+
+        recent_orders_data = []
+        for o in recent_orders:
+            cats = [{
+                'id': c.id,
+                'name': c.display_name,
+                'color': c.color or 0,   # Odoo palette 0..11 (nếu bạn đang dùng kiểu này)
+            } for c in o.sales_category_ids]
+
+            recent_orders_data.append({
+                'id': o.id,
+                'name': o.name,
+                'partner': o.partner_id.name,
+                'date': fields.Datetime.context_timestamp(self, o.date_order).strftime('%d/%m/%Y'),
+                'total': o.amount_total,
+                'state': dict(o._fields['state'].selection).get(o.state),
+                'categories': cats,  # <-- danh sách để render badge
+            })
 
         return {
             'kpis': {
@@ -99,6 +112,7 @@ class SalesDashboard(models.AbstractModel):
                 'avg_order_value': avg_order_value,
                 'order_count': order_count,
                 'low_stock_products': low_stock_products,
+                'category_count': category_count,
             },
             'charts': {
                 'sales_trend': {'labels': sales_trend_labels, 'data': sales_trend_data},

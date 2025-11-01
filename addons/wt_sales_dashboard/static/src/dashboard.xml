@@ -51,10 +51,12 @@
                 </p>
             </div>
 
-            <div class="wt-card wt-card--click" t-on-click="() => this.openLowStockProducts()">
-                <h2 class="wt-card-sub">SP sắp hết hàng</h2>
-                <p class="wt-card-val wt-text-danger">
-                    <t t-esc="state.kpis.low_stock_products"/>
+            <div class="wt-card wt-card--click" t-on-click="() => this.openCategories()">
+                <h2 class="wt-card-sub">
+    Số lượng hạng mục bán hàng
+                </h2>
+                <p class="wt-card-val">
+                    <t t-esc="(state.kpis.category_count || 0).toLocaleString('vi-VN')"/>
                 </p>
             </div>
         </div>
@@ -86,6 +88,7 @@
                             <th>Số đơn</th>
                             <th>Khách hàng</th>
                             <th>Ngày</th>
+                            <th>Hạng mục</th>
                             <th>Tổng tiền</th>
                             <th>Trạng thái</th>
                         </tr>
@@ -100,7 +103,23 @@
                                     <t t-esc="order.partner"/>
                                 </td>
                                 <td>
-                                    <t t-esc="order.date"/>
+                                    <t t-esc="new Date(order.date + 'T00:00:00').toLocaleDateString('vi-VN')"/>
+                                </td>
+                                <td>
+                                    <div class="wt-tags">
+                                        <t t-set="cats" t-value="order.categories or []"/>
+                                        <!-- Hiển thị tối đa 3 badge: dùng slice(0,3) -->
+                                        <t t-foreach="cats.slice(0, 3)" t-as="cat" t-key="cat.id">
+                                            <span t-att-class="'wt-tag wt-tag--c' + (cat.color || 0)">
+                                                <t t-esc="cat.name"/>
+                                            </span>
+                                        </t>
+                                        <!-- Nếu còn dư, hiện +N -->
+                                        <t t-if="cats.length &gt; 3">
+                                            <span class="wt-tag wt-tag--more">+                                                <t t-esc="cats.length - 3"/>
+                                            </span>
+                                        </t>
+                                    </div>
                                 </td>
                                 <td>
                                     <t t-esc="order.total.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })"/>
