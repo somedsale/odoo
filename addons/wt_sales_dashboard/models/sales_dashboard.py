@@ -79,7 +79,35 @@ class SalesDashboard(models.AbstractModel):
         top_products_values = [r['total_qty'] for r in tp_rows]
         top_products_uoms   = [uom_map.get(r['product_id'], '') for r in tp_rows]
         SaleOrder = self.env['sale.order']
-        has_order_categories = 'sales_category_ids' in SaleOrder._fields
+        all_orders = SaleOrder.search([
+            ('date_order', '>=', dt_from),
+            ('date_order', '<=', dt_to),
+            ('state', 'in', ['draft', 'sent', 'sale', 'done']),
+        ])
+        category_counter = {}
+        for so in all_orders:
+            for cat in so.sales_category_ids:
+                category_counter[cat.id] = category_counter.get(cat.id, 0) + 1
+
+        # Sắp xếp giảm dần
+        sorted_items = sorted(category_counter.items(), key=lambda x: x[1], reverse=True)
+        cat_ids_sorted = [cid for cid, _ in sorted_items]
+        cats_browse = self.env['sale.order.category'].browse(cat_ids_sorted)
+
+        cat_labels = [c.display_name for c in cats_browse]
+        cat_counts = [category_counter[c.id] for c in cats_browse]
+
+        # Màu sắc: map theo field 'color' nếu có, fallback theo palette
+        palette = [
+            "#6366F1","#3B82F6","#06B6D4","#10B981","#84CC16","#F59E0B",
+            "#EF4444","#8B5CF6","#EC4899","#22C55E","#F97316","#0EA5E9",
+        ]
+        cat_colors = []
+        for idx, c in enumerate(cats_browse):
+            if c.color is not None and 0 <= c.color < len(palette):
+                cat_colors.append(palette[c.color])
+            else:
+                cat_colors.append(palette[idx % len(palette)])
 
         # Recent orders (theo khoảng)
         recent_orders = self.env['sale.order'].search([
@@ -117,6 +145,7 @@ class SalesDashboard(models.AbstractModel):
             'charts': {
                 'sales_trend': {'labels': sales_trend_labels, 'data': sales_trend_data},
                 'top_products': {'labels': top_products_labels, 'data': top_products_values, 'uoms': top_products_uoms},
+                'sale_categories': {'labels': cat_labels,'data': cat_counts,'colors': cat_colors},
             },
             'recent_orders': recent_orders_data,
         }

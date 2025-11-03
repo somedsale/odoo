@@ -76,6 +76,12 @@
                     <canvas t-ref="topProductsChart"/>
                 </div>
             </div>
+            <div class="wt-card">
+                <h3 class="wt-card-title">Hạng mục bán hàng (số đơn)</h3>
+                <div class="wt-chart-box">
+                    <canvas t-ref="categoryChart"/>
+                </div>
+            </div>
         </div>
 
         <!-- Bảng đơn bán gần đây -->
@@ -103,7 +109,7 @@
                                     <t t-esc="order.partner"/>
                                 </td>
                                 <td>
-                                    <t t-esc="new Date(order.date + 'T00:00:00').toLocaleDateString('vi-VN')"/>
+                                    <t t-esc="order.date"/>
                                 </td>
                                 <td>
                                     <div class="wt-tags">
