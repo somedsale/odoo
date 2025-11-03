@@ -4,11 +4,11 @@
         <div class="wt-dashboard o_action_wt_sales_dashboard_dashboard">
             <!-- Thanh tiêu đề -->
             <div class="o_control_panel wt-cp">
-                <div class="o_cp_left wt-cp-left">
+                <!-- <div class="o_cp_left wt-cp-left">
                     <div class="o_cp_title wt-cp-title">
                         <h1 class="wt-title o_breadcrumb">Bảng điều khiển Bán hàng</h1>
                     </div>
-                </div>
+                </div> -->
                 <div class="wt-filters">
                     <div class="wt-filter-item">
                         <label>Từ ngày</label>

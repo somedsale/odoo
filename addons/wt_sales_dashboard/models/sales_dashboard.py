@@ -78,6 +78,7 @@ class SalesDashboard(models.AbstractModel):
         top_products_labels = [name_map.get(r['product_id'], 'Unknown') for r in tp_rows]
         top_products_values = [r['total_qty'] for r in tp_rows]
         top_products_uoms   = [uom_map.get(r['product_id'], '') for r in tp_rows]
+        top_products_ids    = [r['product_id'] for r in tp_rows]
         SaleOrder = self.env['sale.order']
         all_orders = SaleOrder.search([
             ('date_order', '>=', dt_from),
@@ -144,8 +145,8 @@ class SalesDashboard(models.AbstractModel):
             },
             'charts': {
                 'sales_trend': {'labels': sales_trend_labels, 'data': sales_trend_data},
-                'top_products': {'labels': top_products_labels, 'data': top_products_values, 'uoms': top_products_uoms},
-                'sale_categories': {'labels': cat_labels,'data': cat_counts,'colors': cat_colors},
+                'top_products': {'labels': top_products_labels, 'data': top_products_values, 'uoms': top_products_uoms,'ids': top_products_ids},
+                'sale_categories': {'labels': cat_labels,'data': cat_counts,'colors': cat_colors, 'ids': cat_ids_sorted},
             },
             'recent_orders': recent_orders_data,
         }

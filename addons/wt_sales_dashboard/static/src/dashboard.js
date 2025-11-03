@@ -105,37 +105,95 @@ class SalesDashboard extends Component {
 
     renderCharts() {
         this._destroyCharts();
+        const { date_from, date_to } = this.state.filters;
+
+        // 1) Sales trend (click 1 điểm -> mở đơn của ngày đó)
+        const fmtVN = (s) => {
+            if (!s) return "";
+            const [y, m, d] = String(s).split("-");
+            return `${d}/${m}/${y}`;
+        };
+
         if (this.salesTrendChartRef.el) {
             this._charts.sales = new Chart(this.salesTrendChartRef.el, {
                 type: "line",
                 data: {
-                    labels: this.state.charts.sales_trend.labels,
+                    labels: this.state.charts.sales_trend.labels, // vẫn là YYYY-MM-DD
                     datasets: [{
                         label: _t("Doanh thu"),
                         data: this.state.charts.sales_trend.data,
                         borderColor: "#4F46E5",
                         backgroundColor: "rgba(79, 70, 229, 0.1)",
-                        fill: true,
-                        tension: 0.3,
+                        fill: true, tension: 0.3,
                     }],
-                },
-                options: { responsive: true, maintainAspectRatio: false },
-            });
-        }
-        if (this.topProductsChartRef.el) {
-            const labels = this.state.charts.top_products.labels || [];
-            const data = this.state.charts.top_products.data || [];
-            const uoms = this.state.charts.top_products.uoms || [];
-            this._charts.top = new Chart(this.topProductsChartRef.el, {
-                type: "bar",
-                data: {
-                    labels,
-                    datasets: [{ label: _t("Số lượng bán"), data, backgroundColor: ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6"] }],
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    indexAxis: "y",
+
+                    // ✅ format nhãn trục X thành dd/mm/yyyy
+                    scales: {
+                        x: {
+                            ticks: {
+                                callback: (val, idx) => fmtVN(this.state.charts.sales_trend.labels[idx]),
+                            },
+                        },
+                    },
+
+                    // ✅ format tiêu đề tooltip thành dd/mm/yyyy
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: (items) => {
+                                    const idx = items?.[0]?.dataIndex ?? 0;
+                                    return fmtVN(this.state.charts.sales_trend.labels[idx]);
+                                },
+                            },
+                        },
+                    },
+
+                    // ✅ khi click, tiêu đề action hiển thị dd/mm/yyyy; domain vẫn dùng YYYY-MM-DD
+                    onClick: (evt, elements) => {
+                        if (!elements?.length) return;
+                        const idx = elements[0].index;               // v4 vẫn hợp lệ
+                        const day = this.state.charts.sales_trend.labels[idx]; // "YYYY-MM-DD"
+                        this.action.doAction({
+                            type: "ir.actions.act_window",
+                            name: _t("Đơn bán ngày ") + fmtVN(day),
+                            res_model: "sale.order",
+                            views: [[false, "list"], [false, "form"]],
+                            domain: [
+                                ["date_order", ">=", day + " 00:00:00"],
+                                ["date_order", "<=", day + " 23:59:59"],
+                                ["state", "in", ["sale", "done"]],
+                            ],
+                            target: "current",
+                        });
+                    },
+                },
+            });
+        }
+
+        // 2) Top products (click 1 thanh -> mở đơn chứa sản phẩm đó)
+        if (this.topProductsChartRef.el) {
+            const tp = this.state.charts.top_products || {};
+            const labels = tp.labels || [];
+            const data = tp.data || [];
+            const uoms = tp.uoms || [];
+            const ids = tp.ids || []; // <-- NEW
+
+            this._charts.top = new Chart(this.topProductsChartRef.el, {
+                type: "bar",
+                data: {
+                    labels,
+                    datasets: [{
+                        label: _t("Số lượng bán"),
+                        data,
+                        backgroundColor: ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6"],
+                    }],
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, indexAxis: "y",
                     layout: { padding: { left: 20 } },
                     plugins: {
                         tooltip: {
@@ -151,31 +209,42 @@ class SalesDashboard extends Component {
                             },
                         },
                     },
+                    onClick: (evt, elements) => {
+                        if (!elements?.length) return;
+                        const idx = elements[0].index;
+                        const productId = ids[idx];
+                        if (!productId) return;
+                        this.action.doAction({
+                            type: "ir.actions.act_window",
+                            name: _t("Đơn chứa sản phẩm: ") + labels[idx],
+                            res_model: "sale.order",
+                            views: [[false, "list"], [false, "form"]],
+                            domain: [
+                                ["date_order", ">=", date_from],
+                                ["date_order", "<=", date_to],
+                                ["state", "in", ["sale", "done"]],
+                                ["order_line.product_id", "=", productId], // lọc theo SP
+                            ],
+                            target: "current",
+                        });
+                    },
                 },
             });
         }
+
+        // 3) Sale categories (click 1 phần -> mở đơn thuộc hạng mục đó)
         if (this.categoryChartRef.el) {
-            const sc = this.state.charts.sale_categories || { labels: [], data: [], colors: [] };
+            const sc = this.state.charts.sale_categories || { labels: [], data: [], colors: [], ids: [] };
             const labels = sc.labels || [];
             const data = sc.data || [];
-            let colors = sc.colors || [];
-            if (!colors.length) {
-                colors = ["#6366F1", "#3B82F6", "#06B6D4", "#10B981", "#84CC16", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#22C55E", "#F97316", "#0EA5E9"];
-            }
+            const colors = (sc.colors && sc.colors.length ? sc.colors : ["#6366F1", "#3B82F6", "#06B6D4", "#10B981", "#84CC16", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#22C55E", "#F97316", "#0EA5E9"]);
+            const ids = sc.ids || []; // <-- NEW (category ids)
+
             this._charts.cat = new Chart(this.categoryChartRef.el, {
                 type: "doughnut",
-                data: {
-                    labels,
-                    datasets: [{
-                        label: _t("Số đơn theo hạng mục"),
-                        data,
-                        backgroundColor: colors.slice(0, Math.max(colors.length, data.length)),
-                        borderWidth: 1
-                    }],
-                },
+                data: { labels, datasets: [{ label: _t("Số đơn theo hạng mục"), data, backgroundColor: colors, borderWidth: 1 }] },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false, cutout: "55%",
                     plugins: {
                         tooltip: {
                             callbacks: {
@@ -188,12 +257,27 @@ class SalesDashboard extends Component {
                                 },
                             },
                         },
-                        legend: {
-                            position: "right",
-                            labels: { usePointStyle: true }
-                        },
+                        legend: { position: "right", labels: { usePointStyle: true } },
                     },
-                    cutout: "55%",
+                    onClick: (evt, elements) => {
+                        if (!elements?.length) return;
+                        const idx = elements[0].index;
+                        const catId = ids[idx];
+                        if (!catId) return;
+                        this.action.doAction({
+                            type: "ir.actions.act_window",
+                            name: _t("Đơn theo hạng mục: ") + labels[idx],
+                            res_model: "sale.order",
+                            views: [[false, "list"], [false, "form"]],
+                            domain: [
+                                ["date_order", ">=", date_from],
+                                ["date_order", "<=", date_to],
+                                ["state", "in", ["sale", "done"]],
+                                ["sales_category_ids", "in", [catId]], // lọc theo hạng mục
+                            ],
+                            target: "current",
+                        });
+                    },
                 },
             });
         }
