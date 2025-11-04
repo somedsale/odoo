@@ -100,21 +100,57 @@
 /* ====== Charts ====== */
 .wt-charts-grid {
   display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
+  grid-template-columns: repeat(1, minmax(0, 1fr)); /* mobile: 1 cột */
   gap: var(--wt-gap);
-  margin: 0.75rem 0 1rem 0;
 }
+
+/* Mobile: đặt chiều cao hợp lý cho từng chart */
+.wt-charts-grid .wt-chart-box {
+  height: 16rem;
+}
+
+/* >= 768px: 2 cột (giống KPI lên 2 cột) + bố cục 1–(2,3) */
 @media (min-width: 768px) {
+  :root {
+    --wt-chart-row-h: 13rem;
+  } /* chỉnh 12–16rem tùy dữ liệu */
+
   .wt-charts-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 cột như KPI */
+    grid-auto-rows: var(--wt-chart-row-h); /* 2 hàng bằng nhau */
+    align-items: stretch;
+  }
+
+  /* Card 1 (Sales trend) chiếm 2 hàng bên trái */
+  .wt-charts-grid > .wt-card:nth-child(1) {
+    grid-column: 1 / 2;
+    grid-row: span 2;
+  }
+
+  /* Card 2 & 3 ở cột phải, mỗi card một hàng */
+  .wt-charts-grid > .wt-card:nth-child(2),
+  .wt-charts-grid > .wt-card:nth-child(3) {
+    grid-column: 2 / 3;
+  }
+
+  /* Chart lấp đầy ô, không làm cao lệch */
+  .wt-charts-grid > .wt-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .wt-charts-grid > .wt-card .wt-chart-box {
+    flex: 1 1 auto;
+    height: 100%;
+    min-height: 0; /* tránh tràn hàng */
   }
 }
-.wt-chart-box {
-  height: 20rem;
-}
-@media (max-width: 767px) {
-  .wt-chart-box {
-    height: 16rem;
+
+/* >= 1024px: giữ 2 cột như KPI giữ nhịp 4 cột (vì ta chỉ có 3 chart),
+   nhưng tăng chiều cao hàng cho thoáng mắt */
+@media (min-width: 1024px) {
+  :root {
+    --wt-chart-row-h: 15rem;
   }
 }
 

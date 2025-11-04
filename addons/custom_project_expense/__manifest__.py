@@ -8,6 +8,7 @@
     'data': [
         'security/ir.model.access.csv',
         'views/project_expense_view.xml',
+        'views/account_payment_request_view.xml',
     ],
     'assets': {
         'web.assets_backend': [
