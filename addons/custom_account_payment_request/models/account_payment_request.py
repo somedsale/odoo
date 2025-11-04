@@ -66,6 +66,7 @@ class AccountingPaymentRequest(models.Model):
             if rec.proposal_sheet_id:
                 rec.project_id = rec.proposal_sheet_id.project_id
                 rec.proposal_person_id = rec.proposal_sheet_id.requested_by
+                rec.date = rec.proposal_sheet_id.date_proposal
     def button_confirm_payment(self):
         for rec in self:
             if not rec.is_confirmed:
