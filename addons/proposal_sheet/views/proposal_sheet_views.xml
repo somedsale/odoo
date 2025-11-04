@@ -60,6 +60,7 @@
                             <field name="manager_id" widget="many2one_avatar_user" options="{'no_create': True,'no_open':True}" readonly="1"/>
                             <field name="type" widget="selection" readonly="is_type_readonly"/>
                             <field name="create_date" string="Ngày Tạo" readonly="1"/>
+                            <field name="date_proposal" />
 
                         </group>
                     </group>
