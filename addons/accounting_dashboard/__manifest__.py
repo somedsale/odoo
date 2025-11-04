@@ -12,7 +12,7 @@
         "web.assets_backend": [
             "accounting_dashboard/static/src/js/**/*.js",
             "accounting_dashboard/static/src/xml/**/*.xml",
-            
+            "accounting_dashboard/static/src/css/**/*.css",
         ],
 },
     "installable": True,

@@ -1,0 +1,13 @@
+<odoo>
+    <record id="account_payment_request_form_inherit_attachments" model="ir.ui.view">
+        <field name="name">account.payment.request.form.inherit.attachments</field>
+        <field name="model">account.payment.request</field>
+        <field name="inherit_id" ref="custom_account_payment_request.view_account_payment_request_form"/>
+        <field name="arch" type="xml">
+            <!-- Chèn ngay sau trường ghi chú 'note' -->
+            <xpath expr="//field[@name='note']" position="after">
+                <field name="attachment_ids" widget="many2many_binary" filename="name" string="Tệp đính kèm"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
