@@ -1,145 +1,125 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates xml:space="preserve">
     <t t-name="ad.AccountingDashboard" owl="1">
-        <!-- ⚙️ Bọc toàn trang trong ad-dashboard -->
         <div class="ad-dashboard o_action">
 
-            <!-- Header (cố định trên) -->
+            <!-- ========== HEADER ========== -->
             <div class="ad-header">
+                <div class="ad-header__title">
+                    <h2>KẾ TOÁN</h2>
+                </div>
+
                 <div class="ad-header__filters">
-                    <div class="ad-filter">
-                        <label>Từ ngày</label>
-                        <input type="date" t-model="state.filters.date_from"/>
-                    </div>
-                    <div class="ad-filter">
-                        <label>Đến ngày</label>
-                        <input type="date" t-model="state.filters.date_to"/>
-                    </div>
-                    <button class="btn btn-primary ad-btn-apply" t-on-click="applyFilter">
+                    <input type="date" t-model="state.filters.date_from" title="Từ ngày"/>
+                    <span class="ad-date-sep">→</span>
+                    <input type="date" t-model="state.filters.date_to" title="Đến ngày"/>
+                    <button class="ad-btn" t-on-click="applyFilter">
                         <i class="fa fa-filter me-1"></i> Áp dụng
                     </button>
                 </div>
+
                 <div class="ad-header__period">
                     <span t-esc="periodLabel"/>
                 </div>
             </div>
 
-            <!-- ⚙️ Nội dung chính có scroll -->
+            <!-- ========== CONTENT ========== -->
             <div class="ad-content o_content">
+                <div class="ad-grid-layout">
 
-                <!-- KPI Cards -->
-                <div class="ad-kpi-grid">
-                    <div class="ad-card ad-hover ad-click" t-on-click="openReceipts">
-                        <div class="ad-kpi-icon bg-green-100 text-green-600">
+                    <!-- ==== KPI ROW ==== -->
+                    <div class="ad-card kpi ad-click" t-on-click="openReceipts">
+                        <div class="ad-kpi-icon bg-green">
                             <i class="fa fa-arrow-down"></i>
                         </div>
-                        <div class="ad-kpi-info">
+                        <div>
                             <div class="ad-kpi-label">Tiền thu</div>
                             <div class="ad-kpi-value" t-esc="state.kpis.cash_in"/>
                         </div>
                     </div>
-                    <div class="ad-card ad-hover">
-                        <div class="ad-kpi-icon bg-red-100 text-red-600">
+
+                    <div class="ad-card kpi ad-click" t-on-click="openPayments">
+                        <div class="ad-kpi-icon bg-red">
                             <i class="fa fa-arrow-up"></i>
                         </div>
-                        <div class="ad-kpi-info">
+                        <div>
                             <div class="ad-kpi-label">Tiền chi</div>
                             <div class="ad-kpi-value" t-esc="state.kpis.cash_out"/>
                         </div>
                     </div>
-                    <div class="ad-card ad-hover">
-                        <div class="ad-kpi-icon bg-blue-100 text-blue-600">
+
+                    <div class="ad-card kpi">
+                        <div class="ad-kpi-icon bg-blue">
                             <i class="fa fa-chart-line"></i>
                         </div>
-                        <div class="ad-kpi-info">
-                            <div class="ad-kpi-label">Dòng tiền ròng</div>
+                        <div>
+                            <div class="ad-kpi-label">Chênh lệch</div>
                             <div class="ad-kpi-value" t-esc="state.kpis.net_cash"/>
                         </div>
                     </div>
-                    <div class="ad-card ad-hover ad-click" t-on-click="openAdvances">
-                        <div class="ad-kpi-icon bg-yellow-100 text-yellow-600">
+
+                    <div class="ad-card kpi ad-click" t-on-click="openAdvances">
+                        <div class="ad-kpi-icon bg-yellow">
                             <i class="fa fa-wallet"></i>
                         </div>
-                        <div class="ad-kpi-info">
-                            <div class="ad-kpi-label">Dư tạm ứng</div>
+                        <div>
+                            <div class="ad-kpi-label">Tạm ứng cần thu</div>
                             <div class="ad-kpi-value" t-esc="state.kpis.advance_remain_total"/>
                         </div>
                     </div>
-                </div>
 
-                <!-- Chart -->
-                <div class="ad-block">
-                    <div class="ad-block__head">
-                        <h3 class="ad-block__title">Top nhân viên còn dư tạm ứng (thực tế)</h3>
+                    <!-- ==== ROW 2: BIỂU ĐỒ ==== -->
+                    <div class="ad-block span-1">
+                        <div class="ad-block__head">
+                            <h3>Nhân viên chưa thu tạm ứng</h3>
+                        </div>
+                        <div class="ad-chart-wrap small">
+                            <canvas t-ref="remainChart"/>
+                        </div>
                     </div>
-                    <div class="ad-chart-wrap">
-                        <canvas t-ref="remainChart"/>
-                    </div>
-                </div>
 
-                <!-- Table -->
-                <div class="ad-block">
-                    <div class="ad-block__head">
-                        <h3 class="ad-block__title">Phiếu đề xuất cần xử lý</h3>
+                    <div class="ad-block span-2">
+                        <div class="ad-block__head">
+                            <h3>Dòng tiền theo ngày</h3>
+                        </div>
+                        <div class="ad-chart-wrap small">
+                            <canvas t-ref="dailyFlowChart"/>
+                        </div>
                     </div>
-                    <div class="ad-tablewrap">
-                        <table class="ad-table">
-                            <thead>
-                                <tr>
-                                    <th>Mã phiếu</th>
-                                    <th>Dự án</th>
-                                    <th>Người đề xuất</th>
-                                    <th>Ngày tạo</th>
-                                    <th>Trạng thái</th>
-                                    <th class="right">Tổng tiền</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <t t-if="!state.proposal_pending.length">
-                                    <tr>
-                                        <td colspan="6" style="text-align:center;opacity:.6;">Không có phiếu nào cần xử lý</td>
-                                    </tr>
-                                </t>
-                                <t t-foreach="state.proposal_pending" t-as="p" t-key="p.id">
-                                    <tr t-on-click="() => action.doAction({
-                                        type: 'ir.actions.act_window',
-                                        res_model: 'proposal.sheet',
-                                        views: [[false, 'form']],
-                                        res_id: p.id,
-                                        target: 'current',
-                                    })" class="ad-row-click">
-                                        <td>
-                                            <t t-esc="p.name"/>
-                                        </td>
-                                        <td>
-                                            <t t-esc="p.project_id ? p.project_id[1] : ''"/>
-                                        </td>
-                                        <td>
-                                            <t t-esc="p.requested_by ? p.requested_by[1] : ''"/>
-                                        </td>
-                                        <td>
-                                            <t t-esc="(new Date(p.create_date)).toLocaleDateString('vi-VN')"/>
-                                        </td>
-                                        <td>
-                                            <span t-att-class="{
-                                                'ad-badge info': p.state === 'reviewed_accounting',
-                                                'ad-badge warning': p.state === 'waiting_accounting_paid'
-                                            }">
-                                                <t t-esc="p.state === 'reviewed_accounting' ? 'KTTH kiểm tra' : 'Chờ KT xử lý'"/>
-                                            </span>
-                                        </td>
-                                        <td class="right">
-                                            <t t-esc="fmtVND(p.amount_total)"/>
-                                        </td>
-                                    </tr>
-                                </t>
-                            </tbody>
-                        </table>
+                    <div class="ad-block span-1">
+                        <!-- Phiếu đề xuất -->
+                        <div class="ad-card kpi ad-click" t-on-click="openProposals">
+                            <div class="ad-kpi-icon bg-amber">
+                                <i class="fa-solid fa-clipboard-list"></i>
+                            </div>
+                            <div>
+                                <div class="ad-kpi-label">Đề xuất cần xử lý</div>
+                                <div class="ad-kpi-value" t-esc="state.proposal_pending_count"/>
+                            </div>
+                        </div>
+
+                        <!-- Giải chi kế toán -->
+                        <div class="ad-card kpi ad-click" t-on-click="openPaymentProposals">
+                            <div class="ad-kpi-icon bg-blue">
+                                <i class="fa fa-money-bill"></i>
+                            </div>
+                            <div>
+                                <div class="ad-kpi-label">Giải chi cần xử lý</div>
+                                <div class="ad-kpi-value" t-esc="state.payment_proposals_pending_count"/>
+                            </div>
+                        </div>
+                        <div class="ad-card kpi ad-click" t-on-click="openPaymentProposals">
+                            <div class="ad-kpi-icon bg-blue">
+                                <i class="fa fa-money-bill"></i>
+                            </div>
+                            <div>
+                                <div class="ad-kpi-label">Giải chi cần xử lý</div>
+                                <div class="ad-kpi-value" t-esc="state.payment_proposals_pending_count"/>
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-            </div>            <!-- /ad-content -->
-
-        </div>        <!-- /ad-dashboard -->
+            </div>
+        </div>
     </t>
 </templates>

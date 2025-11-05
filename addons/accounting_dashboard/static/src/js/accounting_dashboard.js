@@ -16,7 +16,6 @@ class AccountingDashboard extends Component {
     this.action = useService("action");
     this.notification = useService("notification");
 
-    // 👉 Thêm dòng này để template gọi được fmtVND()
     this.fmtVND = fmtVND;
 
     const today = new Date();
@@ -34,11 +33,14 @@ class AccountingDashboard extends Component {
         advance_remain_total: "0 ₫",
       },
       employees_with_remain: [],
-      proposal_pending: [],
+      proposal_pending_count: 0,
+      payment_proposals_pending_count: 0,
+      daily_cash_flow: [], // ✅ thêm dòng này
     });
 
     this.remainChartRef = useRef("remainChart");
-    this._charts = { remain: null };
+    this.dailyFlowChartRef = useRef("dailyFlowChart");
+    this._charts = { remain: null, dailyFlow: null };
     this._rendering = false;
 
     this._restoreFiltersFromStorage();
@@ -101,9 +103,14 @@ class AccountingDashboard extends Component {
         .sort((a, b) => b.remain_total - a.remain_total)
         .slice(0, 10);
 
-      // ✅ Phiếu đề xuất cần xử lý
-      this.state.proposal_pending = data?.proposal_pending || [];
+      // ✅ Các bảng dữ liệu
+      this.state.proposal_pending_count = data?.proposal_pending_count || 0;
+      this.state.payment_proposals_pending_count = data?.payment_proposals_pending_count || 0;
 
+      // ✅ Dữ liệu dòng tiền thu–chi–ròng
+      this.state.daily_cash_flow = data?.daily_cash_flow || [];
+
+      // Render biểu đồ
       this.renderCharts();
     } catch (e) {
       console.error(e);
@@ -128,94 +135,123 @@ class AccountingDashboard extends Component {
   // Charts
   // -----------------------------
   _destroyCharts() {
-    if (this._charts.remain) {
-      this._charts.remain.destroy();
-      this._charts.remain = null;
-    }
+    Object.values(this._charts).forEach((ch) => ch?.destroy());
+    this._charts = {};
   }
 
   renderCharts() {
     if (this._rendering) return;
     this._rendering = true;
-
     this._destroyCharts();
-    if (!window.Chart || !this.remainChartRef.el) {
-      this._rendering = false;
-      return;
+
+    // 1️⃣ Biểu đồ nhân viên còn dư (ngang)
+    const list = this.state.employees_with_remain || [];
+    if (window.Chart && this.remainChartRef.el && list.length) {
+      const labels = list.map((e) => e.employee_name);
+      const data = list.map((e) => e.remain_total);
+      const ids = list.map((e) => e.employee_id);
+
+      this._charts.remain = new Chart(this.remainChartRef.el, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: _t("Còn dư tạm ứng"),
+              data,
+              backgroundColor: [
+                "#3B82F6", "#10B981", "#F59E0B", "#EF4444",
+                "#6366F1", "#84CC16", "#EC4899", "#F97316",
+                "#06B6D4", "#8B5CF6",
+              ],
+              borderRadius: 6,
+            },
+          ],
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.label}: ${fmtVND(ctx.parsed.x)}`,
+              },
+            },
+          },
+          scales: {
+            x: {
+              ticks: { callback: (v) => fmtVND(v) },
+              title: { display: true, text: _t("Số tiền (VND)") },
+            },
+            y: { ticks: { autoSkip: false } },
+          },
+          onClick: (evt, elements) => {
+            if (!elements?.length) return;
+            const idx = elements[0].index;
+            const empId = ids[idx];
+            if (!empId) return;
+            this.action.doAction({
+              type: "ir.actions.act_window",
+              name: _t("Tạm ứng của ") + labels[idx],
+              res_model: "account.employee.advance",
+              views: [[false, "list"], [false, "form"]],
+              domain: [["employee_id", "=", empId]],
+              target: "current",
+            });
+          },
+        },
+      });
     }
 
-    const list = this.state.employees_with_remain;
-    if (!list.length) {
-      this._rendering = false;
-      return;
+    // 2️⃣ Biểu đồ dòng tiền thu – chi – ròng
+    const dailyData = this.state.daily_cash_flow || [];
+    if (window.Chart && this.dailyFlowChartRef?.el && dailyData.length) {
+      const labels = dailyData.map((r) => new Date(r.date).toLocaleDateString("vi-VN"));
+      const cashIn = dailyData.map((r) => r.cash_in);
+      const cashOut = dailyData.map((r) => r.cash_out);
+
+      this._charts.dailyFlow = new Chart(this.dailyFlowChartRef.el, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: _t("Tiền thu"),
+              data: cashIn,
+              borderColor: "#16a34a",
+              backgroundColor: "rgba(22,163,74,0.1)",
+              fill: true,
+              tension: 0.3,
+            },
+            {
+              label: _t("Tiền chi"),
+              data: cashOut,
+              borderColor: "#dc2626",
+              backgroundColor: "rgba(220,38,38,0.1)",
+              fill: true,
+              tension: 0.3,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "top" },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: ${fmtVND(ctx.parsed.y)}`,
+              },
+            },
+          },
+          scales: {
+            y: { ticks: { callback: (v) => fmtVND(v) } },
+          },
+        },
+      });
     }
-
-    const labels = list.map((e) => e.employee_name);
-    const data = list.map((e) => e.remain_total);
-    const ids = list.map((e) => e.employee_id);
-
-    this._charts.remain = new Chart(this.remainChartRef.el, {
-      type: "bar",
-      data: {
-        labels,
-        datasets: [
-          {
-            label: _t("Còn dư tạm ứng"),
-            data,
-            backgroundColor: [
-              "#3B82F6", "#10B981", "#F59E0B", "#EF4444",
-              "#6366F1", "#84CC16", "#EC4899", "#F97316",
-              "#06B6D4", "#8B5CF6",
-            ],
-            borderRadius: 6,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: true, position: "top" },
-          tooltip: {
-            callbacks: {
-              label: (ctx) => `${ctx.label}: ${fmtVND(ctx.parsed.y)}`,
-            },
-          },
-        },
-        scales: {
-          x: {
-            ticks: {
-              autoSkip: false,
-              maxRotation: 45,
-              minRotation: 30,
-            },
-          },
-          y: {
-            ticks: {
-              callback: (v) => fmtVND(v),
-            },
-          },
-        },
-        onClick: (evt, elements) => {
-          if (!elements?.length) return;
-          const idx = elements[0].index;
-          const empId = ids[idx];
-          if (!empId) return;
-
-          const { date_from, date_to } = this.state.filters;
-          this.action.doAction({
-            type: "ir.actions.act_window",
-            name: _t("Tạm ứng và hoàn ứng của ") + labels[idx],
-            res_model: "account.employee.advance",
-            views: [[false, "list"], [false, "form"]],
-            domain: [
-              ["employee_id", "=", empId],
-            ],
-            target: "current",
-          });
-        },
-      },
-    });
 
     this._rendering = false;
   }
@@ -223,6 +259,17 @@ class AccountingDashboard extends Component {
   // -----------------------------
   // Navigation
   // -----------------------------
+  openPayments() {
+    const { date_from, date_to } = this.state.filters;
+    this.action.doAction({
+      type: "ir.actions.act_window",
+      name: _t("Tất cả phiếu chi trong kỳ"),
+      res_model: "account.payment.request",
+      views: [[false, "list"], [false, "form"]],
+      domain: [["date_payment", ">=", date_from], ["date_payment", "<=", date_to], ['status_expense', 'in', ['paid']]],
+      target: "current",
+    });
+  }
   openReceipts() {
     const { date_from, date_to } = this.state.filters;
     this.action.doAction({
@@ -230,25 +277,49 @@ class AccountingDashboard extends Component {
       name: _t("Tất cả phiếu thu trong kỳ"),
       res_model: "account.receipt",
       views: [[false, "list"], [false, "form"]],
+      domain: [["date", ">=", date_from], ["date", "<=", date_to], ['state', 'in', ['posted']]],
+      target: "current",
+    });
+  }
+  openProposals() {
+    const { date_from, date_to } = this.state.filters;
+    this.action.doAction({
+      type: "ir.actions.act_window",
+      name: _t("Phiếu đề xuất cần xử lý"),
+      res_model: "proposal.sheet",
+      views: [[false, "list"], [false, "form"]],
       domain: [
-        ["date", ">=", date_from],
-        ["date", "<=", date_to],
+        ["state", "in", ["reviewed_accounting", "waiting_accounting_paid"]],
+        ["date_proposal", ">=", date_from],
+        ["date_proposal", "<=", date_to],
       ],
       target: "current",
     });
   }
-  openAdvances() {
+
+  openPaymentProposals() {
     const { date_from, date_to } = this.state.filters;
     this.action.doAction({
       type: "ir.actions.act_window",
-      name: _t("Tất cả phiếu tạm ứng trong kỳ"),
-      res_model: "account.payment.request",
+      name: _t("Giải chi kế toán cần xử lý"),
+      res_model: "account.payment.proposal",
       views: [[false, "list"], [false, "form"]],
       domain: [
-        ["is_advance", "=", true],
-        ["date_payment", ">=", date_from],
-        ["date_payment", "<=", date_to],
+        ["state", "in", ["dept_approved", "director_approved"]],
+        ["date_request", ">=", date_from],
+        ["date_request", "<=", date_to],
       ],
+      target: "current",
+    });
+  }
+
+  openAdvances() {
+    this.action.doAction({
+      type: "ir.actions.act_window",
+      name: _t("Theo dõi tạm ứng và hoàn ứng"),
+      res_model: "account.employee.advance",
+      views: [[false, "list"], [false, "form"]],
+      domain: [["remain_total", ">", 0]],
       target: "current",
     });
   }

@@ -8,86 +8,108 @@
   --ad-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
-/* KHUNG CHÍNH */
+/* ========= BASE ========= */
 .ad-dashboard {
   display: flex;
   flex-direction: column;
-  height: 100%; /* ✅ Quan trọng: chiếm full vùng o_action */
+  height: 100%;
   background: var(--ad-bg);
   color: var(--ad-ink);
   font-family: "Poppins", "Inter", sans-serif;
 }
 
-/* VÙNG SCROLL */
 .ad-content {
-  flex: 1; /* ✅ Cho phép giãn đầy còn lại */
-  overflow-y: auto; /* ✅ Cuộn vùng nội dung */
+  flex: 1;
+  overflow-y: auto;
   padding: 1.2rem;
 }
 
-/* HEADER */
+/* ========= HEADER ========= */
 .ad-header {
   display: flex;
   justify-content: space-between;
-  align-items: end;
-  flex-wrap: wrap;
-  gap: 10px;
-  padding: 1rem 1.2rem 0 1.2rem;
-  border-bottom: 1px solid var(--ad-border);
+  align-items: center;
+  padding: 0.8rem 1.2rem;
   background: var(--ad-bg);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-.ad-header__filters {
-  display: flex;
-  gap: 10px;
-  align-items: end;
-}
-.ad-filter {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.ad-filter label {
-  font-size: 0.8rem;
-  color: #64748b;
-  font-weight: 600;
-}
-.ad-header__period {
-  opacity: 0.7;
-  font-size: 0.9rem;
-}
-.ad-btn-apply {
-  padding: 6px 12px !important;
-  font-weight: 600;
+  border-bottom: 1px solid var(--ad-border);
+  flex-wrap: wrap;
+  gap: 0.8rem;
 }
 
-/* KPI */
-.ad-kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
+.ad-header__title h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin: 0;
 }
-.ad-card {
+
+.ad-header__filters {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.ad-header__filters input[type="date"] {
+  border: 1px solid var(--ad-border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  background: #fff;
+  transition: 0.2s;
+}
+.ad-header__filters input[type="date"]:hover {
+  border-color: var(--ad-brand);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+.ad-date-sep {
+  color: #94a3b8;
+}
+
+.ad-btn {
+  background: var(--ad-brand);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.ad-btn:hover {
+  background: #2563eb;
+}
+
+/* ========= GRID LAYOUT ========= */
+.ad-grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+/* ========= KPI ========= */
+.ad-card.kpi {
   display: flex;
   align-items: center;
   gap: 12px;
   background: var(--ad-bg-elev);
   border: 1px solid var(--ad-border);
   border-radius: var(--ad-radius);
-  padding: 16px;
   box-shadow: var(--ad-shadow);
-  transition: all 0.2s ease;
+  padding: 1rem 1.2rem;
+  transition: all 0.25s ease;
 }
-.ad-hover:hover {
+.ad-card.kpi:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.06);
 }
 .ad-click {
   cursor: pointer;
 }
+
+/* Icon gradient */
 .ad-kpi-icon {
   width: 46px;
   height: 46px;
@@ -95,18 +117,28 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #fff;
   font-size: 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
-.ad-kpi-info {
-  display: flex;
-  flex-direction: column;
+.bg-green {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
 }
+.bg-red {
+  background: linear-gradient(135deg, #ef4444, #f87171);
+}
+.bg-blue {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+}
+.bg-yellow {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+}
+
 .ad-kpi-label {
-  font-size: 0.85rem;
-  color: #64748b;
-  font-weight: 700;
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 .ad-kpi-value {
   font-size: 1.4rem;
@@ -114,34 +146,40 @@
   color: var(--ad-ink);
 }
 
-/* BLOCK */
+/* ========= BLOCKS ========= */
 .ad-block {
   background: var(--ad-bg-elev);
   border: 1px solid var(--ad-border);
   border-radius: var(--ad-radius);
   box-shadow: var(--ad-shadow);
-  margin-top: 1rem;
   padding: 1rem 1.2rem;
+  transition: 0.25s;
 }
-.ad-block__head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+.ad-block:hover {
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.06);
 }
-.ad-block__title {
+.ad-block__head h3 {
+  font-size: 1rem;
   font-weight: 700;
-  font-size: 1.05rem;
+  margin-bottom: 0.5rem;
   color: var(--ad-ink);
 }
-
-/* CHART */
-.ad-chart-wrap {
-  width: 100%;
-  height: 380px;
+.ad-block.span-2 {
+  grid-column: span 2;
+}
+.ad-block.span-3 {
+  grid-column: span 3;
 }
 
-/* TABLE */
+/* ========= CHARTS ========= */
+.ad-chart-wrap.small {
+  height: 240px;
+}
+.ad-chart-wrap {
+  height: 360px;
+}
+
+/* ========= TABLE ========= */
 .ad-tablewrap {
   overflow-x: auto;
   border-radius: 10px;
@@ -160,30 +198,52 @@
 }
 .ad-table th,
 .ad-table td {
-  padding: 10px 12px;
+  padding: 8px 10px;
   border-bottom: 1px solid #e2e8f0;
 }
 .ad-table tbody tr:hover {
   background: #f9fafb;
-}
-.ad-row-click {
   cursor: pointer;
+  transition: 0.15s;
 }
 .right {
   text-align: right;
 }
+.ad-tablewrap {
+  max-height: 220px; /* bạn có thể chỉnh 200–250px tùy layout */
+  overflow-y: auto;
+  border-radius: var(--ad-radius);
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
 
-/* BADGE */
-.ad-badge {
-  padding: 3px 8px;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: white;
+/* Làm scrollbar nhỏ gọn và nhẹ */
+.ad-tablewrap::-webkit-scrollbar {
+  width: 6px;
 }
-.ad-badge.info {
-  background: #3b82f6;
+.ad-tablewrap::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 4px;
 }
-.ad-badge.warning {
-  background: #f59e0b;
+.ad-tablewrap::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+/* Cố định phần header để khi cuộn, tiêu đề không biến mất */
+.ad-tablewrap table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--ad-bg-elev);
+  z-index: 2;
+}
+
+/* Bản thân khung ad-block không cần viền */
+.ad-block:has(> .ad-card.kpi) {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem; /* 👈 cách đều 2 thẻ */
 }
