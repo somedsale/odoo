@@ -6,7 +6,17 @@ import { registry } from "@web/core/registry";
 import { _t } from "@web/core/l10n/translation";
 
 const STORAGE_KEY = "ad_accounting_dashboard_filters_v4";
-const fmtVND = (n) => (Number(n) || 0).toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+const fmtVND = (n) => `${(Number(n) || 0).toLocaleString("vi-VN")} đ`;
+const fmtDate = (dateStr) => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  return d.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
 
 class AccountingDashboard extends Component {
   static template = "ad.AccountingDashboard";
@@ -17,6 +27,7 @@ class AccountingDashboard extends Component {
     this.notification = useService("notification");
 
     this.fmtVND = fmtVND;
+    this.fmtDate = fmtDate;
 
     const today = new Date();
     const toISO = (d) => d.toISOString().slice(0, 10);
@@ -258,6 +269,19 @@ class AccountingDashboard extends Component {
           scales: {
             y: { ticks: { callback: (v) => fmtVND(v) } },
           },
+          onClick: (evt, activeEls) => {
+            if (!activeEls.length) return;
+            const idx = activeEls[0].index;
+            const clickedDate = dailyData[idx].date; // YYYY-MM-DD
+            const datasetLabel = activeEls[0].datasetIndex === 0 ? "receipt" : "payment";
+
+            // Gọi hàm mở action tương ứng
+            if (datasetLabel === "receipt") {
+              this.openDailyReceipts(clickedDate);
+            } else {
+              this.openDailyPayments(clickedDate);
+            }
+          },
         },
       });
     }
@@ -329,6 +353,79 @@ class AccountingDashboard extends Component {
       res_model: "account.employee.advance",
       views: [[false, "list"], [false, "form"]],
       domain: [["remain_total", ">", 0]],
+      target: "current",
+    });
+  }
+  async openDailyReceipts(dateStr) {
+    await this.action.doAction({
+      type: "ir.actions.act_window",
+      name: _t("Phiếu thu ngày ") + dateStr,
+      res_model: "account.receipt",
+      target: "current",
+      views: [[false, "list"], [false, "form"]], // 👈 thêm dòng này
+      domain: [["date", "=", dateStr], ["state", "in", ["posted"]]],
+    });
+  }
+
+  async openDailyPayments(dateStr) {
+    await this.action.doAction({
+      type: "ir.actions.act_window",
+      name: _t("Phiếu chi ngày ") + dateStr,
+      res_model: "account.payment.request",
+      target: "current",
+      views: [[false, "list"], [false, "form"]], // 👈 thêm dòng này
+      domain: [
+        ["date_payment", "=", dateStr],
+        ["state", "in", ["approved", "post", "paid", "done"]],
+      ],
+    });
+  }
+  openCustomerInvoices() {
+    const { date_from, date_to } = this.state.filters;
+    this.action.doAction({
+      type: "ir.actions.act_window",
+      name: _t("Hóa đơn đầu ra (Khách hàng)"),
+      res_model: "customer.invoice",
+      target: "current",
+      views: [[false, "list"], [false, "form"]],
+      domain: [
+        ["date", ">=", date_from],
+        ["date", "<=", date_to],
+      ],
+
+    });
+  }
+
+  openSupplierInvoices() {
+    const { date_from, date_to } = this.state.filters;
+    this.action.doAction({
+      type: "ir.actions.act_window",
+      name: _t("Hóa đơn đầu vào (Nhà cung cấp)"),
+      res_model: "supplier.invoice",
+      target: "current",
+      views: [[false, "list"], [false, "form"]],
+      domain: [
+        ["date", ">=", date_from],
+        ["date", "<=", date_to],
+      ],
+    });
+  }
+  openDetailSupplierInvoice(invId) {
+    this.action.doAction({
+      type: "ir.actions.act_window",
+      res_model: "supplier.invoice",
+      res_id: invId,
+      views: [[false, "form"]],
+      target: "current",
+    });
+  }
+
+  openDetailCustomerInvoice(invId) {
+    this.action.doAction({
+      type: "ir.actions.act_window",
+      res_model: "customer.invoice",
+      res_id: invId,
+      views: [[false, "form"]],
       target: "current",
     });
   }

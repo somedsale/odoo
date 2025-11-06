@@ -89,22 +89,22 @@
                                     <span class="ad-value" t-esc="state.payment_proposals_pending_count" />
                                 </div>
                             </div>
-                            <div class="ad-card mini" t-on-click="openSupplierInvoices">
+                            <div class="ad-card mini" t-on-click="openCustomerInvoices">
                                 <div class="ad-icon bg-purple">
                                     <i class="fa fa-file-invoice"></i>
                                 </div>
                                 <div class="ad-info">
                                     <span class="ad-label">HĐ đầu vào</span>
-                                    <span class="ad-value" t-esc="state.kpis.total_supplier_invoice" />
+                                    <span class="ad-value" t-esc="state.kpis.total_customer_invoice" />
                                 </div>
                             </div>
-                            <div class="ad-card mini" t-on-click="openCustomerInvoices">
+                            <div class="ad-card mini" t-on-click="openSupplierInvoices">
                                 <div class="ad-icon bg-cyan">
                                     <i class="fa fa-file-invoice-dollar"></i>
                                 </div>
                                 <div class="ad-info">
                                     <span class="ad-label">HĐ đầu ra</span>
-                                    <span class="ad-value" t-esc="state.kpis.total_customer_invoice" />
+                                    <span class="ad-value" t-esc="state.kpis.total_supplier_invoice" />
                                 </div>
                             </div>
                         </div>
@@ -113,7 +113,7 @@
                     <!-- Middle chart -->
                     <div class="ad-block">
                         <div class="ad-block__head">
-                            <h3>Dòng tiền theo ngày</h3>
+                            <h3>Dòng tiền theo khoảng ngày</h3>
                         </div>
                         <canvas t-ref="dailyFlowChart" class="ad-chart medium" />
                     </div>
@@ -133,78 +133,87 @@
                         <div class="ad-block__head">
                             <h3>Hóa đơn đầu vào (Nhà cung cấp)</h3>
                         </div>
-                        <table class="ad-table">
-                            <thead>
-                                <tr>
-                                    <th>Mã HĐ</th>
-                                    <th>Nhà cung cấp</th>
-                                    <th>Ngày</th>
-                                    <th class="right">Tổng tiền</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <t t-if="!state.supplier_invoices.length">
+                        <div class="ad-table-wrapper">
+                            <table class="ad-table">
+                                <thead>
                                     <tr>
-                                        <td colspan="4" class="empty">Không có hóa đơn</td>
+                                        <th>Mã HĐ</th>
+                                        <th>Nhà cung cấp</th>
+                                        <th>Ngày HĐ</th>
+                                        <th>Ngày hết hạn</th>
+                                        <th class="right">Tổng tiền</th>
                                     </tr>
-                                </t>
-                                <t t-foreach="state.supplier_invoices" t-as="inv" t-key="inv.id">
-                                    <tr t-on-click="() => openRecord('supplier.invoice', inv.id)">
-                                        <td>
-                                            <t t-esc="inv.name" />
-                                        </td>
-                                        <td>
-                                            <t t-esc="inv.partner_id &amp;&amp; inv.partner_id[1]" />
-                                        </td>
-                                        <td>
-                                            <t t-esc="inv.date" />
-                                        </td>
-                                        <td class="right">
-                                            <t t-esc="fmtVND(inv.amount)" />
-                                        </td>
-                                    </tr>
-                                </t>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    <t t-if="!state.supplier_invoices.length">
+                                        <tr>
+                                            <td colspan="4" class="empty">Không có hóa đơn</td>
+                                        </tr>
+                                    </t>
+                                    <t t-foreach="state.supplier_invoices" t-as="inv" t-key="inv.id">
+                                        <tr t-on-click="() => this.openDetailSupplierInvoice(inv.id)" class="wt-row--click">
+                                            <td>
+                                                <t t-esc="inv.name" />
+                                            </td>
+                                            <td>
+                                                <t t-esc="inv.partner_id &amp;&amp; inv.partner_id[1]" />
+                                            </td>
+                                            <td>
+                                                <t t-esc="fmtDate(inv.date)" />
+                                            </td>
+                                            <td>
+                                                <t t-esc="fmtDate(inv.due_date)" />
+                                            </td>
+                                            <td class="right">
+                                                <t t-esc="fmtVND(inv.amount)" />
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <div class="ad-block">
                         <div class="ad-block__head">
                             <h3>Hóa đơn đầu ra (Khách hàng)</h3>
                         </div>
-                        <table class="ad-table">
-                            <thead>
-                                <tr>
-                                    <th>Mã HĐ</th>
-                                    <th>Khách hàng</th>
-                                    <th>Ngày</th>
-                                    <th class="right">Tổng tiền</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <t t-if="!state.customer_invoices.length">
+                        <div class="ad-table-wrapper">
+                            <table class="ad-table">
+                                <thead>
                                     <tr>
-                                        <td colspan="4" class="empty">Không có hóa đơn</td>
+                                        <th>Mã HĐ</th>
+                                        <th>Khách hàng</th>
+                                        <th>Ngày</th>
+                                        <th class="right">Tổng tiền</th>
                                     </tr>
-                                </t>
-                                <t t-foreach="state.customer_invoices" t-as="inv" t-key="inv.id">
-                                    <tr t-on-click="() => openRecord('customer.invoice', inv.id)">
-                                        <td>
-                                            <t t-esc="inv.name" />
-                                        </td>
-                                        <td>
-                                            <t t-esc="inv.partner_id &amp;&amp; inv.partner_id[1]" />
-                                        </td>
-                                        <td>
-                                            <t t-esc="inv.date" />
-                                        </td>
-                                        <td class="right">
-                                            <t t-esc="fmtVND(inv.amount_total)" />
-                                        </td>
-                                    </tr>
-                                </t>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    <t t-if="!state.customer_invoices.length">
+                                        <tr>
+                                            <td colspan="4" class="empty">Không có hóa đơn</td>
+                                        </tr>
+                                    </t>
+                                    <t t-foreach="state.customer_invoices" t-as="inv" t-key="inv.id">
+                                        <tr t-on-click="() => this.openDetailCustomerInvoice(inv.id)" class="wt-row--click">
+                                            <td>
+                                                <t t-esc="inv.name" />
+                                            </td>
+                                            <td>
+                                                <t t-esc="inv.partner_id &amp;&amp; inv.partner_id[1]" />
+                                            </td>
+                                            <td>
+                                                <t t-esc="fmtDate(inv.date)" />
+                                            </td>
+                                            <td class="right">
+                                                <t t-esc="fmtVND(inv.amount_total)" />
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+
+                        </div>
                     </div>
                 </div>
             </div>
