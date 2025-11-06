@@ -39,7 +39,7 @@ class SalesDashboard(models.AbstractModel):
         order_count = len(sales_orders)
         avg_order_value = total_sales / order_count if order_count else 0.0
 
-        low_stock_products = self.env['product.product'].search_count([
+        low_stock_products = self.env['product.product'].sudo().search_count([
             ('type', 'in', ['product', 'consu']),
             ('qty_available', '<=', 10),
         ])

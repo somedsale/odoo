@@ -313,16 +313,16 @@ class SalesDashboard extends Component {
 
     openTotalOrders() { this.openTotalSales(); }
 
-    openLowStockProducts() {
-        this.action.doAction({
-            type: "ir.actions.act_window",
-            name: _t("Sản phẩm sắp hết hàng"),
-            res_model: "product.product",
-            views: [[false, "list"], [false, "form"]],
-            domain: [["type", "in", ["product", "consu"]], ["qty_available", "<=", 10]],
-            target: "current",
-        });
-    }
+    // openLowStockProducts() {
+    //     this.action.doAction({
+    //         type: "ir.actions.act_window",
+    //         name: _t("Sản phẩm sắp hết hàng"),
+    //         res_model: "product.product",
+    //         views: [[false, "list"], [false, "form"]],
+    //         domain: [["type", "in", ["product", "consu"]], ["qty_available", "<=", 10]],
+    //         target: "current",
+    //     });
+    // }
 
     openCategories() {
         this.action.doAction({
