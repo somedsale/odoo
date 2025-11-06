@@ -5,7 +5,18 @@ import { useService } from "@web/core/utils/hooks";
 import { registry } from "@web/core/registry";
 import { _t } from "@web/core/l10n/translation";
 
-const STORAGE_KEY = "ad_accounting_dashboard_filters_v1";
+const STORAGE_KEY = "ad_accounting_dashboard_filters_v4";
+const fmtVND = (n) => `${(Number(n) || 0).toLocaleString("vi-VN")} đ`;
+const fmtDate = (dateStr) => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  return d.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
 
 class AccountingDashboard extends Component {
   static template = "ad.AccountingDashboard";
@@ -15,114 +26,64 @@ class AccountingDashboard extends Component {
     this.action = useService("action");
     this.notification = useService("notification");
 
+    this.fmtVND = fmtVND;
+    this.fmtDate = fmtDate;
+
     const today = new Date();
     const toISO = (d) => d.toISOString().slice(0, 10);
 
-    /* ----- State mặc định (dữ liệu ảo) ----- */
     this.state = useState({
       filters: {
-        date_from: toISO(new Date(today.getTime() - 29 * 24 * 3600 * 1000)), // 30 ngày
+        date_from: toISO(new Date(today.getTime() - 29 * 24 * 3600 * 1000)),
         date_to: toISO(today),
       },
-      kpis: [
-        { title: _t("Doanh thu kỳ"), value: "3.000.000.000", sub: "▲ 10% • 10,8%" },
-        { title: _t("LN gộp"), value: "320.000.000", sub: "▲ 400%" },
-        { title: _t("Tiền mặt + NH"), value: "2.500.000.000", sub: _t("Số dư hiện tại") },
-        { title: _t("Phải thu (AR)"), value: "600.000.000", sub: "400 / 150.000" },
-        { title: _t("Dòng tiền thuần"), value: "-50.000.000", sub: "VTD • +150.000 VND" },
-      ],
-      tables: {
-        ar: Array.from({ length: 6 }, (_, i) => ({
-          partner: "Công ty A",
-          number: `INV/2025/00${i + 1}`,
-          due: "20-11-2025",
-          remain: "—",
-          age: "— ngày",
-        })),
-        ap: Array.from({ length: 6 }, (_, i) => ({
-          vendor: `Nhà CC ${i + 1}`,
-          number: `BILL/2025/0${i + 1}`,
-          due: "18-11-2025",
-          remain: "—",
-          age: "— ngày",
-        })),
-        schedule: Array.from({ length: 6 }, (_, i) => ({
-          day: `${10 + i}-11-2025`,
-          doc: `PAY/REQ/${100 + i}`,
-          partner: "Công ty B",
-          amount: "—",
-          state: _t("Chờ duyệt"),
-        })),
+      kpis: {
+        cash_in: "0 ₫",
+        cash_out: "0 ₫",
+        net_cash: "0 ₫",
+        advance_remain_total: "0 ₫",
+        total_supplier_invoice: "0 ₫",
+        total_customer_invoice: "0 ₫",
       },
-      sideCards: [
-        {
-          title: _t("Thuế VAT"),
-          items: [
-            [_t("VAT đầu ra"), "80.000.000"],
-            [_t("VAT đầu vào"), "100.000.000"],
-          ],
-        },
-        {
-          title: _t("Kho & Giá trị tồn"),
-          items: [
-            [_t("Vòng trưởng"), "2.000.000.000"],
-            [_t("Tồn chậm luân chuyển"), "120.000.000"],
-          ],
-        },
-        {
-          title: _t("Khoản vay & Lãi"),
-          items: [
-            [_t("Dư nợ"), "4.500.000"],
-            [_t("Kỳ trả kế tiếp"), "30/07/2024"],
-          ],
-        },
-        {
-          title: _t("Tạm ứng NV"),
-          items: [[_t("Dư hồ sơ cần quyết toán"), "50.000.000"]],
-        },
-      ],
-      charts: {
-        sales_trend: { labels: [], data: [] },     // có Chart.js sẽ vẽ
-        kqkd_monthly: { labels: [], data: [] },    // có Chart.js sẽ vẽ
-      },
+      employees_with_remain: [],
+      proposal_pending_count: 0,
+      payment_proposals_pending_count: 0,
+      daily_cash_flow: [],
+      supplier_invoices: [],
+      customer_invoices: [],
     });
 
-    /* refs cho canvas chart */
-    this.salesTrendRef = useRef("salesTrend");
-    this.kqkdRef = useRef("kqkdMonthly");
-    this._charts = { sales: null, kqkd: null };
+    this.remainChartRef = useRef("remainChart");
+    this.dailyFlowChartRef = useRef("dailyFlowChart");
+    this._charts = { remain: null, dailyFlow: null };
+    this._rendering = false;
 
-    /* khôi phục filter từ localStorage */
     this._restoreFiltersFromStorage();
-
-    onWillStart(async () => {
-      await this.fetchData();      // giả lập gọi ORM nếu cần
-    });
-
-    onMounted(() => {
-      this.renderCharts();         // thử vẽ chart nếu có Chart.js
-    });
+    onWillStart(async () => await this.fetchData());
+    onMounted(() => this.renderCharts());
   }
 
-  /* ===== helper: localStorage ===== */
+  // -----------------------------
+  // LocalStorage helpers
+  // -----------------------------
   _restoreFiltersFromStorage() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      const saved = JSON.parse(raw);
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
       if (saved?.date_from && saved?.date_to) {
         this.state.filters.date_from = saved.date_from;
         this.state.filters.date_to = saved.date_to;
       }
     } catch (_) { }
   }
+
   _saveFiltersToStorage() {
-    try {
-      const { date_from, date_to } = this.state.filters;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ date_from, date_to }));
-    } catch (_) { }
+    const { date_from, date_to } = this.state.filters;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ date_from, date_to }));
   }
 
+  // -----------------------------
+  // Helpers
+  // -----------------------------
   get periodLabel() {
     const { date_from, date_to } = this.state.filters;
     if (!date_from || !date_to) return _t("Không xác định");
@@ -130,22 +91,47 @@ class AccountingDashboard extends Component {
     return `${fmt(date_from)} → ${fmt(date_to)}`;
   }
 
-  /* ===== data fetch (fake/orm) ===== */
+  // -----------------------------
+  // Fetch data
+  // -----------------------------
   async fetchData() {
     const { date_from, date_to } = this.state.filters;
     try {
-      // TODO: gọi ORM thật nếu bạn có model server
-      // const data = await this.orm.call("wt.account.dashboard", "get_dashboard_data", [], { date_from, date_to });
-      // this.state.kpis = data.kpis || this.state.kpis; ...
-      // Ở đây mình chỉ giữ dữ liệu ảo, nhưng cập nhật labels/data mẫu để có thể vẽ Chart nếu có.
-      this.state.charts.sales_trend = {
-        labels: ["2025-11-01", "2025-11-02", "2025-11-03", "2025-11-04", "2025-11-05"],
-        data: [30, 52, 40, 60, 55],
+      const data = await this.orm.call("wt.account.dashboard", "get_dashboard_data", [], { date_from, date_to });
+
+      // KPI
+      const cashIn = Number(data?.cash_in ?? 0);
+      const cashOut = Number(data?.cash_out ?? 0);
+      const net = Number(data?.net_cash ?? cashIn - cashOut);
+      const advRemain = Number(data?.employee_advance_remain_total ?? 0);
+      const totalSupp = Number(data?.total_supplier_invoice ?? 0);
+      const totalCust = Number(data?.total_customer_invoice ?? 0);
+
+      this.state.kpis = {
+        cash_in: fmtVND(cashIn),
+        cash_out: fmtVND(cashOut),
+        net_cash: fmtVND(net),
+        advance_remain_total: fmtVND(advRemain),
+        total_supplier_invoice: fmtVND(totalSupp),
+        total_customer_invoice: fmtVND(totalCust),
       };
-      this.state.charts.kqkd_monthly = {
-        labels: ["T7", "T8", "T9", "T10", "T11"],
-        data: [80, 95, 70, 110, 105],
-      };
+
+      // Dư tạm ứng
+      const empRemain = data?.employees_with_remain || [];
+      this.state.employees_with_remain = empRemain
+        .sort((a, b) => b.remain_total - a.remain_total)
+        .slice(0, 10);
+
+      // ✅ Các bảng dữ liệu
+      this.state.proposal_pending_count = data?.proposal_pending_count || 0;
+      this.state.payment_proposals_pending_count = data?.payment_proposals_pending_count || 0;
+      this.state.supplier_invoices = data?.supplier_invoices || [];
+      this.state.customer_invoices = data?.customer_invoices || [];
+
+      // ✅ Dữ liệu dòng tiền thu–chi
+      this.state.daily_cash_flow = data?.daily_cash_flow || [];
+
+      // Render biểu đồ
       this.renderCharts();
     } catch (e) {
       console.error(e);
@@ -153,6 +139,9 @@ class AccountingDashboard extends Component {
     }
   }
 
+  // -----------------------------
+  // Filters
+  // -----------------------------
   applyFilter() {
     const { date_from, date_to } = this.state.filters;
     if (date_from && date_to && date_from > date_to) {
@@ -163,71 +152,284 @@ class AccountingDashboard extends Component {
     this.fetchData();
   }
 
-  /* ===== charts ===== */
+  // -----------------------------
+  // Charts
+  // -----------------------------
   _destroyCharts() {
-    if (this._charts.sales) { this._charts.sales.destroy(); this._charts.sales = null; }
-    if (this._charts.kqkd) { this._charts.kqkd.destroy(); this._charts.kqkd = null; }
+    Object.values(this._charts).forEach((ch) => ch?.destroy());
+    this._charts = {};
   }
 
   renderCharts() {
+    if (this._rendering) return;
+    this._rendering = true;
     this._destroyCharts();
-    // Nếu chưa nạp Chart.js thì bỏ qua (vẫn không lỗi)
-    if (typeof Chart === "undefined") return;
 
-    const fmtVN = (s) => {
-      if (!s) return "";
-      const [y, m, d] = String(s).split("-");
-      return `${d}/${m}/${y}`;
-    };
+    // 1️⃣ Biểu đồ nhân viên còn dư (ngang)
+    const list = this.state.employees_with_remain || [];
+    if (window.Chart && this.remainChartRef.el && list.length) {
+      const labels = list.map((e) => e.employee_name);
+      const data = list.map((e) => e.remain_total);
+      const ids = list.map((e) => e.employee_id);
 
-    // 1) Sales Trend
-    if (this.salesTrendRef.el) {
-      this._charts.sales = new Chart(this.salesTrendRef.el, {
-        type: "line",
+      this._charts.remain = new Chart(this.remainChartRef.el, {
+        type: "bar",
         data: {
-          labels: this.state.charts.sales_trend.labels,
-          datasets: [{
-            label: _t("Doanh thu"),
-            data: this.state.charts.sales_trend.data,
-            borderColor: "#3B82F6",
-            backgroundColor: "rgba(99,102,241,0.12)",
-            fill: true, tension: 0.3,
-          }],
+          labels,
+          datasets: [
+            {
+              label: _t("Còn dư tạm ứng"),
+              data,
+              backgroundColor: [
+                "#3B82F6", "#10B981", "#F59E0B", "#EF4444",
+                "#6366F1", "#84CC16", "#EC4899", "#F97316",
+                "#06B6D4", "#8B5CF6",
+              ],
+              borderRadius: 6,
+            },
+          ],
         },
         options: {
-          responsive: true, maintainAspectRatio: false,
+          indexAxis: "y",
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.label}: ${fmtVND(ctx.parsed.x)}`,
+              },
+            },
+          },
           scales: {
             x: {
-              ticks: { callback: (_, idx) => fmtVN(this.state.charts.sales_trend.labels[idx]) },
+              ticks: { callback: (v) => fmtVND(v) },
             },
+            y: { ticks: { autoSkip: false } },
+          },
+          onClick: (evt, elements) => {
+            if (!elements?.length) return;
+            const idx = elements[0].index;
+            const empId = ids[idx];
+            if (!empId) return;
+            this.action.doAction({
+              type: "ir.actions.act_window",
+              name: _t("Tạm ứng của ") + labels[idx],
+              res_model: "account.employee.advance",
+              views: [[false, "list"], [false, "form"]],
+              domain: [["employee_id", "=", empId]],
+              target: "current",
+            });
           },
         },
       });
     }
 
-    // 2) KQKD theo tháng (bar)
-    if (this.kqkdRef.el) {
-      this._charts.kqkd = new Chart(this.kqkdRef.el, {
-        type: "bar",
+    // 2️⃣ Biểu đồ dòng tiền thu – chi – ròng
+    const dailyData = this.state.daily_cash_flow || [];
+    if (window.Chart && this.dailyFlowChartRef?.el && dailyData.length) {
+      const labels = dailyData.map((r) => new Date(r.date).toLocaleDateString("vi-VN"));
+      const cashIn = dailyData.map((r) => r.cash_in);
+      const cashOut = dailyData.map((r) => r.cash_out);
+
+      this._charts.dailyFlow = new Chart(this.dailyFlowChartRef.el, {
+        type: "line",
         data: {
-          labels: this.state.charts.kqkd_monthly.labels,
-          datasets: [{
-            label: _t("KQKD"),
-            data: this.state.charts.kqkd_monthly.data,
-            backgroundColor: "#10B981",
-          }],
+          labels,
+          datasets: [
+            {
+              label: _t("Tiền thu"),
+              data: cashIn,
+              borderColor: "#16a34a",
+              backgroundColor: "rgba(22,163,74,0.1)",
+              fill: true,
+              tension: 0.3,
+            },
+            {
+              label: _t("Tiền chi"),
+              data: cashOut,
+              borderColor: "#dc2626",
+              backgroundColor: "rgba(220,38,38,0.1)",
+              fill: true,
+              tension: 0.3,
+            },
+          ],
         },
-        options: { responsive: true, maintainAspectRatio: false },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "top" },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: ${fmtVND(ctx.parsed.y)}`,
+              },
+            },
+          },
+          scales: {
+            y: { ticks: { callback: (v) => fmtVND(v) } },
+          },
+          onClick: (evt, activeEls) => {
+            if (!activeEls.length) return;
+            const idx = activeEls[0].index;
+            const clickedDate = dailyData[idx].date; // YYYY-MM-DD
+            const datasetLabel = activeEls[0].datasetIndex === 0 ? "receipt" : "payment";
+
+            // Gọi hàm mở action tương ứng
+            if (datasetLabel === "receipt") {
+              this.openDailyReceipts(clickedDate);
+            } else {
+              this.openDailyPayments(clickedDate);
+            }
+          },
+        },
       });
     }
+
+    this._rendering = false;
   }
 
-  /* ===== mở action (ví dụ) ===== */
-  openARSoon() { /* TODO: mở danh sách AR */ }
-  openAPSoon() { /* TODO: mở danh sách AP */ }
+  // -----------------------------
+  // Navigation
+  // -----------------------------
+  openPayments() {
+    const { date_from, date_to } = this.state.filters;
+    this.action.doAction({
+      type: "ir.actions.act_window",
+      name: _t("Tất cả phiếu chi trong kỳ"),
+      res_model: "account.payment.request",
+      views: [[false, "list"], [false, "form"]],
+      domain: [["date_payment", ">=", date_from], ["date_payment", "<=", date_to], ['status_expense', 'in', ['paid']]],
+      target: "current",
+    });
+  }
+  openReceipts() {
+    const { date_from, date_to } = this.state.filters;
+    this.action.doAction({
+      type: "ir.actions.act_window",
+      name: _t("Tất cả phiếu thu trong kỳ"),
+      res_model: "account.receipt",
+      views: [[false, "list"], [false, "form"]],
+      domain: [["date", ">=", date_from], ["date", "<=", date_to], ['state', 'in', ['posted']]],
+      target: "current",
+    });
+  }
+  openProposals() {
+    const { date_from, date_to } = this.state.filters;
+    this.action.doAction({
+      type: "ir.actions.act_window",
+      name: _t("Phiếu đề xuất cần xử lý"),
+      res_model: "proposal.sheet",
+      views: [[false, "list"], [false, "form"]],
+      domain: [
+        ["state", "in", ["reviewed_accounting", "waiting_accounting_paid"]],
+        ["date_proposal", ">=", date_from],
+        ["date_proposal", "<=", date_to],
+      ],
+      target: "current",
+    });
+  }
+
+  openPaymentProposals() {
+    const { date_from, date_to } = this.state.filters;
+    this.action.doAction({
+      type: "ir.actions.act_window",
+      name: _t("Giải chi kế toán cần xử lý"),
+      res_model: "account.payment.proposal",
+      views: [[false, "list"], [false, "form"]],
+      domain: [
+        ["state", "in", ["dept_approved", "director_approved"]],
+        ["date_request", ">=", date_from],
+        ["date_request", "<=", date_to],
+      ],
+      target: "current",
+    });
+  }
+
+  openAdvances() {
+    this.action.doAction({
+      type: "ir.actions.act_window",
+      name: _t("Theo dõi tạm ứng và hoàn ứng"),
+      res_model: "account.employee.advance",
+      views: [[false, "list"], [false, "form"]],
+      domain: [["remain_total", ">", 0]],
+      target: "current",
+    });
+  }
+  async openDailyReceipts(dateStr) {
+    await this.action.doAction({
+      type: "ir.actions.act_window",
+      name: _t("Phiếu thu ngày ") + dateStr,
+      res_model: "account.receipt",
+      target: "current",
+      views: [[false, "list"], [false, "form"]], // 👈 thêm dòng này
+      domain: [["date", "=", dateStr], ["state", "in", ["posted"]]],
+    });
+  }
+
+  async openDailyPayments(dateStr) {
+    await this.action.doAction({
+      type: "ir.actions.act_window",
+      name: _t("Phiếu chi ngày ") + dateStr,
+      res_model: "account.payment.request",
+      target: "current",
+      views: [[false, "list"], [false, "form"]], // 👈 thêm dòng này
+      domain: [
+        ["date_payment", "=", dateStr],
+        ["state", "in", ["approved", "post", "paid", "done"]],
+      ],
+    });
+  }
+  openCustomerInvoices() {
+    const { date_from, date_to } = this.state.filters;
+    this.action.doAction({
+      type: "ir.actions.act_window",
+      name: _t("Hóa đơn đầu ra (Khách hàng)"),
+      res_model: "customer.invoice",
+      target: "current",
+      views: [[false, "list"], [false, "form"]],
+      domain: [
+        ["date", ">=", date_from],
+        ["date", "<=", date_to],
+      ],
+
+    });
+  }
+
+  openSupplierInvoices() {
+    const { date_from, date_to } = this.state.filters;
+    this.action.doAction({
+      type: "ir.actions.act_window",
+      name: _t("Hóa đơn đầu vào (Nhà cung cấp)"),
+      res_model: "supplier.invoice",
+      target: "current",
+      views: [[false, "list"], [false, "form"]],
+      domain: [
+        ["date", ">=", date_from],
+        ["date", "<=", date_to],
+      ],
+    });
+  }
+  openDetailSupplierInvoice(invId) {
+    this.action.doAction({
+      type: "ir.actions.act_window",
+      res_model: "supplier.invoice",
+      res_id: invId,
+      views: [[false, "form"]],
+      target: "current",
+    });
+  }
+
+  openDetailCustomerInvoice(invId) {
+    this.action.doAction({
+      type: "ir.actions.act_window",
+      res_model: "customer.invoice",
+      res_id: invId,
+      views: [[false, "form"]],
+      target: "current",
+    });
+  }
 }
 
-registry
-  .category("actions")
-  .add("accounting_dashboard_main", AccountingDashboard);
-
+registry.category("actions").add("accounting_dashboard_main", AccountingDashboard);
+export default AccountingDashboard;

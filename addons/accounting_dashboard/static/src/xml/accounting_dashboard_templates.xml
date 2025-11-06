@@ -1,234 +1,220 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates xml:space="preserve">
-
     <t t-name="ad.AccountingDashboard" owl="1">
-        <div class="ad-page">
-            <div class="ad-container">
+        <div class="ad-dashboard o_action">
+            <!-- ===== HEADER ===== -->
+            <div class="ad-header">
+                <div class="ad-header__left">
+                    <h2 class="ad-title">💼 KẾ TOÁN</h2>
+                    <p class="ad-subtitle">Tổng quan dòng tiền và công nợ</p>
+                </div>
+                <div class="ad-header__filters">
+                    <label>
+                        <span>Từ:</span>
+                        <input type="date" t-model="state.filters.date_from" />
+                    </label>
+                    <label>
+                        <span>Đến:</span>
+                        <input type="date" t-model="state.filters.date_to" />
+                    </label>
+                    <button class="ad-btn" t-on-click="applyFilter">
+                        <i class="fa fa-filter me-1"></i> Áp dụng
+                    </button>
+                </div>
+            </div>
 
-                <!-- Filters -->
-                <div class="ad-filterbar">
-                    <div class="ad-filter-item">
-                        <label>Từ ngày</label>
-                        <input type="date" class="ad-date" t-model="state.filters.date_from"/>
+            <!-- ===== CONTENT ===== -->
+            <div class="ad-content o_content">
+
+                <!-- KPI SECTION -->
+                <div class="ad-kpi-grid">
+                    <div class="ad-card kpi" t-on-click="openReceipts">
+                        <div class="ad-icon bg-green">
+                            <i class="fa fa-arrow-down"></i>
+                        </div>
+                        <div class="ad-info">
+                            <span class="ad-label">Tiền thu</span>
+                            <span class="ad-value" t-esc="state.kpis.cash_in" />
+                        </div>
                     </div>
-                    <div class="ad-filter-item">
-                        <label>Đến ngày</label>
-                        <input type="date" class="ad-date" t-model="state.filters.date_to"/>
+                    <div class="ad-card kpi" t-on-click="openPayments">
+                        <div class="ad-icon bg-red">
+                            <i class="fa fa-arrow-up"></i>
+                        </div>
+                        <div class="ad-info">
+                            <span class="ad-label">Tiền chi</span>
+                            <span class="ad-value" t-esc="state.kpis.cash_out" />
+                        </div>
                     </div>
-                    <button class="ad-chip primary" t-on-click="applyFilter">Áp dụng</button>
-                    <div class="ad-period">(                        <t t-esc="periodLabel"/>
-)</div>
+                    <div class="ad-card kpi">
+                        <div class="ad-icon bg-blue">
+                            <i class="fa fa-chart-line"></i>
+                        </div>
+                        <div class="ad-info">
+                            <span class="ad-label">Chênh lệch</span>
+                            <span class="ad-value" t-esc="state.kpis.net_cash" />
+                        </div>
+                    </div>
+                    <div class="ad-card kpi" t-on-click="openAdvances">
+                        <div class="ad-icon bg-yellow">
+                            <i class="fa fa-wallet"></i>
+                        </div>
+                        <div class="ad-info">
+                            <span class="ad-label">Tạm ứng cần thu</span>
+                            <span class="ad-value" t-esc="state.kpis.advance_remain_total" />
+                        </div>
+                    </div>
                 </div>
 
-                <!-- KPI row -->
-                <div class="ad-grid ad-grid-kpi">
-                    <t t-foreach="state.kpis" t-as="k" t-key="k.title">
-                        <div class="ad-card">
-                            <div class="ad-kpi-top">
-                                <div class="ad-kpi-title" t-esc="k.title"/>
-                                <div class="ad-kpi-right">
-                                    <span class="ad-spark">spark</span>
+                <!-- ===== CHART ROW ===== -->
+                <div class="ad-grid chart-row">
+                    <!-- Left mini cards -->
+                    <div class="ad-block">
+                        <div class="ad-mini-grid">
+                            <div class="ad-card mini" t-on-click="openProposals">
+                                <div class="ad-icon bg-amber">
+                                    <i class="fa fa-clipboard-list"></i>
+                                </div>
+                                <div class="ad-info">
+                                    <span class="ad-label">Đề xuất cần xử lý</span>
+                                    <span class="ad-value" t-esc="state.proposal_pending_count" />
                                 </div>
                             </div>
-                            <div class="ad-kpi-value" t-esc="k.value"/>
-                            <div class="ad-kpi-sub" t-esc="k.sub"/>
-                        </div>
-                    </t>
-                </div>
-
-                <!-- Charts + Sidebar -->
-                <div class="ad-grid ad-grid-main">
-                    <!-- Left -->
-                    <div class="ad-left">
-                        <div class="ad-grid ad-charts-2wide">
-                            <div class="ad-block">
-                                <div class="ad-block__head">
-                                    <div class="ad-block__title">Dòng tiền 13 tuần</div>
+                            <div class="ad-card mini" t-on-click="openPaymentProposals">
+                                <div class="ad-icon bg-indigo">
+                                    <i class="fa fa-money-bill"></i>
                                 </div>
-                                <div class="ad-chart">
-                                    <canvas t-ref="salesTrend"/>
+                                <div class="ad-info">
+                                    <span class="ad-label">Giải chi cần xử lý</span>
+                                    <span class="ad-value" t-esc="state.payment_proposals_pending_count" />
                                 </div>
                             </div>
-                            <div class="ad-block">
-                                <div class="ad-block__head">
-                                    <div class="ad-block__title">KQKD theo tháng</div>
+                            <div class="ad-card mini" t-on-click="openCustomerInvoices">
+                                <div class="ad-icon bg-purple">
+                                    <i class="fa fa-file-invoice"></i>
                                 </div>
-                                <div class="ad-chart">
-                                    <canvas t-ref="kqkdMonthly"/>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 3 tables -->
-                        <div class="ad-grid ad-tables">
-                            <!-- AR -->
-                            <div class="ad-block">
-                                <div class="ad-block__head">
-                                    <div class="ad-block__title">AR sắp đến hạn/quá hạn (Top 10)</div>
-                                </div>
-                                <div class="ad-tablewrap">
-                                    <table class="ad-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Khách hàng</th>
-                                                <th>Số HĐ</th>
-                                                <th>Đến hạn</th>
-                                                <th class="right">Còn lại</th>
-                                                <th class="right">Tuổi nợ</th>
-                                                <th></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <t t-foreach="state.tables.ar" t-as="row" t-key="row.number">
-                                                <tr>
-                                                    <td>
-                                                        <t t-esc="row.partner"/>
-                                                    </td>
-                                                    <td>
-                                                        <t t-esc="row.number"/>
-                                                    </td>
-                                                    <td>
-                                                        <t t-esc="row.due"/>
-                                                    </td>
-                                                    <td class="right">
-                                                        <t t-esc="row.remain"/>
-                                                    </td>
-                                                    <td class="right">
-                                                        <t t-esc="row.age"/>
-                                                    </td>
-                                                    <td class="right">
-                                                        <button class="ad-btn" t-on-click="openARSoon">Nhắc thu</button>
-                                                    </td>
-                                                </tr>
-                                            </t>
-                                        </tbody>
-                                    </table>
+                                <div class="ad-info">
+                                    <span class="ad-label">HĐ đầu vào</span>
+                                    <span class="ad-value" t-esc="state.kpis.total_customer_invoice" />
                                 </div>
                             </div>
-
-                            <!-- AP -->
-                            <div class="ad-block">
-                                <div class="ad-block__head">
-                                    <div class="ad-block__title">AP sắp đến hạn/quá hạn (Top 10)</div>
+                            <div class="ad-card mini" t-on-click="openSupplierInvoices">
+                                <div class="ad-icon bg-cyan">
+                                    <i class="fa fa-file-invoice-dollar"></i>
                                 </div>
-                                <div class="ad-tablewrap">
-                                    <table class="ad-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Nhà cung cấp</th>
-                                                <th>Số HĐ</th>
-                                                <th>Đến hạn</th>
-                                                <th class="right">Còn lại</th>
-                                                <th class="right">Tuổi nợ</th>
-                                                <th></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <t t-foreach="state.tables.ap" t-as="row" t-key="row.number">
-                                                <tr>
-                                                    <td>
-                                                        <t t-esc="row.vendor"/>
-                                                    </td>
-                                                    <td>
-                                                        <t t-esc="row.number"/>
-                                                    </td>
-                                                    <td>
-                                                        <t t-esc="row.due"/>
-                                                    </td>
-                                                    <td class="right">
-                                                        <t t-esc="row.remain"/>
-                                                    </td>
-                                                    <td class="right">
-                                                        <t t-esc="row.age"/>
-                                                    </td>
-                                                    <td class="right">
-                                                        <button class="ad-btn" t-on-click="openAPSoon">Đề nghị chi</button>
-                                                    </td>
-                                                </tr>
-                                            </t>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <!-- Lịch thu/chi -->
-                            <div class="ad-block">
-                                <div class="ad-block__head">
-                                    <div class="ad-block__title">Lịch thu/chi 14 ngày</div>
-                                </div>
-                                <div class="ad-tablewrap">
-                                    <table class="ad-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Ngày</th>
-                                                <th>Chứng từ</th>
-                                                <th>Đối tượng</th>
-                                                <th class="right">Số tiền</th>
-                                                <th class="right">Trạng thái</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <t t-foreach="state.tables.schedule" t-as="row" t-key="row.doc">
-                                                <tr>
-                                                    <td>
-                                                        <t t-esc="row.day"/>
-                                                    </td>
-                                                    <td>
-                                                        <t t-esc="row.doc"/>
-                                                    </td>
-                                                    <td>
-                                                        <t t-esc="row.partner"/>
-                                                    </td>
-                                                    <td class="right">
-                                                        <t t-esc="row.amount"/>
-                                                    </td>
-                                                    <td class="right">
-                                                        <span class="ad-badge warning">
-                                                            <t t-esc="row.state"/>
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            </t>
-                                        </tbody>
-                                    </table>
+                                <div class="ad-info">
+                                    <span class="ad-label">HĐ đầu ra</span>
+                                    <span class="ad-value" t-esc="state.kpis.total_supplier_invoice" />
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Right sidebar -->
-                    <aside class="ad-right">
-                        <t t-foreach="state.sideCards" t-as="sc" t-key="sc.title">
-                            <div class="ad-block">
-                                <div class="ad-block__head">
-                                    <div class="ad-block__title" t-esc="sc.title"/>
-                                    <div class="ad-dot-menu">• • •</div>
-                                </div>
-                                <div class="ad-mini">
-                                    <ul class="ad-list">
-                                        <t t-foreach="sc.items" t-as="it" t-key="it[0]">
-                                            <li>
-                                                <span t-esc="it[0]"/>
-                                                <b t-esc="it[1]"/>
-                                            </li>
-                                        </t>
-                                    </ul>
-                                </div>
-                            </div>
-                        </t>
-
-                        <div class="ad-block">
-                            <div class="ad-block__head">
-                                <div class="ad-block__title">Cảnh báo</div>
-                            </div>
-                            <ul class="ad-alarms">
-                                <li>Tiền mặt dưới ngưỡng</li>
-                                <li>AR/AP &gt; 60 ngày</li>
-                                <li>VAT nộp trong 7 ngày</li>
-                                <li>Tồn chậm luân chuyển</li>
-                            </ul>
+                    <!-- Middle chart -->
+                    <div class="ad-block">
+                        <div class="ad-block__head">
+                            <h3>Dòng tiền theo khoảng ngày</h3>
                         </div>
-                    </aside>
+                        <canvas t-ref="dailyFlowChart" class="ad-chart medium" />
+                    </div>
+
+                    <!-- Right chart -->
+                    <div class="ad-block">
+                        <div class="ad-block__head">
+                            <h3>Nhân viên chưa thu tạm ứng</h3>
+                        </div>
+                        <canvas t-ref="remainChart" class="ad-chart small" />
+                    </div>
+                </div>
+
+                <!-- ===== TABLES ===== -->
+                <div class="ad-grid">
+                    <div class="ad-block">
+                        <div class="ad-block__head">
+                            <h3>Hóa đơn đầu vào (Nhà cung cấp)</h3>
+                        </div>
+                        <div class="ad-table-wrapper">
+                            <table class="ad-table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã HĐ</th>
+                                        <th>Nhà cung cấp</th>
+                                        <th>Ngày HĐ</th>
+                                        <th>Ngày hết hạn</th>
+                                        <th class="right">Tổng tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-if="!state.supplier_invoices.length">
+                                        <tr>
+                                            <td colspan="4" class="empty">Không có hóa đơn</td>
+                                        </tr>
+                                    </t>
+                                    <t t-foreach="state.supplier_invoices" t-as="inv" t-key="inv.id">
+                                        <tr t-on-click="() => this.openDetailSupplierInvoice(inv.id)" class="wt-row--click">
+                                            <td>
+                                                <t t-esc="inv.name" />
+                                            </td>
+                                            <td>
+                                                <t t-esc="inv.partner_id &amp;&amp; inv.partner_id[1]" />
+                                            </td>
+                                            <td>
+                                                <t t-esc="fmtDate(inv.date)" />
+                                            </td>
+                                            <td>
+                                                <t t-esc="fmtDate(inv.due_date)" />
+                                            </td>
+                                            <td class="right">
+                                                <t t-esc="fmtVND(inv.amount)" />
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="ad-block">
+                        <div class="ad-block__head">
+                            <h3>Hóa đơn đầu ra (Khách hàng)</h3>
+                        </div>
+                        <div class="ad-table-wrapper">
+                            <table class="ad-table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã HĐ</th>
+                                        <th>Khách hàng</th>
+                                        <th>Ngày</th>
+                                        <th class="right">Tổng tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-if="!state.customer_invoices.length">
+                                        <tr>
+                                            <td colspan="4" class="empty">Không có hóa đơn</td>
+                                        </tr>
+                                    </t>
+                                    <t t-foreach="state.customer_invoices" t-as="inv" t-key="inv.id">
+                                        <tr t-on-click="() => this.openDetailCustomerInvoice(inv.id)" class="wt-row--click">
+                                            <td>
+                                                <t t-esc="inv.name" />
+                                            </td>
+                                            <td>
+                                                <t t-esc="inv.partner_id &amp;&amp; inv.partner_id[1]" />
+                                            </td>
+                                            <td>
+                                                <t t-esc="fmtDate(inv.date)" />
+                                            </td>
+                                            <td class="right">
+                                                <t t-esc="fmtVND(inv.amount_total)" />
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

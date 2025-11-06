@@ -10,6 +10,7 @@
     ],
     "assets": {
         "web.assets_backend": [
+            'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js',
             "accounting_dashboard/static/src/js/**/*.js",
             "accounting_dashboard/static/src/xml/**/*.xml",
             "accounting_dashboard/static/src/css/**/*.css",

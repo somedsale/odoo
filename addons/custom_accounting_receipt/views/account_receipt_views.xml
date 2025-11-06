@@ -51,7 +51,7 @@
                     <field name="note" string="Nội dung thu"/>
                     <field name="partner_id"/>
                     <field name ="employee_id"/>
-                    <field name="amount" widget="monetary"/>
+                    <field name="amount" widget="monetary" sum="1"/>
                     <field name="currency_id" invisible="1" optional="hide"/>
                     <field name="payment_method"/>
                     <field name="state" widget="badge" decoration-success="state =='posted'"/>
