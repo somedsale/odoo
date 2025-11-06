@@ -2,121 +2,209 @@
 <templates xml:space="preserve">
     <t t-name="ad.AccountingDashboard" owl="1">
         <div class="ad-dashboard o_action">
-
-            <!-- ========== HEADER ========== -->
+            <!-- ===== HEADER ===== -->
             <div class="ad-header">
-                <div class="ad-header__title">
-                    <h2>KẾ TOÁN</h2>
+                <div class="ad-header__left">
+                    <h2 class="ad-title">💼 KẾ TOÁN</h2>
+                    <p class="ad-subtitle">Tổng quan dòng tiền và công nợ</p>
                 </div>
-
                 <div class="ad-header__filters">
-                    <input type="date" t-model="state.filters.date_from" title="Từ ngày"/>
-                    <span class="ad-date-sep">→</span>
-                    <input type="date" t-model="state.filters.date_to" title="Đến ngày"/>
+                    <label>
+                        <span>Từ:</span>
+                        <input type="date" t-model="state.filters.date_from" />
+                    </label>
+                    <label>
+                        <span>Đến:</span>
+                        <input type="date" t-model="state.filters.date_to" />
+                    </label>
                     <button class="ad-btn" t-on-click="applyFilter">
                         <i class="fa fa-filter me-1"></i> Áp dụng
                     </button>
                 </div>
-
-                <div class="ad-header__period">
-                    <span t-esc="periodLabel"/>
-                </div>
             </div>
 
-            <!-- ========== CONTENT ========== -->
+            <!-- ===== CONTENT ===== -->
             <div class="ad-content o_content">
-                <div class="ad-grid-layout">
 
-                    <!-- ==== KPI ROW ==== -->
-                    <div class="ad-card kpi ad-click" t-on-click="openReceipts">
-                        <div class="ad-kpi-icon bg-green">
+                <!-- KPI SECTION -->
+                <div class="ad-kpi-grid">
+                    <div class="ad-card kpi" t-on-click="openReceipts">
+                        <div class="ad-icon bg-green">
                             <i class="fa fa-arrow-down"></i>
                         </div>
-                        <div>
-                            <div class="ad-kpi-label">Tiền thu</div>
-                            <div class="ad-kpi-value" t-esc="state.kpis.cash_in"/>
+                        <div class="ad-info">
+                            <span class="ad-label">Tiền thu</span>
+                            <span class="ad-value" t-esc="state.kpis.cash_in" />
                         </div>
                     </div>
-
-                    <div class="ad-card kpi ad-click" t-on-click="openPayments">
-                        <div class="ad-kpi-icon bg-red">
+                    <div class="ad-card kpi" t-on-click="openPayments">
+                        <div class="ad-icon bg-red">
                             <i class="fa fa-arrow-up"></i>
                         </div>
-                        <div>
-                            <div class="ad-kpi-label">Tiền chi</div>
-                            <div class="ad-kpi-value" t-esc="state.kpis.cash_out"/>
+                        <div class="ad-info">
+                            <span class="ad-label">Tiền chi</span>
+                            <span class="ad-value" t-esc="state.kpis.cash_out" />
                         </div>
                     </div>
-
                     <div class="ad-card kpi">
-                        <div class="ad-kpi-icon bg-blue">
+                        <div class="ad-icon bg-blue">
                             <i class="fa fa-chart-line"></i>
                         </div>
-                        <div>
-                            <div class="ad-kpi-label">Chênh lệch</div>
-                            <div class="ad-kpi-value" t-esc="state.kpis.net_cash"/>
+                        <div class="ad-info">
+                            <span class="ad-label">Chênh lệch</span>
+                            <span class="ad-value" t-esc="state.kpis.net_cash" />
                         </div>
                     </div>
-
-                    <div class="ad-card kpi ad-click" t-on-click="openAdvances">
-                        <div class="ad-kpi-icon bg-yellow">
+                    <div class="ad-card kpi" t-on-click="openAdvances">
+                        <div class="ad-icon bg-yellow">
                             <i class="fa fa-wallet"></i>
                         </div>
-                        <div>
-                            <div class="ad-kpi-label">Tạm ứng cần thu</div>
-                            <div class="ad-kpi-value" t-esc="state.kpis.advance_remain_total"/>
+                        <div class="ad-info">
+                            <span class="ad-label">Tạm ứng cần thu</span>
+                            <span class="ad-value" t-esc="state.kpis.advance_remain_total" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== CHART ROW ===== -->
+                <div class="ad-grid chart-row">
+                    <!-- Left mini cards -->
+                    <div class="ad-block">
+                        <div class="ad-mini-grid">
+                            <div class="ad-card mini" t-on-click="openProposals">
+                                <div class="ad-icon bg-amber">
+                                    <i class="fa fa-clipboard-list"></i>
+                                </div>
+                                <div class="ad-info">
+                                    <span class="ad-label">Đề xuất cần xử lý</span>
+                                    <span class="ad-value" t-esc="state.proposal_pending_count" />
+                                </div>
+                            </div>
+                            <div class="ad-card mini" t-on-click="openPaymentProposals">
+                                <div class="ad-icon bg-indigo">
+                                    <i class="fa fa-money-bill"></i>
+                                </div>
+                                <div class="ad-info">
+                                    <span class="ad-label">Giải chi cần xử lý</span>
+                                    <span class="ad-value" t-esc="state.payment_proposals_pending_count" />
+                                </div>
+                            </div>
+                            <div class="ad-card mini" t-on-click="openSupplierInvoices">
+                                <div class="ad-icon bg-purple">
+                                    <i class="fa fa-file-invoice"></i>
+                                </div>
+                                <div class="ad-info">
+                                    <span class="ad-label">HĐ đầu vào</span>
+                                    <span class="ad-value" t-esc="state.kpis.total_supplier_invoice" />
+                                </div>
+                            </div>
+                            <div class="ad-card mini" t-on-click="openCustomerInvoices">
+                                <div class="ad-icon bg-cyan">
+                                    <i class="fa fa-file-invoice-dollar"></i>
+                                </div>
+                                <div class="ad-info">
+                                    <span class="ad-label">HĐ đầu ra</span>
+                                    <span class="ad-value" t-esc="state.kpis.total_customer_invoice" />
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- ==== ROW 2: BIỂU ĐỒ ==== -->
-                    <div class="ad-block span-1">
-                        <div class="ad-block__head">
-                            <h3>Nhân viên chưa thu tạm ứng</h3>
-                        </div>
-                        <div class="ad-chart-wrap small">
-                            <canvas t-ref="remainChart"/>
-                        </div>
-                    </div>
-
-                    <div class="ad-block span-2">
+                    <!-- Middle chart -->
+                    <div class="ad-block">
                         <div class="ad-block__head">
                             <h3>Dòng tiền theo ngày</h3>
                         </div>
-                        <div class="ad-chart-wrap small">
-                            <canvas t-ref="dailyFlowChart"/>
-                        </div>
+                        <canvas t-ref="dailyFlowChart" class="ad-chart medium" />
                     </div>
-                    <div class="ad-block span-1">
-                        <!-- Phiếu đề xuất -->
-                        <div class="ad-card kpi ad-click" t-on-click="openProposals">
-                            <div class="ad-kpi-icon bg-amber">
-                                <i class="fa-solid fa-clipboard-list"></i>
-                            </div>
-                            <div>
-                                <div class="ad-kpi-label">Đề xuất cần xử lý</div>
-                                <div class="ad-kpi-value" t-esc="state.proposal_pending_count"/>
-                            </div>
-                        </div>
 
-                        <!-- Giải chi kế toán -->
-                        <div class="ad-card kpi ad-click" t-on-click="openPaymentProposals">
-                            <div class="ad-kpi-icon bg-blue">
-                                <i class="fa fa-money-bill"></i>
-                            </div>
-                            <div>
-                                <div class="ad-kpi-label">Giải chi cần xử lý</div>
-                                <div class="ad-kpi-value" t-esc="state.payment_proposals_pending_count"/>
-                            </div>
+                    <!-- Right chart -->
+                    <div class="ad-block">
+                        <div class="ad-block__head">
+                            <h3>Nhân viên chưa thu tạm ứng</h3>
                         </div>
-                        <div class="ad-card kpi ad-click" t-on-click="openPaymentProposals">
-                            <div class="ad-kpi-icon bg-blue">
-                                <i class="fa fa-money-bill"></i>
-                            </div>
-                            <div>
-                                <div class="ad-kpi-label">Giải chi cần xử lý</div>
-                                <div class="ad-kpi-value" t-esc="state.payment_proposals_pending_count"/>
-                            </div>
+                        <canvas t-ref="remainChart" class="ad-chart small" />
+                    </div>
+                </div>
+
+                <!-- ===== TABLES ===== -->
+                <div class="ad-grid">
+                    <div class="ad-block">
+                        <div class="ad-block__head">
+                            <h3>Hóa đơn đầu vào (Nhà cung cấp)</h3>
                         </div>
+                        <table class="ad-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã HĐ</th>
+                                    <th>Nhà cung cấp</th>
+                                    <th>Ngày</th>
+                                    <th class="right">Tổng tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-if="!state.supplier_invoices.length">
+                                    <tr>
+                                        <td colspan="4" class="empty">Không có hóa đơn</td>
+                                    </tr>
+                                </t>
+                                <t t-foreach="state.supplier_invoices" t-as="inv" t-key="inv.id">
+                                    <tr t-on-click="() => openRecord('supplier.invoice', inv.id)">
+                                        <td>
+                                            <t t-esc="inv.name" />
+                                        </td>
+                                        <td>
+                                            <t t-esc="inv.partner_id &amp;&amp; inv.partner_id[1]" />
+                                        </td>
+                                        <td>
+                                            <t t-esc="inv.date" />
+                                        </td>
+                                        <td class="right">
+                                            <t t-esc="fmtVND(inv.amount)" />
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="ad-block">
+                        <div class="ad-block__head">
+                            <h3>Hóa đơn đầu ra (Khách hàng)</h3>
+                        </div>
+                        <table class="ad-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã HĐ</th>
+                                    <th>Khách hàng</th>
+                                    <th>Ngày</th>
+                                    <th class="right">Tổng tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-if="!state.customer_invoices.length">
+                                    <tr>
+                                        <td colspan="4" class="empty">Không có hóa đơn</td>
+                                    </tr>
+                                </t>
+                                <t t-foreach="state.customer_invoices" t-as="inv" t-key="inv.id">
+                                    <tr t-on-click="() => openRecord('customer.invoice', inv.id)">
+                                        <td>
+                                            <t t-esc="inv.name" />
+                                        </td>
+                                        <td>
+                                            <t t-esc="inv.partner_id &amp;&amp; inv.partner_id[1]" />
+                                        </td>
+                                        <td>
+                                            <t t-esc="inv.date" />
+                                        </td>
+                                        <td class="right">
+                                            <t t-esc="fmtVND(inv.amount_total)" />
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

@@ -31,11 +31,15 @@ class AccountingDashboard extends Component {
         cash_out: "0 ₫",
         net_cash: "0 ₫",
         advance_remain_total: "0 ₫",
+        total_supplier_invoice: "0 ₫",
+        total_customer_invoice: "0 ₫",
       },
       employees_with_remain: [],
       proposal_pending_count: 0,
       payment_proposals_pending_count: 0,
-      daily_cash_flow: [], // ✅ thêm dòng này
+      daily_cash_flow: [],
+      supplier_invoices: [],
+      customer_invoices: [],
     });
 
     this.remainChartRef = useRef("remainChart");
@@ -89,12 +93,16 @@ class AccountingDashboard extends Component {
       const cashOut = Number(data?.cash_out ?? 0);
       const net = Number(data?.net_cash ?? cashIn - cashOut);
       const advRemain = Number(data?.employee_advance_remain_total ?? 0);
+      const totalSupp = Number(data?.total_supplier_invoice ?? 0);
+      const totalCust = Number(data?.total_customer_invoice ?? 0);
 
       this.state.kpis = {
         cash_in: fmtVND(cashIn),
         cash_out: fmtVND(cashOut),
         net_cash: fmtVND(net),
         advance_remain_total: fmtVND(advRemain),
+        total_supplier_invoice: fmtVND(totalSupp),
+        total_customer_invoice: fmtVND(totalCust),
       };
 
       // Dư tạm ứng
@@ -106,8 +114,10 @@ class AccountingDashboard extends Component {
       // ✅ Các bảng dữ liệu
       this.state.proposal_pending_count = data?.proposal_pending_count || 0;
       this.state.payment_proposals_pending_count = data?.payment_proposals_pending_count || 0;
+      this.state.supplier_invoices = data?.supplier_invoices || [];
+      this.state.customer_invoices = data?.customer_invoices || [];
 
-      // ✅ Dữ liệu dòng tiền thu–chi–ròng
+      // ✅ Dữ liệu dòng tiền thu–chi
       this.state.daily_cash_flow = data?.daily_cash_flow || [];
 
       // Render biểu đồ
@@ -183,7 +193,6 @@ class AccountingDashboard extends Component {
           scales: {
             x: {
               ticks: { callback: (v) => fmtVND(v) },
-              title: { display: true, text: _t("Số tiền (VND)") },
             },
             y: { ticks: { autoSkip: false } },
           },
