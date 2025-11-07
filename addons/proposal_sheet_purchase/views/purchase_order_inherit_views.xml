@@ -46,25 +46,14 @@
         <xpath expr="//sheet/group/group" position="inside">
 
           <!-- Danh sách tất cả Phiếu Đề Xuất gom (Many2many) -->
-          <field name="proposal_sheet_ids"
-                 widget="many2many_tags"
-                 string="Phiếu đề xuất"
-                 options="{'no_create_edit': True}"
-                 readonly="state in ('purchase','done')"/>
+          <field name="proposal_sheet_ids" widget="many2many_tags" string="Phiếu đề xuất" options="{'no_create_edit': True}" readonly="state in ('purchase','done')"/>
 
           <!-- 1 phiếu chính (giữ tương thích cũ) -->
-          <!-- <field name="proposal_sheet_id"
-                 string="Phiếu đề xuất (chính)"
-                 options="{'no_create_edit': True}"
-                 readonly="state in ('purchase','done')"/> -->
+          <!-- <field name="proposal_sheet_id" string="Phiếu đề xuất (chính)" options="{'no_create_edit': True}" readonly="state in ('purchase','done')"/> -->
 
-          <field name="project_id"
-                 string="Dự án"
-                 readonly="0"/>
+          <field name="project_id" string="Dự án" readonly="0"/>
 
-          <field name="task_id"
-                 string="Hạng mục"
-                 readonly="0"/>
+          <field name="task_id" string="Hạng mục" readonly="0"/>
         </xpath>
 
         <!-- Khối thanh toán / tạm ứng / yêu cầu chi
@@ -74,14 +63,10 @@
 
             <group string="Thanh toán khi xác nhận">
               <field name="auto_payment_on_confirm"/>
-              <field name="payment_on_confirm_type"
-                     invisible="not auto_payment_on_confirm"/>
-              <field name="advance_amount_type"
-                     invisible="(not auto_payment_on_confirm) or (payment_on_confirm_type != 'advance')"/>
-              <field name="advance_percent"
-                     invisible="(not auto_payment_on_confirm) or (payment_on_confirm_type != 'advance') or (advance_amount_type != 'percent')"/>
-              <field name="advance_amount"
-                     invisible="(not auto_payment_on_confirm) or (payment_on_confirm_type != 'advance') or (advance_amount_type != 'fixed')"/>
+              <field name="payment_on_confirm_type" invisible="not auto_payment_on_confirm"/>
+              <field name="advance_amount_type" invisible="(not auto_payment_on_confirm) or (payment_on_confirm_type != 'advance')"/>
+              <field name="advance_percent" invisible="(not auto_payment_on_confirm) or (payment_on_confirm_type != 'advance') or (advance_amount_type != 'percent')"/>
+              <field name="advance_amount" invisible="(not auto_payment_on_confirm) or (payment_on_confirm_type != 'advance') or (advance_amount_type != 'fixed')"/>
             </group>
 
             <group string="Thanh toán đơn hàng">
@@ -106,141 +91,79 @@
         <xpath expr="//sheet/div[@name='button_box']" position="inside">
 
           <!-- Phiếu chi -->
-          <button name="action_view_payment_requests"
-                  type="object"
-                  class="oe_stat_button"
-                  groups="account.group_account_manager"
-                  icon="fa-money"
-                  invisible="payment_request_count == 0">
-            <field name="payment_request_count"
-                   widget="statinfo"
-                   string="Phiếu chi"/>
+          <button name="action_view_payment_requests" type="object" class="oe_stat_button" groups="account.group_account_manager" icon="fa-money" invisible="payment_request_count == 0">
+            <field name="payment_request_count" widget="statinfo" string="Phiếu chi"/>
           </button>
 
           <!-- Hóa đơn NCC -->
-          <button name="action_view_supplier_invoices"
-                  type="object"
-                  class="oe_stat_button"
-                  groups="account.group_account_manager"
-                  icon="fa-file-text-o"
-                  invisible="supplier_invoice_count == 0">
-            <field name="supplier_invoice_count"
-                   widget="statinfo"
-                   string="Hóa đơn NCC"/>
+          <button name="action_view_supplier_invoices" type="object" class="oe_stat_button" groups="account.group_account_manager" icon="fa-file-text-o" invisible="supplier_invoice_count == 0">
+            <field name="supplier_invoice_count" widget="statinfo" string="Hóa đơn NCC"/>
           </button>
 
           <!-- Hợp đồng NCC -->
-          <button name="action_view_supplier_contract"
-                  type="object"
-                  class="oe_stat_button"
-                  groups="account.group_account_manager"
-                  icon="fa-file-text-o"
-                  invisible="not supplier_contract_id">
-            <field name="supplier_contract_id"
-                   widget="statinfo"
-                   string="Hợp đồng NCC"/>
+          <button name="action_view_supplier_contract" type="object" class="oe_stat_button" groups="account.group_account_manager" icon="fa-file-text-o" invisible="not supplier_contract_id">
+            <field name="supplier_contract_id" widget="statinfo" string="Hợp đồng NCC"/>
           </button>
 
         </xpath>
-
         <!-- Thay header mặc định để điều khiển quy trình giao hàng / thanh toán -->
         <xpath expr="//header" position="replace">
           <header>
             <!-- state hidden để dùng trong invisible -->
             <field name="state" invisible="1"/>
-
+            <field name="shipping_status" invisible="1"/>
+            <field name="receiving_status" invisible="1"/>
             <!-- Xác nhận đơn hàng (RFQ -> PO) -->
-            <button name="button_confirm"
-                    type="object"
-                    class="oe_highlight"
-                    string="Xác nhận đơn hàng"
-                    groups="account.group_account_manager"
-                    context="{'validate_analytic': True}"
-                    invisible="state not in ['draft','sent']"/>
+            <button name="button_confirm" type="object" class="oe_highlight" string="Xác nhận đơn hàng" groups="account.group_account_manager" context="{'validate_analytic': True}" invisible="state not in ['draft','sent']"/>
 
             <!-- Xác nhận ngày nhận hàng (nếu bạn vẫn dùng field mail_reminder_confirmed/effective_date) -->
-            <button name="confirm_reminder_mail"
-                    type="object"
-                    string="Xác nhận ngày nhận hàng"
-                    groups="account.group_account_manager"
-                    invisible="state not in ('purchase','done') or mail_reminder_confirmed or effective_date"/>
+            <button name="confirm_reminder_mail" type="object" string="Xác nhận ngày nhận hàng" groups="account.group_account_manager" invisible="state not in ('purchase','done') or mail_reminder_confirmed or effective_date"/>
 
             <!-- Đang giao:
                  - PO đã xác nhận
                  - shipping_status = 'not_shipped'
                  - đã có chi trả: payment_status in ('partial','paid') -->
-            <button name="action_mark_shipping_in_progress"
-                    type="object"
-                    class="btn-secondary"
-                    string="Đang giao"
-                    groups="account.group_account_manager"
-                    invisible="(state not in ['purchase','done'])
+            <button name="action_mark_shipping_in_progress" type="object" class="btn-secondary" string="Đang giao" groups="account.group_account_manager" invisible="(state not in ['purchase','done'])
                                or (shipping_status != 'not_shipped')
                                or (payment_status not in ['partial','paid'])"/>
 
             <!-- Tạo hóa đơn NCC (wizard), cần supplier_contract_id -->
-            <button name="action_open_create_supplier_invoice_wizard"
-                    type="object"
-                    class="btn-secondary"
-                    string="Tạo hóa đơn NCC"
-                    groups="account.group_account_manager"
-                    invisible="state not in ('purchase','done') or not supplier_contract_id"/>
+            <button name="action_open_create_supplier_invoice_wizard" type="object" class="btn-secondary" string="Tạo hóa đơn NCC" groups="account.group_account_manager" invisible="state not in ('purchase','done') or not supplier_contract_id"/>
 
             <!-- Nhận hàng:
                  - shipping_status = 'in_progress' -->
-            <button name="action_mark_shipping_done"
-                    type="object"
-                    class="btn-primary"
-                    string="Nhận hàng"
-                    groups="account.group_account_manager"
-                    invisible="(state not in ['purchase','done'])
+            <button name="action_mark_shipping_done" type="object" class="btn-primary" string="Nhận hàng" groups="account.group_account_manager" invisible="(state not in ['purchase','done'])
                                or (shipping_status != 'in_progress')"/>
 
             <!-- Tạo phiếu chi tạm ứng -->
-            <button name="action_open_advance_wizard"
-                    type="object"
-                    class="btn-secondary"
-                    string="Tạo phiếu chi tạm ứng"
-                    groups="account.group_account_manager"
-                    invisible="(state not in ['purchase'])
+            <button name="action_open_advance_wizard" type="object" class="btn-secondary" string="Tạo phiếu chi tạm ứng" groups="account.group_account_manager" invisible="(state not in ['purchase'])
                                or has_full_request
                                or is_fully_requested"/>
 
             <!-- Tạo phiếu chi toàn bộ -->
-            <button name="action_create_payment_request_full"
-                    type="object"
-                    class="btn-secondary"
-                    string="Tạo phiếu chi toàn bộ"
-                    groups="account.group_account_manager"
-                    invisible="(state not in ['purchase'])
+            <button name="action_create_payment_request_full" type="object" class="btn-secondary" string="Tạo phiếu chi toàn bộ" groups="account.group_account_manager" invisible="(state not in ['purchase'])
                                or has_full_request
                                or is_fully_requested
                                or (amount_requested > 0)"/>
 
             <!-- Chi phần còn lại -->
-            <button name="action_create_payment_request_remaining"
-                    type="object"
-                    class="btn-secondary"
-                    string="Chi còn lại"
-                    groups="account.group_account_manager"
-                    invisible="(state not in ['purchase'])
+            <button name="action_create_payment_request_remaining" type="object" class="btn-secondary" string="Chi còn lại" groups="account.group_account_manager" invisible="(state not in ['purchase'])
                                or has_full_request
                                or is_fully_requested
                                or (amount_requested == 0)"/>
+          <button name="action_validate_existing_receipts"
+          groups="account.group_account_manager" 
+                  type="object"
+                  string="Xác nhận phiếu nhập"
+                  class="oe_highlight"
+                  invisible="(shipping_status not in ['done']) or (receiving_status not in ['none'])"
+                  />
 
             <!-- Hủy -->
-            <button name="button_cancel"
-                    type="object"
-                    class="btn-secondary"
-                    string="Hủy"
-                    confirm="Bạn có chắc muốn hủy không?"
-                    invisible="state == 'cancel'"/>
+            <button name="button_cancel" groups="account.group_account_manager" type="object" class="btn-secondary" string="Hủy" confirm="Bạn có chắc muốn hủy không?" invisible="state in ['cancel']"/>
 
             <!-- Statusbar trạng thái PO -->
-            <field name="state"
-                   widget="statusbar"
-                   statusbar_visible="draft,sent,purchase"
-                   readonly="1"/>
+            <field name="state" widget="statusbar" statusbar_visible="draft,sent,purchase" readonly="1"/>
           </header>
         </xpath>
 
@@ -259,28 +182,14 @@
         <xpath expr="//sheet/div[@name='button_box']" position="before">
 
           <!-- Thanh toán -->
-          <widget name="web_ribbon"
-                  title="Đã thanh toán"
-                  bg_color="bg-success"
-                  invisible="payment_status != 'paid'"/>
-          <widget name="web_ribbon"
-                  title="Chưa thanh toán"
-                  bg_color="bg-danger"
-                  invisible="payment_status == 'paid' or state == 'draft'"/>
+          <!-- <widget name="web_ribbon" title="Đã thanh toán" bg_color="bg-success" invisible="payment_status != 'paid'"/>
+          <widget name="web_ribbon" title="Chưa thanh toán" bg_color="bg-danger" invisible="payment_status == 'paid' or state == 'draft'"/> -->
 
           <!-- Giao hàng -->
-          <widget name="web_ribbon"
-                  title="Chưa giao"
-                  bg_color="bg-secondary"
-                  invisible="shipping_status != 'not_shipped'"/>
-          <widget name="web_ribbon"
-                  title="Đang giao"
-                  bg_color="bg-warning"
-                  invisible="shipping_status != 'in_progress'"/>
-          <widget name="web_ribbon"
-                  title="Đã giao"
-                  bg_color="bg-success"
-                  invisible="shipping_status != 'done'"/>
+          <widget name="web_ribbon" title="Chưa giao" bg_color="bg-secondary" invisible="shipping_status != 'not_shipped'"/>
+          <widget name="web_ribbon" title="Đang giao" bg_color="bg-warning" invisible="shipping_status != 'in_progress'"/>
+          <widget name="web_ribbon" title="Đã giao" bg_color="bg-success" invisible="shipping_status != 'done'"/>
+          <widget name="web_ribbon" title="Đã hủy" bg_color="bg-danger" invisible="shipping_status != 'cancelled'"/>
 
         </xpath>
       </field>
