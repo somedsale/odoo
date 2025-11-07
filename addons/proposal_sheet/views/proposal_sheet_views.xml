@@ -122,7 +122,6 @@
                 <field name ="project_id"/>
                 <field name="create_date" string="Ngày Tạo"/>
                 <field name="requested_by"/>
-                <field name="department_id"/>
                 <field name="type"/>
                 <field name="amount_total" optional="show" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
                 <field name="amount_total_taxes" string="Tổng (sau thuế)" optional="show" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
