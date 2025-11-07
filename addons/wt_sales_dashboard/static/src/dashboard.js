@@ -272,7 +272,7 @@ class SalesDashboard extends Component {
                             domain: [
                                 ["date_order", ">=", date_from],
                                 ["date_order", "<=", date_to],
-                                ["state", "in", ["sale", "done"]],
+                                ["state", "in", ["draft", "sent", "sale", "done"]],
                                 ["sales_category_ids", "in", [catId]], // lọc theo hạng mục
                             ],
                             target: "current",

@@ -6,7 +6,7 @@
         <field name="arch" type="xml">
             <!-- Chèn sau thẻ notebook -->
             <xpath expr="//notebook" position="inside">
-                <page string="Phiếu Chi" invisible ="state !='waiting_accounting_paid' and state != 'done' " groups="account.group_account_user,account.group_account_manager" context="{'default_proposal_sheet_id': active_id}">
+                <page string="Phiếu Chi" groups="account.group_account_user,account.group_account_manager" context="{'default_proposal_sheet_id': active_id}">
                     <field name="payment_ids" context="{'default_total': amount_total, 'default_currency_id': currency_id, 'default_proposal_sheet_id': active_id}">
                         <tree>
                             <field name="name" />
@@ -45,8 +45,18 @@
                     </field>
                 </page>
             </xpath>
-            <xpath expr="//sheet/group/group/field[@name=&apos;amount_total&apos;]" position="after">
+            <xpath expr="//sheet/group/group/field[@name=&apos;amount_total_taxes&apos;]" position="after">
                 <field name="payment_total" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_proposal_sheet_tree_inherit_payment" model="ir.ui.view">
+        <field name="name">proposal.sheet.tree.inherit.payment</field>
+        <field name="model">proposal.sheet</field>
+        <field name="inherit_id" ref="proposal_sheet.view_proposal_sheet_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree/field[@name=&apos;amount_total_taxes&apos;]" position="after">
+                <field name="payment_total" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="1"/>
             </xpath>
         </field>
     </record>
