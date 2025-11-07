@@ -121,7 +121,7 @@ class AccountingDashboard(models.AbstractModel):
                 ('date', '>=', dt_from),
                 ('date', '<=', dt_to),
             ],
-            ['id', 'name', 'partner_id', 'amount', 'date','due_date'],
+            ['id','invoice_number', 'name', 'partner_id', 'amount', 'date','due_date'],
             order='date desc'
         )
         total_supplier_invoice = sum(inv.get('amount') or 0.0 for inv in supplier_invoices)
@@ -135,7 +135,7 @@ class AccountingDashboard(models.AbstractModel):
                 ('date', '>=', dt_from),
                 ('date', '<=', dt_to),
             ],
-            ['id', 'name', 'partner_id', 'amount_total', 'date'],
+            ['id', 'name','invoice_number', 'partner_id', 'amount_total', 'date'],
             order='date desc'
         )
         total_customer_invoice = sum(inv.get('amount_total') or 0.0 for inv in customer_invoices)

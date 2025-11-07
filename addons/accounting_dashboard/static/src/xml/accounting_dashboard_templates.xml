@@ -18,7 +18,8 @@
                         <input type="date" t-model="state.filters.date_to" />
                     </label>
                     <button class="ad-btn" t-on-click="applyFilter">
-                        <i class="fa fa-filter me-1"></i> Áp dụng
+                        <i class="fa fa-filter me-1"></i>
+                        <span class="btn-filter-text">Áp dụng</span>
                     </button>
                 </div>
             </div>
@@ -140,7 +141,6 @@
                                         <th>Mã HĐ</th>
                                         <th>Nhà cung cấp</th>
                                         <th>Ngày HĐ</th>
-                                        <th>Ngày hết hạn</th>
                                         <th class="right">Tổng tiền</th>
                                     </tr>
                                 </thead>
@@ -153,16 +153,13 @@
                                     <t t-foreach="state.supplier_invoices" t-as="inv" t-key="inv.id">
                                         <tr t-on-click="() => this.openDetailSupplierInvoice(inv.id)" class="wt-row--click">
                                             <td>
-                                                <t t-esc="inv.name" />
+                                                <t t-esc="inv.invoice_number" />
                                             </td>
                                             <td>
                                                 <t t-esc="inv.partner_id &amp;&amp; inv.partner_id[1]" />
                                             </td>
                                             <td>
                                                 <t t-esc="fmtDate(inv.date)" />
-                                            </td>
-                                            <td>
-                                                <t t-esc="fmtDate(inv.due_date)" />
                                             </td>
                                             <td class="right">
                                                 <t t-esc="fmtVND(inv.amount)" />
@@ -197,7 +194,7 @@
                                     <t t-foreach="state.customer_invoices" t-as="inv" t-key="inv.id">
                                         <tr t-on-click="() => this.openDetailCustomerInvoice(inv.id)" class="wt-row--click">
                                             <td>
-                                                <t t-esc="inv.name" />
+                                                <t t-esc="inv.invoice_number" />
                                             </td>
                                             <td>
                                                 <t t-esc="inv.partner_id &amp;&amp; inv.partner_id[1]" />

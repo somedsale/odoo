@@ -374,6 +374,9 @@
     font-size: 0.85rem;
     height: 30px;
   }
+  .btn-filter-text {
+    display: none;
+  }
 
   .ad-btn {
     background: var(--ad-brand);
@@ -481,4 +484,18 @@
 }
 .wt-row--click:hover {
   background: #f3f4f6;
+}
+.ad-card {
+  background: var(--ad-bg-elev);
+  border-radius: var(--ad-radius);
+  box-shadow: var(--ad-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  cursor: pointer;
+}
+
+/* ===== HOVER ===== */
+.ad-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(18, 38, 63, 0.08);
+  background: #fafbff;
 }
