@@ -94,7 +94,7 @@
                                     <i class="fa fa-file"></i>
                                 </div>
                                 <div class="ad-info">
-                                    <span class="ad-label">HĐ đầu vào</span>
+                                    <span class="ad-label">HĐ đầu ra</span>
                                     <span class="ad-value" t-esc="state.kpis.total_customer_invoice" />
                                 </div>
                             </div>
@@ -103,7 +103,7 @@
                                     <i class="fa fa-line-chart"></i>
                                 </div>
                                 <div class="ad-info">
-                                    <span class="ad-label">HĐ đầu ra</span>
+                                    <span class="ad-label">HĐ đầu vào</span>
                                     <span class="ad-value" t-esc="state.kpis.total_supplier_invoice" />
                                 </div>
                             </div>
