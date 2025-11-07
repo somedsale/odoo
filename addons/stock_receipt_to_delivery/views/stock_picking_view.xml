@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_picking_form_inherit_export_from_receipt" model="ir.ui.view">
+        <field name="name">stock.picking.form.export.from.receipt</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+            <field name="is_incoming_done" invisible="1"/>
+<button name="action_create_delivery_from_receipt"
+        type="object"
+        string="Xuất hàng"
+        class="oe_highlight"
+        invisible="[('is_incoming_done','=',False)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

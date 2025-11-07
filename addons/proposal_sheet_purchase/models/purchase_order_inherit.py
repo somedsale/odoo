@@ -37,6 +37,7 @@ class PurchaseOrder(models.Model):
         ('not_shipped', 'Chưa giao'),
         ('in_progress', 'Đang giao'),
         ('done', 'Đã giao'),
+        ('cancelled', 'Đã hủy'),     # <-- NEW
     ], string="Trạng thái hàng hóa", default='not_shipped', tracking=True)
 
     # Project / Task: Không còn compute thuần từ proposal_sheet_id nữa,
@@ -131,7 +132,64 @@ class PurchaseOrder(models.Model):
         "supplier.contract", string="Hợp đồng NCC", index=True)
 
     note = fields.Text(string="Ghi chú", translate=True)
+    # Tổng quan: chưa nhập / nhập một phần / đã nhập đủ
+    receiving_status = fields.Selection([
+        ('none', 'Chưa nhập'),
+        ('partial', 'Nhập một phần'),
+        ('done', 'Đã nhập đủ'),
+    ], string="Trạng thái nhập kho", compute="_compute_receiving_status", store=True)
 
+    # Cờ nhanh: đã có bất kỳ lượng nào được nhập (đã có picking done) chưa
+    has_inventory_receipt = fields.Boolean(
+        string="Đã xác nhận nhập kho",
+        compute="_compute_receiving_status",
+        store=True,
+        help="Bật khi có bất kỳ số lượng nào của PO đã được nhập kho (qty_received > 0)."
+    )
+
+    @api.depends('order_line.product_qty', 'order_line.qty_received', 'order_line.product_uom')
+    def _compute_receiving_status(self):
+        """
+        Đánh giá theo qty_received của các dòng PO:
+          - none: tất cả dòng đều qty_received == 0
+          - done: tất cả dòng qty_received >= product_qty (tính theo rounding UoM riêng của dòng)
+          - partial: còn lại
+        Đồng thời đặt cờ has_inventory_receipt = (tổng qty_received > 0)
+        """
+        for po in self:
+            lines = po.order_line.filtered(lambda l: l.display_type is False)
+            if not lines:
+                po.receiving_status = 'none'
+                po.has_inventory_receipt = False
+                continue
+
+            any_received = False
+            all_done = True
+            all_zero = True
+
+            for l in lines:
+                qty = l.product_qty or 0.0
+                rcv = l.qty_received or 0.0
+                uom_round = l.product_uom.rounding or 0.01
+
+                if float_compare(rcv, 0.0, precision_rounding=uom_round) > 0:
+                    any_received = True
+                    all_zero = False
+
+                # nếu rcv < qty thì chưa “đủ”
+                if float_compare(rcv, qty, precision_rounding=uom_round) < 0:
+                    all_done = False
+
+                # nếu rcv > 0 thì chắc chắn không còn là all_zero
+                # (đã set ở trên)
+
+            po.has_inventory_receipt = any_received
+            if all_zero:
+                po.receiving_status = 'none'
+            elif all_done:
+                po.receiving_status = 'done'
+            else:
+                po.receiving_status = 'partial'
     # ============================================================
     #  COMPUTES / HELPERS
     # ============================================================
@@ -430,6 +488,75 @@ class PurchaseOrder(models.Model):
             if po.proposal_sheet_id:
                 po.proposal_sheet_id.action_done()
         return {'type': 'ir.actions.client', 'tag': 'reload'}
+    def _validate_single_receipt(self, picking, create_backorder=True):
+        """Xác nhận 1 phiếu nhập (stock.picking) theo chuẩn Odoo 17:
+        - Không tự set qty_done; để wizard Immediate Transfer xử lý.
+        - Tự confirm/assign trước khi validate.
+        """
+        self.ensure_one()
+        if picking.picking_type_code != 'incoming':
+            return False
+
+        # B1: đưa về trạng thái sẵn sàng
+        if picking.state == 'draft':
+            picking.action_confirm()
+        if picking.state in ('confirmed', 'waiting'):
+            picking.action_assign()
+
+        # B2: validate & xử lý wizard phát sinh
+        res = picking.button_validate()
+        if isinstance(res, dict):
+            # Immediate transfer wizard -> sẽ tự set số lượng done
+            if res.get('res_model') == 'stock.immediate.transfer':
+                wiz = self.env['stock.immediate.transfer'].browse(res.get('res_id'))
+                wiz.process()
+            # Backorder wizard
+            elif res.get('res_model') == 'stock.backorder.confirmation':
+                wiz = self.env['stock.backorder.confirmation'].browse(res.get('res_id'))
+                if create_backorder:
+                    wiz.process()
+                else:
+                    wiz.process_cancel()
+            # Overprocessed wizard
+            elif res.get('res_model') == 'stock.overprocessed.transfer':
+                wiz = self.env['stock.overprocessed.transfer'].browse(res.get('res_id'))
+                wiz.action_confirm()  # hoặc wiz.action_cancel() tùy nghiệp vụ
+
+        return True
+
+
+    def action_validate_existing_receipts(self):
+        """
+        Xác nhận tất cả phiếu nhập kho (incoming pickings) đã được tạo cho PO này.
+        - Tự confirm/assign nếu cần
+        - Tự điền quantity_done nếu chưa có
+        - Tự xử lý immediate/backorder wizard
+        """
+        validated = 0
+        for po in self:
+            # Tìm pickings "incoming" gắn với PO:
+            # liên kết vững nhất là qua move -> purchase_line_id -> order_id
+            pickings = self.env['stock.picking'].search([
+                ('picking_type_code', '=', 'incoming'),
+                ('move_ids_without_package.purchase_line_id.order_id', '=', po.id),
+                ('state', 'in', ['draft', 'confirmed', 'waiting', 'assigned'])
+            ])
+            for p in pickings:
+                ok = po._validate_single_receipt(p)
+                if ok:
+                    validated += 1
+
+        # Thông báo ngắn gọn
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _("Nhập kho"),
+                'message': _("Đã xác nhận %s phiếu nhập.") % validated,
+                'sticky': False,
+                'type': 'success' if validated else 'warning',
+            }
+        }
 
     def button_confirm(self):
         res = super().button_confirm()
@@ -442,15 +569,53 @@ class PurchaseOrder(models.Model):
             if po.state in ('purchase', 'done') and po.shipping_status == 'done':
                 po.shipping_status = 'not_shipped'
         return res
+    # NEW: Khi HỦY PO => chuyển shipping_status sang 'cancelled'
+    def button_cancel(self):
+        res = super().button_cancel()
+        for po in self:
+            if po.shipping_status != 'cancelled':
+                po.shipping_status = 'cancelled'
+                po.message_post(body=Markup("Trạng thái hàng hóa ➜ <b>Đã hủy</b> (PO bị hủy)."))
+        # Hủy thì không tự động đẩy stage task
+        return res
 
+    # Khôi phục về Nháp => trả shipping_status về 'not_shipped' (tiện để người dùng làm lại luồng)
+    def button_draft(self):
+        res = super().button_draft()
+        for po in self:
+            # chỉ reset khi đang ở 'Đã hủy' để tránh đụng các trạng thái hợp lệ khác
+            if po.shipping_status == 'cancelled':
+                po.shipping_status = 'not_shipped'
+                po.message_post(body=Markup("Trạng thái hàng hóa ➜ <b>Chưa giao</b> (Khôi phục về Nháp)."))
+        return res
+# 1) CHẶN Ở write: nếu state đổi thì cập nhật shipping_status + log
     def write(self, vals):
+        prev_states = {po.id: po.state for po in self}
         res = super().write(vals)
+
+        # Khi user/logic đổi state -> đồng bộ shipping_status
+        if 'state' in vals:
+            for po in self:
+                old = prev_states.get(po.id)
+                new = po.state
+                # vào cancel
+                if new == 'cancel' and po.shipping_status != 'cancelled':
+                    po.shipping_status = 'cancelled'
+                    po.message_post(body=Markup("Trạng thái hàng hóa ➜ <b>Đã hủy</b> (PO bị hủy)."))
+                # quay về draft từ cancel
+                if old == 'cancel' and new == 'draft' and po.shipping_status == 'cancelled':
+                    po.shipping_status = 'not_shipped'
+                    po.message_post(body=Markup("Trạng thái hàng hóa ➜ <b>Chưa giao</b> (Khôi phục về Nháp)."))
+
+        # Nếu shipping_status đổi (bởi ai đó), vẫn đẩy stage task
         if 'shipping_status' in vals:
             self._auto_move_task_by_shipping()
-        # Nếu có thay đổi proposal_sheet_ids / proposal_sheet_id -> đảm bảo follower
+
+        # Nếu thay đổi proposal_sheet_ids / proposal_sheet_id -> đảm bảo follower
         if 'proposal_sheet_ids' in vals or 'proposal_sheet_id' in vals:
             self._ensure_proposal_requester_follower()
         return res
+
 
     def _auto_move_task_by_shipping(self):
         """

@@ -28,9 +28,10 @@
                 <field name="shipping_status"
                        widget="badge"
                        optional="show"
-                       decoration-danger="shipping_status == 'not_shipped'"
+                       decoration-muted="shipping_status == 'not_shipped'"
                        decoration-warning="shipping_status == 'in_progress'"
-                       decoration-success="shipping_status == 'done'"/>
+                       decoration-success="shipping_status == 'done'"
+                       decoration-danger="shipping_status == 'canceled'"/>
             </xpath>
 
             <!-- Ẩn cột trạng thái chuẩn của PO để đỡ rối -->
@@ -66,9 +67,10 @@
                 <field name="shipping_status"
                        widget="badge"
                        optional="show"
-                       decoration-danger="shipping_status == 'not_shipped'"
+                       decoration-muted="shipping_status == 'not_shipped'"
                        decoration-warning="shipping_status == 'in_progress'"
-                       decoration-success="shipping_status == 'done'"/>
+                       decoration-success="shipping_status == 'done'"
+                       decoration-danger="shipping_status == 'canceled'"/>
             </xpath>
 
             <!-- Ẩn cột state (trạng thái RFQ) để form gọn -->
