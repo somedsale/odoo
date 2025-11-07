@@ -48,7 +48,7 @@
                     </div>
                     <div class="ad-card kpi">
                         <div class="ad-icon bg-blue">
-                            <i class="fa fa-chart-line"></i>
+                            <i class="fa fa-bar-chart"></i>
                         </div>
                         <div class="ad-info">
                             <span class="ad-label">Chênh lệch</span>
@@ -57,7 +57,7 @@
                     </div>
                     <div class="ad-card kpi" t-on-click="openAdvances">
                         <div class="ad-icon bg-yellow">
-                            <i class="fa fa-wallet"></i>
+                            <i class="fa fa-handshake-o"></i>
                         </div>
                         <div class="ad-info">
                             <span class="ad-label">Tạm ứng cần thu</span>
@@ -73,7 +73,7 @@
                         <div class="ad-mini-grid">
                             <div class="ad-card mini" t-on-click="openProposals">
                                 <div class="ad-icon bg-amber">
-                                    <i class="fa fa-clipboard-list"></i>
+                                    <i class="fa fa-tasks"></i>
                                 </div>
                                 <div class="ad-info">
                                     <span class="ad-label">Đề xuất cần xử lý</span>
@@ -82,7 +82,7 @@
                             </div>
                             <div class="ad-card mini" t-on-click="openPaymentProposals">
                                 <div class="ad-icon bg-indigo">
-                                    <i class="fa fa-money-bill"></i>
+                                    <i class="fa fa-clipboard"></i>
                                 </div>
                                 <div class="ad-info">
                                     <span class="ad-label">Giải chi cần xử lý</span>
@@ -91,7 +91,7 @@
                             </div>
                             <div class="ad-card mini" t-on-click="openCustomerInvoices">
                                 <div class="ad-icon bg-purple">
-                                    <i class="fa fa-file-invoice"></i>
+                                    <i class="fa fa-file"></i>
                                 </div>
                                 <div class="ad-info">
                                     <span class="ad-label">HĐ đầu vào</span>
@@ -100,7 +100,7 @@
                             </div>
                             <div class="ad-card mini" t-on-click="openSupplierInvoices">
                                 <div class="ad-icon bg-cyan">
-                                    <i class="fa fa-file-invoice-dollar"></i>
+                                    <i class="fa fa-line-chart"></i>
                                 </div>
                                 <div class="ad-info">
                                     <span class="ad-label">HĐ đầu ra</span>

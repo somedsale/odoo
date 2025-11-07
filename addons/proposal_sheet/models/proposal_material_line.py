@@ -12,7 +12,7 @@ class ProposalMaterialLine(models.Model):
     active = fields.Boolean(string='Active', default=True)
     sheet_id = fields.Many2one('proposal.sheet', string='Phiếu Đề Xuất', required=True, ondelete='cascade')
     material_id = fields.Many2one('project.material', string='Vật Tư', required=True)
-    quantity = fields.Float(string='Số Lượng', default=1.0, digits='Product Unit of Measure')
+    quantity = fields.Float(string='Số Lượng', default=1.0, digits=(16, 4))
     unit = fields.Many2one('uom.uom', string='Đơn Vị', required=True)
     price_unit = fields.Float(string='Đơn Giá', digits='Product Price')
     price_total = fields.Float(string='Thành tiền', compute='_compute_price_total', store=True)
