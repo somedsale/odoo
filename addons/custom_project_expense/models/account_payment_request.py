@@ -18,3 +18,14 @@ class AccountPaymentRequest(models.Model):
         for rec in self:
             project_expense = expense_model.search([('project_id', '=', rec.project_id.id)], limit=1)
             rec.project_expense_id = project_expense.id if project_expense else False
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        for rec in records:
+            # Nếu có file đính kèm, gán lại model + id
+            if rec.attachment_ids:
+                rec.attachment_ids.sudo().write({
+                    'res_model': rec._name,
+                    'res_id': rec.id,
+                })
+        return records
