@@ -26,6 +26,7 @@
                     <field name="is_including_transport"/>
                     <field name="is_show_chi_phi_nhan_cong"/>
                     <field name="is_show_ma_sp"/>
+                    <field name="is_show_image"/>
                     <field name="x_estimated_delivery_time_id" options="{&apos;no_create&apos;: False}"/>
                     <field name="x_custom_payment_terms" options="{&apos;no_create&apos;: False}"/>
                 </xpath>

@@ -160,6 +160,10 @@ class SaleOrder(models.Model):
     string="Đã bao gồm kiểm thử",
     help ="Chọn nếu báo giá đã bao gồm chi phí kiểm thử sản phẩm hoặc dịch vụ.",
     default=False)
+    is_show_image = fields.Boolean(
+        string="Hiển thị hình ảnh",
+        default=False
+    )
 
     def action_confirm(self):
         for order in self:

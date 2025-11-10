@@ -8,6 +8,21 @@ class ProposalSheet(models.Model):
         string='Hạng mục dự toán',
         domain="[('cost_estimate_id.project_id', '=', project_id)]"
     )
+    display_estimate_item = fields.Char(
+        string="Hạng mục",
+        compute="_compute_display_estimate_item",
+        store=False
+    )
+
+    @api.depends('estimate_choice', 'cost_estimate_line_id', 'other_estimate_item')
+    def _compute_display_estimate_item(self):
+        for rec in self:
+            if rec.estimate_choice == 'estimate' and rec.cost_estimate_line_id:
+                rec.display_estimate_item = rec.cost_estimate_line_id.display_name
+            elif rec.estimate_choice == 'other' and rec.other_estimate_item:
+                rec.display_estimate_item = rec.other_estimate_item.display_name
+            else:
+                rec.display_estimate_item = "-"
 
     @api.onchange('project_id', 'product_id')
     def _onchange_project_product(self):

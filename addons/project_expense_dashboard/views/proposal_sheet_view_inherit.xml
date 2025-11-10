@@ -12,4 +12,16 @@
             </xpath>
         </field>
     </record>
+    <record id="view_proposal_sheet_tree_inherit_display_estimate_item" model="ir.ui.view">
+        <field name="name">proposal.sheet.tree.inherit.display.estimate.item</field>
+        <field name="model">proposal.sheet</field>
+        <field name="inherit_id" ref="proposal_sheet.view_proposal_sheet_tree"/>
+        <!-- ID tree gốc -->
+        <field name="arch" type="xml">
+            <!-- Thêm cột sau product_id hoặc vị trí bạn muốn -->
+            <xpath expr="//tree/field[@name='project_id']" position="after">
+                <field name="display_estimate_item" string="Hạng mục"/>
+            </xpath>
+        </field>
+    </record>
 </odoo>
