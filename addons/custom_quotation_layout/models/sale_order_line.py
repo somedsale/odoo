@@ -11,3 +11,13 @@ class SaleOrderLine(models.Model):
         for record in self:
             # Định dạng giá trị thành chuỗi, ví dụ: 563.000 đ
             record.formatted_price = '{:,.0f} ₫'.format(record.price_unit).replace(',', '.')
+    product_uom = fields.Many2one(
+        comodel_name='uom.uom',
+        string="Unit of Measure",
+        compute='_compute_product_uom',
+        store=True,
+        readonly=False,
+        precompute=True,
+        ondelete='restrict',
+        domain=[],   # ⚡ bỏ domain gốc
+    )
