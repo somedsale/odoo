@@ -1,99 +1,135 @@
 <templates xml:space="preserve">
     <t t-name="executive_dashboard.Template" owl="1">
         <div class="ed-dashboard o_action">
-            <!-- HEADER -->
             <div class="ed-header">
-                <h2>📊 Dashboard Giám đốc</h2>
+                <h2>📊 Dashboard</h2>
             </div>
 
-            <!-- BODY (scrollable) -->
             <div class="ed-body">
-                <t t-if="state.data">
-                    <div class="ed-kpis">
-                        <!-- KPI cards -->
-                        <div class="ed-kpi-card">
-                            <div class="ed-kpi-icon">
-                                <i class="fa fa-file-invoice"></i>
-                            </div>
-                            <div class="ed-kpi-info">
-                                <p>BÁO GIÁ</p>
-                                <h3>
-                                    <t t-esc="state.data.kpis.quotations.toLocaleString('vi-VN')"/>
-                                </h3>
-                            </div>
+                <div class="ed-kpis" t-if="state.data">
+                    <!-- KPI cards -->
+                    <div class="ed-kpi-card">
+                        <div class="ed-kpi-icon">
+                            <i class="fa fa-file-invoice"></i>
                         </div>
-                        <div class="ed-kpi-card">
-                            <div class="ed-kpi-icon">
-                                <i class="fa fa-shopping-cart"></i>
-                            </div>
-                            <div class="ed-kpi-info">
-                                <p>ĐƠN HÀNG</p>
-                                <h3>
-                                    <t t-esc="state.data.kpis.orders.toLocaleString('vi-VN')"/>
-                                </h3>
-                            </div>
+                        <div class="ed-kpi-info">
+                            <p>BÁO GIÁ</p>
+                            <h3>
+                                <t t-esc="state.data.kpis.quotations.toLocaleString('vi-VN')"/>
+                            </h3>
                         </div>
-                        <div class="ed-kpi-card">
-                            <div class="ed-kpi-icon">
-                                <i class="fa fa-percentage"></i>
-                            </div>
-                            <div class="ed-kpi-info">
-                                <p>TỶ LỆ CHUYỂN ĐỔI</p>
-                                <h3>
-                                    <t t-esc="state.data.kpis.conversion_rate + ' %'"/>
-                                </h3>
-                            </div>
+                    </div>
+                    <div class="ed-kpi-card">
+                        <div class="ed-kpi-icon">
+                            <i class="fa fa-shopping-cart"></i>
+                        </div>
+                        <div class="ed-kpi-info">
+                            <p>ĐƠN HÀNG</p>
+                            <h3>
+                                <t t-esc="state.data.kpis.orders.toLocaleString('vi-VN')"/>
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="ed-kpi-card">
+                        <div class="ed-kpi-icon">
+                            <i class="fa fa-shopping-cart"></i>
+                        </div>
+                        <div class="ed-kpi-info">
+                            <p>ĐƠN HÀNG</p>
+                            <h3>
+                                <t t-esc="state.data.kpis.orders.toLocaleString('vi-VN')"/>
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="ed-kpi-card">
+                        <div class="ed-kpi-icon">
+                            <i class="fa fa-shopping-cart"></i>
+                        </div>
+                        <div class="ed-kpi-info">
+                            <p>ĐƠN HÀNG</p>
+                            <h3>
+                                <t t-esc="state.data.kpis.orders.toLocaleString('vi-VN')"/>
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="ed-kpi-card">
+                        <div class="ed-kpi-icon">
+                            <i class="fa fa-shopping-cart"></i>
+                        </div>
+                        <div class="ed-kpi-info">
+                            <p>ĐƠN HÀNG</p>
+                            <h3>
+                                <t t-esc="state.data.kpis.orders.toLocaleString('vi-VN')"/>
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="ed-kpi-card">
+                        <div class="ed-kpi-icon">
+                            <i class="fa fa-percentage"></i>
+                        </div>
+                        <div class="ed-kpi-info">
+                            <p>TỶ LỆ CHUYỂN ĐỔI</p>
+                            <h3>
+                                <t t-esc="state.data.kpis.conversion_rate + ' %'"/>
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ed-content-grid">
+                    <div class="ed-list">
+                        <h4>📊 Top sản phẩm: Báo giá vs Đơn hàng</h4>
+                        <div style="height: 320px; position: relative;">
+                            <canvas t-ref="productChart"></canvas>
+                            <t t-if="!state.data">
+                                <div class="ed-empty">Chưa có dữ liệu hiển thị</div>
+                            </t>
+                        </div>
+                    </div>
+                    <div class="ed-list">
+                        <h4>Chi phí dự án</h4>
+                        <div style="height: 320px; position: relative;">
+                            <canvas t-ref="projectExpenseChart"></canvas>
+                            <t t-if="!state.data">
+                                <div class="ed-empty">Chưa có dữ liệu hiển thị</div>
+                            </t>
                         </div>
                     </div>
 
-                    <!-- 2 CỘT: Top sản phẩm + Khách hàng -->
-                    <div class="ed-content-grid">
-                        <div class="ed-list">
-                            <h4>📊 Top sản phẩm: Báo giá vs Đơn hàng</h4>
-                            <div style="height: 320px;">
-                                <canvas t-ref="productChart"></canvas>
-                            </div>
-                        </div>
-
-                        <div class="ed-list">
-                            <h4>👥 Top 3 khách hàng tiêu biểu</h4>
-                            <ul class="ed-top-customer-list">
-                                <t t-set="stt" t-value="0"/>
-                                <t t-foreach="state.data.top_customers" t-as="c" t-key="c.name" t-foreach-index="i">
-                                    <t t-set="stt" t-value="stt + 1"/>
-                                    <li>
-                                        <div class="ed-top-left">
-                                            <span class="rank">
-                                                <t t-esc="stt"/>
-                                            </span>
-                                            <div class="name">
-                                                <t t-esc="c.name"/>
-                                                <small>
-                                                    <t t-esc="c.order_count"/>
+                    <div class="ed-list" t-if="state.data">
+                        <h4>👥 Top 5 khách hàng tiêu biểu</h4>
+                        <ul class="ed-top-customer-list">
+                            <t t-set="stt" t-value="0"/>
+                            <t t-foreach="state.data.top_customers" t-as="c" t-key="c.name" t-foreach-index="i">
+                                <t t-set="stt" t-value="stt + 1"/>
+                                <li>
+                                    <div class="ed-top-left">
+                                        <span class="rank">
+                                            <t t-esc="stt"/>
+                                        </span>
+                                        <div class="name">
+                                            <t t-esc="c.name"/>
+                                            <small>
+                                                <t t-esc="c.order_count"/>
  đơn</small>
-                                            </div>
                                         </div>
-                                        <div class="ed-top-right">
-                                            <span class="value">
-                                                <t t-esc="c.total_value.toLocaleString('vi-VN')"/>
- ₫
-                                            </span>
-                                        </div>
-                                    </li>
-                                </t>
-                            </ul>
-                        </div>
+                                    </div>
+                                    <div class="ed-top-right">
+                                        <span class="value">
+                                            <t t-esc="c.total_value.toLocaleString('vi-VN')"/>
+ ₫</span>
+                                    </div>
+                                </li>
+                            </t>
+                        </ul>
                     </div>
-                </t>
+                </div>
 
-                <t t-if="!state.data">
-                    <div class="ed-empty">Chưa có dữ liệu hiển thị</div>
-                </t>
-            </div>            <!-- /.ed-body -->
 
-            <!-- ===== Overlay & Filter ===== -->
+            </div>
+
+            <!-- Overlay & Filter -->
             <div t-attf-class="ed-filter-overlay #{state.showFilters ? 'show' : ''}"></div>
-
             <div t-ref="filterPanel" t-attf-class="ed-filter-panel #{state.showFilters ? 'show' : ''}">
                 <div class="ed-filter-header">
                     <h4>Bộ lọc</h4>
@@ -124,10 +160,8 @@
                         <button class="btn btn-secondary" t-on-click="resetFilters">Đặt lại</button>
                     </div>
                 </div>
-
             </div>
 
-            <!-- FLOAT BUTTON -->
             <button t-attf-class="ed-filter-fab #{state.showFilters ? 'active' : ''}" t-on-click="toggleFilters">
                 <i t-attf-class="fa #{state.showFilters ? 'fa-times' : 'fa-filter'}"></i>
             </button>

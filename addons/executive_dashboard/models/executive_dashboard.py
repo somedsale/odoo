@@ -124,6 +124,21 @@ class ExecutiveDashboard(models.AbstractModel):
                     "order_count": int(order_count),
                     "total_value": round(total_value, 2),
                 })
+        Expense = self.env["project.expense.custom"]
+        expense_records = Expense.search([
+            ("total_spent", ">", 0),
+            ("total_cost", ">", 0),
+        ], limit=5, order="total_cost desc")
+
+        project_expense = []
+        for rec in expense_records:
+            project_expense.append({
+                "name": rec.name or (rec.project_id.name or "Không tên"),
+                "spent": rec.total_spent or 0.0,
+                "not_spent": rec.total_not_spent or 0.0,
+                "total": rec.total_cost or 0.0,
+            })
+        
 
         # ===== 7️⃣ Trả dữ liệu =====
         return {
@@ -134,6 +149,7 @@ class ExecutiveDashboard(models.AbstractModel):
             },
             "top_products": top_products,
             "top_customers": top_customers,
+            "project_expense": project_expense,
             "date_from": date_from,
             "date_to": date_to,
             "year": year,
