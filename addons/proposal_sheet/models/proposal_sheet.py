@@ -372,8 +372,8 @@ class ProposalSheet(models.Model):
         }
     def action_done(self):
         for rec in self:
-            if rec.state != 'waiting_accounting_paid':
-                raise UserError("Chi phiếu chưa được thanh toán.")
+            if rec.state not in ['approved', 'waiting_accounting_paid']:
+                raise UserError("Không được phép hoàn tất phiếu này.")
             rec.state = 'done'            
             rec.message_post(body="Phiếu đề xuất đã hoàn tất.")
 
@@ -389,7 +389,7 @@ class ProposalSheet(models.Model):
             rec.show_button_accounting_approve = rec.state == 'reviewed_accounting' and is_accounting  and rec.treasurer_confirmed
             rec.show_button_boss_approve = rec.state == 'approved' and is_boss
             rec.show_button_waiting_accounting_paid = rec.state == 'waiting_accounting_paid' and rec.type == 'expense' and is_accounting
-            rec.show_button_done = rec.state == 'waiting_accounting_paid' and is_accounting
+            rec.show_button_done = rec.state in ['approved', 'waiting_accounting_paid'] and is_accounting
             rec.show_button_reject = (
                 (rec.state == 'reviewed_manager' and is_manager) or
                 (rec.state == 'reviewed_accounting' and is_accounting) or

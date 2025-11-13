@@ -146,7 +146,7 @@ class AccountPaymentProposal(models.Model):
             )
 
             rec.can_paid = (
-                rec.state == "director_approved" and is_accountant
+                rec.state in ["director_approved", "account_approved"] and is_accountant
             )
             rec.can_reset_draft = (
                 rec.state == "rejected"
@@ -224,7 +224,7 @@ class AccountPaymentProposal(models.Model):
 
     def action_paid(self):
         self.ensure_one()
-        if self.state != "director_approved":
+        if self.state not in ["director_approved","account_approved"]:
             raise UserError(_("Chỉ được tạo chứng từ sau khi giám đốc duyệt."))
         return {
         "type": "ir.actions.act_window",
@@ -238,7 +238,7 @@ class AccountPaymentProposal(models.Model):
     def action_done (self):
         self.ensure_one()
         for rec in self:
-            if rec.state != "director_approved":
+            if rec.state not in ["account_approved", "director_approved"]:
                 raise UserError(_("Chỉ xong khi giám đốc duyệt bước này."))
             rec.state = "paid"
     def action_reset_draft (self):
