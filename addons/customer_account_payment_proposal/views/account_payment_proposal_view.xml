@@ -113,7 +113,7 @@
                 <field name="date_request"/>
                 <field name="project_id" string="Dự án"/>
                 <field name="user_id" readonly="1" widget="many2one_avatar_user"/>
-                <field name="department_id"/>
+                <field name="note" string="Nội dung"/>
                 <field name="amount_advance" sum="1"/>
                 <field name="total_amount" sum="1"/>
                 <field name="amount_refund" sum="1"/>
