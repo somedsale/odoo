@@ -26,32 +26,68 @@ class ExecutiveDashboard extends Component {
             data: null,
             loading: false,
             showFilters: false,
+            filter_label: "",
         });
 
         this.filterPanelRef = useRef("filterPanel");
         this.productChartRef = useRef("productChart");
         this.projectExpenseChartRef = useRef("projectExpenseChart");
-        this._charts = { product: null, project_expense: null };
+        this.customerChartRef = useRef("customerChart");
+        // đặt key đồng nhất: product & projectExpense
+        this._charts = {
+            product: null,
+            projectExpense: null,
+            customer: null,
+        };
         this._rendering = false;
 
         this.years = Array.from({ length: 10 }, (_, i) => 2022 + i);
 
         this._restoreFiltersFromStorage();
 
-        onWillStart(async () => await this.fetchData());
+        onWillStart(async () => {
+            await this.fetchData();
+        });
 
-        // ✅ Mount chart + register click outside listener
         onMounted(() => {
             this._onClickOutside = this.onClickOutside.bind(this);
             document.addEventListener("click", this._onClickOutside);
             this.renderCharts();
         });
 
-        // ✅ Cleanup khi unmount
         onWillUnmount(() => {
             document.removeEventListener("click", this._onClickOutside);
             this._destroyCharts();
         });
+    }
+    _buildFilterLabel(data) {
+        if (!data) {
+            return "";
+        }
+        const { date_from, date_to, year, quarter } = data;
+
+        const fmtDate = (s) => {
+            if (!s) return "";
+            const [y, m, d] = s.split("-");
+            return `${d}/${m}/${y}`;
+        };
+
+        // 1️⃣ Nếu có quý + năm => ưu tiên hiển thị quý
+        if (quarter && year) {
+            return `Quý ${quarter.replace("Q", "")} / ${year}`;
+        }
+
+        // 2️⃣ Nếu chỉ có năm (không chọn quý) => hiển thị năm
+        if (year && !(date_from && date_to)) {
+            return `Năm ${year}`;
+        }
+
+        // 3️⃣ Nếu filter bằng khoảng ngày cụ thể
+        if (date_from && date_to) {
+            return `${fmtDate(date_from)} → ${fmtDate(date_to)}`;
+        }
+
+        return "Toàn bộ dữ liệu";
     }
 
     // -----------------------------
@@ -60,8 +96,12 @@ class ExecutiveDashboard extends Component {
     _restoreFiltersFromStorage() {
         try {
             const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-            if (saved) Object.assign(this.state.filters, saved);
-        } catch (_) { }
+            if (saved) {
+                Object.assign(this.state.filters, saved);
+            }
+        } catch (_) {
+            // ignore
+        }
     }
 
     _saveFiltersToStorage() {
@@ -80,11 +120,15 @@ class ExecutiveDashboard extends Component {
                 [this.state.filters]
             );
             this.state.data = data;
+            this.state.filter_label = this._buildFilterLabel(this.state.filters);
             this._saveFiltersToStorage();
             this.renderCharts();
         } catch (err) {
             console.error("Dashboard Error:", err);
-            this.notification.add(_t("Không thể tải dữ liệu Dashboard."), { type: "danger" });
+            this.notification.add(
+                _t("Không thể tải dữ liệu Dashboard."),
+                { type: "danger" }
+            );
         } finally {
             this.state.loading = false;
         }
@@ -94,61 +138,93 @@ class ExecutiveDashboard extends Component {
     // Chart Handling
     // -----------------------------
     _destroyCharts() {
-        Object.values(this._charts).forEach((ch) => ch?.destroy());
-        this._charts = {};
+        Object.keys(this._charts).forEach((k) => {
+            if (this._charts[k]) {
+                this._charts[k].destroy();
+                this._charts[k] = null;
+            }
+        });
     }
 
     renderCharts() {
-        if (this._rendering) return;
+        if (this._rendering) {
+            return;
+        }
         this._rendering = true;
         this._destroyCharts();
 
+        // ===== 1️⃣ Chart Top Sản phẩm (gộp báo giá + đơn hàng) =====
         const products = this.state.data?.top_products || [];
         if (window.Chart && this.productChartRef.el && products.length) {
             const labels = products.map((p) => p.name);
-            const quotations = products.map((p) => p.quotation_qty);
-            const orders = products.map((p) => p.order_qty);
+            const quantities = products.map((p) => p.doc_count || 0); // 🔁 dùng số đơn
+            const values = products.map((p) => p.total_amount || 0);
 
             this._charts.product = new Chart(this.productChartRef.el, {
-                type: "bar",
+                type: "doughnut",
                 data: {
                     labels,
                     datasets: [
                         {
-                            label: _t("Báo giá"),
-                            data: quotations,
-                            backgroundColor: "rgba(37, 99, 235, 0.7)",
-                            borderRadius: 8,
-                        },
-                        {
-                            label: _t("Đã bán"),
-                            data: orders,
-                            backgroundColor: "rgba(16, 185, 129, 0.7)",
-                            borderRadius: 8,
+                            label: _t("Giá trị"),
+                            data: values,
+                            backgroundColor: [
+                                "rgba(37, 99, 235, 0.85)",
+                                "rgba(16, 185, 129, 0.85)",
+                                "rgba(234, 179, 8, 0.85)",
+                                "rgba(239, 68, 68, 0.85)",
+                                "rgba(139, 92, 246, 0.85)",
+                            ],
+                            borderWidth: 0,
                         },
                     ],
                 },
                 options: {
-                    indexAxis: "y", // ✅ Thanh ngang
                     responsive: true,
                     maintainAspectRatio: false,
+                    cutout: "55%", // lỗ ở giữa cho nhẹ mắt
                     plugins: {
-                        legend: { position: "bottom" },
-                    },
-                    scales: {
-                        x: { beginAtZero: true, grid: { color: "#f1f5f9" } },
-                        y: { grid: { display: false } },
+                        legend: {
+                            position: "bottom",
+                            labels: {
+                                boxWidth: 12,
+                                padding: 12,
+                            },
+                        },
+                        tooltip: {
+                            callbacks: {
+                                // Tooltip: Giá trị + số lượng
+                                label: (ctx) => {
+                                    const idx = ctx.dataIndex;
+                                    const amount = values[idx] || 0;
+                                    const count = quantities[idx] || 0;
+                                    const qty = quantities[idx] || 0;
+                                    return [
+                                        `${_t("Giá trị")}: ${fmtNum(amount)} ₫`,
+                                        `${_t("Số đơn")}: ${fmtNum(count)}`,
+                                    ];
+                                },
+                            },
+                        },
                     },
                 },
             });
-
         }
+        // ===== 2️⃣ Chart Chi phí dự án =====
         const expenses = this.state.data?.project_expense || [];
+        const MAX_LABEL_LEN = 40;
+
         if (window.Chart && this.projectExpenseChartRef?.el && expenses.length) {
-            const labels = expenses.map((e) => e.name);
-            const spent = expenses.map((e) => e.spent);
-            const notSpent = expenses.map((e) => e.not_spent);
-            const total = expenses.map((e) => e.total);
+            const fullLabels = expenses.map((e) => e.name || "");
+            const labels = fullLabels.map((label) =>
+                label.length > MAX_LABEL_LEN
+                    ? label.slice(0, MAX_LABEL_LEN - 1) + "…"
+                    : label
+            );
+
+            const spent = expenses.map((e) => e.spent || 0);
+            const notSpent = expenses.map((e) => e.not_spent || 0);
+            const total = expenses.map((e) => e.total || 0);
 
             this._charts.projectExpense = new Chart(this.projectExpenseChartRef.el, {
                 type: "bar",
@@ -173,20 +249,33 @@ class ExecutiveDashboard extends Component {
                             label: _t("Tổng"),
                             data: total,
                             backgroundColor: "rgba(70, 177, 116, 0.8)",
-                            stack: "total", // tách stack để hiển thị riêng
+                            stack: "total",
                             borderRadius: 6,
                         },
                     ],
                 },
                 options: {
-                    indexAxis: "y", // ✅ đây chính là phần khiến biểu đồ nằm ngang
+                    indexAxis: "y",
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            left: 16,
+                            right: 16,
+                            top: 8,
+                            bottom: 16,
+                        },
+                    },
                     plugins: {
                         legend: { position: "bottom" },
                         tooltip: {
                             callbacks: {
-                                label: (ctx) => `${ctx.dataset.label}: ${fmtNum(ctx.parsed.x)} ₫`,
+                                title: (items) => {
+                                    const idx = items[0].dataIndex;
+                                    return fullLabels[idx] || "";
+                                },
+                                label: (ctx) =>
+                                    `${ctx.dataset.label}: ${fmtNum(ctx.parsed.x)} ₫`,
                             },
                         },
                     },
@@ -201,16 +290,84 @@ class ExecutiveDashboard extends Component {
                             grid: { display: false },
                             ticks: {
                                 font: { size: 12 },
-                                autoSkip: false,        // Không bỏ qua label nào
-                                maxRotation: 0,         // Giữ ngang
+                                autoSkip: false,
+                                maxRotation: 0,
                                 minRotation: 0,
-                                padding: 6,             // Tăng khoảng cách giữa các dòng
+                                padding: 6,
                             },
                         },
                     },
                 },
             });
         }
+        const customers = this.state.data?.top_customers || [];
+        if (window.Chart && this.customerChartRef?.el && customers.length) {
+            const labels = customers.map((c) => c.name);
+            const quotationAmounts = customers.map((c) => c.quotation_amount || 0);
+            const orderAmounts = customers.map((c) => c.order_amount || 0);
+            const docCounts = customers.map((c) => c.total_docs || 0);
+
+            this._charts.customer = new Chart(this.customerChartRef.el, {
+                type: "bar",
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: _t("Báo giá"),
+                            data: quotationAmounts,
+                            backgroundColor: "rgba(59, 130, 246, 0.85)",
+                            stack: "amount",
+                            borderRadius: 6,
+                        },
+                        {
+                            label: _t("Đơn hàng"),
+                            data: orderAmounts,
+                            backgroundColor: "rgba(16, 185, 129, 0.85)",
+                            stack: "amount",
+                            borderRadius: 6,
+                        },
+                    ],
+                },
+                options: {
+                    indexAxis: "y", // bar ngang
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: "bottom" },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) =>
+                                    `${ctx.dataset.label}: ${fmtNum(ctx.parsed.x)} ₫`,
+                                afterBody: (items) => {
+                                    const idx = items[0].dataIndex;
+                                    const total =
+                                        (quotationAmounts[idx] || 0) +
+                                        (orderAmounts[idx] || 0);
+                                    const docs = docCounts[idx] || 0;
+                                    return [
+                                        `${_t("Tổng giá trị")}: ${fmtNum(total)} ₫`,
+                                        `${_t("Số chứng từ")}: ${fmtNum(docs)}`,
+                                    ];
+                                },
+                            },
+                        },
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (v) => fmtNum(v) + " ₫",
+                            },
+                            grid: { color: "#f1f5f9" },
+                        },
+                        y: {
+                            grid: { display: false },
+                        },
+                    },
+                },
+            });
+        }
+
 
         this._rendering = false;
     }
@@ -237,7 +394,10 @@ class ExecutiveDashboard extends Component {
     applyFilters() {
         const { date_from, date_to } = this.state.filters;
         if (date_from && date_to && date_from > date_to) {
-            this.notification.add(_t("Ngày bắt đầu phải ≤ ngày kết thúc."), { type: "warning" });
+            this.notification.add(
+                _t("Ngày bắt đầu phải ≤ ngày kết thúc."),
+                { type: "warning" }
+            );
             return;
         }
         this.fetchData();
