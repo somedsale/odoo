@@ -23,7 +23,7 @@
                 <div class="ed-kpis" t-if="state.data">
 
                     <!-- Báo giá: bên trái title + số, bên phải giá trị -->
-                    <div class="ed-kpi-card ed-kpi-card--split">
+                    <div class="ed-kpi-card ed-kpi-card--split" t-on-click="openQuotations">
                         <div class="ed-kpi-left">
                             <div class="ed-kpi-icon">
                                 <!-- FA4 -->
@@ -45,7 +45,7 @@
                     </div>
 
                     <!-- Đơn hàng: bên trái title + số, bên phải giá trị -->
-                    <div class="ed-kpi-card ed-kpi-card--split">
+                    <div class="ed-kpi-card ed-kpi-card--split" t-on-click="openOrders">
                         <div class="ed-kpi-left">
                             <div class="ed-kpi-icon">
                                 <i class="fa fa-shopping-cart"></i>
@@ -64,7 +64,7 @@
                             </span>
                         </div>
                     </div>
-                    <div class="ed-kpi-card ed-kpi-card--split">
+                    <div class="ed-kpi-card ed-kpi-card--split" t-on-click="openCashIn">
                         <div class="ed-kpi-left">
                             <div class="ed-kpi-icon">
                                 <!-- FA4 -->
@@ -81,7 +81,7 @@
                     </div>
 
                     <!-- TIỀN CHI: chi ra (Payment Request) -->
-                    <div class="ed-kpi-card ed-kpi-card--split">
+                    <div class="ed-kpi-card ed-kpi-card--split" t-on-click="openCashOut">
                         <div class="ed-kpi-left">
                             <div class="ed-kpi-icon">
                                 <i class="fa fa-sign-out"></i>

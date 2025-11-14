@@ -14,6 +14,7 @@ class ExecutiveDashboard extends Component {
     setup() {
         this.orm = useService("orm");
         this.notification = useService("notification");
+        this.action = useService("action");
 
         const today = new Date();
         this.state = useState({
@@ -413,7 +414,6 @@ class ExecutiveDashboard extends Component {
                                     const idx = ctx.dataIndex;
                                     const amount = amounts[idx] || 0;
                                     const count = counts[idx] || 0;
-                                    // Dòng chính hiển thị ngay trên tooltip
                                     return [
                                         `${ctx.label}: ${fmtNum(amount)} ₫`,
                                         `${_t("Số hóa đơn")}: ${fmtNum(count)}`,
@@ -421,6 +421,18 @@ class ExecutiveDashboard extends Component {
                                 },
                             },
                         },
+                    },
+                    // ⭐ click vào từng miếng pie để mở list tương ứng
+                    onClick: (evt, elements) => {
+                        if (!elements || !elements.length) {
+                            return;
+                        }
+                        const index = elements[0].index;
+                        if (index === 0) {
+                            this.openSupplierInvoices();
+                        } else if (index === 1) {
+                            this.openCustomerInvoices();
+                        }
                     },
                 },
             });
@@ -491,6 +503,123 @@ class ExecutiveDashboard extends Component {
         ) {
             this.state.showFilters = false;
         }
+    }
+    _getDateDomain(fieldName) {
+        const { date_from, date_to } = this.state.filters;
+        const domain = [];
+        if (date_from) {
+            domain.push([fieldName, ">=", date_from]);
+        }
+        if (date_to) {
+            domain.push([fieldName, "<=", date_to]);
+        }
+        return domain;
+    }
+
+    openQuotations() {
+        const domain = this._getDateDomain("create_date");
+        domain.push(["state", "in", ["draft", "sent"]]);
+
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: _t("Báo giá"),
+            res_model: "sale.order",
+            view_mode: "tree,form",
+            views: [
+                [false, "tree"],
+                [false, "form"],
+            ], // ⭐ rất quan trọng
+            target: "current",
+            domain,
+        });
+    }
+
+    openOrders() {
+        const domain = this._getDateDomain("create_date");
+        domain.push(["state", "in", ["sale", "done"]]);
+
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: _t("Đơn hàng"),
+            res_model: "sale.order",
+            view_mode: "tree,form",
+            views: [
+                [false, "tree"],
+                [false, "form"],
+            ],
+            target: "current",
+            domain,
+        });
+    }
+
+    openCashIn() {
+        const domain = this._getDateDomain("date");
+        domain.push(["state", "in", ["posted"]]);
+
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: _t("Phiếu thu"),
+            res_model: "account.receipt",
+            view_mode: "tree,form",
+            views: [
+                [false, "tree"],
+                [false, "form"],
+            ],
+            target: "current",
+            domain,
+        });
+    }
+
+    openCashOut() {
+        const domain = this._getDateDomain("date_payment");
+        domain.push(["status_expense", "in", ["paid"]]);
+
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: _t("Phiếu chi / ĐNTT"),
+            res_model: "account.payment.request",
+            view_mode: "tree,form",
+            views: [
+                [false, "tree"],
+                [false, "form"],
+            ],
+            target: "current",
+            domain,
+        });
+    }
+
+    openSupplierInvoices() {
+        const domain = this._getDateDomain("date");
+
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: _t("Hóa đơn đầu vào"),
+            res_model: "supplier.invoice",
+            view_mode: "tree,form",
+            views: [
+                [false, "tree"],
+                [false, "form"],
+            ],
+            target: "current",
+            domain,
+        });
+    }
+
+    openCustomerInvoices() {
+        const domain = this._getDateDomain("date");
+
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: _t("Hóa đơn đầu ra"),
+            res_model: "customer.invoice",
+            view_mode: "tree,form",
+            views: [
+                [false, "tree"],
+                [false, "form"],
+            ],
+            target: "current",
+            domain,
+        });
     }
 }
 
