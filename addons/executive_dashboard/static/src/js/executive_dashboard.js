@@ -33,11 +33,13 @@ class ExecutiveDashboard extends Component {
         this.productChartRef = useRef("productChart");
         this.projectExpenseChartRef = useRef("projectExpenseChart");
         this.customerChartRef = useRef("customerChart");
+        this.invoiceChartRef = useRef("invoiceChart");
         // đặt key đồng nhất: product & projectExpense
         this._charts = {
             product: null,
             projectExpense: null,
             customer: null,
+            invoice: null,
         };
         this._rendering = false;
 
@@ -362,6 +364,62 @@ class ExecutiveDashboard extends Component {
                         },
                         y: {
                             grid: { display: false },
+                        },
+                    },
+                },
+            });
+        }
+        const invoice = this.state.data?.invoice_overview;
+        if (window.Chart && this.invoiceChartRef?.el && invoice) {
+            const labels = [_t("Hóa đơn đầu vào"), _t("Hóa đơn đầu ra")];
+            const amounts = [
+                invoice.supplier_total || 0,
+                invoice.customer_total || 0,
+            ];
+            const counts = [
+                invoice.supplier_count || 0,
+                invoice.customer_count || 0,
+            ];
+
+            this._charts.invoice = new Chart(this.invoiceChartRef.el, {
+                type: "pie",
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            data: amounts,
+                            backgroundColor: [
+                                "rgba(239, 68, 68, 0.9)",   // Đầu vào
+                                "rgba(34, 197, 94, 0.9)",  // Đầu ra
+                            ],
+                            borderWidth: 0,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: "bottom",
+                            labels: {
+                                boxWidth: 14,
+                                padding: 12,
+                            },
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => {
+                                    const idx = ctx.dataIndex;
+                                    const amount = amounts[idx] || 0;
+                                    const count = counts[idx] || 0;
+                                    // Dòng chính hiển thị ngay trên tooltip
+                                    return [
+                                        `${ctx.label}: ${fmtNum(amount)} ₫`,
+                                        `${_t("Số hóa đơn")}: ${fmtNum(count)}`,
+                                    ];
+                                },
+                            },
                         },
                     },
                 },

@@ -136,6 +136,13 @@
                                 <div class="ed-empty">Chưa có dữ liệu hiển thị</div>
                             </t>
                         </div>
+
+                    </div>
+                    <div class="ed-list" t-if="state.data">
+                        <h4>💳 Hóa đơn vào / ra</h4>
+                        <div style="height:260px;">
+                            <canvas t-ref="invoiceChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>

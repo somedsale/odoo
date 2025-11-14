@@ -264,6 +264,36 @@ class ExecutiveDashboard(models.AbstractModel):
             r.get("total") or 0.0
             for r in PayReq.search_read(cash_out_domain, ["total"])
         )
+        SupplierInvoice = self.env['supplier.invoice']
+        supplier_invoices = SupplierInvoice.search_read(
+            [
+                ('date', '>=', date_from),
+                ('date', '<=', date_to),
+            ],
+            ['id','invoice_number', 'name', 'partner_id', 'amount', 'date','due_date'],
+            order='date desc'
+        )
+        total_supplier_invoice = sum(inv.get('amount') or 0.0 for inv in supplier_invoices)
+
+        CustomerInvoice = self.env['customer.invoice']
+        customer_invoices = CustomerInvoice.search_read(
+            [
+                ('date', '>=', date_from),
+                ('date', '<=', date_to),
+            ],
+            ['id', 'name','invoice_number', 'partner_id', 'amount_total', 'date'],
+            order='date desc'
+        )
+        total_customer_invoice = sum(inv.get('amount_total') or 0.0 for inv in customer_invoices)
+        supplier_invoice_count = len(supplier_invoices)
+        customer_invoice_count = len(customer_invoices)
+
+        invoice_overview = {
+            "supplier_total": total_supplier_invoice,
+            "customer_total": total_customer_invoice,
+            "supplier_count": supplier_invoice_count,
+            "customer_count": customer_invoice_count,
+        }
 
         # ===== 8️⃣ Trả dữ liệu =====
         return {
@@ -279,6 +309,7 @@ class ExecutiveDashboard(models.AbstractModel):
                 "cash_in": cash_in,
                 "cash_out": cash_out,
             },
+            "invoice_overview": invoice_overview,
             "top_products": top_products,        # vẫn usable cho chart nếu cần
             "top_customers": top_customers,      # đã gộp báo giá + đơn hàng
             "project_expense": project_expense,
