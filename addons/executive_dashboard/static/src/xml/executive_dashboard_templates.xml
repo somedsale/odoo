@@ -22,11 +22,10 @@
                 <!-- ============ KPI CARDS ============ -->
                 <div class="ed-kpis" t-if="state.data">
 
-                    <!-- Báo giá: bên trái title + số, bên phải giá trị -->
+                    <!-- Báo giá -->
                     <div class="ed-kpi-card ed-kpi-card--split" t-on-click="openQuotations">
                         <div class="ed-kpi-left">
                             <div class="ed-kpi-icon">
-                                <!-- FA4 -->
                                 <i class="fa fa-file-text-o"></i>
                             </div>
                             <div class="ed-kpi-info">
@@ -44,7 +43,7 @@
                         </div>
                     </div>
 
-                    <!-- Đơn hàng: bên trái title + số, bên phải giá trị -->
+                    <!-- Đơn hàng -->
                     <div class="ed-kpi-card ed-kpi-card--split" t-on-click="openOrders">
                         <div class="ed-kpi-left">
                             <div class="ed-kpi-icon">
@@ -64,10 +63,11 @@
                             </span>
                         </div>
                     </div>
+
+                    <!-- Tiền thu -->
                     <div class="ed-kpi-card ed-kpi-card--split" t-on-click="openCashIn">
                         <div class="ed-kpi-left">
                             <div class="ed-kpi-icon">
-                                <!-- FA4 -->
                                 <i class="fa fa-sign-in"></i>
                             </div>
                             <div class="ed-kpi-info">
@@ -80,7 +80,7 @@
                         </div>
                     </div>
 
-                    <!-- TIỀN CHI: chi ra (Payment Request) -->
+                    <!-- Tiền chi -->
                     <div class="ed-kpi-card ed-kpi-card--split" t-on-click="openCashOut">
                         <div class="ed-kpi-left">
                             <div class="ed-kpi-icon">
@@ -96,26 +96,28 @@
                         </div>
                     </div>
 
-                    <!-- Đơn giá trị cao nhất -->
                 </div>
+
                 <!-- ============ CHART GRID #1 ============ -->
                 <div class="ed-content-grid">
-                    <!-- Bar Chart: Top sản phẩm -->
+                    <!-- Doughnut: Top sản phẩm -->
                     <div class="ed-list">
                         <h4>📊 Top sản phẩm: Báo giá + Đơn hàng</h4>
 
                         <div style="height: 320px; position: relative;">
-                            <canvas t-ref="productChart"></canvas>
+                            <canvas t-ref="productChart" style="cursor: pointer;"></canvas>
 
                             <t t-if="!state.data">
                                 <div class="ed-empty">Chưa có dữ liệu hiển thị</div>
                             </t>
                         </div>
                     </div>
+
+                    <!-- Bar: Top khách hàng -->
                     <div class="ed-list" t-if="state.data">
                         <h4>👥 Top 5 khách hàng tiêu biểu</h4>
-                        <div style="height: 300px; ">
-                            <canvas t-ref="customerChart"></canvas>
+                        <div style="height: 300px;">
+                            <canvas t-ref="customerChart" style="cursor: pointer;"></canvas>
 
                             <t t-if="!state.data">
                                 <div class="ed-empty">Chưa có dữ liệu hiển thị</div>
@@ -124,24 +126,26 @@
                     </div>
                 </div>
 
-                <!-- ============ TOP CUSTOMERS ============ -->
+                <!-- ============ CHART GRID #2 ============ -->
                 <div class="ed-content-grid">
+                    <!-- Chi phí dự án -->
                     <div class="ed-list">
                         <h4>📊 Chi phí dự án</h4>
 
                         <div style="height: 300px;">
-                            <canvas t-ref="projectExpenseChart"></canvas>
+                            <canvas t-ref="projectExpenseChart" style="cursor: pointer;"></canvas>
 
                             <t t-if="!state.data">
                                 <div class="ed-empty">Chưa có dữ liệu hiển thị</div>
                             </t>
                         </div>
-
                     </div>
+
+                    <!-- Hóa đơn vào / ra -->
                     <div class="ed-list" t-if="state.data">
                         <h4>💳 Hóa đơn vào / ra</h4>
-                        <div style="height:260px;">
-                            <canvas t-ref="invoiceChart"></canvas>
+                        <div style="height: 260px;">
+                            <canvas t-ref="invoiceChart" style="cursor: pointer;"></canvas>
                         </div>
                     </div>
                 </div>

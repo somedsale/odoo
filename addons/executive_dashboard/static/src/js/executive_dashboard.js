@@ -35,7 +35,7 @@ class ExecutiveDashboard extends Component {
         this.projectExpenseChartRef = useRef("projectExpenseChart");
         this.customerChartRef = useRef("customerChart");
         this.invoiceChartRef = useRef("invoiceChart");
-        // đặt key đồng nhất: product & projectExpense
+
         this._charts = {
             product: null,
             projectExpense: null,
@@ -63,6 +63,10 @@ class ExecutiveDashboard extends Component {
             this._destroyCharts();
         });
     }
+
+    // =========================
+    // Filter label
+    // =========================
     _buildFilterLabel(data) {
         if (!data) {
             return "";
@@ -75,27 +79,21 @@ class ExecutiveDashboard extends Component {
             return `${d}/${m}/${y}`;
         };
 
-        // 1️⃣ Nếu có quý + năm => ưu tiên hiển thị quý
         if (quarter && year) {
             return `Quý ${quarter.replace("Q", "")} / ${year}`;
         }
-
-        // 2️⃣ Nếu chỉ có năm (không chọn quý) => hiển thị năm
         if (year && !(date_from && date_to)) {
             return `Năm ${year}`;
         }
-
-        // 3️⃣ Nếu filter bằng khoảng ngày cụ thể
         if (date_from && date_to) {
             return `${fmtDate(date_from)} → ${fmtDate(date_to)}`;
         }
-
         return "Toàn bộ dữ liệu";
     }
 
-    // -----------------------------
+    // =========================
     // LocalStorage helpers
-    // -----------------------------
+    // =========================
     _restoreFiltersFromStorage() {
         try {
             const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -111,9 +109,9 @@ class ExecutiveDashboard extends Component {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state.filters));
     }
 
-    // -----------------------------
+    // =========================
     // Fetch data
-    // -----------------------------
+    // =========================
     async fetchData() {
         this.state.loading = true;
         try {
@@ -137,9 +135,9 @@ class ExecutiveDashboard extends Component {
         }
     }
 
-    // -----------------------------
+    // =========================
     // Chart Handling
-    // -----------------------------
+    // =========================
     _destroyCharts() {
         Object.keys(this._charts).forEach((k) => {
             if (this._charts[k]) {
@@ -149,18 +147,39 @@ class ExecutiveDashboard extends Component {
         });
     }
 
+    openOrdersByIds(orderIds) {
+        if (!orderIds || !orderIds.length) {
+            this.notification.add(_t("Không tìm thấy đơn hàng liên quan."), {
+                type: "warning",
+            });
+            return;
+        }
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: _t("Đơn hàng liên quan"),
+            res_model: "sale.order",
+            view_mode: "tree,form",
+            views: [
+                [false, "tree"],
+                [false, "form"],
+            ],
+            target: "current",
+            domain: [["id", "in", orderIds]],
+        });
+    }
+
     renderCharts() {
-        if (this._rendering) {
+        if (this._rendering || !this.state.data) {
             return;
         }
         this._rendering = true;
         this._destroyCharts();
 
         // ===== 1️⃣ Chart Top Sản phẩm (gộp báo giá + đơn hàng) =====
-        const products = this.state.data?.top_products || [];
+        const products = this.state.data.top_products || [];
         if (window.Chart && this.productChartRef.el && products.length) {
             const labels = products.map((p) => p.name);
-            const quantities = products.map((p) => p.doc_count || 0); // 🔁 dùng số đơn
+            const quantities = products.map((p) => p.doc_count || 0);
             const values = products.map((p) => p.total_amount || 0);
 
             this._charts.product = new Chart(this.productChartRef.el, {
@@ -185,7 +204,7 @@ class ExecutiveDashboard extends Component {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutout: "55%", // lỗ ở giữa cho nhẹ mắt
+                    cutout: "55%",
                     plugins: {
                         legend: {
                             position: "bottom",
@@ -196,12 +215,10 @@ class ExecutiveDashboard extends Component {
                         },
                         tooltip: {
                             callbacks: {
-                                // Tooltip: Giá trị + số lượng
                                 label: (ctx) => {
                                     const idx = ctx.dataIndex;
                                     const amount = values[idx] || 0;
                                     const count = quantities[idx] || 0;
-                                    const qty = quantities[idx] || 0;
                                     return [
                                         `${_t("Giá trị")}: ${fmtNum(amount)} ₫`,
                                         `${_t("Số đơn")}: ${fmtNum(count)}`,
@@ -210,11 +227,22 @@ class ExecutiveDashboard extends Component {
                             },
                         },
                     },
+                    // click vào slice => mở các đơn của sản phẩm đó
+                    onClick: (evt, elements) => {
+                        if (!elements || !elements.length) {
+                            return;
+                        }
+                        const index = elements[0].index;
+                        const product = products[index];
+                        const orderIds = product.order_ids || [];
+                        this.openOrdersByIds(orderIds);
+                    },
                 },
             });
         }
+
         // ===== 2️⃣ Chart Chi phí dự án =====
-        const expenses = this.state.data?.project_expense || [];
+        const expenses = this.state.data.project_expense || [];
         const MAX_LABEL_LEN = 40;
 
         if (window.Chart && this.projectExpenseChartRef?.el && expenses.length) {
@@ -303,7 +331,9 @@ class ExecutiveDashboard extends Component {
                 },
             });
         }
-        const customers = this.state.data?.top_customers || [];
+
+        // ===== 3️⃣ Chart Top khách hàng =====
+        const customers = this.state.data.top_customers || [];
         if (window.Chart && this.customerChartRef?.el && customers.length) {
             const labels = customers.map((c) => c.name);
             const quotationAmounts = customers.map((c) => c.quotation_amount || 0);
@@ -332,7 +362,7 @@ class ExecutiveDashboard extends Component {
                     ],
                 },
                 options: {
-                    indexAxis: "y", // bar ngang
+                    indexAxis: "y",
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
@@ -367,10 +397,22 @@ class ExecutiveDashboard extends Component {
                             grid: { display: false },
                         },
                     },
+                    // click vào bar => mở các đơn của khách hàng đó
+                    onClick: (evt, elements) => {
+                        if (!elements || !elements.length) {
+                            return;
+                        }
+                        const index = elements[0].index;
+                        const customer = customers[index];
+                        const orderIds = customer.order_ids || [];
+                        this.openOrdersByIds(orderIds);
+                    },
                 },
             });
         }
-        const invoice = this.state.data?.invoice_overview;
+
+        // ===== 4️⃣ Chart Hóa đơn vào / ra =====
+        const invoice = this.state.data.invoice_overview;
         if (window.Chart && this.invoiceChartRef?.el && invoice) {
             const labels = [_t("Hóa đơn đầu vào"), _t("Hóa đơn đầu ra")];
             const amounts = [
@@ -422,7 +464,6 @@ class ExecutiveDashboard extends Component {
                             },
                         },
                     },
-                    // ⭐ click vào từng miếng pie để mở list tương ứng
                     onClick: (evt, elements) => {
                         if (!elements || !elements.length) {
                             return;
@@ -438,13 +479,12 @@ class ExecutiveDashboard extends Component {
             });
         }
 
-
         this._rendering = false;
     }
 
-    // -----------------------------
+    // =========================
     // Filter Handlers
-    // -----------------------------
+    // =========================
     onChangeDate() {
         this.state.filters.year = "";
         this.state.filters.quarter = "";
@@ -489,9 +529,9 @@ class ExecutiveDashboard extends Component {
         this.state.showFilters = !this.state.showFilters;
     }
 
-    // -----------------------------
+    // =========================
     // Click outside handler
-    // -----------------------------
+    // =========================
     onClickOutside(ev) {
         const panel = this.filterPanelRef.el;
         const button = document.querySelector(".ed-filter-fab");
@@ -504,18 +544,68 @@ class ExecutiveDashboard extends Component {
             this.state.showFilters = false;
         }
     }
+
+    // =========================
+    // Common date domain helper
+    // =========================
     _getDateDomain(fieldName) {
-        const { date_from, date_to } = this.state.filters;
+        const { date_from, date_to, year, quarter } = this.state.filters;
         const domain = [];
-        if (date_from) {
-            domain.push([fieldName, ">=", date_from]);
+
+        let from = date_from;
+        let to = date_to;
+
+        // Nếu chưa chọn khoảng ngày cụ thể nhưng có chọn Năm / Quý
+        if (!from && !to && year) {
+            const y = parseInt(year, 10);
+            if (Number.isFinite(y)) {
+                let startMonth = 1;
+                let endMonth = 12;
+
+                // Map Quý -> khoảng tháng
+                if (quarter) {
+                    switch (quarter) {
+                        case "Q1":
+                            startMonth = 1;
+                            endMonth = 3;
+                            break;
+                        case "Q2":
+                            startMonth = 4;
+                            endMonth = 6;
+                            break;
+                        case "Q3":
+                            startMonth = 7;
+                            endMonth = 9;
+                            break;
+                        case "Q4":
+                            startMonth = 10;
+                            endMonth = 12;
+                            break;
+                    }
+                }
+
+                const pad = (n) => String(n).padStart(2, "0");
+                // new Date(y, month, 0) -> ngày cuối cùng của tháng (month là 1–12)
+                const lastDay = new Date(y, endMonth, 0).getDate();
+
+                from = `${y}-${pad(startMonth)}-01`;
+                to = `${y}-${pad(endMonth)}-${pad(lastDay)}`;
+            }
         }
-        if (date_to) {
-            domain.push([fieldName, "<=", date_to]);
+
+        if (from) {
+            domain.push([fieldName, ">=", from]);
         }
+        if (to) {
+            domain.push([fieldName, "<=", to]);
+        }
+
         return domain;
     }
 
+    // =========================
+    // KPI click actions
+    // =========================
     openQuotations() {
         const domain = this._getDateDomain("create_date");
         domain.push(["state", "in", ["draft", "sent"]]);
@@ -528,7 +618,7 @@ class ExecutiveDashboard extends Component {
             views: [
                 [false, "tree"],
                 [false, "form"],
-            ], // ⭐ rất quan trọng
+            ],
             target: "current",
             domain,
         });
