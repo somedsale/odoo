@@ -1,24 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <t t-name="custom_project_cash_flow.ListRenderer" t-inherit="web.ListRenderer" t-inherit-mode="extension" owl="1">
+
         <xpath expr="//table" position="before">
             <t t-if="props.list.resModel === 'project.cash.flow'">
 
-                <!-- Lấy ký hiệu tiền tệ từ bản ghi đầu tiên nếu có -->
-                <t t-set="currencySymbol" t-value="props.list.records.length &gt; 0 &amp;&amp; props.list.records[0].data.currency_id ? props.list.records[0].data.currency_id[1] : ''"/>
+                <!-- Lấy danh sách record đang hiển thị (đã qua filter/search/domain) -->
+                <t t-set="records" t-value="props.list.records || []"/>
 
-                <!-- Tính tổng các giá trị Thu / Chi / Số dư -->
-                <t t-set="totalIn" t-value="props.list.records.length &gt; 0 ? props.list.records[0].data.total_in_all : 0"/>
-                <t t-set="totalOut" t-value="props.list.records.length &gt; 0 ? props.list.records[0].data.total_out_all : 0"/>
-                <t t-set="balance" t-value="props.list.records.length &gt; 0 ? props.list.records[0].data.balance_all : 0"/>
+                <!-- Ký hiệu tiền tệ: lấy theo record đầu tiên (giả sử cùng currency) -->
+                <t t-set="currencySymbol" t-value="records.length &gt; 0 &amp;&amp; records[0].data.currency_id ? records[0].data.currency_id[1] : ''"/>
 
+                <!-- Tính tổng Thu trên records -->
+                <t t-set="totalIn" t-value="records.reduce((sum, r) =&gt; sum + (r.data.type === 'in' ? (r.data.amount || 0) : 0), 0)"/>
+
+                <!-- Tính tổng Chi trên records -->
+                <t t-set="totalOut" t-value="records.reduce((sum, r) =&gt; sum + (r.data.type === 'out' ? (r.data.amount || 0) : 0), 0)"/>
+
+                <!-- Số dư = Thu - Chi -->
+                <t t-set="balance" t-value="totalIn - totalOut"/>
 
                 <div class="o_cashflow_statusbar d-flex w-100 align-items-stretch">
 
                     <!-- Tổng Thu -->
                     <div class="o_cashflow_card flex-grow-1 d-flex flex-column p-3 border-bottom text-center">
                         <span class="h2 m-0 text-success">
-                            <t t-esc="totalIn.toLocaleString()"/>
+                            <t t-esc="totalIn.toLocaleString('vi-VN')"/>
                             <t t-esc="currencySymbol"/>
                         </span>
                         <b class="mx-2">Tổng Thu</b>
@@ -30,7 +37,7 @@
                     <!-- Tổng Chi -->
                     <div class="o_cashflow_card flex-grow-1 d-flex flex-column p-3 border-bottom text-center">
                         <span class="h2 m-0 text-danger">
-                            <t t-esc="totalOut.toLocaleString()"/>
+                            <t t-esc="totalOut.toLocaleString('vi-VN')"/>
                             <t t-esc="currencySymbol"/>
                         </span>
                         <b class="mx-2">Tổng Chi</b>
@@ -42,7 +49,7 @@
                     <!-- Số dư -->
                     <div class="o_cashflow_card flex-grow-1 d-flex flex-column p-3 border-bottom text-center">
                         <span class="h2 m-0 text-primary">
-                            <t t-esc="balance.toLocaleString()"/>
+                            <t t-esc="balance.toLocaleString('vi-VN')"/>
                             <t t-esc="currencySymbol"/>
                         </span>
                         <b class="mx-2">Số dư</b>
