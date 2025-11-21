@@ -111,6 +111,10 @@ class CustomerContract(models.Model):
     ('paused', 'Tạm ngưng'),
     ('bad_debt', 'Công nợ khó đòi'),
 ], string="Loại hợp đồng", default='preparing', tracking=True)
+    ref_code = fields.Char(
+    string="Mã tham chiếu",
+    help="Mã rút gọn để tiện tìm kiếm hợp đồng."
+)
     @api.depends('amount_untaxed', 'tax_id')
     def _compute_amount_total(self):
         """

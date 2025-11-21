@@ -44,7 +44,8 @@
                         <page string="Hợp đồng">
                             <field name="contract_ids" context="{'default_partner_id': partner_id}" mode="tree">
                                 <tree>
-                                    <field name="name"/>
+                                    <field name="ref_code"/>
+                                    <field name="name" optional="hide"/>
                                     <field name="contract_number"/>
                                     <field name="project_id"/>
                                     <field name="date" string="Ngày Hợp Đồng"/>

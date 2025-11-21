@@ -123,6 +123,30 @@
         </tr>
     </thead>
     <tbody>
+        <tr style="font-weight:bold;">
+            <td colspan="3" style="text-align:center;">Tổng cộng</td>
+            <td class="money">
+                <t t-esc="'{:,.0f}'.format(sum(d['contract_value'] for d in docs)).replace(',', '.')"/>
+            </td>
+            <td class="money">
+                <t t-esc="'{:,.0f}'.format(sum(d['revenue'] for d in docs)).replace(',', '.')"/>
+            </td>
+            <td class="money">
+                <t t-esc="'{:,.0f}'.format(sum(d['material_cost'] or 0 for d in docs)).replace(',', '.')"/>
+            </td>
+            <td class="money">
+                <t t-esc="'{:,.0f}'.format(sum(d['labor_cost'] or 0 for d in docs)).replace(',', '.')"/>
+            </td>
+            <td class="money">
+                <t t-esc="'{:,.0f}'.format(sum(d['other_cost'] or 0 for d in docs)).replace(',', '.')"/>
+            </td>
+            <td class="money">
+                <t t-esc="'{:,.0f}'.format(sum(d['expense'] for d in docs)).replace(',', '.')"/>
+            </td>
+            <td class="money">
+                <t t-esc="'{:,.0f}'.format(sum(d['profit'] for d in docs)).replace(',', '.')"/>
+            </td>
+        </tr>
         <t t-set="counter" t-value="1"/>
         <t t-foreach="docs" t-as="doc">
             <tr>
@@ -160,32 +184,6 @@
             </tr>
         </t>
     </tbody>
-    <tfoot>
-        <tr style="font-weight:bold;">
-            <td colspan="3" style="text-align:center;">Tổng cộng</td>
-            <td class="money">
-                <t t-esc="'{:,.0f}'.format(sum(d['contract_value'] for d in docs)).replace(',', '.')"/>
-            </td>
-            <td class="money">
-                <t t-esc="'{:,.0f}'.format(sum(d['revenue'] for d in docs)).replace(',', '.')"/>
-            </td>
-            <td class="money">
-                <t t-esc="'{:,.0f}'.format(sum(d['material_cost'] or 0 for d in docs)).replace(',', '.')"/>
-            </td>
-            <td class="money">
-                <t t-esc="'{:,.0f}'.format(sum(d['labor_cost'] or 0 for d in docs)).replace(',', '.')"/>
-            </td>
-            <td class="money">
-                <t t-esc="'{:,.0f}'.format(sum(d['other_cost'] or 0 for d in docs)).replace(',', '.')"/>
-            </td>
-            <td class="money">
-                <t t-esc="'{:,.0f}'.format(sum(d['expense'] for d in docs)).replace(',', '.')"/>
-            </td>
-            <td class="money">
-                <t t-esc="'{:,.0f}'.format(sum(d['profit'] for d in docs)).replace(',', '.')"/>
-            </td>
-        </tr>
-    </tfoot>
 </table>
 </t>
 </template>
