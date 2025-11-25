@@ -1,0 +1,9 @@
+<odoo>
+    <template id="assets_backend" inherit_id="web.assets_backend" name="Communities assets">
+        <xpath expr="." position="inside">
+            <link rel="stylesheet" type="text/scss"
+                  href="/portal_community/static/src/scss/communities.scss"/>
+            <script type="module" src="/portal_community/static/src/js/communities_app.js"/>
+        </xpath>
+    </template>
+</odoo>

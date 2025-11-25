@@ -9,8 +9,10 @@
 "data": [
     "security/ir.model.access.csv",
     "wizard/tax_report_wizard_views.xml",
-    "views/tax_report_menu.xml",          # 👈 thêm dòng này
+    "wizard/wizard_input_only_view.xml",
+    "report/report_input_only_template.xml",
     "report/tax_report_templates.xml",
+    "views/tax_report_menu.xml",          # 👈 thêm dòng này
 ],
 
 

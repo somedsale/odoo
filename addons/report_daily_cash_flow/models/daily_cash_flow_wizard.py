@@ -19,27 +19,31 @@ class DailyCashFlowWizard(models.TransientModel):
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
         date_report = res.get('date_report') or fields.Date.today()
-        prev_date = fields.Date.to_date(date_report) - timedelta(days=1)
+
+        # Tìm ngày gần nhất có tồn cuối < ngày báo cáo
         prev = self.env['cash.daily.balance'].search([
-            ('date', '=', prev_date),
-        ], limit=1)
+            ('date', '<', date_report),
+        ], order='date desc', limit=1)
+
         if prev:
             res.setdefault('opening_bank', prev.closing_bank)
             res.setdefault('opening_cash', prev.closing_cash)
-        # nếu không có prev -> giữ mặc định 0.0 cho 2 trường
+
         return res
 
     @api.onchange('date_report')
     def _onchange_suggest_opening(self):
         if not self.date_report:
             return
+
+        # Tìm bản ghi gần nhất < ngày được chọn
         prev = self.env['cash.daily.balance'].search([
-            ('date', '=', self.date_report - timedelta(days=1)),
-        ], limit=1)
+            ('date', '<', self.date_report),
+        ], order='date desc', limit=1)
+
         if prev:
             self.opening_bank = prev.closing_bank
             self.opening_cash = prev.closing_cash
-        # else: KHÔNG làm gì -> giữ giá trị hiện tại (thường là 0 hoặc do user đã gõ)
 
 
     def _sum_receipts(self, date_report):

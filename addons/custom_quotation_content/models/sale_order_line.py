@@ -45,3 +45,26 @@ class SaleOrderLine(models.Model):
                 'price_tax': price_tax,
                 'price_total': price_total,
             })
+    @api.onchange("product_id")
+    def _onchange_product_id_custom_name(self):
+        """Sinh diễn giải dòng hàng chỉ gồm thuộc tính và thông số (không có tên sản phẩm)."""
+        for line in self:
+            if not line.product_id:
+                continue
+
+            product = line.product_id
+            name_lines = []
+
+            # ---- Lấy danh sách thuộc tính của biến thể sản phẩm ----
+            if product.product_template_attribute_value_ids:
+                for attr_val in product.product_template_attribute_value_ids:
+                    attr_name = attr_val.attribute_id.name
+                    value_name = attr_val.name
+                    name_lines.append(f"- {attr_name}: {value_name}")
+
+            # ---- Lấy field x_thong_so nếu có ----
+            if hasattr(product, "x_thong_so") and product.x_thong_so:
+                name_lines.append(f"{product.x_thong_so}")
+
+            # Gộp nội dung
+            line.name = "\n".join(name_lines) if name_lines else ""

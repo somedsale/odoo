@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Inherit Sale Order Form để thêm nút trong dòng sản phẩm -->
+    <record id="view_order_form_inherit_sale_history" model="ir.ui.view">
+        <field name="name">sale.order.form.sale.history</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Thêm nút lịch sử ngay trong bảng dòng hàng -->
+            <xpath expr="//field[@name='order_line']/tree/field[@name='price_unit']" position="after">
+                <button name="action_view_sale_history" type="object" icon="fa-history" class="btn btn-link o_icon_button" title="Lịch sử bán hàng" attrs="{'invisible': [('product_id','=',False)]}"/>
+
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Popup hiển thị lịch sử -->
+    <!-- Tree view lịch sử (read-only) + nút áp dụng giá ngay trên mỗi dòng -->
+    <record id="view_sale_order_line_history_tree" model="ir.ui.view">
+        <field name="name">sale.order.line.history.tree</field>
+        <field name="model">sale.order.line</field>
+        <field name="arch" type="xml">
+            <tree string="Lịch sử bán hàng" create="false" edit="false" delete="false">
+                <!-- Cột nút icon áp dụng giá -->
+                <button name="action_apply_history_price"
+                        type="object"
+                        string=""
+                        icon="fa-check"
+                        class="oe_link"
+                        title="Áp dụng giá này cho báo giá đang mở"/>
+                <field name="order_id" string="Đơn hàng"/>
+                <field name="order_partner_id" string="Khách hàng"/>
+                <field name="create_date" string="Ngày"/>
+                <field name="price_unit" string="Đơn giá"/>
+                <field name="state" string="Trạng thái"/>
+            </tree>
+        </field>
+    </record>
+
+
+
+</odoo>

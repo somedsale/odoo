@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- =========================
+         Communities
+         ========================= -->
+
+    <!-- Portal: đọc được tất cả communities -->
+    <record id="portal_community_rule_community_portal_read" model="ir.rule">
+        <field name="name">Portal: Read communities</field>
+        <field name="model_id" ref="portal_community.model_portal_community"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <!-- cho phép đọc tất cả -->
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- Nội bộ (users & managers) toàn quyền communities -->
+    <record id="portal_community_rule_community_internal_full" model="ir.rule">
+        <field name="name">Internal: Full access communities</field>
+        <field name="model_id" ref="portal_community.model_portal_community"/>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- =========================
+         Channels
+         ========================= -->
+
+    <!-- Portal: đọc được tất cả channel -->
+    <record id="portal_community_rule_channel_portal_read" model="ir.rule">
+        <field name="name">Portal: Read channels</field>
+        <field name="model_id" ref="portal_community.model_portal_community_channel"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- Nội bộ: full access channels -->
+    <record id="portal_community_rule_channel_internal_full" model="ir.rule">
+        <field name="name">Internal: Full access channels</field>
+        <field name="model_id" ref="portal_community.model_portal_community_channel"/>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- =========================
+         Posts
+         ========================= -->
+
+    <!-- Portal: đọc tất cả post trong community/channel -->
+    <record id="portal_community_rule_post_portal_read" model="ir.rule">
+        <field name="name">Portal: Read posts</field>
+        <field name="model_id" ref="portal_community.model_portal_community_post"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- Portal: tạo / sửa / xoá post của chính mình -->
+    <record id="portal_community_rule_post_portal_own" model="ir.rule">
+        <field name="name">Portal: Own posts</field>
+        <field name="model_id" ref="portal_community.model_portal_community_post"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="domain_force">[('author_id', '=', user.partner_id.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- Nội bộ: full access posts -->
+    <record id="portal_community_rule_post_internal_full" model="ir.rule">
+        <field name="name">Internal: Full access posts</field>
+        <field name="model_id" ref="portal_community.model_portal_community_post"/>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- =========================
+         Comments
+         ========================= -->
+
+    <!-- Portal: đọc tất cả comments -->
+    <record id="portal_community_rule_comment_portal_read" model="ir.rule">
+        <field name="name">Portal: Read comments</field>
+        <field name="model_id" ref="portal_community.model_portal_community_comment"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- Portal: tạo / sửa / xoá comment của mình -->
+    <record id="portal_community_rule_comment_portal_own" model="ir.rule">
+        <field name="name">Portal: Own comments</field>
+        <field name="model_id" ref="portal_community.model_portal_community_comment"/>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="domain_force">[('author_id', '=', user.partner_id.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- Nội bộ: full access comments -->
+    <record id="portal_community_rule_comment_internal_full" model="ir.rule">
+        <field name="name">Internal: Full access comments</field>
+        <field name="model_id" ref="portal_community.model_portal_community_comment"/>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+</odoo>

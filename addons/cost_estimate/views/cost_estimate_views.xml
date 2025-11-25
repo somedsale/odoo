@@ -115,8 +115,8 @@
         <field name="arch" type="xml">
             <tree>
                 <field name="product_id" context="{'no_default_code': True}" required="1"/>
-                <field name="so_name" optional="hide"/>
-                <field name="so_thongso" optional="show"/>
+                <field name="so_name" optional="show"/>
+                <field name="so_thongso" optional="hide"/>
                 <field name="so_xuatxu" optional="hide"/>
                 <field name="quantity" required="1"/>
                 <field name="unit" required="1"/>

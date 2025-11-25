@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_portal_community_user,portal_community_user,model_portal_community,base.group_user,1,1,1,0
+access_portal_community_channel_user,portal_community_channel_user,model_portal_community_channel,base.group_user,1,1,1,0
+access_portal_community_post_user,portal_community_post_user,model_portal_community_post,base.group_user,1,1,1,0
+access_portal_community_comment_user,portal_community_comment_user,model_portal_community_comment,base.group_user,1,1,1,0

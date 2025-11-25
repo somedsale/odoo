@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mrp_production_form_inherit_project" model="ir.ui.view">
+        <field name="name">mrp.production.form.project</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Show project on MO header area -->
+            <xpath expr="//sheet//field[@name=&apos;product_id&apos;]" position="before">
+                <field name="project_id"/>
+                <field name="sale_product_ids" invisible="1"/>
+
+            </xpath>
+            <!-- GẮN DOMAIN trực tiếp cho field product_id -->
+            <!-- thêm domain an toàn cho product_id -->
+            <!-- <xpath expr="//field[@name='product_id']" position="attributes">
+                <attribute name="domain">[('id', 'in', sale_product_ids)]</attribute>
+            </xpath> -->
+            <xpath expr="//notebook//page//field[@name='product_id']" position="replace">
+                <field name="product_id" force_save="1" context="{'default_detailed_type': 'product'}" required="1" readonly="move_lines_count &gt; 0 or state == 'cancel' or (state != 'draft' and not additional)" domain="['&amp;','&amp;',
+                ('type', 'in', ['product', 'consu']),
+                ('id', '!=', parent.product_id),
+                ('categ_id.name', '=', 'Vật tư')]" />
+            </xpath>
+        </field>
+    </record>
+</odoo>
