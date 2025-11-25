@@ -6,7 +6,7 @@ from odoo.exceptions import ValidationError
 class SupplierInvoice(models.Model):
     _name = "supplier.invoice"
     _description = "Supplier Invoice"
-    _rec_name = "invoice_number"
+    # _rec_name = "invoice_number"
     # Mã hóa đơn (sequence)
     name = fields.Char(
         string="Mã hóa đơn",
@@ -15,7 +15,12 @@ class SupplierInvoice(models.Model):
         copy=False,
         default="New",
     )
-
+    display_name = fields.Char(
+        string="Tên hiển thị",
+        compute="_compute_display_name",
+        store=True,
+        readonly=True,
+    )
     # Số hóa đơn thực tế
     invoice_number = fields.Char(
         string="Số hóa đơn",
@@ -69,11 +74,33 @@ class SupplierInvoice(models.Model):
     account_payment_request_ids = fields.One2many(
         "account.payment.request", "invoice_id", string="Phiếu chi"
     )
-
+    cost_classification = fields.Selection([
+        ('employee', 'Khoản vay nội bộ(nhân viên)'),
+        ('office', 'Chi phí tại công ty'),
+        ('project', 'Chi phí các công trình'),
+        ('fixed_cost', 'Chi phí cố định'),
+        ('irregular_expenses', 'Chi phí không thường xuyên'),
+        ('loan_interest', 'Chi phí trả lãi vay'),
+    ], string="Phân loại chi phí", default='project',required=True)
+    # NEW: Khoản mục
+    expense_category_id = fields.Many2one(
+        'expense.category', string="Khoản mục",
+        domain="[('classification', '=', cost_classification)]",
+        help="Chọn khoản mục chi tiết phù hợp với Phân loại chi phí."
+    )
+    is_warehouse = fields.Selection([
+        ('warehouse', 'Nhập kho'),
+        ('contruction', 'Công trình'),
+    ], string="Nhập kho / Công trình")
     # ==============================
     # COMPUTE & ONCHANGE
     # ==============================
-
+    def _compute_display_name(self):
+        for rec in self:
+            if rec.invoice_number:
+                rec.display_name = f"{rec.invoice_number} - {rec.name}"
+            else:
+                rec.display_name = rec.name
     @api.model
     def create(self, vals):
         """Tự động sinh mã hóa đơn nếu chưa có"""

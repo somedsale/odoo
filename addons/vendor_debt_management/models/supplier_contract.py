@@ -85,17 +85,24 @@ class SupplierContract(models.Model):
     @api.depends("amount", "paid_amount", "advance_amount", "account_payment_request_ids.total", "account_payment_request_ids.state", "invoice_ids.amount", "old_debt")
     def _compute_residual(self):
         for record in self:
-            residual_amount = record.total_invoices - record.paid_amount + record.old_debt
-            if residual_amount < 0:
-                residual_amount = residual_amount
-            record.residual_amount = residual_amount
-    @api.depends("total_invoices", "paid_amount")
+            # Tổng nghĩa vụ phải trả = Hóa đơn + Công nợ cũ
+            base = (record.total_invoices or 0.0) + (record.old_debt or 0.0)
+            paid = record.paid_amount or 0.0
+
+            # Còn nợ = (Hóa đơn + CN cũ) - đã trả  (có thể âm nếu trả dư)
+            record.residual_amount = base - paid
+            if record.residual_amount < 0:
+                record.residual_amount = 0.0
+    @api.depends("total_invoices", "paid_amount", "old_debt")
     def _compute_advance_amount(self):
         for record in self:
-            advance_amount = record.paid_amount - record.total_invoices
-            if advance_amount < 0:
-                advance_amount = 0
-            record.advance_amount = advance_amount
+            # Tổng nghĩa vụ phải trả = Hóa đơn + Công nợ cũ
+            base = (record.total_invoices or 0.0) + (record.old_debt or 0.0)
+            paid = record.paid_amount or 0.0
+
+            # Tạm ứng chỉ là phần TRẢ DƯ so với (Hóa đơn + CN cũ)
+            advance = paid - base
+            record.advance_amount = advance if advance > 0 else 0.0
     @api.onchange("residual_amount")
     def _onchange_residual_amount(self):
         for record in self:
@@ -266,7 +273,3 @@ class SupplierContract(models.Model):
         if vals.get('name', "New") == "New":
             vals['name'] = self.env['ir.sequence'].next_by_code('supplier.contract') or "New"
         return super().create(vals)
-class ResPartner(models.Model):
-    _inherit = "res.partner"
-
-    contract_ids = fields.One2many("supplier.contract", "partner_id", string="Hợp đồng nhà cung cấp")

@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ========== TREE VIEW ========== -->
+    <record id="view_supplier_invoice_payment_summary_tree" model="ir.ui.view">
+        <field name="name">supplier.invoice.payment.summary.tree</field>
+        <field name="model">supplier.invoice.payment.summary</field>
+        <field name="arch" type="xml">
+            <tree create="false" edit="false">
+                <field name="partner_id"/>
+                <field name="currency_id"/>
+                <field name="due_days_html" widget="html" string="Ngày đến hạn"/>
+                <field name="total_invoice_amount"/>
+                <field name="total_payment_amount"/>
+                <field name="residual_amount"/>
+                <field name="advance_amount"/>
+                <field name="old_debt"/>
+                <field name="interpretation"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ========== FORM VIEW ========== -->
+    <record id="view_supplier_invoice_payment_summary_form" model="ir.ui.view">
+        <field name="name">supplier.invoice.payment.summary.form</field>
+        <field name="model">supplier.invoice.payment.summary</field>
+        <field name="arch" type="xml">
+            <form string="Tổng hợp công nợ NCC (HĐ &amp; Phiếu chi)" create="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="currency_id"/>
+                            <field name="due_date"/>
+                            <field name="due_days_html" widget="html" string="Số ngày đến hạn"/>
+                            <field name="reconciled" widget="checkbox"/>
+                        </group>
+                        <group>
+                            <field name="total_contract_amount"/>
+                            <field name="total_invoice_amount"/>
+                            <field name="total_payment_amount"/>
+                            <field name="residual_amount"/>
+                            <field name="advance_amount"/>
+                            <field name="old_debt" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Loại nhà cung cấp">
+                            <field name="supplier_category"/>
+                            <field name="supplier_domestic_type"
+                                invisible="supplier_category != 'domestic'"/>
+                            <field name="supply_category"/>
+                        </group>
+                        <group string="Ghi chú &amp; Diễn giải">
+                            <field name="interpretation" placeholder="Diễn giải ngắn gọn..."/>
+                            <field name="note" placeholder="Ghi chú thêm về công nợ NCC..."/>
+                        </group>
+                        
+                    </group>
+
+                    <notebook>
+                        <page string="Danh sách hợp đồng">
+                            <field name="contract_ids">
+                                <tree>
+                                    <field name="name" string="Mã HĐ"/>
+                                    <field name="number_contract" string="Số HĐ"/>
+                                    <field name="project_id"/>
+                                    <field name="contract_date"/>
+                                    <field name="amount"/>
+                                    <field name="total_invoices"/>
+                                    <field name="paid_amount"/>
+                                    <field name="residual_amount"/>
+                                    <field name="due_date"/>
+                                    <field name="currency_id" invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <page string="Danh sách hóa đơn">
+                            <field name="invoice_ids">
+                                <tree>
+                                    <field name="name" string="Mã nội bộ"/>
+                                    <field name="invoice_number" string="Số HĐ NCC"/>
+                                    <field name="date"/>
+                                    <field name="due_date"/>
+                                    <field name="project_id"/>
+                                    <field name="amount"/>
+                                    <field name="currency_id" invisible="1"/>
+
+                                </tree>
+                            </field>
+                        </page>
+
+                        <page string="Danh sách phiếu chi">
+                            <field name="payment_request_ids">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="project_id"/>
+                                    <field name="supplier_contract_id"/>
+                                    <field name="invoice_id"/>
+                                    <field name="state"/>
+                                    <field name="total"/>
+                                    <field name="currency_id" invisible="1"/>
+
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ========== SEARCH VIEW ========== -->
+    <record id="view_supplier_invoice_payment_summary_search" model="ir.ui.view">
+        <field name="name">supplier.invoice.payment.summary.search</field>
+        <field name="model">supplier.invoice.payment.summary</field>
+        <field name="arch" type="xml">
+            <search string="Tìm tổng hợp công nợ NCC (HĐ &amp; Phiếu chi)">
+                <field name="partner_id"/>
+                <field name="currency_id"/>
+
+                <!-- Không dùng residual_amount / advance_amount / due_date trong domain
+                     vì là compute không store, tránh ParseError -->
+
+                <group expand="0" string="Nhóm theo">
+                    <filter name="group_partner" string="Nhà cung cấp" context="{'group_by':'partner_id'}"/>
+                    <filter name="group_currency" string="Tiền tệ" context="{'group_by':'currency_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ========== ACTION ========== -->
+    <record id="action_supplier_invoice_payment_summary" model="ir.actions.act_window">
+        <field name="name">Tổng hợp NCC (HĐ &amp; Phiếu chi)</field>
+        <field name="res_model">supplier.invoice.payment.summary</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="search_view_id" ref="view_supplier_invoice_payment_summary_search"/>
+        <field name="help" type="html">
+            <p>
+                Mỗi dòng là <b>một nhà cung cấp</b> (theo từng loại tiền tệ), tổng hợp
+                số liệu từ cả <b>hóa đơn</b> và <b>phiếu chi</b>:
+                tổng giá trị hóa đơn, tổng đã chi, còn nợ, tạm ứng/chưa hóa đơn,
+                công nợ cũ và ghi chú.
+            </p>
+        </field>
+    </record>
+
+    <!-- ========== MENU ========== -->
+    <!-- Điều chỉnh parent cho đúng menu gốc công nợ của bạn -->
+    <menuitem id="menu_supplier_invoice_payment_summary" name="Tổng hợp NCC (HĐ &amp; Phiếu chi)" parent="menu_supplier_contract_root" action="action_supplier_invoice_payment_summary" sequence="50"/>
+</odoo>

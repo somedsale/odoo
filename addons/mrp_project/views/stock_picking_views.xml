@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="stock_picking_form_inherit_project" model="ir.ui.view">
+    <field name="name">stock.picking.form.project</field>
+    <field name="model">stock.picking</field>
+    <field name="inherit_id" ref="stock.view_picking_form"/>
+    <field name="arch" type="xml">
+
+      <!-- Cho client thấy project_id để dùng trong context/search -->
+      <xpath expr="//header" position="inside">
+        <field name="sale_product_ids" invisible="1"/>
+      </xpath>
+
+      <!-- Hiển thị Dự án trên form (tùy thích) -->
+      <xpath expr="//sheet//group[1]/field[@name='partner_id']" position="after">
+        <field name="project_id"/>
+      </xpath>
+
+      <!-- Thêm context cho ô Product trong tab Operations (KHÔNG dùng domain) -->
+      <xpath expr="//page[@name='operations']//field[@name='move_ids_without_package']//tree//field[@name='product_id']" position="attributes">
+        <attribute name="context">
+          {
+            'default_detailed_type': 'product',
+            'search_default_project_sale_products': 1,
+            'project_sale_product_ids': (
+              parent.sale_product_ids
+            ) or []
+          }
+        </attribute>
+      </xpath>
+
+    </field>
+  </record>
+
+  <!-- Search view của product.product: thêm filter nhận list ids từ context -->
+  <record id="product_product_search_inherit_project_filter" model="ir.ui.view">
+    <field name="name">product.product.search.project.filter</field>
+    <field name="model">product.product</field>
+    <field name="inherit_id" ref="product.product_search_form_view"/>
+    <field name="arch" type="xml">
+      <xpath expr="//search" position="inside">
+        <filter name="project_sale_products"
+                string="Theo dự án"
+                domain="[('id','in', context.get('project_sale_product_ids', []))]"/>
+      </xpath>
+    </field>
+  </record>
+</odoo>

@@ -1,0 +1,1159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Đăng ký report (cũ, vẫn giữ cho backward-compat) -->
+    <report
+        id="supplier_summary_report_action"
+        model="supplier.invoice.payment.summary"
+        string="Supplier Summary"
+        report_type="qweb-html"
+        name="vendor_debt_management.report_supplier_debt_real_view"
+        file="vendor_debt_management.report_supplier_debt_real_view"
+        print_report_name="'Supplier Summary Report'"
+    />
+
+    <!-- Paperformat -->
+    <record id="custom_sale_report_a4_portrait" model="report.paperformat">
+        <field name="name">Custom Sale Report A4 Portrait</field>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">30</field>
+        <field name="margin_bottom">30</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_spacing">25</field>
+        <field name="dpi">110</field>
+    </record>
+
+    <!-- Layout chung -->
+    <template id="report_supplier_debt_real_layout">
+        <t t-call="web.html_container">
+            <t t-set="o" t-value="o or list"/>
+            <div class="header" style="display: flex; justify-content: space-between; font-family: Times New Roman;">
+                <table style="width:100%; border-collapse: collapse; border: 1px solid #fff;">
+                    <tr>
+                        <!-- Cột logo bên trái -->
+                        <td style="text-align: left; vertical-align: middle; border-collapse: collapse; border: 1px solid #fff; width: 50%;">
+                            <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id"
+                                 alt="Company Logo"
+                                 style="max-width: 160px;"/>
+                        </td>
+
+                        <!-- Cột thông tin công ty bên phải -->
+                        <td style="text-align: right; vertical-align: middle; border-collapse: collapse; border: 1px solid #fff; font-size: 11px; text-transform: capitalize; width: 50%;">
+                            <span t-esc="res_company.name" style="text-transform: uppercase;"/>
+                            <br/>
+                            MST: <span t-esc="res_company.partner_id.vat"/>
+                            <br/>
+                            Địa chỉ: <span t-esc="res_company.partner_id.street"/>
+                            <br/>
+                            SĐT: <span t-esc="res_company.phone_accounting"/>
+                            <br/>
+                            Email: <span style="text-transform: lowercase;" t-esc="res_company.account_email"/>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="article" style="font-family: Times New Roman; font-size: 11pt; line-height: 1.5; padding-top: 15px;">
+                <t t-raw="0"/>
+                <!-- Nội dung chính của báo cáo -->
+            </div>
+
+            <div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt; font-family: Times New Roman;">
+                <p>
+                    <span class="page"/>
+                </p>
+            </div>
+        </t>
+    </template>
+
+    <!-- Template chính -->
+<template id="report_supplier_debt_real_view">
+    <t t-call="vendor_debt_management.report_supplier_debt_real_layout">
+
+        <div class="page">
+
+            <h2 style="text-align:center; margin-bottom:20px; font-size:24px; text-transform:uppercase;">
+                Tổng hợp công nợ phải trả nhà cung cấp thực tế
+                Tháng <span t-esc="datetime.datetime.today().month"/>/<span t-esc="datetime.datetime.today().year"/>
+            </h2>
+
+            <!-- CSS -->
+            <style>
+                  .page { font-family: "Times New Roman"; font-size: 12pt; color: #000; }
+
+                  .styled-table {
+                    border-collapse: collapse;
+                    margin: 0 auto;
+                    font-size: 12pt;
+                    width: 100%;
+                    border: 1px solid #000;
+                    table-layout: fixed;
+                  }
+
+                  .styled-table thead tr {
+                    background-color: #C6E0B4;
+                    font-weight: bold;
+                    color: #000;
+                    text-align: center;
+                  }
+
+                  .table-item{
+                    text-transform: uppercase;
+                    background-color: #E2EFDA;
+                    font-weight: bold;
+                    color: #000;
+                  }
+
+                  .styled-table th, .styled-table td {
+                    font-size: 10pt;
+                    padding: 8px 12px;
+                    border: 1px solid #000;
+                    vertical-align: middle;
+                    overflow: hidden;
+                    word-wrap: break-word;
+                    overflow-wrap: anywhere;
+                  }
+
+                  .styled-table tbody tr:hover { background-color: #D9EAD3; }
+
+                  .text-center { text-align: center; }
+                  .text-right  { text-align: right; }
+
+                  .num { white-space: nowrap; }
+            </style>
+
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Nhà cung cấp</th>
+                        <th>Hạng mục</th>
+                        <th>Số tiền hợp đồng</th>
+                        <th>Số tiền hóa đơn</th>
+                        <th>Đã HĐ</th>
+                        <th>Chưa HĐ</th>
+                        <th>Còn nợ</th>
+                        <th>Hạn thanh toán</th>
+                        <th>Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- ================== 0. BIẾN TỔNG & CURRENCY ================== -->
+                    <!-- Tổng toàn báo cáo -->
+                    <t t-set="g_tot_contract" t-value="0.0"/>
+                    <t t-set="g_tot_invoice" t-value="0.0"/>
+                    <t t-set="g_tot_paid" t-value="0.0"/>
+                    <t t-set="g_tot_advance" t-value="0.0"/>
+                    <t t-set="g_tot_residual" t-value="0.0"/>
+
+                    <!-- Tổng từng nhóm -->
+                    <!-- ĐÃ ĐỐI CHIẾU -->
+                    <t t-set="grp_dom_labor_done_contract" t-value="0.0"/>
+                    <t t-set="grp_dom_labor_done_invoice" t-value="0.0"/>
+                    <t t-set="grp_dom_labor_done_paid" t-value="0.0"/>
+                    <t t-set="grp_dom_labor_done_advance" t-value="0.0"/>
+                    <t t-set="grp_dom_labor_done_residual" t-value="0.0"/>
+
+                    <t t-set="grp_dom_mat_done_contract" t-value="0.0"/>
+                    <t t-set="grp_dom_mat_done_invoice" t-value="0.0"/>
+                    <t t-set="grp_dom_mat_done_paid" t-value="0.0"/>
+                    <t t-set="grp_dom_mat_done_advance" t-value="0.0"/>
+                    <t t-set="grp_dom_mat_done_residual" t-value="0.0"/>
+
+                    <t t-set="grp_foreign_done_contract" t-value="0.0"/>
+                    <t t-set="grp_foreign_done_invoice" t-value="0.0"/>
+                    <t t-set="grp_foreign_done_paid" t-value="0.0"/>
+                    <t t-set="grp_foreign_done_advance" t-value="0.0"/>
+                    <t t-set="grp_foreign_done_residual" t-value="0.0"/>
+
+                    <!-- CHỜ ĐỐI CHIẾU -->
+                    <t t-set="grp_dom_labor_wait_contract" t-value="0.0"/>
+                    <t t-set="grp_dom_labor_wait_invoice" t-value="0.0"/>
+                    <t t-set="grp_dom_labor_wait_paid" t-value="0.0"/>
+                    <t t-set="grp_dom_labor_wait_advance" t-value="0.0"/>
+                    <t t-set="grp_dom_labor_wait_residual" t-value="0.0"/>
+
+                    <t t-set="grp_dom_mat_wait_contract" t-value="0.0"/>
+                    <t t-set="grp_dom_mat_wait_invoice" t-value="0.0"/>
+                    <t t-set="grp_dom_mat_wait_paid" t-value="0.0"/>
+                    <t t-set="grp_dom_mat_wait_advance" t-value="0.0"/>
+                    <t t-set="grp_dom_mat_wait_residual" t-value="0.0"/>
+
+                    <t t-set="grp_foreign_wait_contract" t-value="0.0"/>
+                    <t t-set="grp_foreign_wait_invoice" t-value="0.0"/>
+                    <t t-set="grp_foreign_wait_paid" t-value="0.0"/>
+                    <t t-set="grp_foreign_wait_advance" t-value="0.0"/>
+                    <t t-set="grp_foreign_wait_residual" t-value="0.0"/>
+
+                    <!-- Có dữ liệu hay không -->
+                    <t t-set="has_any"
+                       t-value="domestic_labor_done or domestic_material_done or foreign_done
+                                or domestic_labor_wait or domestic_material_wait or foreign_wait"/>
+
+                    <!-- Currency báo cáo -->
+                    <t t-set="report_currency"
+                       t-value="(domestic_labor_done and domestic_labor_done[0].currency_id)
+                             or (domestic_material_done and domestic_material_done[0].currency_id)
+                             or (foreign_done and foreign_done[0].currency_id)
+                             or (domestic_labor_wait and domestic_labor_wait[0].currency_id)
+                             or (domestic_material_wait and domestic_material_wait[0].currency_id)
+                             or (foreign_wait and foreign_wait[0].currency_id)
+                             or res_company.currency_id"/>
+
+                    <!-- ============== 1. VÒNG LẶP ẨN ĐỂ TÍNH TỔNG ============== -->
+                    <!-- ĐÃ ĐỐI CHIẾU -->
+                    <t t-foreach="domestic_labor_done" t-as="o">
+                        <t t-set="paid_hd"
+                           t-value="(o.total_payment_amount or 0.0) - (o.advance_amount or 0.0)"/>
+
+                        <!-- nhóm -->
+                        <t t-set="grp_dom_labor_done_contract"
+                           t-value="grp_dom_labor_done_contract + (o.total_contract_amount or 0.0)"/>
+                        <t t-set="grp_dom_labor_done_invoice"
+                           t-value="grp_dom_labor_done_invoice + (o.total_invoice_amount or 0.0)"/>
+                        <t t-set="grp_dom_labor_done_paid"
+                           t-value="grp_dom_labor_done_paid + (paid_hd or 0.0)"/>
+                        <t t-set="grp_dom_labor_done_advance"
+                           t-value="grp_dom_labor_done_advance + (o.advance_amount or 0.0)"/>
+                        <t t-set="grp_dom_labor_done_residual"
+                           t-value="grp_dom_labor_done_residual + (o.residual_amount or 0.0)"/>
+
+                        <!-- tổng toàn báo cáo -->
+                        <t t-set="g_tot_contract"
+                           t-value="g_tot_contract + (o.total_contract_amount or 0.0)"/>
+                        <t t-set="g_tot_invoice"
+                           t-value="g_tot_invoice + (o.total_invoice_amount or 0.0)"/>
+                        <t t-set="g_tot_paid"
+                           t-value="g_tot_paid + (paid_hd or 0.0)"/>
+                        <t t-set="g_tot_advance"
+                           t-value="g_tot_advance + (o.advance_amount or 0.0)"/>
+                        <t t-set="g_tot_residual"
+                           t-value="g_tot_residual + (o.residual_amount or 0.0)"/>
+                    </t>
+
+                    <t t-foreach="domestic_material_done" t-as="o">
+                        <t t-set="paid_hd"
+                           t-value="(o.total_payment_amount or 0.0) - (o.advance_amount or 0.0)"/>
+
+                        <t t-set="grp_dom_mat_done_contract"
+                           t-value="grp_dom_mat_done_contract + (o.total_contract_amount or 0.0)"/>
+                        <t t-set="grp_dom_mat_done_invoice"
+                           t-value="grp_dom_mat_done_invoice + (o.total_invoice_amount or 0.0)"/>
+                        <t t-set="grp_dom_mat_done_paid"
+                           t-value="grp_dom_mat_done_paid + (paid_hd or 0.0)"/>
+                        <t t-set="grp_dom_mat_done_advance"
+                           t-value="grp_dom_mat_done_advance + (o.advance_amount or 0.0)"/>
+                        <t t-set="grp_dom_mat_done_residual"
+                           t-value="grp_dom_mat_done_residual + (o.residual_amount or 0.0)"/>
+
+                        <t t-set="g_tot_contract"
+                           t-value="g_tot_contract + (o.total_contract_amount or 0.0)"/>
+                        <t t-set="g_tot_invoice"
+                           t-value="g_tot_invoice + (o.total_invoice_amount or 0.0)"/>
+                        <t t-set="g_tot_paid"
+                           t-value="g_tot_paid + (paid_hd or 0.0)"/>
+                        <t t-set="g_tot_advance"
+                           t-value="g_tot_advance + (o.advance_amount or 0.0)"/>
+                        <t t-set="g_tot_residual"
+                           t-value="g_tot_residual + (o.residual_amount or 0.0)"/>
+                    </t>
+
+                    <t t-foreach="foreign_done" t-as="o">
+                        <t t-set="paid_hd"
+                           t-value="(o.total_payment_amount or 0.0) - (o.advance_amount or 0.0)"/>
+
+                        <t t-set="grp_foreign_done_contract"
+                           t-value="grp_foreign_done_contract + (o.total_contract_amount or 0.0)"/>
+                        <t t-set="grp_foreign_done_invoice"
+                           t-value="grp_foreign_done_invoice + (o.total_invoice_amount or 0.0)"/>
+                        <t t-set="grp_foreign_done_paid"
+                           t-value="grp_foreign_done_paid + (paid_hd or 0.0)"/>
+                        <t t-set="grp_foreign_done_advance"
+                           t-value="grp_foreign_done_advance + (o.advance_amount or 0.0)"/>
+                        <t t-set="grp_foreign_done_residual"
+                           t-value="grp_foreign_done_residual + (o.residual_amount or 0.0)"/>
+
+                        <t t-set="g_tot_contract"
+                           t-value="g_tot_contract + (o.total_contract_amount or 0.0)"/>
+                        <t t-set="g_tot_invoice"
+                           t-value="g_tot_invoice + (o.total_invoice_amount or 0.0)"/>
+                        <t t-set="g_tot_paid"
+                           t-value="g_tot_paid + (paid_hd or 0.0)"/>
+                        <t t-set="g_tot_advance"
+                           t-value="g_tot_advance + (o.advance_amount or 0.0)"/>
+                        <t t-set="g_tot_residual"
+                           t-value="g_tot_residual + (o.residual_amount or 0.0)"/>
+                    </t>
+
+                    <!-- CHỜ ĐỐI CHIẾU -->
+                    <t t-foreach="domestic_labor_wait" t-as="o">
+                        <t t-set="paid_hd"
+                           t-value="(o.total_payment_amount or 0.0) - (o.advance_amount or 0.0)"/>
+
+                        <t t-set="grp_dom_labor_wait_contract"
+                           t-value="grp_dom_labor_wait_contract + (o.total_contract_amount or 0.0)"/>
+                        <t t-set="grp_dom_labor_wait_invoice"
+                           t-value="grp_dom_labor_wait_invoice + (o.total_invoice_amount or 0.0)"/>
+                        <t t-set="grp_dom_labor_wait_paid"
+                           t-value="grp_dom_labor_wait_paid + (paid_hd or 0.0)"/>
+                        <t t-set="grp_dom_labor_wait_advance"
+                           t-value="grp_dom_labor_wait_advance + (o.advance_amount or 0.0)"/>
+                        <t t-set="grp_dom_labor_wait_residual"
+                           t-value="grp_dom_labor_wait_residual + (o.residual_amount or 0.0)"/>
+
+                        <t t-set="g_tot_contract"
+                           t-value="g_tot_contract + (o.total_contract_amount or 0.0)"/>
+                        <t t-set="g_tot_invoice"
+                           t-value="g_tot_invoice + (o.total_invoice_amount or 0.0)"/>
+                        <t t-set="g_tot_paid"
+                           t-value="g_tot_paid + (paid_hd or 0.0)"/>
+                        <t t-set="g_tot_advance"
+                           t-value="g_tot_advance + (o.advance_amount or 0.0)"/>
+                        <t t-set="g_tot_residual"
+                           t-value="g_tot_residual + (o.residual_amount or 0.0)"/>
+                    </t>
+
+                    <t t-foreach="domestic_material_wait" t-as="o">
+                        <t t-set="paid_hd"
+                           t-value="(o.total_payment_amount or 0.0) - (o.advance_amount or 0.0)"/>
+
+                        <t t-set="grp_dom_mat_wait_contract"
+                           t-value="grp_dom_mat_wait_contract + (o.total_contract_amount or 0.0)"/>
+                        <t t-set="grp_dom_mat_wait_invoice"
+                           t-value="grp_dom_mat_wait_invoice + (o.total_invoice_amount or 0.0)"/>
+                        <t t-set="grp_dom_mat_wait_paid"
+                           t-value="grp_dom_mat_wait_paid + (paid_hd or 0.0)"/>
+                        <t t-set="grp_dom_mat_wait_advance"
+                           t-value="grp_dom_mat_wait_advance + (o.advance_amount or 0.0)"/>
+                        <t t-set="grp_dom_mat_wait_residual"
+                           t-value="grp_dom_mat_wait_residual + (o.residual_amount or 0.0)"/>
+
+                        <t t-set="g_tot_contract"
+                           t-value="g_tot_contract + (o.total_contract_amount or 0.0)"/>
+                        <t t-set="g_tot_invoice"
+                           t-value="g_tot_invoice + (o.total_invoice_amount or 0.0)"/>
+                        <t t-set="g_tot_paid"
+                           t-value="g_tot_paid + (paid_hd or 0.0)"/>
+                        <t t-set="g_tot_advance"
+                           t-value="g_tot_advance + (o.advance_amount or 0.0)"/>
+                        <t t-set="g_tot_residual"
+                           t-value="g_tot_residual + (o.residual_amount or 0.0)"/>
+                    </t>
+
+                    <t t-foreach="foreign_wait" t-as="o">
+                        <t t-set="paid_hd"
+                           t-value="(o.total_payment_amount or 0.0) - (o.advance_amount or 0.0)"/>
+
+                        <t t-set="grp_foreign_wait_contract"
+                           t-value="grp_foreign_wait_contract + (o.total_contract_amount or 0.0)"/>
+                        <t t-set="grp_foreign_wait_invoice"
+                           t-value="grp_foreign_wait_invoice + (o.total_invoice_amount or 0.0)"/>
+                        <t t-set="grp_foreign_wait_paid"
+                           t-value="grp_foreign_wait_paid + (paid_hd or 0.0)"/>
+                        <t t-set="grp_foreign_wait_advance"
+                           t-value="grp_foreign_wait_advance + (o.advance_amount or 0.0)"/>
+                        <t t-set="grp_foreign_wait_residual"
+                           t-value="grp_foreign_wait_residual + (o.residual_amount or 0.0)"/>
+
+                        <t t-set="g_tot_contract"
+                           t-value="g_tot_contract + (o.total_contract_amount or 0.0)"/>
+                        <t t-set="g_tot_invoice"
+                           t-value="g_tot_invoice + (o.total_invoice_amount or 0.0)"/>
+                        <t t-set="g_tot_paid"
+                           t-value="g_tot_paid + (paid_hd or 0.0)"/>
+                        <t t-set="g_tot_advance"
+                           t-value="g_tot_advance + (o.advance_amount or 0.0)"/>
+                        <t t-set="g_tot_residual"
+                           t-value="g_tot_residual + (o.residual_amount or 0.0)"/>
+                    </t>
+
+                    <!-- ========== 2. HÀNG TỔNG CỘNG CÔNG NỢ PHẢI TRẢ (ĐẦU TABLE) ========== -->
+                    <t t-if="has_any">
+                        <tr class="table-item">
+                           
+                            <td colspan="3" class="text-left">
+                                TỔNG CỘNG CÔNG NỢ PHẢI TRẢ
+                            </td>
+
+                            <td class="text-right num">
+                                <t t-if="g_tot_contract">
+                                    <span t-esc="g_tot_contract"
+                                          t-options="{'widget':'monetary','display_currency':report_currency}"/>
+                                </t>
+                            </td>
+                            <td class="text-right num">
+                                <t t-if="g_tot_invoice">
+                                    <span t-esc="g_tot_invoice"
+                                          t-options="{'widget':'monetary','display_currency':report_currency}"/>
+                                </t>
+                            </td>
+                            <td class="text-right num">
+                                <t t-if="g_tot_paid">
+                                    <span t-esc="g_tot_paid"
+                                          t-options="{'widget':'monetary','display_currency':report_currency}"/>
+                                </t>
+                            </td>
+                            <td class="text-right num">
+                                <t t-if="g_tot_advance">
+                                    <span t-esc="g_tot_advance"
+                                          t-options="{'widget':'monetary','display_currency':report_currency}"/>
+                                </t>
+                            </td>
+                            <td class="text-right num">
+                                <t t-if="g_tot_residual">
+                                    <span t-esc="g_tot_residual"
+                                          t-options="{'widget':'monetary','display_currency':report_currency}"/>
+                                </t>
+                            </td>
+
+                            <td class="text-center">-</td>
+                            <td class="text-center"></td>
+                        </tr>
+                    </t>
+
+                    <!-- ================ 3. I. CÔNG NỢ ĐÃ ĐỐI CHIẾU ================== -->
+<!-- ================ 3. I. CÔNG NỢ ĐÃ ĐỐI CHIẾU ================== -->
+<t t-if="domestic_labor_done or domestic_material_done or foreign_done">
+    <tr class="table-item">
+        <td colspan="10">I. Công nợ đã đối chiếu</td>
+    </tr>
+
+    <!-- Header NCC Trong nước + tổng (Nhân công + Vật tư DV) -->
+    <t t-if="domestic_labor_done or domestic_material_done">
+
+        <!-- Tổng NCC Trong nước (đã đối chiếu) -->
+        <t t-set="domestic_done_contract"
+           t-value="(grp_dom_labor_done_contract or 0.0) + (grp_dom_mat_done_contract or 0.0)"/>
+        <t t-set="domestic_done_invoice"
+           t-value="(grp_dom_labor_done_invoice or 0.0) + (grp_dom_mat_done_invoice or 0.0)"/>
+        <t t-set="domestic_done_paid"
+           t-value="(grp_dom_labor_done_paid or 0.0) + (grp_dom_mat_done_paid or 0.0)"/>
+        <t t-set="domestic_done_advance"
+           t-value="(grp_dom_labor_done_advance or 0.0) + (grp_dom_mat_done_advance or 0.0)"/>
+        <t t-set="domestic_done_residual"
+           t-value="(grp_dom_labor_done_residual or 0.0) + (grp_dom_mat_done_residual or 0.0)"/>
+
+        <t t-set="domestic_done_currency"
+           t-value="(domestic_labor_done and domestic_labor_done[0].currency_id)
+                 or (domestic_material_done and domestic_material_done[0].currency_id)
+                 or report_currency"/>
+
+        <tr class="table-item">
+            
+            <!-- gộp 2 cột NCC + Diễn giải -->
+            <td colspan="3">NCC Trong nước</td>
+
+            <td class="text-right num">
+                <t t-if="domestic_done_contract">
+                    <span t-esc="domestic_done_contract"
+                          t-options="{'widget':'monetary','display_currency':domestic_done_currency}"/>
+                </t>
+            </td>
+            <td class="text-right num">
+                <t t-if="domestic_done_invoice">
+                    <span t-esc="domestic_done_invoice"
+                          t-options="{'widget':'monetary','display_currency':domestic_done_currency}"/>
+                </t>
+            </td>
+            <td class="text-right num">
+                <t t-if="domestic_done_paid">
+                    <span t-esc="domestic_done_paid"
+                          t-options="{'widget':'monetary','display_currency':domestic_done_currency}"/>
+                </t>
+            </td>
+            <td class="text-right num">
+                <t t-if="domestic_done_advance">
+                    <span t-esc="domestic_done_advance"
+                          t-options="{'widget':'monetary','display_currency':domestic_done_currency}"/>
+                </t>
+            </td>
+            <td class="text-right num">
+                <t t-if="domestic_done_residual">
+                    <span t-esc="domestic_done_residual"
+                          t-options="{'widget':'monetary','display_currency':domestic_done_currency}"/>
+                </t>
+            </td>
+
+            <!-- Hạn TT, Ghi chú -->
+            <td class="text-center">-</td>
+            <td class="text-center"></td>
+        </tr>
+    </t>
+
+
+                        <!-- NCC Nhân công (đã đối chiếu) -->
+                        <t t-if="domestic_labor_done">
+                            <!-- Hàng danh mục + tổng -->
+                            <tr class="table-item">
+                               
+                                <td colspan="3" class="text-left">
+                                    NCC Nhân công
+                                </td>
+
+                                <td class="text-right num">
+                                    <t t-if="grp_dom_labor_done_contract">
+                                        <span t-esc="grp_dom_labor_done_contract"
+                                              t-options="{'widget':'monetary','display_currency':domestic_labor_done[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_dom_labor_done_invoice">
+                                        <span t-esc="grp_dom_labor_done_invoice"
+                                              t-options="{'widget':'monetary','display_currency':domestic_labor_done[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_dom_labor_done_paid">
+                                        <span t-esc="grp_dom_labor_done_paid"
+                                              t-options="{'widget':'monetary','display_currency':domestic_labor_done[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_dom_labor_done_advance">
+                                        <span t-esc="grp_dom_labor_done_advance"
+                                              t-options="{'widget':'monetary','display_currency':domestic_labor_done[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_dom_labor_done_residual">
+                                        <span t-esc="grp_dom_labor_done_residual"
+                                              t-options="{'widget':'monetary','display_currency':domestic_labor_done[0].currency_id}"/>
+                                    </t>
+                                </td>
+
+                                <td class="text-center">-</td>
+                                <td class="text-center"></td>
+                            </tr>
+
+                            <!-- Chi tiết NCC Nhân công -->
+                            <t t-set="stt" t-value="0"/>
+                            <t t-foreach="domestic_labor_done" t-as="o">
+                                <t t-set="stt" t-value="stt + 1"/>
+                                <t t-set="paid_hd"
+                                   t-value="(o.total_payment_amount or 0.0) - (o.advance_amount or 0.0)"/>
+                                <tr>
+                                    <td class="text-center"><t t-esc="stt"/></td>
+                                    <td><span t-field="o.partner_id.name"/></td>
+                                    <td><span t-field="o.supply_category"/></td>
+
+                                    <td class="text-right num">
+                                        <span t-field="o.total_contract_amount"/>
+                                    </td>
+                                    <td class="text-right num">
+                                        <span t-field="o.total_invoice_amount"/>
+                                    </td>
+
+                                    <td class="text-right num">
+                                        <t t-if="paid_hd">
+                                            <span t-esc="paid_hd"
+                                                  t-options="{'widget':'monetary','display_currency':o.currency_id}"/>
+                                        </t>
+                                        <t t-else="">-</t>
+                                    </td>
+
+                                    <td class="text-right num">
+                                        <span t-field="o.advance_amount"/>
+                                    </td>
+
+                                    <td class="text-right num">
+                                        <span t-field="o.residual_amount"/>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span t-field="o.due_days"/>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span t-field="o.note"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+
+                        <!-- NCC Vật tư & Dịch vụ (đã đối chiếu) -->
+                        <t t-if="domestic_material_done">
+                            <tr class="table-item">
+                               
+                                <td colspan="3" class="text-left">
+                                    NCC Vật tư &amp; Dịch vụ
+                                </td>
+
+                                <td class="text-right num">
+                                    <t t-if="grp_dom_mat_done_contract">
+                                        <span t-esc="grp_dom_mat_done_contract"
+                                              t-options="{'widget':'monetary','display_currency':domestic_material_done[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_dom_mat_done_invoice">
+                                        <span t-esc="grp_dom_mat_done_invoice"
+                                              t-options="{'widget':'monetary','display_currency':domestic_material_done[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_dom_mat_done_paid">
+                                        <span t-esc="grp_dom_mat_done_paid"
+                                              t-options="{'widget':'monetary','display_currency':domestic_material_done[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_dom_mat_done_advance">
+                                        <span t-esc="grp_dom_mat_done_advance"
+                                              t-options="{'widget':'monetary','display_currency':domestic_material_done[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_dom_mat_done_residual">
+                                        <span t-esc="grp_dom_mat_done_residual"
+                                              t-options="{'widget':'monetary','display_currency':domestic_material_done[0].currency_id}"/>
+                                    </t>
+                                </td>
+
+                                <td class="text-center">-</td>
+                                <td class="text-center"></td>
+                            </tr>
+
+                            <t t-set="stt" t-value="0"/>
+                            <t t-foreach="domestic_material_done" t-as="o">
+                                <t t-set="stt" t-value="stt + 1"/>
+                                <t t-set="paid_hd"
+                                   t-value="(o.total_payment_amount or 0.0) - (o.advance_amount or 0.0)"/>
+                                <tr>
+                                    <td class="text-center"><t t-esc="stt"/></td>
+                                    <td><span t-field="o.partner_id.name"/></td>
+                                    <td><span t-field="o.supply_category"/></td>
+
+                                    <td class="text-right num">
+                                        <span t-field="o.total_contract_amount"/>
+                                    </td>
+                                    <td class="text-right num">
+                                        <span t-field="o.total_invoice_amount"/>
+                                    </td>
+
+                                    <td class="text-right num">
+                                        <t t-if="paid_hd">
+                                            <span t-esc="paid_hd"
+                                                  t-options="{'widget':'monetary','display_currency':o.currency_id}"/>
+                                        </t>
+                                        <t t-else="">-</t>
+                                    </td>
+
+                                    <td class="text-right num">
+                                        <span t-field="o.advance_amount"/>
+                                    </td>
+
+                                    <td class="text-right num">
+                                        <span t-field="o.residual_amount"/>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span t-field="o.due_days"/>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span t-field="o.note"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+
+                        <!-- NCC Nước ngoài (đã đối chiếu) -->
+                        <t t-if="foreign_done">
+                            <tr class="table-item">
+                               
+                                <td colspan="3" class="text-left">
+                                    NCC Nước ngoài
+                                </td>
+
+                                <td class="text-right num">
+                                    <t t-if="grp_foreign_done_contract">
+                                        <span t-esc="grp_foreign_done_contract"
+                                              t-options="{'widget':'monetary','display_currency':foreign_done[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_foreign_done_invoice">
+                                        <span t-esc="grp_foreign_done_invoice"
+                                              t-options="{'widget':'monetary','display_currency':foreign_done[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_foreign_done_paid">
+                                        <span t-esc="grp_foreign_done_paid"
+                                              t-options="{'widget':'monetary','display_currency':foreign_done[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_foreign_done_advance">
+                                        <span t-esc="grp_foreign_done_advance"
+                                              t-options="{'widget':'monetary','display_currency':foreign_done[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_foreign_done_residual">
+                                        <span t-esc="grp_foreign_done_residual"
+                                              t-options="{'widget':'monetary','display_currency':foreign_done[0].currency_id}"/>
+                                    </t>
+                                </td>
+
+                                <td class="text-center">-</td>
+                                <td class="text-center"></td>
+                            </tr>
+
+                            <t t-set="stt" t-value="0"/>
+                            <t t-foreach="foreign_done" t-as="o">
+                                <t t-set="stt" t-value="stt + 1"/>
+                                <t t-set="paid_hd"
+                                   t-value="(o.total_payment_amount or 0.0) - (o.advance_amount or 0.0)"/>
+                                <tr>
+                                    <td class="text-center"><t t-esc="stt"/></td>
+                                    <td><span t-field="o.partner_id.name"/></td>
+                                    <td><span t-field="o.supply_category"/></td>
+
+                                    <td class="text-right num">
+                                        <span t-field="o.total_contract_amount"/>
+                                    </td>
+                                    <td class="text-right num">
+                                        <span t-field="o.total_invoice_amount"/>
+                                    </td>
+
+                                    <td class="text-right num">
+                                        <t t-if="paid_hd">
+                                            <span t-esc="paid_hd"
+                                                  t-options="{'widget':'monetary','display_currency':o.currency_id}"/>
+                                        </t>
+                                        <t t-else="">-</t>
+                                    </td>
+
+                                    <td class="text-right num">
+                                        <span t-field="o.advance_amount"/>
+                                    </td>
+
+                                    <td class="text-right num">
+                                        <span t-field="o.residual_amount"/>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span t-field="o.due_days"/>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span t-field="o.note"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+                    </t>
+
+                    <!-- ============== 4. II. CÔNG NỢ CHỜ ĐỐI CHIẾU ============== -->
+<!-- ============== 4. II. CÔNG NỢ CHỜ ĐỐI CHIẾU ============== -->
+<t t-if="domestic_labor_wait or domestic_material_wait or foreign_wait">
+    <tr class="table-item">
+        <td colspan="10">II. Công nợ chờ đối chiếu</td>
+    </tr>
+
+    <!-- Header NCC Trong nước + tổng (Nhân công + Vật tư DV) chờ đối chiếu -->
+    <t t-if="domestic_labor_wait or domestic_material_wait">
+
+        <!-- Tổng NCC Trong nước (chờ đối chiếu) -->
+        <t t-set="domestic_wait_contract"
+           t-value="(grp_dom_labor_wait_contract or 0.0) + (grp_dom_mat_wait_contract or 0.0)"/>
+        <t t-set="domestic_wait_invoice"
+           t-value="(grp_dom_labor_wait_invoice or 0.0) + (grp_dom_mat_wait_invoice or 0.0)"/>
+        <t t-set="domestic_wait_paid"
+           t-value="(grp_dom_labor_wait_paid or 0.0) + (grp_dom_mat_wait_paid or 0.0)"/>
+        <t t-set="domestic_wait_advance"
+           t-value="(grp_dom_labor_wait_advance or 0.0) + (grp_dom_mat_wait_advance or 0.0)"/>
+        <t t-set="domestic_wait_residual"
+           t-value="(grp_dom_labor_wait_residual or 0.0) + (grp_dom_mat_wait_residual or 0.0)"/>
+
+        <t t-set="domestic_wait_currency"
+           t-value="(domestic_labor_wait and domestic_labor_wait[0].currency_id)
+                 or (domestic_material_wait and domestic_material_wait[0].currency_id)
+                 or report_currency"/>
+
+        <tr class="table-item">
+            
+            <td colspan="3">NCC Trong nước</td>
+
+            <td class="text-right num">
+                <t t-if="domestic_wait_contract">
+                    <span t-esc="domestic_wait_contract"
+                          t-options="{'widget':'monetary','display_currency':domestic_wait_currency}"/>
+                </t>
+            </td>
+            <td class="text-right num">
+                <t t-if="domestic_wait_invoice">
+                    <span t-esc="domestic_wait_invoice"
+                          t-options="{'widget':'monetary','display_currency':domestic_wait_currency}"/>
+                </t>
+            </td>
+            <td class="text-right num">
+                <t t-if="domestic_wait_paid">
+                    <span t-esc="domestic_wait_paid"
+                          t-options="{'widget':'monetary','display_currency':domestic_wait_currency}"/>
+                </t>
+            </td>
+            <td class="text-right num">
+                <t t-if="domestic_wait_advance">
+                    <span t-esc="domestic_wait_advance"
+                          t-options="{'widget':'monetary','display_currency':domestic_wait_currency}"/>
+                </t>
+            </td>
+            <td class="text-right num">
+                <t t-if="domestic_wait_residual">
+                    <span t-esc="domestic_wait_residual"
+                          t-options="{'widget':'monetary','display_currency':domestic_wait_currency}"/>
+                </t>
+            </td>
+
+            <td class="text-center">-</td>
+            <td class="text-center"></td>
+        </tr>
+    </t>
+
+
+                        <!-- NCC Nhân công (chờ đối chiếu) -->
+                        <t t-if="domestic_labor_wait">
+                            <tr class="table-item">
+                               
+                                <td colspan="3" class="text-left">
+                                    NCC Nhân công (chờ đối chiếu)
+                                </td>
+
+                                <td class="text-right num">
+                                    <t t-if="grp_dom_labor_wait_contract">
+                                        <span t-esc="grp_dom_labor_wait_contract"
+                                              t-options="{'widget':'monetary','display_currency':domestic_labor_wait[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_dom_labor_wait_invoice">
+                                        <span t-esc="grp_dom_labor_wait_invoice"
+                                              t-options="{'widget':'monetary','display_currency':domestic_labor_wait[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_dom_labor_wait_paid">
+                                        <span t-esc="grp_dom_labor_wait_paid"
+                                              t-options="{'widget':'monetary','display_currency':domestic_labor_wait[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_dom_labor_wait_advance">
+                                        <span t-esc="grp_dom_labor_wait_advance"
+                                              t-options="{'widget':'monetary','display_currency':domestic_labor_wait[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_dom_labor_wait_residual">
+                                        <span t-esc="grp_dom_labor_wait_residual"
+                                              t-options="{'widget':'monetary','display_currency':domestic_labor_wait[0].currency_id}"/>
+                                    </t>
+                                </td>
+
+                                <td class="text-center">-</td>
+                                <td class="text-center"></td>
+                            </tr>
+
+                            <t t-set="stt" t-value="0"/>
+                            <t t-foreach="domestic_labor_wait" t-as="o">
+                                <t t-set="stt" t-value="stt + 1"/>
+                                <t t-set="paid_hd"
+                                   t-value="(o.total_payment_amount or 0.0) - (o.advance_amount or 0.0)"/>
+                                <tr>
+                                    <td class="text-center"><t t-esc="stt"/></td>
+                                    <td><span t-field="o.partner_id.name"/></td>
+                                    <td><span t-field="o.supply_category"/></td>
+
+                                    <td class="text-right num">
+                                        <span t-field="o.total_contract_amount"/>
+                                    </td>
+                                    <td class="text-right num">
+                                        <span t-field="o.total_invoice_amount"/>
+                                    </td>
+
+                                    <td class="text-right num">
+                                        <t t-if="paid_hd">
+                                            <span t-esc="paid_hd"
+                                                  t-options="{'widget':'monetary','display_currency':o.currency_id}"/>
+                                        </t>
+                                        <t t-else="">-</t>
+                                    </td>
+
+                                    <td class="text-right num">
+                                        <span t-field="o.advance_amount"/>
+                                    </td>
+
+                                    <td class="text-right num">
+                                        <span t-field="o.residual_amount"/>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span t-field="o.due_days"/>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span t-field="o.note"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+
+                        <!-- NCC Vật tư & Dịch vụ (chờ đối chiếu) -->
+                        <t t-if="domestic_material_wait">
+                            <tr class="table-item">
+                               
+                                <td colspan="3" class="text-left">
+                                    NCC Vật tư &amp; Dịch vụ (chờ đối chiếu)
+                                </td>
+
+                                <td class="text-right num">
+                                    <t t-if="grp_dom_mat_wait_contract">
+                                        <span t-esc="grp_dom_mat_wait_contract"
+                                              t-options="{'widget':'monetary','display_currency':domestic_material_wait[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_dom_mat_wait_invoice">
+                                        <span t-esc="grp_dom_mat_wait_invoice"
+                                              t-options="{'widget':'monetary','display_currency':domestic_material_wait[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_dom_mat_wait_paid">
+                                        <span t-esc="grp_dom_mat_wait_paid"
+                                              t-options="{'widget':'monetary','display_currency':domestic_material_wait[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_dom_mat_wait_advance">
+                                        <span t-esc="grp_dom_mat_wait_advance"
+                                              t-options="{'widget':'monetary','display_currency':domestic_material_wait[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_dom_mat_wait_residual">
+                                        <span t-esc="grp_dom_mat_wait_residual"
+                                              t-options="{'widget':'monetary','display_currency':domestic_material_wait[0].currency_id}"/>
+                                    </t>
+                                </td>
+
+                                <td class="text-center">-</td>
+                                <td class="text-center"></td>
+                            </tr>
+
+                            <t t-set="stt" t-value="0"/>
+                            <t t-foreach="domestic_material_wait" t-as="o">
+                                <t t-set="stt" t-value="stt + 1"/>
+                                <t t-set="paid_hd"
+                                   t-value="(o.total_payment_amount or 0.0) - (o.advance_amount or 0.0)"/>
+                                <tr>
+                                    <td class="text-center"><t t-esc="stt"/></td>
+                                    <td><span t-field="o.partner_id.name"/></td>
+                                    <td><span t-field="o.supply_category"/></td>
+
+                                    <td class="text-right num">
+                                        <span t-field="o.total_contract_amount"/>
+                                    </td>
+                                    <td class="text-right num">
+                                        <span t-field="o.total_invoice_amount"/>
+                                    </td>
+
+                                    <td class="text-right num">
+                                        <t t-if="paid_hd">
+                                            <span t-esc="paid_hd"
+                                                  t-options="{'widget':'monetary','display_currency':o.currency_id}"/>
+                                        </t>
+                                        <t t-else="">-</t>
+                                    </td>
+
+                                    <td class="text-right num">
+                                        <span t-field="o.advance_amount"/>
+                                    </td>
+
+                                    <td class="text-right num">
+                                        <span t-field="o.residual_amount"/>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span t-field="o.due_days"/>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span t-field="o.note"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+
+                        <!-- NCC Nước ngoài (chờ đối chiếu) -->
+                        <t t-if="foreign_wait">
+                            <tr class="table-item">
+                               
+                                <td colspan="3" class="text-left">
+                                    NCC Nước ngoài (chờ đối chiếu)
+                                </td>
+
+                                <td class="text-right num">
+                                    <t t-if="grp_foreign_wait_contract">
+                                        <span t-esc="grp_foreign_wait_contract"
+                                              t-options="{'widget':'monetary','display_currency':foreign_wait[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_foreign_wait_invoice">
+                                        <span t-esc="grp_foreign_wait_invoice"
+                                              t-options="{'widget':'monetary','display_currency':foreign_wait[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_foreign_wait_paid">
+                                        <span t-esc="grp_foreign_wait_paid"
+                                              t-options="{'widget':'monetary','display_currency':foreign_wait[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_foreign_wait_advance">
+                                        <span t-esc="grp_foreign_wait_advance"
+                                              t-options="{'widget':'monetary','display_currency':foreign_wait[0].currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="text-right num">
+                                    <t t-if="grp_foreign_wait_residual">
+                                        <span t-esc="grp_foreign_wait_residual"
+                                              t-options="{'widget':'monetary','display_currency':foreign_wait[0].currency_id}"/>
+                                    </t>
+                                </td>
+
+                                <td class="text-center">-</td>
+                                <td class="text-center"></td>
+                            </tr>
+
+                            <t t-set="stt" t-value="0"/>
+                            <t t-foreach="foreign_wait" t-as="o">
+                                <t t-set="stt" t-value="stt + 1"/>
+                                <t t-set="paid_hd"
+                                   t-value="(o.total_payment_amount or 0.0) - (o.advance_amount or 0.0)"/>
+                                <tr>
+                                    <td class="text-center"><t t-esc="stt"/></td>
+                                    <td><span t-field="o.partner_id.name"/></td>
+                                    <td><span t-field="o.supply_category"/></td>
+
+                                    <td class="text-right num">
+                                        <span t-field="o.total_contract_amount"/>
+                                    </td>
+                                    <td class="text-right num">
+                                        <span t-field="o.total_invoice_amount"/>
+                                    </td>
+
+                                    <td class="text-right num">
+                                        <t t-if="paid_hd">
+                                            <span t-esc="paid_hd"
+                                                  t-options="{'widget':'monetary','display_currency':o.currency_id}"/>
+                                        </t>
+                                        <t t-else="">-</t>
+                                    </td>
+
+                                    <td class="text-right num">
+                                        <span t-field="o.advance_amount"/>
+                                    </td>
+
+                                    <td class="text-right num">
+                                        <span t-field="o.residual_amount"/>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span t-field="o.due_days"/>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span t-field="o.note"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+                    </t>
+
+                    <!-- Nếu hoàn toàn không có dữ liệu -->
+                    <t t-if="not has_any">
+                        <tr>
+                            <td colspan="10" class="text-center">Không có dữ liệu</td>
+                        </tr>
+                    </t>
+
+                </tbody>
+            </table>
+
+            <!-- KÝ TÊN -->
+                <div style="page-break-inside: avoid; font-weight: bold">
+                    <div class="row">
+                        <div class="col-6" style="text-align:center;line-height:1.8">
+                            <div>
+                                TP Hồ Chí Minh, Ngày &#160;&#160;
+                                Tháng &#160;&#160;
+                                Năm <span t-esc="datetime.datetime.today().year"/>
+                            </div>
+                            <div>
+                                <span>Người lập biểu</span>
+                            </div>
+                            <div style="height:65px">
+                                <t t-if="user_id.digital_signature">
+                                    <img t-att-src="'data:image/png;base64,' + (user_id.digital_signature.decode() if isinstance(user_id.digital_signature, bytes) else user_id.digital_signature)"
+                                         style="max-height:65px; max-width:150px;"/>
+                                </t>
+                            </div>
+                            <div>
+                                <span t-field="user_id.name"/>
+                            </div>
+                        </div>
+
+                        <div class="col-6" style="text-align:center;line-height:1.8">
+                            <div>
+                                TP Hồ Chí Minh, Ngày &#160;&#160;
+                                Tháng &#160;&#160;
+                                Năm <span t-esc="datetime.datetime.today().year"/>
+                            </div>
+                            <div>Giám Đốc</div>
+                            <div style="height:65px">
+                                <t t-set="director_group" t-value="env.ref('custom_director_role.group_director')"/>
+                                <t t-set="director" t-value="env['res.users'].search([('groups_id', 'in', director_group.id)], limit=1)"/>
+                                <t t-if="director and director.digital_signature">
+                                    <img t-att-src="'data:image/png;base64,' + (director.digital_signature.decode() if isinstance(director.digital_signature, bytes) else director.digital_signature)"
+                                         style="max-height:65px; max-width:150px;"/>
+                                </t>
+                            </div>
+                            <div>
+                                <span> Đỗ Minh Toàn </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+        </div>
+
+    </t>
+</template>
+
+
+
+
+    <!-- Action report HTML -->
+    <record id="action_supplier_summary_report_real" model="ir.actions.report">
+        <field name="name">Báo cáo Tổng hợp Công nợ NCC Thực tế</field>
+        <field name="model">supplier.invoice.payment.summary</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">vendor_debt_management.report_supplier_debt_real_view</field>
+        <field name="report_file">vendor_debt_management.report_supplier_debt_real_view</field>
+        <field name="print_report_name">'Báo cáo Tổng hợp Công nợ NCC Thực tế'</field>
+        <field name="paperformat_id" ref="custom_sale_report_a4_portrait"/>
+    </record>
+
+
+    <!-- Menu -->
+    <menuitem id="menu_supplier_summary_report_real"
+              name="Báo cáo Tổng hợp Công nợ NCC Thực tế"
+              parent="vendor_debt_management.menu_supplier_summary_root"
+              action="vendor_debt_management.action_supplier_summary_report_real"/>
+</odoo>

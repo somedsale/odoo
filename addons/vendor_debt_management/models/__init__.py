@@ -4,3 +4,6 @@ from . import supplier_contract
 from . import supplier_settlement
 from . import account_payment_request
 from . import supplier_summary
+from . import supplier_invoice_summary
+from . import res_partner
+from . import supplier_invoice_summary

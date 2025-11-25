@@ -232,18 +232,18 @@ class SupplierSummary(models.Model):
     #                 "old_debt": rec.old_debt or 0.0,
     #             })
 
-class ReportSupplierSummary(models.AbstractModel):
-    _name = 'report.vendor_debt_management.report_supplier_summary_view'
-    _description = 'Supplier Summary Report'
+# class ReportSupplierSummary(models.AbstractModel):
+#     _name = 'report.vendor_debt_management.report_supplier_summary_view'
+#     _description = 'Supplier Summary Report'
 
-    def _get_report_values(self, docids, data=None):
-        # BỎ QUA docids, luôn lấy tất cả record
-        docs = self.env['supplier.summary'].search([])
-        return {
-            'doc_ids': docs.ids,
-            'doc_model': 'supplier.summary',
-            'docs': docs,
-        }
+#     def _get_report_values(self, docids, data=None):
+#         # BỎ QUA docids, luôn lấy tất cả record
+#         docs = self.env['supplier.summary'].search([])
+#         return {
+#             'doc_ids': docs.ids,
+#             'doc_model': 'supplier.summary',
+#             'docs': docs,
+#         }
 
 class SupplierSummaryNote(models.Model):
     _name = "supplier.summary.note"

@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+        <template id="portal_community_communities_app">
+            <t t-name="portal_community.CommunitiesApp" owl="1">
+                <div class="pc-app">
+                    <!-- ========== SIDEBAR ========== -->
+                    <div class="pc-sidebar">
+                        <div class="pc-sidebar-header">
+                            <div class="pc-sidebar-title"> Communities </div>
+                            <button type="button"
+                                    class="pc-btn-primary"
+                                    t-on-click="onToggleCommunityForm">
+                                +
+                            </button>
+                        </div>
+
+                        <!-- Form tạo community -->
+                        <t t-if="state.showCommunityForm">
+                            <div class="pc-inline-form">
+                                <input type="text"
+                                       class="pc-input pc-input-subject"
+                                       t-att-placeholder="env._t('Community name')"
+                                       t-att-value="state.communityForm.name"
+                                       t-on-input="(ev) => { state.communityForm.name = ev.target.value; }"/>
+
+                                <textarea class="pc-input pc-input-body"
+                                          rows="2"
+                                          t-att-placeholder="env._t('Description (optional)')"
+                                          t-on-input="(ev) => { state.communityForm.description = ev.target.value; }"><t t-esc="state.communityForm.description or ''"/></textarea>
+
+                                <div class="pc-inline-form-actions">
+                                    <button type="button"
+                                            class="pc-btn-secondary"
+                                            t-on-click="onToggleCommunityForm">
+                                        <t t-esc="env._t('Hủy')"/>
+                                    </button>
+                                    <button type="button"
+                                            class="pc-btn-primary"
+                                            t-on-click="onCreateCommunity">
+                                        <t t-esc="env._t('Tạo')"/>
+                                    </button>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- Danh sách communities -->
+                        <div class="pc-community-list">
+                            <t t-if="state.communities.length">
+                                <t t-foreach="state.communities"
+                                   t-as="community"
+                                   t-key="community.id">
+                                    <div class="pc-community-item"
+                                         t-attf-class="pc-community-item {{ state.activeCommunityId === community.id and 'pc-community-item--active' or '' }}"
+                                         t-att-data-community-id="community.id"
+                                         t-on-click="onSelectCommunity">
+                                        <div class="pc-community-avatar">
+                                            <t t-esc="community.initials or '-'"/>
+                                        </div>
+                                        <div class="pc-community-meta">
+                                            <div class="pc-community-name">
+                                                <t t-esc="community.name"/>
+                                            </div>
+                                            <div class="pc-community-sub">
+                                                <t t-esc="community.member_count or 0"/> members
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </t>
+                            <t t-else="">
+                                <div class="pc-empty-state">
+                                    Chưa có community nào, hãy tạo một community mới.
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- ========== MAIN PANE ========== -->
+                    <div class="pc-main">
+                        <!-- Đang loading -->
+                        <t t-if="state.loading">
+                            <div class="pc-empty-state">
+                                Đang tải dữ liệu...
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <!-- Có activeCommunity -->
+                            <t t-if="activeCommunity">
+                                <!-- Header community + channel -->
+                                <div class="pc-main-header">
+                                    <div>
+                                        <div class="pc-main-community-name">
+                                            <t t-esc="activeCommunity.name"/>
+                                        </div>
+                                        <t t-if="activeChannel">
+                                            <div class="pc-main-community-desc">
+                                                <span class="pc-channel-hash">#</span>
+                                                <t t-esc="activeChannel.name"/>
+                                            </div>
+                                        </t>
+                                        <t t-elif="activeCommunity.description">
+                                            <div class="pc-main-community-desc">
+                                                <t t-esc="activeCommunity.description"/>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+
+                                <!-- Header channel + nút Add -->
+                                <div class="pc-channel-header">
+                                    <div class="pc-channel-header-title"> Kênh </div>
+                                    <button type="button"
+                                            class="pc-link-button"
+                                            t-on-click="onToggleChannelForm">
+                                        Add channel
+                                    </button>
+                                </div>
+
+                                <!-- Form tạo channel -->
+                                <t t-if="state.showChannelForm">
+                                    <div class="pc-inline-form pc-inline-form--channel">
+                                        <input type="text"
+                                               class="pc-input pc-input-subject"
+                                               t-att-placeholder="env._t('Channel name')"
+                                               t-att-value="state.channelForm.name"
+                                               t-on-input="(ev) => { state.channelForm.name = ev.target.value; }"/>
+
+                                        <textarea class="pc-input pc-input-body"
+                                                  rows="2"
+                                                  t-att-placeholder="env._t('Description (optional)')"
+                                                  t-on-input="(ev) => { state.channelForm.description = ev.target.value; }"><t t-esc="state.channelForm.description or ''"/></textarea>
+
+                                        <div class="pc-inline-form-actions">
+                                            <button type="button"
+                                                    class="pc-btn-secondary"
+                                                    t-on-click="onToggleChannelForm">
+                                                <t t-esc="env._t('Hủy')"/>
+                                            </button>
+                                            <button type="button"
+                                                    class="pc-btn-primary"
+                                                    t-on-click="onCreateChannel">
+                                                <t t-esc="env._t('Tạo')"/>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </t>
+
+                                <!-- Danh sách channel -->
+                                <div class="pc-channel-list">
+                                    <t t-if="activeCommunity.channels and activeCommunity.channels.length">
+                                        <t t-foreach="activeCommunity.channels"
+                                           t-as="channel"
+                                           t-key="channel.id">
+                                            <div class="pc-channel-item"
+                                                 t-attf-class="pc-channel-item {{ activeChannel and activeChannel.id === channel.id and 'pc-channel-item--active' or '' }}"
+                                                 t-att-data-channel-id="channel.id"
+                                                 t-on-click="onSelectChannel">
+                                                <span class="pc-channel-hash">#</span>
+                                                <span class="pc-channel-name">
+                                                    <t t-esc="channel.name"/>
+                                                </span>
+                                                <t t-if="channel.post_count">
+                                                    <span class="pc-channel-counter">
+                                                        <t t-esc="channel.post_count"/>
+                                                    </span>
+                                                </t>
+                                            </div>
+                                        </t>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="pc-channel-empty">
+                                            Không có channel nào, hãy tạo channel cho community này.
+                                        </div>
+                                    </t>
+                                </div>
+
+                                <!-- Composer post -->
+                                <t t-if="activeChannel">
+                                    <div class="pc-composer-card">
+                                        <div class="pc-composer-header">
+                                            <strong>Post in channel</strong>
+                                        </div>
+                                        <div class="pc-composer-body">
+                                            <input type="text"
+                                                   class="pc-input pc-input-subject"
+                                                   t-att-placeholder="env._t('Add a subject')"
+                                                   t-att-value="state.composer.subject"
+                                                   t-on-input="(ev) => { state.composer.subject = ev.target.value; }"/>
+
+                                            <textarea class="pc-input pc-input-body"
+                                                      rows="4"
+                                                      t-att-placeholder="env._t('Type a message...')"
+                                                      t-on-input="(ev) => { state.composer.body = ev.target.value; }"><t t-esc="state.composer.body or ''"/></textarea>
+                                        </div>
+                                        <div class="pc-composer-footer">
+                                            <button type="button"
+                                                    class="pc-btn-primary"
+                                                    t-on-click="onSubmitPost">
+                                                Post
+                                            </button>
+                                        </div>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="pc-empty-state">
+                                        Hãy chọn một kênh trong community để đăng bài.
+                                    </div>
+                                </t>
+
+                                <!-- Danh sách bài viết -->
+                                <t t-if="state.posts.length">
+                                    <div class="pc-posts-list">
+                                        <t t-foreach="state.posts"
+                                           t-as="post"
+                                           t-key="post.id">
+                                            <div class="pc-post-card">
+                                                <div class="pc-post-header">
+                                                    <div class="pc-community-avatar pc-community-avatar--small">
+                                                        <t t-esc="post.author_initials or '-'"/>
+                                                    </div>
+                                                    <div>
+                                                        <div class="pc-post-author">
+                                                            <t t-esc="post.author_name"/>
+                                                        </div>
+                                                        <div class="pc-post-meta">
+                                                            <t t-esc="post.create_date_human or post.create_date"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="pc-post-content">
+                                                    <t t-if="post.subject">
+                                                        <div class="pc-post-subject">
+                                                            <t t-esc="post.subject"/>
+                                                        </div>
+                                                    </t>
+                                                    <t t-if="post.body">
+                                                        <div class="pc-post-body-text">
+                                                            <t t-esc="post.body"/>
+                                                        </div>
+                                                    </t>
+                                                </div>
+
+                                                <div class="pc-comments-block">
+                                                    <!-- comments list -->
+                                                    <div class="pc-comments-list">
+                                                        <t t-if="post.comments">
+                                                            <t t-foreach="post.comments"
+                                                               t-as="comment"
+                                                               t-key="comment.id">
+                                                                <div class="pc-comment-row">
+                                                                    <div class="pc-community-avatar pc-community-avatar--tiny">
+                                                                        <t t-esc="comment.author_initials or '-'"/>
+                                                                    </div>
+                                                                    <div class="pc-comment-bubble">
+                                                                        <div class="pc-comment-header">
+                                                                            <span class="pc-comment-author">
+                                                                                <t t-esc="comment.author_name"/>
+                                                                            </span>
+                                                                            <span class="pc-comment-date">
+                                                                                <t t-esc="comment.create_date_human or comment.create_date"/>
+                                                                            </span>
+                                                                        </div>
+                                                                        <div class="pc-comment-body">
+                                                                            <t t-esc="comment.body"/>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </t>
+                                                        </t>
+                                                    </div>
+
+                                                    <!-- comment composer -->
+                                                    <div class="pc-comment-composer">
+                                                        <textarea class="pc-input pc-input-comment"
+                                                                  rows="1"
+                                                                  t-att-placeholder="env._t('Viết bình luận...')"
+                                                                  t-att-data-post-id="post.id"
+                                                                  t-att-value="state.newComments[post.id] or ''"
+                                                                  t-on-input="onChangeComment"/>
+                                                        <button type="button"
+                                                                class="pc-btn-secondary"
+                                                                t-att-data-post-id="post.id"
+                                                                t-on-click="onSubmitComment">
+                                                            Trả lời
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                                <t t-elif="activeChannel">
+                                    <div class="pc-empty-state">
+                                        Chưa có bài viết nào trong kênh này.
+                                    </div>
+                                </t>
+                            </t>
+
+                            <!-- Không có activeCommunity -->
+                            <t t-else="">
+                                <div class="pc-empty-state">
+                                    Hãy chọn một community ở bên trái để bắt đầu.
+                                </div>
+                            </t>
+                        </t>
+                    </div>
+                </div>
+            </t>
+        </template>

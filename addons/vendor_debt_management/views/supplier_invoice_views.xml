@@ -35,7 +35,7 @@
                             <field name="invoice_number"/>
                             <field name="purchase_id"/>
                             <field name="partner_id"/>
-                            <field name="contract_id" required="0"/>
+                            <field name="contract_id"/>
                             <field name="settlement_id"/>
                             <field name="project_id"/>
                             <field name="amount_untaxed"/>
@@ -47,6 +47,9 @@
                             <field name="date"/>
                             <field name="due_date"/>
                             <field name="note"/>
+                            <field name="cost_classification" widget="select"/>
+                            <field name="expense_category_id"/>
+                            <field name="is_warehouse" widget="select"/>
                             <field name="currency_id" invisible="1"/>
                         </group>
                     </group>
