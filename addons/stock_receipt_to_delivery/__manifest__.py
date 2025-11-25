@@ -10,6 +10,7 @@
 "depends": ["stock"],
 "data": [
 "views/stock_picking_view.xml",
+
 ],
 "application": False,
 "installable": True,

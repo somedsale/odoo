@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Thêm 2 field phân loại NCC trên form res.partner -->
+    <record id="view_partner_form_supplier_extra" model="ir.ui.view">
+        <field name="name">res.partner.form.supplier.extra</field>
+        <field name="model">res.partner</field>
+        <!-- Kế thừa form chuẩn -->
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+
+            <!--
+                Không dùng //field[@name='supplier_rank'] nữa
+                vì nhiều bản Odoo 17 không còn render field này trong form.
+
+                Thay bằng 1 xpath rất an toàn:
+                chèn thêm 1 group vào group đầu tiên trong <sheet>.
+            -->
+            <!-- <xpath expr="//sheet/group" position="inside">
+                <group string="Phân loại nhà cung cấp"
+                    >
+                    <field name="supplier_category"/>
+                    <field name="supplier_domestic_type"
+                           invisible="supplier_category != 'domestic'"/>
+                    <field name="supply_category"/>
+                </group>
+            </xpath> -->
+
+        </field>
+    </record>
+</odoo>

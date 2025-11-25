@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+        <!-- TEMPLATE REPORT -->
+    <template id="input_tax_report_template">
+
+        <!-- Dùng layout chung của bạn -->
+        <t t-call="vendor_debt_management.report_supplier_invoice_layout">
+
+            <!-- ========= BEGIN PAGE ========= -->
+            <main class="o_report_manage_pages">
+
+<style>
+.page { font-family:"Times New Roman"; font-size:12pt; color:#000; }
+
+/* ==== TABLE STYLE GIỐNG BÁO CÁO CÔNG NỢ ==== */
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    border: 1px solid #000;
+}
+
+.styled-table thead tr {
+    background-color: #C6E0B4;
+    color: #000;
+    font-weight: bold;
+    text-align: center;
+}
+
+.styled-table th,
+.styled-table td {
+    border: 1px solid #000;
+    padding: 8px 10px;
+    font-size: 11pt;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+}
+
+.styled-table tbody tr:hover {
+    background-color: #D9EAD3;
+}
+
+.text-right { text-align:right; }
+.text-center { text-align:center; }
+</style>
+
+<div class="page">
+
+    <!-- ===== TITLE ===== -->
+    <h2 style="text-align:center; margin-bottom: 20px; font-size: 22px; text-transform: uppercase;">
+        <t t-esc="title"/>
+    </h2>
+
+    <!-- ===== DATE RANGE ===== -->
+    <p>
+        <b>Từ ngày:</b>
+        <t t-esc="date_from.strftime('%d/%m/%Y') if date_from else ''"/>
+        &#160;&#160;&#160;&#160;
+        <b>Đến ngày:</b>
+        <t t-esc="date_to.strftime('%d/%m/%Y') if date_to else ''"/>
+    </p>
+
+    <table class="styled-table">
+        <!-- ===== COLGROUP ===== -->
+        <colgroup>
+            <col style="width:4%"/>   <!-- STT -->
+            <col style="width:5%"/>   <!-- Ngày -->
+            <col style="width:8%"/>  <!-- Số HĐ -->
+            <col style="width:18%"/>  <!-- NCC -->
+            <col style="width:8%"/>  <!-- Trước thuế -->
+            <col style="width:8%"/>  <!-- VAT -->
+            <col style="width:8%"/>  <!-- Tổng -->
+            <col style="width:5%"/>   <!-- Thuế % -->
+            <col style="width:18%"/>  <!-- Dùng cho -->
+            <col style="width:8%"/>   <!-- Nhập kho/Công trình -->
+            <col style="width:18%"/>  <!-- Ghi chú -->
+        </colgroup>
+
+        <!-- ===== HEADER ===== -->
+        <thead>
+            <!-- ===== DÒNG TỔNG CỘNG ===== -->
+            <tr style="background:#E2EFDA; font-weight:bold;">
+                <td colspan="4"></td>
+                <td class="text-right">
+                    <t t-esc="'{:,.0f}'.format(total_before)"/>
+                </td>
+                <td class="text-right">
+                    <t t-esc="'{:,.0f}'.format(total_tax)"/>
+                </td>
+                <td class="text-right">
+                    <t t-esc="'{:,.0f}'.format(total_sum)"/>
+                </td>
+                <td colspan="4"></td>
+            </tr>
+
+            <tr>
+                <th>STT</th>
+                <th>Ngày HĐ</th>
+                <th>Số HĐ</th>
+                <th>Nhà cung cấp</th>
+                <th>Trước thuế</th>
+                <th>VAT</th>
+                <th>Tổng</th>
+                <th>Thuế</th>
+                <th>Dùng cho</th>
+                <th>Nhập kho / Công trình</th>
+                <th>Ghi chú</th>
+            </tr>
+        </thead>
+
+        <!-- ===== BODY ===== -->
+        <tbody>
+            <t t-foreach="rows" t-as="r">
+                <tr>
+                    <td class="text-center"><t t-esc="r['stt']"/></td>
+                    <td class="text-center"><t t-esc="r['date'].strftime('%d/%m')"/></td>
+                    <td><t t-esc="r['invoice_number']"/></td>
+                    <td><t t-esc="r['partner']"/></td>
+
+                    <td class="text-right"><t t-esc="'{:,.0f}'.format(r['before_tax'])"/></td>
+                    <td class="text-right"><t t-esc="'{:,.0f}'.format(r['tax_amount'])"/></td>
+                    <td class="text-right"><t t-esc="'{:,.0f}'.format(r['total'])"/></td>
+                    <td class="text-center"><t t-esc="'{:.0f}'.format(r['tax_percent'])"/>%</td>
+
+                    <td><t t-esc="r['used_for']"/></td>
+                    <td><t t-esc="r['is_warehouse']"/></td>
+                    <td><t t-esc="r['note']"/></td>
+                </tr>
+            </t>
+        </tbody>
+
+    </table>
+
+    <!-- ===== SIGNATURE ===== -->
+    <div style="page-break-inside: avoid; margin-top: 40px; font-weight: bold">
+        <div class="row" style="display:flex; justify-content:space-between;">
+            <div style="width:45%; text-align:center;">
+            <div>
+                    TP Hồ Chí Minh,
+                    Ngày &#160;&#160;
+                    Tháng &#160;&#160;
+                    Năm <t t-esc="datetime.datetime.today().year"/>
+                </div>
+                <div>Người lập biểu</div>
+                <div style="height:70px"></div>
+                <div><span t-field="user_id.name"/></div>
+            </div>
+
+            <div style="width:45%; text-align:center;">
+                <div>
+                    TP Hồ Chí Minh,
+                    Ngày &#160;
+                    Tháng &#160;&#160;
+                    Năm <t t-esc="datetime.datetime.today().year"/>
+                </div>
+                <div>Giám Đốc</div>
+                <div style="height:70px"></div>
+                <div>Đỗ Minh Toàn</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+            </main>
+            <!-- ========= END PAGE ========= -->
+
+        </t>
+    </template>
+
+    <record id="action_report_input_tax" model="ir.actions.report">
+        <field name="name">Báo cáo Thuế Đầu Vào</field>
+        <field name="model">input.tax.report.wizard</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">tax_report_summary.input_tax_report_template</field>
+        <field name="report_file">tax_report_summary.input_tax_report_template</field>
+        <field name="paperformat_id" ref="tax_report_a4_landscape"/>
+    </record>
+
+</odoo>

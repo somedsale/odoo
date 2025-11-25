@@ -1,0 +1,21 @@
+<odoo>
+
+    <!-- ================== COMMUNITY ================== -->
+
+
+
+    <!-- ================== MENU ================== -->
+    <record id="action_portal_community_app" model="ir.actions.client">
+        <field name="name">Communities</field>
+        <field name="tag">communities.client_action</field>
+    </record>
+
+    <menuitem id="menu_portal_community_root"
+              name="Communities"
+              parent="base.menu_custom"
+              action="action_portal_community_app"
+              sequence="10"/>
+
+
+
+</odoo>

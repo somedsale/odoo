@@ -1,0 +1,41 @@
+<odoo>
+
+    <record id="action_portal_community" model="ir.actions.act_window">
+        <field name="name">Communities</field>
+        <field name="res_model">portal.community</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_portal_community_root"
+              name="Cộng đồng nội bộ"
+              sequence="30"
+              action="action_portal_community"
+              groups="base.group_user"/>
+
+    <record id="action_portal_community_post" model="ir.actions.act_window">
+        <field name="name">Bài viết</field>
+        <field name="res_model">portal.community.post</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_portal_community_post"
+              name="Bài viết"
+              parent="menu_portal_community_root"
+              action="action_portal_community_post"
+              sequence="20"
+              groups="base.group_user"/>
+
+    <record id="action_portal_community_comment" model="ir.actions.act_window">
+        <field name="name">Bình luận</field>
+        <field name="res_model">portal.community.comment</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_portal_community_comment"
+              name="Bình luận"
+              parent="menu_portal_community_root"
+              action="action_portal_community_comment"
+              sequence="30"
+              groups="portal_community.group_portal_community_manager"/>
+
+</odoo>

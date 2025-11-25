@@ -10,4 +10,9 @@
               parent="menu_tax_report_root"
               action="action_tax_report_wizard"
               sequence="10"/>
+    <menuitem id="menu_input_tax_report_action"
+              name="Tổng hợp Hóa đơn đầu vào"
+              parent="vendor_debt_management.menu_supplier_invoice_root"
+              action="action_input_tax_report_wizard"
+              sequence="15"/>
 </odoo>

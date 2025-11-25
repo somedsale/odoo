@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <!-- Inherit form của sale.order, chèn ngay trong cây order_line -->
+  <record id="view_order_form_inherit_price_lock" model="ir.ui.view">
+    <field name="name">sale.order.form.price.lock</field>
+    <field name="model">sale.order</field>
+    <field name="inherit_id" ref="sale.view_order_form"/>
+    <field name="arch" type="xml">
+      <!-- Chèn cột sau price_unit trong tree của order_line -->
+      <xpath expr="//field[@name='order_line']//tree//field[@name='price_unit']" position="after">
+        <field name="lock_price" column_invisible="1"/>
+        <field name="manual_price_unit" column_invisible="1"/>
+      </xpath>
+    </field>
+  </record>
+</odoo>
