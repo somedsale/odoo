@@ -11,6 +11,7 @@
                 <field name="project_ids" widget="many2many_tags" string="Dự án" readonly="1"/>
                 <field name="contract_ids" widget="many2many_tags" string="Hợp đồng" readonly="1"/>
                 <field name="amount_total" sum="Tổng HĐ"/>
+                <field name="amount_final" sum="Tổng giá trị quyết toán"/>
                 <field name="amount_invoiced" sum="Đã xuất HĐ"/>
                 <field name="amount_paid" sum="Đã thanh toán"/>
                 <field name="residual" sum="Còn nợ"/>
@@ -34,6 +35,7 @@
                         </group>
                         <group>
                             <field name="amount_total" string="Tổng giá trị hợp đồng"/>
+                            <field name="amount_final" string="Tổng giá trị quyết toán"/>
                             <field name="amount_invoiced" string="Số tiền hóa đơn"/>
                             <field name="amount_paid"/>
                             <field name="old_debt"/>
@@ -49,7 +51,8 @@
                                     <field name="contract_number"/>
                                     <field name="project_id"/>
                                     <field name="date" string="Ngày Hợp Đồng"/>
-                                    <field name="amount_total"/>
+                                    <field name="amount_total" optional="show"/>
+                                    <field name="settlement_value" widget="monetary" options="{'currency_field': 'currency_id'}" optional="show"/>
                                     <field name ="currency_id" optional="hide"/>
                                 </tree>
                             </field>
