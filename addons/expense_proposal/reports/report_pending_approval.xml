@@ -87,7 +87,7 @@
                     padding: 8px 12px;
                     border: 1px solid #000;
                 }
-                                                    <!-- .styled-table tbody tr:nth-of-type(even) {
+                                                        <!-- .styled-table tbody tr:nth-of-type(even) {
                     background-color: #f3f6fb;
                 } -->
                 .styled-table tbody tr:hover {
@@ -317,7 +317,7 @@
 <field name="paperformat_id" ref="custom_sale_report_a4_portrait"/>
 </record>
 <!-- Menu -->
-<menuitem id="menu_expense_proposal_root" name="Đề xuất chi" parent="custom_account_menu.menu_accounting_reporting"/>
+<menuitem id="menu_expense_proposal_root" name="Đề xuất chi" parent="custom_account_menu.menu_accounting_reporting" sequence="1"/>
 <menuitem id="menu_report_pending_approval_root" name="Các khoản chưa duyệt" parent="menu_expense_proposal_root" action="expense_proposal.action_report_pending_approval"/>
 
 </odoo>
