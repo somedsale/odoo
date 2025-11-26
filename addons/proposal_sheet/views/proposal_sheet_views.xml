@@ -84,7 +84,7 @@
                                 </tree>
                             </field>
                         </page>
-                        <page string="Chi Tiết Chi Phí" invisible="type != 'expense'">
+                        <page string="Chi Tiết Chi Phí Công Trình" invisible="type != 'expense'">
                             <field name="expense_line_ids" context="{'default_type': 'expense'}" readonly="state !='draft'">
                                 <tree editable="bottom">
                                     <field name="expense_id" required="1" />
@@ -97,6 +97,23 @@
                                     <field name="price_total" string="Tổng giá đề xuất" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
                                     <field name="description"/>
                                     <field name="currency_id" invisible="1" optional="hide"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Chi phí khác" invisible="type != 'other'">
+                            <field name="expense_noproject_line_ids" context="{'default_type': 'other'}" readonly="state !='draft'">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="date"/>
+                                    <field name="content" string="Nội dung đề xuất"/>
+                                    <field name="unit"/>
+                                    <field name="quantity"/>
+                                    <field name="price_unit" string="Đơn giá" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
+                                    <field name="object"/>
+                                    <field name="cost_classification"/>
+                                    <field name="note"/>
+                                    <field name="currency_id" optional="hide"/>
                                 </tree>
                             </field>
                         </page>

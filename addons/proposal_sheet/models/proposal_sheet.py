@@ -16,7 +16,7 @@ class ProposalSheet(models.Model):
     manager_id = fields.Many2one('hr.employee', string='Người Quản Lý', compute='_compute_manager_id')
     director_user_id = fields.Many2one('res.users', string="Giám Đốc", default=lambda self: self._default_director_user(), readonly=True)
     name = fields.Char(string='Mã Đề Xuất', default='New', readonly=True, copy=False)
-    project_id = fields.Many2one('project.project', string='Dự án', required=True, tracking=True)
+    project_id = fields.Many2one('project.project', string='Dự án', tracking=True)
     task_id = fields.Many2one('project.task', string='Nhiệm Vụ', tracking=True)
     requested_by = fields.Many2one('res.users', string='Người Đề Xuất', default=lambda self: self.env.user, readonly=True, tracking=True)
     treasurer_confirmed = fields.Boolean(string="Thủ quỹ đã xác nhận", default=False)
@@ -43,7 +43,8 @@ class ProposalSheet(models.Model):
     date_approved = fields.Date(string='Ngày Sếp duyệt')
     type = fields.Selection([
         ('material', 'Vật Tư'),
-        ('expense', 'Chi Phí'),
+        ('expense', 'Chi Phí Công Trình'),
+        ('other', 'Chi phí Khác'),
     ], required=True, string='Loại Đề Xuất',default='material', tracking=True)
     material_line_ids = fields.One2many(
         'proposal.material.line', 'sheet_id',
@@ -53,8 +54,15 @@ class ProposalSheet(models.Model):
     )
     expense_line_ids = fields.One2many(
         'proposal.expense.line', 'sheet_id',
-        string='Chi Tiết Chi Phí',
+        string='Chi Tiết Chi Phí Công Trình',
         domain=[('type', '=', 'expense')],
+        copy=True
+    )
+    expense_noproject_line_ids = fields.One2many(
+        'proposal.other.expense.line', 'sheet_id',
+        string='Chi Tiết Khác',
+        domain=[('type', '=', 'other')],
+        order='sequence, id', 
         copy=True
     )
     amount_total = fields.Float(string='Tổng Thành Tiền', compute='_compute_amount_total', store=True)
@@ -76,13 +84,15 @@ class ProposalSheet(models.Model):
     def _compute_manager_id(self):
         for record in self:
             record.manager_id = record.department_id.manager_id if record.department_id else False
-    @api.depends('type', 'material_line_ids.price_total', 'expense_line_ids.price_total')
+    @api.depends('type', 'material_line_ids.price_total', 'expense_line_ids.price_total', 'expense_noproject_line_ids.amount')
     def _compute_amount_total(self):
         for sheet in self:
             if sheet.type == 'material':
                 sheet.amount_total = sum(line.price_total for line in sheet.material_line_ids)
             elif sheet.type == 'expense':
                 sheet.amount_total = sum(line.price_total for line in sheet.expense_line_ids)
+            elif sheet.type == 'other':
+                sheet.amount_total = sum(line.amount for line in sheet.expense_noproject_line_ids)
             else:
                 sheet.amount_total = 0.0
     @api.depends('type', 'material_line_ids.price_total_taxed')
@@ -211,9 +221,34 @@ class ProposalSheet(models.Model):
         # 2. Kiểm tra trạng thái
         if self.state != 'draft':
             raise UserError(_("Chỉ phiếu ở trạng thái nháp mới được gửi duyệt."))
+        accounting_group = self.env.ref('account.group_account_manager', raise_if_not_found=False)
+        is_accounting_user = accounting_group and accounting_group in self.env.user.groups_id
 
+        # ===== CASE 1: Người gửi là Kế toán -> Gửi thẳng cho Sếp duyệt =====
+        if is_accounting_user:
+            self.state = 'approved'  # 'Sếp Đang duyệt'
+            _logger.info(">>> Proposal %s chuyển thẳng sang trạng thái 'approved' (Sếp đang duyệt) vì người gửi là Kế toán", self.name)
+            now = fields.Datetime.now()
+            self.date_proposal = now
+            self.date_reviewed_accounting = now
+
+            partner_ids = self._get_approval_partners(
+                include_manager=False,
+                include_boss=True,          # gửi cho sếp
+                include_accounting=False,   # không cần notify KT nữa
+            )
+            message = f"<p>Phiếu đề xuất <strong>{self.name}</strong> đã được gửi trực tiếp cho Sếp duyệt bởi (Kế toán) <em>{self.env.user.name}</em>.</p>"
+            self._send_notification(message, partner_ids)
+            if self.director_user_id:
+                self.activity_schedule(
+                    activity_type_id=self.env.ref('mail.mail_activity_data_todo').id,
+                    user_id=self.director_user_id.id,
+                    summary=f"Duyệt phiếu đề xuất {self.name}",
+                    note=f"📌 Phiếu đề xuất <b>{self.name}</b> đang chờ duyệt.",
+                    date_deadline=fields.Date.today() + timedelta(days=3),
+                )
         # 3. Đổi trạng thái
-        if self.manager_id.user_id == self.env.user:
+        elif self.manager_id.user_id == self.env.user:
             self.state = 'reviewed_accounting'
             _logger.info(">>> Proposal %s chuyển sang trạng thái 'reviewed_accounting'", self.name)
             self.date_proposal = fields.Datetime.now()
@@ -276,7 +311,7 @@ class ProposalSheet(models.Model):
                 'proposal_sheet_id': record.id,
                 'total': record.amount_total,
                 'date': record.create_date,
-                'project_id': record.project_id.id,
+                'project_id': record.project_id.id if record.project_id else None,
                 'proposal_person_id': record.requested_by.id,
                 # 'journal_id': record.journal_id.id,
             })
@@ -388,7 +423,7 @@ class ProposalSheet(models.Model):
             rec.show_button_manager_approve = rec.state == 'reviewed_manager' and is_manager
             rec.show_button_accounting_approve = rec.state == 'reviewed_accounting' and is_accounting  and rec.treasurer_confirmed
             rec.show_button_boss_approve = rec.state == 'approved' and is_boss
-            rec.show_button_waiting_accounting_paid = rec.state == 'waiting_accounting_paid' and rec.type == 'expense' and is_accounting
+            rec.show_button_waiting_accounting_paid = rec.state == 'waiting_accounting_paid' and rec.type in['expense','other']  and is_accounting
             rec.show_button_done = rec.state in ['approved', 'waiting_accounting_paid'] and is_accounting
             rec.show_button_reject = (
                 (rec.state == 'reviewed_manager' and is_manager) or

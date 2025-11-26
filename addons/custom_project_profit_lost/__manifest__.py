@@ -6,6 +6,7 @@
     'data': [
         'security/ir.model.access.csv',
         'views/project_profit_lost_views.xml',
+        'views/project_project_views.xml',
     ],
     "assets": {
         "web.assets_backend": [

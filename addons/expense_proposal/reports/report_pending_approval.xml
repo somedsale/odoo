@@ -87,7 +87,7 @@
                     padding: 8px 12px;
                     border: 1px solid #000;
                 }
-                        <!-- .styled-table tbody tr:nth-of-type(even) {
+                                                    <!-- .styled-table tbody tr:nth-of-type(even) {
                     background-color: #f3f6fb;
                 } -->
                 .styled-table tbody tr:hover {
@@ -101,9 +101,9 @@
 
 
     <h2 style="text-align:center; margin-bottom: 20px; font-size: 24pt; text-transform: uppercase;">DỰ KIẾN THANH TOÁN</h2>
-    <div style="text-align: center; margin-bottom: 20px; text-transform: capitalize;">
+    <!-- <div style="text-align: center; margin-bottom: 20px; text-transform: capitalize;">
         Ngày: <t t-esc="today.strftime('%d/%m/%Y')"/>
-    </div>
+    </div> -->
     <table class="styled-table">
         <thead>
             <tr>
@@ -116,20 +116,20 @@
             </tr>
         </thead>
         <tbody>
-            <!-- ĐỔI alias từ 'list' -> 'grp' để tránh đè built-in -->
             <t t-foreach="lists" t-as="grp">
-                <t t-if="grp.get('total_amount_employee', 0) > 0">
+
+                <!-- NHÓM: EMPLOYEE -->
+                <t t-if="grp.get('total_employee', 0) > 0">
                     <tr class="table-item">
-                        <td class="text-center"></td>
-                        <td>KHOẢN VAY NỘI BỘ NHÂN VIÊN</td>
-                        <td></td>
+                        <td colspan="3" class="text-center">KHOẢN VAY NỘI BỘ NHÂN VIÊN</td>
                         <td class="text-right">
-                            <t t-esc="grp.get('total_amount_employee', 0)" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            <t t-esc="grp.get('total_employee')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                         </td>
                         <td></td>
                         <td></td>
                     </tr>
-                    <t t-foreach="grp.get('line_items_employee', [])" t-as="line">
+
+                    <t t-foreach="grp.get('line_employee', [])" t-as="line">
                         <tr>
                             <td class="text-center" t-esc="line['stt']"/>
                             <td t-esc="line['object']"/>
@@ -143,18 +143,18 @@
                     </t>
                 </t>
 
-                <t t-if="grp.get('total_amount_office', 0) > 0">
+                <!-- NHÓM: OFFICE -->
+                <t t-if="grp.get('total_office', 0) > 0">
                     <tr class="table-item">
-                        <td class="text-center"></td>
-                        <td>CHI PHÍ TẠI CÔNG TY</td>
-                        <td></td>
+                        <td colspan="3" class="text-center">CHI PHÍ TẠI CÔNG TY</td>
                         <td class="text-right">
-                            <t t-esc="grp.get('total_amount_office', 0)" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            <t t-esc="grp.get('total_office')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                         </td>
                         <td></td>
                         <td></td>
                     </tr>
-                    <t t-foreach="grp.get('line_items_office', [])" t-as="line">
+
+                    <t t-foreach="grp.get('line_office', [])" t-as="line">
                         <tr>
                             <td class="text-center" t-esc="line['stt']"/>
                             <td t-esc="line['object']"/>
@@ -168,18 +168,18 @@
                     </t>
                 </t>
 
-                <t t-if="grp.get('total_amount_project', 0) > 0">
+                <!-- NHÓM: PROJECT -->
+                <t t-if="grp.get('total_project', 0) > 0">
                     <tr class="table-item">
-                        <td class="text-center"></td>
-                        <td>CHI PHÍ CÁC CÔNG TRÌNH</td>
-                        <td></td>
+                        <td colspan="3" class="text-center">CHI PHÍ CÁC CÔNG TRÌNH</td>
                         <td class="text-right">
-                            <t t-esc="grp.get('total_amount_project', 0)" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            <t t-esc="grp.get('total_project')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                         </td>
                         <td></td>
                         <td></td>
                     </tr>
-                    <t t-foreach="grp.get('line_items_project', [])" t-as="line">
+
+                    <t t-foreach="grp.get('line_project', [])" t-as="line">
                         <tr>
                             <td class="text-center" t-esc="line['stt']"/>
                             <td t-esc="line['object']"/>
@@ -193,18 +193,18 @@
                     </t>
                 </t>
 
-                <t t-if="grp.get('total_amount_estimated_cost', 0) > 0">
+                <!-- NHÓM: ESTIMATED COST -->
+                <t t-if="grp.get('total_estimated', 0) > 0">
                     <tr class="table-item">
-                        <td class="text-center"></td>
-                        <td>ĐỀ XUẤT CHI PHÍ THEO DỰ TOÁN</td>
-                        <td></td>
+                        <td colspan="3" class="text-center">CHI PHÍ DỰ TOÁN</td>
                         <td class="text-right">
-                            <t t-esc="grp.get('total_amount_estimated_cost', 0)" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            <t t-esc="grp.get('total_estimated')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                         </td>
                         <td></td>
                         <td></td>
                     </tr>
-                    <t t-foreach="grp.get('line_items_estimated_cost', [])" t-as="line">
+
+                    <t t-foreach="grp.get('line_estimated', [])" t-as="line">
                         <tr>
                             <td class="text-center" t-esc="line['stt']"/>
                             <td t-esc="line['object']"/>
@@ -217,10 +217,63 @@
                         </tr>
                     </t>
                 </t>
+
+                <!-- NHÓM: FIXED COST -->
+                <t t-if="grp.get('total_fixed', 0) > 0">
+                    <tr class="table-item">
+                        <td colspan="3" class="text-center">CHI PHÍ CỐ ĐỊNH</td>
+                        <td class="text-right">
+                            <t t-esc="grp.get('total_fixed')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <t t-foreach="grp.get('line_fixed', [])" t-as="line">
+                        <tr>
+                            <td class="text-center" t-esc="line['stt']"/>
+                            <td t-esc="line['object']"/>
+                            <td t-esc="line['name']"/>
+                            <td class="text-right">
+                                <t t-esc="line['amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                            <td t-esc="line['project']"/>
+                            <td t-esc="line['note']"/>
+                        </tr>
+                    </t>
+                </t>
+
+                <!-- NHÓM: IRREGULAR EXPENSES -->
+                <t t-if="grp.get('total_irregular', 0) > 0">
+                    <tr class="table-item">
+                        <td colspan="3" class="text-center">CHI PHÍ KHÔNG THƯỜNG XUYÊN</td>
+                        <td class="text-right">
+                            <t t-esc="grp.get('total_irregular')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <t t-foreach="grp.get('line_irregular', [])" t-as="line">
+                        <tr>
+                            <td class="text-center" t-esc="line['stt']"/>
+                            <td t-esc="line['object']"/>
+                            <td t-esc="line['name']"/>
+                            <td class="text-right">
+                                <t t-esc="line['amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                            </td>
+                            <td t-esc="line['project']"/>
+                            <td t-esc="line['note']"/>
+                        </tr>
+                    </t>
+                </t>
+
             </t>
+
+            <!-- TỔNG CỘNG -->
             <tr>
-                <td colspan="3" style="padding: 8px; text-align: center; font-weight: bold; text-transform: uppercase">Tổng cộng</td>
-                <td style="padding: 8px; text-align: right; font-weight: bold;">
+                <td colspan="3" style="text-align:center;font-weight:bold;">TỔNG CỘNG</td>
+                <td class="text-right" style="font-weight:bold;">
                     <t t-esc="total" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                 </td>
                 <td></td>

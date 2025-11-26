@@ -5,7 +5,7 @@ class ProjectProfitLost(models.Model):
     _description = 'Phân tích lời lỗ công trình'
     _rec_name = "project_id"
     _inherit = ['mail.thread', 'mail.activity.mixin']
-
+    active = fields.Boolean(default=True)
     project_id = fields.Many2one('project.project', string='Dự án', required=True, index=True)
     name = fields.Char(
         string='Tên phân tích', 
@@ -106,16 +106,37 @@ class ProjectProfitLost(models.Model):
         rec._recompute_values()
         return rec
 
-    @api.model
-    def _load_all_projects(self):
-        projects = self.env['project.project'].search([('id', '!=', 4)])
-        for project in projects:
-            self.create_or_update(project.id)
+    def load_all_projects(self):
+        Project = self.env['project.project']
+
+        # 1) Lấy các dự án hợp lệ
+        allowed_projects = Project.search([
+            ('is_internal_project2', '=', False),
+            ('id', '!=', 4),
+        ])
+        allowed_ids = set(allowed_projects.ids)
+
+        # 2) Lấy danh sách project_id đã có trong bảng profit.lost
+        existing = self.search([])
+        existing_ids = set(existing.mapped('project_id').ids)
+
+        # 3) Xóa các record thuộc project không hợp lệ
+        invalid_ids = existing_ids - allowed_ids
+        if invalid_ids:
+            self.search([('project_id', 'in', list(invalid_ids))]).write({'active': False})
+
+        # 4) Tạo record cho project còn thiếu (chưa có trong profit.lost)
+        missing_ids = allowed_ids - existing_ids
+        for mid in missing_ids:
+            self.create({'project_id': mid})
+
+        # 5) Chỉ recompute cho các project hợp lệ
+        self.search([('project_id', 'in', list(allowed_ids))])._recompute_values()
 
     @api.model
     def action_open_profit_lost(self):
         # Đồng bộ trước khi mở
-        self._load_all_projects()
+        # self._load_all_projects()
         return {
             'type': 'ir.actions.act_window',
             'name': 'Phân tích lời lỗ công trình',

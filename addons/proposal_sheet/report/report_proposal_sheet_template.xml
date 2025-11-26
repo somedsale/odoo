@@ -206,7 +206,7 @@ Email: <span t-esc="res_company.email"/>
                         <p>
                             <span class="label">Phòng ban:</span>
                             <span class="info-value">
-                                <t t-esc="o.requested_by.employee_id.department_id.name if o.requested_by.employee_id and o.requested_by.employee_id.department_id else 'N/A'"/>
+                                <t t-esc="o.requested_by.employee_id.department_id.name if o.requested_by.employee_id and o.requested_by.employee_id.department_id else ''"/>
                             </span>
                         </p>
                     </td>
@@ -223,6 +223,9 @@ Email: <span t-esc="res_company.email"/>
                         </t>
                         <t t-if="o.type == 'expense'">
                             <th>Chi Phí</th>
+                        </t>
+                        <t t-if="o.type == 'other'">
+                            <th>Nội dung</th>
                         </t>
                         <th class="col-unit">Đơn Vị</th>
                         <th class="col-qty">Số Lượng</th>
@@ -299,7 +302,36 @@ Email: <span t-esc="res_company.email"/>
                             </tr>
                         </t>
                     </t>
+                    <t t-if="o.type == 'other'">
+                        <t t-foreach="enumerate(o.expense_noproject_line_ids)" t-as="line_with_index">
+                            <t t-set="i" t-value="line_with_index[0]"/>
+                            <t t-set="line" t-value="line_with_index[1]"/>
 
+                            <tr>
+                                <td class="text-center col-stt">
+                                    <t t-esc="i + 1"/>
+                                </td>
+                                <td>
+                                    <t t-esc="line.content"/>
+                                </td>
+                                <td class="text-center col-unit">
+                                    <t t-esc="line.unit.name"/>
+                                </td>                                <!-- Không có đơn vị -->
+                                <td class="text-center col-qty">
+                                    <t t-esc="line.quantity"/>
+                                </td>                                <!-- Chi phí lẻ: mặc định 1 -->
+                                <td class="text-end col-unitprice">
+                                    <t t-esc="format_vnd(line.price_unit)"/>
+                                </td>
+                                <td class="text-end col-total">
+                                    <t t-esc="format_vnd(line.amount)"/>
+                                </td>
+                                <td style="background-color: white !important;">
+                                    <t t-esc="line.note"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </t>
                     <!-- Tổng -->
                     <tr class="table-bordered border-dark border-2" style="color:#000 !important; font-weight: bold;">
                         <td colspan="5" class="text-left">

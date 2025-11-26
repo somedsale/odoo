@@ -11,11 +11,13 @@
                 <field name="name"/>
                 <field name="contract_number"/>
                 <field name="date"/>
+                <field name ="ref_code"/>
                 <field name="project_id"/>
                 <field name="partner_id"/>
                 <field name="contact" />
 
                 <field name="contract_type" optional="hide"/>
+                <field name="settlement_value" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="amount_total" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="amount_invoiced" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="amount_receipt" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
@@ -41,6 +43,8 @@
                             <field name="partner_id" require="1"/>
                             <field name="contact" />
                             <field name="management_id" invisible="1" force_save="1"/>
+                            <field name ="ref_code"/>
+                            <field name="settlement_value" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                         </group>
 
                         <group>
@@ -64,7 +68,10 @@
                                     <field name="project_id"/>
                                     <field name="partner_id"/>
                                     <field name="date"/>
-                                    <field name="amount_total" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}" optional="show"/>
+                                    <field name="account_tax_id" optional="show"/>
+                                    <field name="amount_tax" widget="monetary" options="{'currency_field': 'currency_id'}" optional="show"/>
+                                    <field name="amount_total" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}" optional="show"/>
                                     <field name="currency_id" string="Tiền tệ" optional="hide"/>
                                 </tree>
                             </field>
@@ -110,6 +117,10 @@
                 <field name="date"/>
                 <field name="partner_id"/>
                 <field name="project_id"/>
+                <field name="contract_number"/>
+                <field name ="ref_code"/>
+                <field name="contract_type"/>
+                <field name="name"/>
 
                 <!-- Bộ lọc nhanh -->
                 <filter string="Hôm nay" name="today" domain="[('date','=', context_today())]"/>

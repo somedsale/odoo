@@ -37,7 +37,7 @@ class CustomerDebtSummary(models.Model):
         readonly=True
     )
 
-    amount_final = fields.Monetary(string="Giá trị Quyết toán", currency_field="currency_id", readonly=True)
+    amount_final = fields.Monetary(string="Giá trị Quyết toán",currency_field="currency_id",compute="_compute_amount_final",readonly=True)
     warranty_amount = fields.Monetary(string="Giá trị Bảo hành", currency_field="currency_id", readonly=True)
     warranty_period = fields.Char(string="Thời gian bảo hành", readonly=True)
     note = fields.Text(string="Ghi chú", readonly=True)
@@ -56,6 +56,10 @@ class CustomerDebtSummary(models.Model):
     # ==========================================================
     # =========== COMPUTE FUNCTIONS =============================
     # ==========================================================
+    @api.depends("contract_ids.settlement_value")
+    def _compute_amount_final(self):
+        for record in self:
+            record.amount_final = sum(record.contract_ids.mapped("settlement_value"))
     @api.depends("partner_id", "currency_id")
     def _compute_old_debt(self):
         for record in self:
@@ -85,11 +89,18 @@ class CustomerDebtSummary(models.Model):
         for record in self:
             record.amount_paid = sum(record.contract_ids.mapped("amount_receipt"))
 
-    @api.depends("amount_invoiced", "old_debt", "amount_paid")
+    # @api.depends("amount_invoiced", "old_debt", "amount_paid")
+    # def _compute_residual(self):
+    #     """Còn nợ = Tổng đã xuất HĐ - Đã thu + Công nợ cũ"""
+    #     for record in self:
+    #         record.residual = (record.amount_invoiced or 0.0) - (record.amount_paid or 0.0) + (record.old_debt or 0.0)
+    @api.depends("amount_final", "amount_total", "amount_paid", "old_debt")
     def _compute_residual(self):
-        """Còn nợ = Tổng đã xuất HĐ - Đã thu + Công nợ cũ"""
         for record in self:
-            record.residual = (record.amount_invoiced or 0.0) - (record.amount_paid or 0.0) + (record.old_debt or 0.0)
+            # Nếu có quyết toán thì dùng quyết toán, không thì dùng giá trị hợp đồng
+            base_amount = record.amount_final if record.amount_final > 0 else record.amount_total
+
+            record.residual = (base_amount or 0.0) - (record.amount_paid or 0.0) + (record.old_debt or 0.0)
 
     @api.depends('standalone_invoice_ids_raw')
     def _compute_invoices(self):

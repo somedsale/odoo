@@ -74,5 +74,5 @@
         <field name="domain">[('expense_proposal_id', '=', active_id)]</field>
         <field name="target">current</field>
     </record>
-    <menuitem id="menu_expense_proposal" name="Đề xuất chi phí" action="action_expense_proposal" parent="custom_account_menu.menu_accounting_vouchers" sequence="10"/>
+    <!-- <menuitem id="menu_expense_proposal" name="Đề xuất chi phí" action="action_expense_proposal" parent="custom_account_menu.menu_accounting_vouchers" sequence="10"/> -->
 </odoo>
