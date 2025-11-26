@@ -63,12 +63,8 @@
                                     <field name="date_payment" string="Ngày chi"/>
                                     <field name="total"/>
                                     <field name="currency_id" optional="hide"/>
-                                    <field name="payment_type" widget="badge" string="Hình thức thanh toán"
-                                        decoration-primary="payment_type == 'cash'"
-                                        decoration-success="payment_type == 'bank'"/>
-                                    <field name="state" widget="badge" string="Trạng thái"
-                                        decoration-primary="state == 'confirmed'"
-                                        decoration-success="state == 'done'"/>
+                                    <field name="payment_type" widget="badge" string="Hình thức thanh toán" decoration-primary="payment_type == 'cash'" decoration-success="payment_type == 'bank'"/>
+                                    <field name="state" widget="badge" string="Trạng thái" decoration-primary="state == 'confirmed'" decoration-success="state == 'done'"/>
                                 </tree>
                             </field>
                         </page>
@@ -89,10 +85,8 @@
                 <field name="partner_id" string="Nhà cung cấp"/>
                 <field name="project_id" string="Dự án"/>
                 <field name="contract_id" string="Hợp đồng"/>
-                <filter name="filter_due_today" string="Đến hạn hôm nay"
-                        domain="[('due_date', '=', context_today())]"/>
-                <filter name="filter_overdue" string="Quá hạn"
-                        domain="[('due_date', '&lt;', context_today())]"/>
+                <filter name="filter_due_today" string="Đến hạn hôm nay" domain="[('due_date', '=', context_today())]"/>
+                <filter name="filter_overdue" string="Quá hạn" domain="[('due_date', '&lt;', context_today())]"/>
 
                 <!-- ✅ Search Panel -->
                 <searchpanel>
@@ -109,7 +103,7 @@
 
     <!-- ACTION -->
     <record id="action_supplier_invoice" model="ir.actions.act_window">
-        <field name="name">Hóa đơn</field>
+        <field name="name">Danh sách hóa đơn mua</field>
         <field name="res_model">supplier.invoice</field>
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="view_supplier_invoice_tree"/>
@@ -117,9 +111,5 @@
     </record>
 
     <!-- MENU -->
-    <menuitem id="menu_supplier_invoice"
-              name="Hóa đơn"
-              parent="menu_supplier_contract_root"
-              action="action_supplier_invoice"
-              sequence="20"/>
+    <menuitem id="menu_supplier_invoice" name="Danh sách hóa đơn mua" parent="menu_supplier_contract_root" action="action_supplier_invoice" sequence="20"/>
 </odoo>

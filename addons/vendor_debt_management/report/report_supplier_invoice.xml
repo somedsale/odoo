@@ -72,7 +72,7 @@ Email: <span t-esc="res_company.account_email"/>
             color: #000;
             text-align: center;
         }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <!-- .table-item{
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <!-- .table-item{
             text-transform: uppercase;
             background-color: #E2EFDA;
             font-weight: bold;
@@ -321,6 +321,6 @@ Email: <span t-esc="res_company.account_email"/>
 </record>
 
 <!-- Menu -->
-<menuitem id="menu_supplier_invoice_root" name="Hóa đơn nhà cung cấp" parent="menu_supplier_summary_root" sequence="100"/>
+<menuitem id="menu_supplier_invoice_root" name="Hóa đơn nhà cung cấp" parent="custom_account_menu.menu_accounting_reporting" sequence="2"/>
 <!-- <menuitem id="menu_supplier_invoice_report" name="Báo cáo Hóa đơn NCC" parent="menu_supplier_invoice_root" action="vendor_debt_management.action_supplier_invoice_report" sequence="100"/> -->
 </odoo>

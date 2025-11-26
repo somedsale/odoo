@@ -86,6 +86,6 @@
         </field>
     </record>
     <menuitem id="menu_supplier_summary" name="Tổng hợp công nợ" parent="menu_supplier_contract_root" action="action_supplier_summary" sequence="20"/>
-    <menuitem id="menu_supplier_ids" name="Nhà cung cấp" parent="menu_supplier_contract_root" action="account.res_partner_action_supplier" sequence="10"/>
+    <menuitem id="menu_supplier_ids" name="Danh sách nhà cung cấp" parent="menu_supplier_contract_root" action="account.res_partner_action_supplier" sequence="20"/>
 
 </odoo>
