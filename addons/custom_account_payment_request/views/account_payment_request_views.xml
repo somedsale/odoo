@@ -74,6 +74,9 @@
         <field name="model">account.payment.request</field>
         <field name="arch" type="xml">
             <search string="Tìm kiếm phiếu chi">
+                <field name="project_id"/>
+                <field name="name"/>
+                <field name="note"/>
                 <filter string="Đã xác nhận" name="confirmed" domain="[('state','=','confirmed')]" />
                 <filter string="Không có dự án" name="no_project" domain="[('project_id','=',False)]"/>
                 <searchpanel>
@@ -90,7 +93,8 @@
         <field name="model">account.payment.request</field>
         <field name="arch" type="xml">
             <search string="Tìm kiếm">
-                <!-- chỉ để ô tìm kiếm -->
+                <field name="name"/>
+                <field name="note"/>
             </search>
         </field>
     </record>

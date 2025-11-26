@@ -4,3 +4,4 @@ from . import proposal_expense_line
 from . import project_task
 from . import task_material_compare_line
 from . import proposal_reject_wizard
+from . import proposal_other_expense_line

@@ -56,16 +56,48 @@
             </graph>
         </field>
     </record>
+    <record id="view_project_cash_flow_search" model="ir.ui.view">
+        <field name="name">project.cash.flow.search</field>
+        <field name="model">project.cash.flow</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm dòng tiền dự án">
+                <!-- Ô tìm kiếm nhanh -->
+                <field name="project_id"/>
+
+                <field name="partner_id"/>
+
+                <!-- Lọc theo loại Thu / Chi -->
+                <filter name="type_in" string="Thu" domain="[('type', '=', 'in')]" help="Chỉ hiển thị các dòng tiền Thu"/>
+                <filter name="type_out" string="Chi" domain="[('type', '=', 'out')]" help="Chỉ hiển thị các dòng tiền Chi"/>
+
+                <!-- Bộ lọc ngày: có sẵn chọn ngày, tuần, tháng, quý, năm -->
+                <filter name="date" string="Ngày" date="date"/>
+                <separator/>
+
+                <searchpanel >
+                    <!-- Lọc theo công trình -->
+                    <field name="project_id" string="Dự án/Công trình"/>
+
+                    <!-- Lọc theo đối tác -->
+                    <field name="partner_id" string="Đối tác"/>
+
+                    <!-- Lọc theo loại (Thu/Chi) -->
+                    <field name="type" string="Loại"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
     <record id="action_project_cash_flow" model="ir.actions.act_window">
         <field name="name">Dòng tiền dự án</field>
         <field name="res_model">project.cash.flow</field>
         <field name="view_mode">tree,form,graph</field>
+        <field name="search_view_id" ref="view_project_cash_flow_search"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Tạo và quản lý dòng tiền theo từng dự án.
             </p>
         </field>
-        <field name="limit">20</field>
+        <field name="limit">80</field>
     </record>
 
     <menuitem id="menu_project_cash_flow" name="Dòng tiền dự án" parent="custom_account_menu.menu_accounting_project" action="action_project_cash_flow" sequence="10"/>

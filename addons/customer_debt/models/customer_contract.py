@@ -111,6 +111,20 @@ class CustomerContract(models.Model):
     ('paused', 'Tạm ngưng'),
     ('bad_debt', 'Công nợ khó đòi'),
 ], string="Loại hợp đồng", default='preparing', tracking=True)
+    ref_code = fields.Char(
+    string="Mã tham chiếu",
+    help="Mã rút gọn để tiện tìm kiếm hợp đồng."
+)
+    settlement_value = fields.Monetary(
+    string="Giá trị quyết toán",
+    currency_field="currency_id",
+    compute="_compute_settlement_value",
+    store=True
+)
+    @api.depends('settlement_ids.amount_settlement')
+    def _compute_settlement_value(self):
+        for rec in self:
+            rec.settlement_value = sum(rec.settlement_ids.mapped('amount_settlement'))
     @api.depends('amount_untaxed', 'tax_id')
     def _compute_amount_total(self):
         """
@@ -135,7 +149,7 @@ class CustomerContract(models.Model):
             vals['name'] = self.env['ir.sequence'].next_by_code('customer.contract') or "New"
         return super().create(vals)
 
-    @api.depends('invoice_ids.amount_total', 'receipt_ids.amount')
+    @api.depends('invoice_ids.amount_total', 'receipt_ids.amount', 'settlement_value')
     def _compute_amounts(self):
         """
         Tính toán:
@@ -148,7 +162,8 @@ class CustomerContract(models.Model):
             received = sum(contract.receipt_ids.mapped('amount'))
             contract.amount_invoiced = invoiced
             contract.amount_receipt = received
-            contract.amount_due = invoiced - received
+            base_amount = contract.settlement_value if contract.settlement_value > 0 else contract.amount_total
+            contract.amount_due = base_amount - received
     display_name = fields.Char(
         string="Hiển thị",
         compute="_compute_display_name",

@@ -1,0 +1,17 @@
+<odoo>
+    <record id="view_project_project_form_inherit_internal_flag" model="ir.ui.view">
+        <field name="name">project.project.form.inherit.internal.flag</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+
+            <!-- Tìm cái group đang chứa field attachment_ids -->
+            <xpath expr="//group[field[@name='attachment_ids']]" position="after">
+                <group>
+                    <field name="is_internal_project2"/>
+                </group>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
