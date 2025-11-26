@@ -37,5 +37,5 @@
     </record>
 
     <!-- Menu mở wizard -->
-    <menuitem id="menu_supplier_invoice_report_wizard" name="Báo cáo Hóa đơn NCC" parent="menu_supplier_invoice_root" action="action_supplier_invoice_report_wizard" sequence="5"/>
+    <!-- <menuitem id="menu_supplier_invoice_report_wizard" name="Báo cáo Hóa đơn NCC" parent="menu_supplier_invoice_root" action="action_supplier_invoice_report_wizard" sequence="5"/> -->
 </odoo>
