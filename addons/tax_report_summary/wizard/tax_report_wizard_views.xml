@@ -17,19 +17,19 @@
 
                 <!-- Theo tháng -->
                 <group invisible="view_type != 'month'">
-                    <field name="month"/>
+                    <field name="month" string="Tháng"/>
                     <field name="year" widget="yearpicker" />
                 </group>
 
                 <!-- Theo quý -->
                 <group invisible="view_type != 'quarter'">
-                    <field name="quarter"/>
+                    <field name="quarter" string ="Quý"/>
                     <field name="year" widget="yearpicker" />
                 </group>
 
                 <!-- Theo năm -->
                 <group invisible="view_type != 'year'">
-                    <field name="year" widget="yearpicker" />
+                    <field name="year" string ="Năm" widget="yearpicker" />
                 </group>
 
                 <footer>
