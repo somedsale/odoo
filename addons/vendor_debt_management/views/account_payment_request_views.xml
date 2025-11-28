@@ -13,6 +13,12 @@
                     <field name="invoice_id" string="Hóa đơn"/>
                 </group>
             </xpath>
+            <xpath expr="//field[@name='note']/ancestor::group[2]" position="after">
+                <group string="Phân loại NCC">
+                    <field name="supplier_category" widget="select"/>
+                    <field name="supplier_domestic_type" widget="select"/>
+                </group>
+            </xpath>
         </field>
     </record>
 </odoo>

@@ -14,16 +14,16 @@ class InputTaxReportWizard(models.TransientModel):
         ("quarter", "Theo quý"),
         ("year", "Theo năm"),
     ], default="period")
-    date_from = fields.Date()
-    date_to = fields.Date()
-    month = fields.Selection([(str(i), f"Tháng {i}") for i in range(1, 13)])
+    date_from = fields.Date(string="Từ ngày")
+    date_to = fields.Date(string="Đến ngày")
+    month = fields.Selection([(str(i), f"Tháng {i}") for i in range(1, 13)], string = "Tháng")
     quarter = fields.Selection([
         ("1", "Quý I"),
         ("2", "Quý II"),
         ("3", "Quý III"),
         ("4", "Quý IV"),
-    ])
-    year = fields.Char(default=lambda self: str(fields.Date.today().year))
+    ], string = "Quý")
+    year = fields.Char(default=lambda self: str(fields.Date.today().year), string = "Năm")
 
     def _compute_date_range(self):
         today = date.today()
