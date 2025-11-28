@@ -92,6 +92,40 @@ class SupplierInvoice(models.Model):
         ('warehouse', 'Nhập kho'),
         ('contruction', 'Công trình'),
     ], string="Nhập kho / Công trình")
+    # Loại NCC: trong nước / nước ngoài
+    supplier_category = fields.Selection(
+        [
+            ("domestic", "NCC trong nước"),
+            ("foreign", "NCC nước ngoài"),
+        ],
+        string="Loại NCC",
+        default="domestic",
+        help="Phân loại nhà cung cấp: trong nước hoặc nước ngoài.",
+    )
+
+    # Nhóm NCC trong nước: nhân công / vật tư, dịch vụ
+    supplier_domestic_type = fields.Selection(
+        [
+            ("labor", "NCC Nhân công"),
+            ("material_service", "NCC Vật tư, dịch vụ"),
+        ],
+        string="Nhóm NCC trong nước",
+        help="Áp dụng khi Loại NCC là 'NCC trong nước'.",
+    )
+
+    # Hạng mục cung cấp
+    supply_category = fields.Many2one(
+        "supplier.supply.category",
+        string="Hạng mục cung cấp",
+        help="Hạng mục cung cấp của nhà cung cấp.",
+    )
+
+    # Đã đối chiếu công nợ
+    reconciled = fields.Boolean(
+        string="Đã đối chiếu công nợ",
+        help="Đánh dấu phiếu chi này đã được đối chiếu công nợ.",
+    )
+
     # ==============================
     # COMPUTE & ONCHANGE
     # ==============================

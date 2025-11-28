@@ -410,8 +410,8 @@
               name="Tổng hợp nhà cung cấp"
               parent="custom_account_menu.menu_accounting_reporting"/>
 
-    <!-- <menuitem id="menu_supplier_summary_report"
+    <menuitem id="menu_supplier_summary_report"
               name="Báo cáo Công nợ NCC"
               parent="menu_supplier_summary_root"
-              action="vendor_debt_management.action_supplier_summary_report"/> -->
+              action="vendor_debt_management.action_supplier_summary_report"/>
 </odoo>
