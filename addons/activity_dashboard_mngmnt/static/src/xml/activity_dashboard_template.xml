@@ -11,7 +11,7 @@
             </div>
 
             <!-- Cards -->
-            <section class="dashboard_main_section">
+            <!-- <section class="dashboard_main_section">
                 <div class="row activity_dash_card g-3">
                     <div class="col-12 col-sm-6 col-lg-3">
                         <div class="activity-dashboard-card all_activity" t-on-click="show_all_activities" role="button">
@@ -83,7 +83,7 @@
                         </div>
                     </div>
                 </div>
-            </section>
+            </section> -->
 
             <!-- ===== Layout: Tabs dọc + Nội dung ===== -->
             <div class="layout-two-cols">
@@ -134,49 +134,52 @@
         <div id="tab-planned" class="tab-panel table_activity table_planned_activity">
             <div class="table_title">Công việc đang đợi duyệt</div>
 
-            <t t-if="!planned_activity || (planned_activity and planned_activity.length == 0)">
+            <t t-if="!planned_activity || planned_activity.length === 0">
                 <div class="empty_state">
                     <i class="fa fa-check-circle"/>
                     <div>Không có dữ liệu</div>
                 </div>
             </t>
 
-            <t t-if="planned_activity and planned_activity.length">
+            <t t-if="planned_activity &amp;&amp; planned_activity.length">
                 <div class="table-responsive">
                     <table class="table table-modern" width="100%">
                         <thead>
                             <tr class="table_head">
                                 <th class="text-center" style="width:5%">STT</th>
-                                <th style="width:28%">Tên</th>
-                                <th>Loại công việc</th>
-                                <th>Phân công cho</th>
-                                <th>Ngày tới hạn</th>
-                                <th>Xem</th>
-                                <th>Xem phiếu</th>
+                                <th style="width:20%">Tên</th>
+                                <th style="width:35%">Dự án</th>
+                                <th style="width:15%">Ghi chú</th>
+                                <th style="width:15%">Ngày hoàn thành</th>
+                                <th style="width:15%"> Xem chi tiết</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr t-foreach="planned_activity" t-as="line" t-key="line.id">
-                                <td data-label="STT" class="text-center">
+                                <td class="text-center">
                                     <t t-esc="line_index + 1"/>
                                 </td>
-                                <td data-label="Tên">
-                                    <t t-esc="line['display_name']"/>
+
+                                <td>
+                                    <t t-esc="line.display_name"/>
                                 </td>
-                                <td data-label="Loại công việc">
-                                    <t t-esc="line['activity_type_id'] ? line['activity_type_id'][1] : ''"/>
+
+                                <td>
+                                    <t t-if="line.origin &amp;&amp; line.origin.project_id">
+                                        <t t-esc="line.origin.project_id[1]"/>
+                                    </t>
                                 </td>
-                                <td data-label="Phân công cho">
-                                    <t t-esc="line['user_id'] ? line['user_id'][1] : ''"/>
+
+                                <td>
+                                    <t t-if="line.origin &amp;&amp; line.origin.note">
+                                        <t t-esc="line.origin.note"/>
+                                    </t>
+                                    <t t-if="line.origin &amp;&amp; line.origin.take_note">
+                                        <t t-esc="line.origin.take_note"/>
+                                    </t>
                                 </td>
-                                <td data-label="Ngày tới hạn">
-                                    <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
-                                </td>
-                                <td data-label="Xem">
-                                    <button t-att-value="line['id']" t-on-click="click_view" class="btn-pill click-view">Xem</button>
-                                </td>
-                                <td data-label="Xem phiếu">
-                                    <button t-att-value="line['id']" t-on-click="click_origin" class="btn-pill click-origin-view">Xem phiếu</button>
+                                <td>
+                                    <button t-att-value="line.id" t-on-click="click_origin" class="btn-pill click-origin-view">Xem</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -189,50 +192,54 @@
         <div id="tab-today" class="tab-panel table_activity table_today_activity">
             <div class="table_title">Công việc hôm nay</div>
 
-            <t t-if="!today_activity || (today_activity and today_activity.length == 0)">
+            <t t-if="!today_activity || today_activity.length === 0">
                 <div class="empty_state">
                     <i class="fa fa-calendar-o"/>
                     <div>Không có dữ liệu</div>
                 </div>
             </t>
 
-            <t t-if="today_activity and today_activity.length">
+            <t t-if="today_activity &amp;&amp; today_activity.length">
                 <div class="table-responsive">
                     <table class="table table-modern" width="100%">
                         <thead>
                             <tr class="table_head">
                                 <th class="text-center" style="width:5%">STT</th>
-                                <th style="width:28%">Tên</th>
-                                <th>Loại công việc</th>
-                                <th>Phân công cho</th>
-                                <th>Ngày tới hạn</th>
-                                <th>Xem</th>
-                                <th>Xem phiếu</th>
+                                <th style="width:20%">Tên</th>
+                                <th style="width:35%">Dự án</th>
+                                <th style="width:15%">Ghi chú</th>
+                                <th style="width:15%">Ngày hoàn thành</th>
+                                <th style="width:15%"> Xem chi tiết</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr t-foreach="today_activity" t-as="line" t-key="line.id">
-                                <td data-label="STT" class="text-center">
+                                <td class="text-center">
                                     <t t-esc="line_index + 1"/>
                                 </td>
-                                <td data-label="Tên">
-                                    <t t-esc="line['display_name']"/>
+
+                                <td>
+                                    <t t-esc="line.display_name"/>
                                 </td>
-                                <td data-label="Loại công việc">
-                                    <t t-esc="line['activity_type_id'] ? line['activity_type_id'][1] : ''"/>
+
+                                <td>
+                                    <t t-if="line.origin &amp;&amp; line.origin.project_id">
+                                        <t t-esc="line.origin.project_id[1]"/>
+                                    </t>
                                 </td>
-                                <td data-label="Phân công cho">
-                                    <t t-esc="line['user_id'] ? line['user_id'][1] : ''"/>
+
+                                <td>
+                                    <t t-if="line.origin &amp;&amp; line.origin.note">
+                                        <t t-esc="line.origin.note"/>
+                                    </t>
+                                    <t t-if="line.origin &amp;&amp; line.origin.take_note">
+                                        <t t-esc="line.origin.take_note"/>
+                                    </t>
                                 </td>
-                                <td data-label="Ngày tới hạn">
-                                    <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
+                                <td>
+                                    <button t-att-value="line.id" t-on-click="click_origin" class="btn-pill click-origin-view">Xem</button>
                                 </td>
-                                <td data-label="Xem">
-                                    <button t-att-value="line['id']" t-on-click="click_view" class="btn-pill click-view">Xem</button>
-                                </td>
-                                <td data-label="Xem phiếu">
-                                    <button t-att-value="line['id']" t-on-click="click_origin" class="btn-pill click-origin-view">Xem phiếu</button>
-                                </td>
+
                             </tr>
                         </tbody>
                     </table>
@@ -244,50 +251,55 @@
         <div id="tab-overdue" class="tab-panel table_activity table_main_view">
             <div class="table_title">Công việc quá hạn</div>
 
-            <t t-if="!overdue_activity || (overdue_activity and overdue_activity.length == 0)">
+            <t t-if="!overdue_activity || overdue_activity.length === 0">
                 <div class="empty_state">
                     <i class="fa fa-exclamation-circle"/>
                     <div>Không có dữ liệu</div>
                 </div>
             </t>
 
-            <t t-if="overdue_activity and overdue_activity.length">
+            <t t-if="overdue_activity &amp;&amp; overdue_activity.length">
                 <div class="table-responsive">
                     <table class="table table-modern" width="100%">
                         <thead>
                             <tr class="table_head">
                                 <th class="text-center" style="width:5%">STT</th>
-                                <th style="width:28%">Tên</th>
-                                <th>Loại công việc</th>
-                                <th>Phân công cho</th>
-                                <th>Ngày tới hạn</th>
-                                <th>Xem</th>
-                                <th>Xem phiếu</th>
+                                <th style="width:20%">Tên</th>
+                                <th style="width:35%">Dự án</th>
+                                <th style="width:15%">Ghi chú</th>
+                                <th style="width:15%">Ngày hoàn thành</th>
+                                <th style="width:15%"> Xem chi tiết</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr t-foreach="overdue_activity" t-as="line" t-key="line.id">
-                                <td data-label="STT" class="text-center">
+
+                                <td class="text-center">
                                     <t t-esc="line_index + 1"/>
                                 </td>
-                                <td data-label="Tên">
-                                    <t t-esc="line['display_name']"/>
+
+                                <td>
+                                    <t t-esc="line.display_name"/>
                                 </td>
-                                <td data-label="Loại công việc">
-                                    <t t-esc="line['activity_type_id'] ? line['activity_type_id'][1] : ''"/>
+
+                                <td>
+                                    <t t-if="line.origin &amp;&amp; line.origin.project_id">
+                                        <t t-esc="line.origin.project_id[1]"/>
+                                    </t>
                                 </td>
-                                <td data-label="Phân công cho">
-                                    <t t-esc="line['user_id'] ? line['user_id'][1] : ''"/>
+
+                                <td>
+                                    <t t-if="line.origin &amp;&amp; line.origin.note">
+                                        <t t-esc="line.origin.note"/>
+                                    </t>
+                                    <t t-if="line.origin &amp;&amp; line.origin.take_note">
+                                        <t t-esc="line.origin.take_note"/>
+                                    </t>
                                 </td>
-                                <td data-label="Ngày tới hạn">
-                                    <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
+                                <td>
+                                    <button t-att-value="line.id" t-on-click="click_origin" class="btn-pill click-origin-view">Xem</button>
                                 </td>
-                                <td data-label="Xem">
-                                    <button t-att-value="line['id']" t-on-click="click_view" class="btn-pill click-view">Xem</button>
-                                </td>
-                                <td data-label="Xem phiếu">
-                                    <button t-att-value="line['id']" t-on-click="click_origin" class="btn-pill click-origin-view">Xem phiếu</button>
-                                </td>
+
                             </tr>
                         </tbody>
                     </table>
@@ -299,53 +311,60 @@
         <div id="tab-done" class="tab-panel table_activity table_main_view">
             <div class="table_title">Công việc hoàn thành</div>
 
-            <t t-if="!done_activity || (done_activity and done_activity.length == 0)">
+            <t t-if="!done_activity || done_activity.length === 0">
                 <div class="empty_state">
                     <i class="fa fa-flag-checkered"/>
                     <div>Không có dữ liệu</div>
                 </div>
             </t>
 
-            <t t-if="done_activity and done_activity.length">
+            <t t-if="done_activity &amp;&amp; done_activity.length">
                 <div class="table-responsive-somed">
                     <table class="table table-modern" width="100%">
                         <thead>
                             <tr class="table_head">
                                 <th class="text-center" style="width:5%">STT</th>
-                                <th style="width:28%">Tên</th>
-                                <th>Loại công việc</th>
-                                <th>Phân công cho</th>
-                                <th>Ngày tới hạn</th>
-                                <th>Ngày hoàn thành</th>
-                                <th>Xem</th>
-                                <th>Xem phiếu</th>
+                                <th style="width:20%">Tên</th>
+                                <th style="width:35%">Dự án</th>
+                                <th style="width:15%">Ghi chú</th>
+                                <th style="width:15%">Ngày hoàn thành</th>
+                                <th style="width:15%"> Xem chi tiết</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr t-foreach="done_activity" t-as="line" t-key="line.id">
-                                <td data-label="STT" class="text-center">
+
+                                <td class="text-center">
                                     <t t-esc="line_index + 1"/>
                                 </td>
-                                <td data-label="Tên">
-                                    <t t-esc="line['display_name']"/>
+
+                                <td>
+                                    <t t-esc="line.display_name"/>
                                 </td>
-                                <td data-label="Loại công việc">
-                                    <t t-esc="line['activity_type_id'] ? line['activity_type_id'][1] : ''"/>
+
+                                <td>
+                                    <t t-if="line.origin &amp;&amp; line.origin.project_id">
+                                        <t t-esc="line.origin.project_id[1]"/>
+                                    </t>
                                 </td>
-                                <td data-label="Phân công cho">
-                                    <t t-esc="line['user_id'] ? line['user_id'][1] : ''"/>
+
+                                <td>
+                                    <t t-if="line.origin &amp;&amp; line.origin.note">
+                                        <t t-esc="line.origin.note"/>
+                                    </t>
+                                    <t t-if="line.origin &amp;&amp; line.origin.take_note">
+                                        <t t-esc="line.origin.take_note"/>
+                                    </t>
                                 </td>
-                                <td data-label="Ngày tới hạn">
-                                    <t t-esc="line['date_deadline'] ? (new Date(line['date_deadline'])).toLocaleDateString('vi-VN') : ''"/>
+
+
+
+                                <td>
+                                    <t t-esc="line.date_done ? (new Date(line.date_done)).toLocaleDateString('vi-VN') : ''"/>
                                 </td>
-                                <td data-label="Ngày hoàn thành">
-                                    <t t-esc="line['date_done'] ? (new Date(line['date_done'])).toLocaleDateString('vi-VN') : ''"/>
-                                </td>
-                                <td data-label="Xem">
-                                    <button t-att-value="line['id']" t-on-click="click_view" class="btn-pill click-view">Xem</button>
-                                </td>
-                                <td data-label="Xem phiếu">
-                                    <button t-att-value="line['id']" t-on-click="click_origin" class="btn-pill click-origin-view">Xem phiếu</button>
+
+                                <td>
+                                    <button t-att-value="line.id" t-on-click="click_origin" class="btn-pill click-origin-view">Xem</button>
                                 </td>
                             </tr>
                         </tbody>

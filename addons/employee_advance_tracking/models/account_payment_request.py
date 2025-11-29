@@ -4,7 +4,20 @@ class AccountPaymentRequest(models.Model):
     _inherit = "account.payment.request"
 
     employee_advance_id = fields.Many2one("account.employee.advance", string="Theo dõi tạm ứng")
-
+    is_refunded = fields.Boolean(
+        string="Đã hoàn ứng",
+        compute="_compute_is_refunded",
+        store=True,
+    )
+    refund_receipt_id = fields.Many2one("account.receipt",string="Phiếu thu hoàn ứng (CT)",domain ="[('is_advance_refund','=',True)]")
+    @api.depends("refund_receipt_id")
+    def _compute_is_refunded(self):
+        """Phiếu chi tạm ứng -> nếu có Phiếu thu hoàn ứng thì đánh dấu đã hoàn"""
+        for rec in self:
+            if rec.is_advance and rec.refund_receipt_id:
+                rec.is_refunded = True
+            else:
+                rec.is_refunded = False
     @api.onchange("employee_id")
     def _onchange_employee_id(self):
         """Khi chọn nhân viên -> tự gán bản ghi Theo dõi tạm ứng"""
