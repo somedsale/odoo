@@ -45,11 +45,13 @@
                                 <h4 class="advance-title title-advance">TẠM ỨNG</h4>
                                 <field name="payment_ids" nolabel="1" context="{'default_employee_id': employee_id,'default_is_advance': True}">
                                     <tree >
+                                        <field name="name"/>
                                         <field name="note" string="Nội dung"/>
                                         <field name="date_payment" string="Ngày chi"/>
                                         <field name="total" string="Số tiền" widget="monetary" sum='1'/>
                                         <field name="note_advance" string="Ghi chú"/>
                                         <field name="state" string="Trạng thái" widget="badge" decoration-success="state in ['approved','paid','done','posted']"/>
+                                        <field name="is_refunded" string="Đã hoàn ứng"/>
                                         <field name ="currency_id" optional="hide"/>
                                     </tree>
                                 </field>
@@ -57,8 +59,9 @@
 
                             <div class="advance-column">
                                 <h4 class="advance-title title-refund">HOÀN ỨNG</h4>
-                                <field name="receipt_ids" nolabel="1" context="{'default_employee_id': employee_id,'default_is_advance_refund': True}">
+                                <field name="receipt_ids" nolabel="1" context="{'default_employee_id': employee_id,'default_is_advance_refund': True,'default_partner_type':'employee'}">
                                     <tree >
+                                        <field name="name"/>
                                         <field name="note" string="Nội dung"/>
                                         <field name="date" string="Ngày thu"/>
                                         <field name="amount" string="Số tiền" widget="monetary" sum='1'/>

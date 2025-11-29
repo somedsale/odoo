@@ -19,7 +19,12 @@ export class ActivityDashboard extends Component {
         var self = this;
         const planned_activity = await this.orm.call('mail.activity',
             'search_read', [], {
-            domain: [["date_deadline", ">", today]]
+            domain: [["date_deadline", ">", today]],
+            fields: [
+                "id", "display_name", "activity_type_id", "user_id",
+                "date_deadline", "date_done",
+                "res_model", "res_id"
+            ]
         });
 
         // Today: deadline = hôm nay
@@ -31,14 +36,28 @@ export class ActivityDashboard extends Component {
         // Overdue: deadline < hôm nay
         const overdue_activity = await this.orm.call('mail.activity',
             'search_read', [], {
-            domain: [["date_deadline", "<", today]]
+            domain: [["date_deadline", "<", today]],
+            fields: [
+                "id", "display_name", "activity_type_id", "user_id",
+                "date_deadline", "date_done",
+                "res_model", "res_id"
+            ]
         });
 
         // Done: state = done
         const done_activity = await this.orm.call('mail.activity',
             'search_read', [], {
-            domain: [['active', '=', false]]
+            domain: [['active', '=', false]],
+            fields: [
+                "id", "display_name", "activity_type_id", "user_id",
+                "date_deadline", "date_done",
+                "res_model", "res_id"
+            ]
         });
+        await this.attachOriginData(planned_activity);
+        await this.attachOriginData(today_activity);
+        await this.attachOriginData(overdue_activity);
+        await this.attachOriginData(done_activity);
 
         // Activity Type count
         self.len_all = planned_activity.length + done_activity
@@ -55,6 +74,55 @@ export class ActivityDashboard extends Component {
             'search_count', [],
             { domain: [] });
     }
+    async attachOriginData(list) {
+        for (let act of list) {
+            if (!act.res_model || !act.res_id) {
+                act.origin = null;
+                continue;
+            }
+
+            try {
+                // 1. Lấy metadata của model
+                const fieldsInfo = await this.orm.call(
+                    act.res_model,
+                    "fields_get",
+                    [],
+                    {}
+                );
+
+                // 2. Các field an toàn luôn có
+                const safeFields = ["id", "name", "state"];
+
+                // 3. Kiểm tra field project_id
+                if ("project_id" in fieldsInfo) {
+                    safeFields.push("project_id");
+                }
+                // 4. Kiểm tra field note
+                if ("note" in fieldsInfo) {
+                    safeFields.push("note");
+                }
+                // 5. Kiểm tra field take_note
+                if ("take_note" in fieldsInfo) {
+                    safeFields.push("take_note");
+                }
+
+                // 6. Đọc record một cách an toàn
+                const rec = await this.orm.call(
+                    act.res_model,
+                    "read",
+                    [act.res_id],
+                    { fields: safeFields }
+                );
+
+                act.origin = rec[0];
+
+            } catch (error) {
+                console.warn("Cannot read origin model", act.res_model, act.res_id, error);
+                act.origin = null;
+            }
+        }
+    }
+
     /**
       * Event handler to open the list of all activities.
       */

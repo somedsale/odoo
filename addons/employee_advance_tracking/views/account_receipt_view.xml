@@ -2,16 +2,14 @@
 <odoo>
     <data>
         <!-- 🌟 Kế thừa form view Phiếu Thu để thêm liên kết với Giấy đề nghị giải chi -->
-        <record id="view_account_receipt_form_inherit_proposal" model="ir.ui.view">
-            <field name="name">account.receipt.form.inherit.proposal</field>
+        <record id="view_account_receipt_form_inherit_tracking" model="ir.ui.view">
+            <field name="name">account.receipt.form.inherit.tracking</field>
             <field name="model">account.receipt</field>
             <field name="inherit_id" ref="custom_accounting_receipt.view_account_receipt_form"/>
             <field name="arch" type="xml">
                 <!-- Thêm field mới ngay dưới project_id -->
-                <xpath expr="//field[@name='project_id']" position="after">
-                    <field name="payment_proposal_id" options="{'no_create': True}" />
-                    <field name ="is_advance_refund"/>
-                    <field name="note_advance_refund" placeholder="Ghi chú hoàn ứng" invisible="is_advance_refund == False"/>
+                <xpath expr="//field[@name='note_advance_refund']" position="after">
+                    <field name="payment_id" options="{'no_create': True}" invisible="is_advance_refund == False"/>
                 </xpath>
             </field>
         </record>

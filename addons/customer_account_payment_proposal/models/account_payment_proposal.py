@@ -146,7 +146,7 @@ class AccountPaymentProposal(models.Model):
             )
 
             rec.can_paid = (
-                rec.state in ["director_approved", "account_approved"] and is_accountant
+                rec.state in ["director_approved", "account_approved"] and is_accountant and current_user != rec.director_user_id
             )
             rec.can_reset_draft = (
                 rec.state == "rejected"
@@ -177,9 +177,47 @@ class AccountPaymentProposal(models.Model):
         return super().create(vals)
     # ========== HÀNH ĐỘNG ==========
     def action_submit(self):
+        accountant_group = self.env.ref("account.group_account_manager", raise_if_not_found=False)
+        current_user = self.env.user
+
         for rec in self:
             if not rec.line_ids:
                 raise UserError(_("Phải có ít nhất một dòng chi tiết trước khi gửi duyệt."))
+
+            # ===== 1) Nếu người gửi là KẾ TOÁN → nhảy thẳng tới account_approved =====
+            if accountant_group and current_user in accountant_group.users:
+                rec.state = "account_approved"
+                rec.accountant_approved_at = fields.Datetime.now()
+
+                director_partner = rec.director_user_id.partner_id.id if rec.director_user_id else None
+
+                rec._send_notification(
+                    "💰 Phiếu giải chi do kế toán gửi, chuyển trực tiếp cho giám đốc duyệt.",
+                    [director_partner] if director_partner else []
+                )
+
+                if rec.director_user_id:
+                    rec.activity_schedule(
+                        activity_type_id=self.env.ref("mail.mail_activity_data_todo").id,
+                        user_id=rec.director_user_id.id,
+                        summary=f"Duyệt phiếu giải chi {rec.name}",
+                        note=f"📌 Phiếu giải chi <b>{rec.name}</b> đang chờ giám đốc duyệt.",
+                        date_deadline=fields.Date.today() + timedelta(days=2),
+                    )
+                continue
+
+            # ===== 2) Nếu người gửi là TRƯỞNG PHÒNG → bỏ qua bước 'submitted' =====
+            if rec.manager_id and rec.manager_id.user_id == current_user:
+                rec.state = "dept_approved"
+                rec.manager_approved_at = fields.Datetime.now()
+
+                rec._send_notification(
+                    "👨‍💼 Trưởng phòng đã gửi và tự duyệt, chuyển cho kế toán kiểm tra.",
+                    rec._get_accountant_partners()
+                )
+                continue
+
+            # ===== 3) Người gửi KHÔNG phải kế toán / trưởng phòng → Luồng cũ =====
             rec.state = "submitted"
             rec._send_notification(
                 "📤 Phiếu giải chi đã được gửi cho trưởng phòng duyệt.",
