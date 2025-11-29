@@ -5,6 +5,7 @@ class AccountReceipt(models.Model):
     _order = "name desc"
 
     employee_advance_id = fields.Many2one("account.employee.advance", string="Theo dõi tạm ứng")
+    payment_id = fields.Many2one("account.payment.request",string="Phiếu chi tạm ứng (CT)",domain ="[('is_advance','=',True)]")
 
     @api.onchange("employee_id")
     def _onchange_employee_id(self):
@@ -17,16 +18,31 @@ class AccountReceipt(models.Model):
 
     @api.model
     def create(self, vals):
+        rec = super().create(vals)
+
+        # Nếu tạo phiếu thu mà có chọn phiếu chi tạm ứng -> link ngay
+        if rec.payment_id:
+            rec.payment_id.sudo().write({
+                "refund_receipt_id": rec.id
+            })
+
+        # Logic gốc (giữ nguyên): gán employee_advance_id nếu thiếu
         if vals.get("employee_id") and not vals.get("employee_advance_id"):
             advance = self.env["account.employee.advance"].search(
                 [("employee_id", "=", vals["employee_id"])], limit=1
             )
             if advance:
-                vals["employee_advance_id"] = advance.id
-        return super().create(vals)
+                rec.sudo().write({"employee_advance_id": advance.id})
+
+        return rec
     def write(self, vals):
         res = super().write(vals)
         for rec in self:
+            if "payment_id" in vals and rec.payment_id:
+            # Gắn phiếu thu hoàn ứng vào phiếu chi
+                rec.payment_id.sudo().write({
+                    "refund_receipt_id": rec.id
+                })
             # Nếu tick "Hoàn ứng" và có nhân viên mà chưa có liên kết theo dõi
             if rec.is_advance_refund and rec.employee_id and not rec.employee_advance_id:
                 advance = rec.env["account.employee.advance"].search(

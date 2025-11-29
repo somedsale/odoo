@@ -13,6 +13,8 @@ Quản lý và theo dõi tạm ứng nhân viên:
     'data': [
         'security/ir.model.access.csv',
         'views/account_employee_advance_view.xml',
+        'views/account_payment_request.xml',
+        'views/account_receipt_view.xml',
     ],
     'assets': {
         'web.assets_backend': [

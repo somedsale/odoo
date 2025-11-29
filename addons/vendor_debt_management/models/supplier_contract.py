@@ -270,6 +270,12 @@ class SupplierContract(models.Model):
         return rows
     @api.model
     def create(self, vals):
+        # Tự động sinh số hợp đồng
         if vals.get('name', "New") == "New":
             vals['name'] = self.env['ir.sequence'].next_by_code('supplier.contract') or "New"
-        return super().create(vals)
+        # Tạo record trước
+        rec = super().create(vals)
+        # Tự động tăng supplier_rank cho nhà cung cấp
+        if rec.partner_id:
+            rec.partner_id._increase_rank('supplier_rank')
+        return rec

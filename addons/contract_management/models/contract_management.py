@@ -540,11 +540,9 @@ class ProjectProject(models.Model):
 
                         # 💬 Thông báo đẹp bằng Markup, có link đến contract
                         msg = Markup(
-                            "📦 Dự án <b>%s</b> đã <b>Hoàn tất</b>.<br/>"
-                        ) % (
-                            escape(pr.name),
-                            contract.id,
-                            escape(contract.display_name),
+                            f"📦 Dự án <b>{escape(pr.name)}</b> đã <b>Hoàn tất</b>.<br/>"
+                            f"<a href='/web#id={contract.id}&model=contract.management&view_type=form' target='_blank'>"
+                            f"{escape(contract.display_name)}</a>"
                         )
 
                         contract.message_post(body=msg)

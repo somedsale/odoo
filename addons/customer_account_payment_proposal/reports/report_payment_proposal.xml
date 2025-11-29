@@ -289,27 +289,61 @@ Email: <span style="text-transform:lowercase;" t-esc="res_company.email"/>
 
         <table style="width:100%; text-align:center; border-color: white; border-style: none; outline: none; border-collapse: collapse;">
             <!-- Hàng 1: Ngày xác nhận (trên cùng) -->
+            <t t-set="current_year" t-value="datetime.datetime.today().year"/>
+
+            <t t-set="sp">
+                <span style="display:inline-block; width:10px;"></span>
+            </t>
             <tr style="border:none; padding-bottom:5px;">
+
                 <td class="sig-cell">
                     <div class="sig-date">
-                        <t t-esc="(o.date_request and o.date_request.strftime('%d/%m/%Y')) or ''"/>
+                        <t t-if="o.date_request">
+                            <t t-esc="o.date_request.strftime('%d/%m/%Y')"/>
+                        </t>
+                        <t t-else="">
+                /                            <t t-raw="sp"/>
+/                            <span t-esc="current_year"/>
+                        </t>
                     </div>
                 </td>
+
                 <td class="sig-cell">
                     <div class="sig-date">
-                        <t t-esc="(o.manager_approved_at and o.manager_approved_at.strftime('%d/%m/%Y')) or ''"/>
+                        <t t-if="o.manager_approved_at">
+                            <t t-esc="o.manager_approved_at.strftime('%d/%m/%Y')"/>
+                        </t>
+                        <t t-else="">
+                /                            <t t-raw="sp"/>
+/                            <span t-esc="current_year"/>
+                        </t>
                     </div>
                 </td>
+
                 <td class="sig-cell">
                     <div class="sig-date">
-                        <t t-esc="(o.accountant_approved_at and o.accountant_approved_at.strftime('%d/%m/%Y')) or ''"/>
+                        <t t-if="o.accountant_approved_at">
+                            <t t-esc="o.accountant_approved_at.strftime('%d/%m/%Y')"/>
+                        </t>
+                        <t t-else="">
+                /                            <t t-raw="sp"/>
+/                            <span t-esc="current_year"/>
+                        </t>
                     </div>
                 </td>
+
                 <td class="sig-cell">
                     <div class="sig-date">
-                        <t t-esc="(o.director_approved_at and o.director_approved_at.strftime('%d/%m/%Y')) or ''"/>
+                        <t t-if="o.director_approved_at">
+                            <t t-esc="o.director_approved_at.strftime('%d/%m/%Y')"/>
+                        </t>
+                        <t t-else="">
+                /                            <t t-raw="sp"/>
+/                            <span t-esc="current_year"/>
+                        </t>
                     </div>
                 </td>
+
             </tr>
 
             <!-- Hàng 2: Vai trò -->

@@ -196,3 +196,9 @@ class SupplierInvoice(models.Model):
     _sql_constraints = [
         ("unique_invoice_number", "unique(invoice_number)", "Số hóa đơn đã tồn tại, vui lòng nhập số khác."),
     ]
+    @api.model
+    def create(self, vals):
+        rec = super().create(vals)
+        if rec.partner_id:
+            rec.partner_id._increase_rank('supplier_rank')
+        return rec

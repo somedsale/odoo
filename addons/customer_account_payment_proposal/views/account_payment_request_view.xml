@@ -9,8 +9,8 @@
             <xpath expr="//field[@name='payment_type']" position="after">
                 <field name="payment_proposal_id" options="{'no_create': True}"/>
                 <field name="is_advance"/>
-                <field name="employee_id" options="{'no_create': True}"/>
-                <field name="note_advance" placeholder="Ghi chú tạm ứng"/>
+                <field name="employee_id" options="{'no_create': True}" invisible="is_advance == False"/>
+                <field name="note_advance" placeholder="Ghi chú tạm ứng" invisible="is_advance == False"/>
             </xpath>
 
         </field>
