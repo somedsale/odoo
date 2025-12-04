@@ -68,7 +68,14 @@ class ContractManagement(models.Model):
 
     name = fields.Char(string='Tên hợp đồng', required=True, tracking=True)
     num_contract = fields.Char(string='Số hợp đồng')
-
+    display_name = fields.Char(compute='_compute_display_name', store=True)
+    @api.depends('num_contract', 'name')
+    def _compute_display_name(self):
+        for rec in self:
+            if rec.num_contract:
+                rec.display_name = f"Số HĐ: {rec.num_contract}"
+            else:
+                rec.display_name = rec.name
     # +++ Số tiền +++
     currency_id = fields.Many2one(
         'res.currency', string='Tiền tệ',
@@ -174,7 +181,9 @@ class ContractManagement(models.Model):
         self.ensure_one()
         # Đặt tên dự án
         if self.sale_order_id.x_project_name:
-            name_project = f"Số HĐ {self.num_contract or '...'} - {self.sale_order_id.x_project_name}"
+            # name_project = f"Số HĐ {self.num_contract or '...'} - {self.sale_order_id.x_project_name}"
+            name_project = self.sale_order_id.x_project_name
+
         else:
             name_project = self.sale_order_id.name
 
@@ -266,6 +275,7 @@ class ContractManagement(models.Model):
 
             if not existing_customer_contract:
                 customer_contract_vals = {
+                    'contract_id': rec.id,
                     'contract_number': rec.num_contract or '/',
                     'partner_id': rec.partner_id.id,
                     'project_id': project.id if project else False,
@@ -363,6 +373,7 @@ class ContractManagement(models.Model):
         self.ensure_one()
         project = self.project_id or (self._create_project_and_sync() if self.stage in ('executing', 'completed') else False)
         return {
+            'contract_id': self.id,
             'contract_number': self.num_contract or '/',
             'partner_id': self.partner_id.id,
             'project_id': project.id if project else False,
@@ -512,7 +523,10 @@ class ProjectProject(models.Model):
         'sale.order', string='Đơn bán',
         related='contract_id.sale_order_id', store=True, readonly=True
     )
-
+    num_contract = fields.Char(
+        string='Số hợp đồng',
+        related='contract_id.num_contract', store=True, readonly=True
+    )
     @api.model_create_multi
     def create(self, vals_list):
         projects = super().create(vals_list)

@@ -14,6 +14,7 @@ class CustomerContract(models.Model):
         copy=False, 
         default="New"
     )
+    contract_id = fields.Many2one('contract.management', string="Hợp đồng", ondelete="cascade")
     contract_number = fields.Char(string="Số hợp đồng", tracking=True)
     date = fields.Date(string="Ngày ký", default=fields.Date.today, tracking=True)
     partner_id = fields.Many2one(
