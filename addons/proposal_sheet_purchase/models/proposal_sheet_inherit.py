@@ -64,6 +64,11 @@ class ProposalSheet(models.Model):
         Kết quả:
         - Gộp theo vendor -> mỗi vendor 1 PO
         - Mỗi PO chỉ link những phiếu nào thực sự có dòng mua cho vendor đó
+
+        Logic dòng:
+        - Nếu line.product_id có giá trị -> dùng product_id
+        - Ngược lại, dùng material_id.product_id (như cũ)
+        - Nếu cả 2 đều không có -> tạo product tạm từ material_id
         """
         if not self:
             raise UserError(_("Không có phiếu đề xuất nào được chọn."))
@@ -94,15 +99,24 @@ class ProposalSheet(models.Model):
             raise ValidationError(_("Các Phiếu Đề Xuất phải cùng loại tiền tệ."))
         common_currency = currencies[0] if currencies else self.env.company.currency_id
 
-        # 5. Build vendor_groups: {vendor: {"lines": [...], "sheet_ids": set([...])}}
+        # 5. Gom theo vendor: {vendor: {"lines": [...], "sheet_ids": set([...])}}
         vendor_groups = {}
         for sheet in self:
             for line in sheet.material_line_ids:
+                if not line.quantity:
+                    continue
+
                 if not line.vendor_id:
+                    label = (
+                        line.product_id.display_name
+                        or (line.material_id and line.material_id.display_name)
+                        or (line.description or "/")
+                    )
                     raise ValidationError(
                         _("Dòng vật tư '%s' trong phiếu %s chưa có Nhà cung cấp.")
-                        % (line.material_id.display_name, sheet.name)
+                        % (label, sheet.name)
                     )
+
                 vendor = line.vendor_id
                 bucket = vendor_groups.setdefault(vendor, {"lines": [], "sheet_ids": set()})
                 bucket["lines"].append(line)
@@ -117,14 +131,20 @@ class ProposalSheet(models.Model):
         # 6. Tạo PO cho từng vendor
         for vendor, data in vendor_groups.items():
             vendor_lines = data["lines"]
-            sheet_ids_for_vendor = list(data["sheet_ids"])  # [id1, id2, ...]
-            sheets_for_vendor = self.browse(sheet_ids_for_vendor)  # recordset proposal.sheet
+            sheets_for_vendor = self.browse(list(data["sheet_ids"]))
 
             # Gộp line theo (product_id, uom_id, price_unit, name)
             consolidated = {}
             for l in vendor_lines:
-                product = getattr(l.material_id, "product_id", False) and l.material_id.product_id or False
-                if not product:
+                # --- Xác định product ---
+                product = (
+                    l.product_id
+                    or (l.material_id and getattr(l.material_id, "product_id", False))
+                    or False
+                )
+
+                # Nếu vẫn không có product -> tạo product tạm từ material (giữ behavior cũ)
+                if not product and l.material_id:
                     product = self.env["product.product"].create({
                         "name": l.material_id.display_name,
                         "type": "service",
@@ -134,11 +154,24 @@ class ProposalSheet(models.Model):
                         "sale_ok": False,
                     })
 
-                line_name = l.material_id.display_name or (l.description or "/")
+                if not product:
+                    label = l.description or "/"
+                    raise ValidationError(
+                        _("Không xác định được Sản phẩm cho dòng vật tư '%s'." % label)
+                    )
+
+                # --- Thông tin dòng PO ---
+                line_name = (
+                    l.description
+                    or product.display_name
+                    or (l.material_id and l.material_id.display_name)
+                    or "/"
+                )
+                uom = l.unit or product.uom_po_id or product.uom_id
                 unit_price = float(l.price_unit or 0.0)
                 qty = l.quantity or 0.0
 
-                key = (product.id, l.unit.id, unit_price, line_name)
+                key = (product.id, uom.id, unit_price, line_name)
                 consolidated[key] = consolidated.get(key, 0.0) + qty
 
             order_lines_vals = []
