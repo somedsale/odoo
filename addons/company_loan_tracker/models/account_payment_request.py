@@ -53,3 +53,17 @@ class AccountPaymentRequest(models.Model):
                 rec.interest_shortfall = diff if diff > 0 else 0.0
             else:
                 rec.interest_shortfall = 0.0
+    is_office_loan_allowed = fields.Boolean(
+    compute="_compute_is_office_loan_allowed",
+    store=False
+)
+
+    @api.depends('cost_classification', 'expense_category_id')
+    def _compute_is_office_loan_allowed(self):
+        for rec in self:
+            if rec.cost_classification != "office":
+                rec.is_office_loan_allowed = False
+                continue
+
+            code = rec.expense_category_id.code_ref or ""
+            rec.is_office_loan_allowed = code in ["LGVNH", "LGCVN"]

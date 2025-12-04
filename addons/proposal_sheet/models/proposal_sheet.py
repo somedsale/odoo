@@ -71,6 +71,11 @@ class ProposalSheet(models.Model):
     treasurer_confirmed_note = fields.Char(
         compute='_compute_treasurer_confirmed_note', store=False
     )
+    is_new_proposal = fields.Boolean(
+    string="Ver mới",
+    default=False,
+    help="Dòng mới dùng product_id. Các dòng cũ (tạo trước khi nâng cấp) sẽ không được tick và vẫn hiển thị material_id."
+)
     @api.depends('treasurer_confirmed')
     def _compute_treasurer_confirmed_note(self):
         for r in self:
@@ -124,6 +129,8 @@ class ProposalSheet(models.Model):
                 vals['type'] = 'expense'
             else:
                 raise ValidationError('Vui lòng chọn loại đề xuất trước khi lưu.')
+        if not vals.get('is_new_proposal'):
+            vals['is_new_proposal'] = True
         if not vals.get('task_id') and self.env.context.get('default_task_id'):
             task = self.env['project.task'].browse(self.env.context.get('default_task_id'))
             vals['task_id'] = task.id
@@ -542,3 +549,9 @@ class ProposalSheet(models.Model):
             'url': f'/report/pdf/proposal_sheet.report_proposal_sheet_template/{self.id}?filename={filename}',
             'target': 'new',
         }
+    @api.model
+    def default_get(self, fields):
+        res = super().default_get(fields)
+        # Khi tạo mới → mặc định là ver mới
+        res['is_new_proposal'] = True
+        return res

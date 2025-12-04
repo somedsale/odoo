@@ -15,6 +15,7 @@
                 <field name="show_button_done" invisible="1"/>
                 <field name="show_button_reset_draft" invisible="1"/>
                 <field name="is_type_readonly" invisible="1"/>
+                <field name="is_new_proposal" invisible="1"/>
                 <header>
                     <button name="action_submit" type="object" string="Gửi Duyệt" class="btn-primary" invisible="show_button_submit == False"/>
                     <button name="action_manager_approve" type="object" string="Quản Lý Duyệt" class="btn-success" invisible="show_button_manager_approve == False"/>
@@ -68,7 +69,8 @@
                         <page string="Chi Tiết Vật Tư" invisible="type != 'material'">
                             <field name="material_line_ids" context="{'default_type': 'material'}" readonly="state !='draft'">
                                 <tree editable="bottom">
-                                    <field name="material_id" required="1" />
+                                    <field name="product_id" column_invisible="parent.is_new_proposal == False" />
+                                    <field name="material_id" column_invisible="parent.is_new_proposal == True"/>
                                     <field name="quantity" required="1"/>
                                     <field name="unit" />
                                     <field name="estimate_price_unit" string="Giá dự toán" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" optional="hide"/>
