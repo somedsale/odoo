@@ -72,6 +72,8 @@
                                     <field name="product_id" column_invisible="parent.is_new_proposal == False" />
                                     <field name="material_id" column_invisible="parent.is_new_proposal == True"/>
                                     <field name="quantity" required="1"/>
+                                    <field name="stock_qty_on_hand"/>
+                                    <!-- <field name="stock_qty_available"/> -->
                                     <field name="unit" />
                                     <field name="estimate_price_unit" string="Giá dự toán" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" optional="hide"/>
                                     <field name="estimate_price_total" string="Tổng giá dự toán" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng" optional="hide"/>

@@ -13,7 +13,7 @@
         "views/product_attribute_set_views.xml",
         "views/product_type_views.xml",
         "views/product_template_views.xml",
-        "views/product_normal_form_view.xml",
+        # "views/product_normal_form_view.xml",
     ],
     "installable": True,
     "application": False,

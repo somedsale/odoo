@@ -100,8 +100,51 @@ class ProposalMaterialLine(models.Model):
         compute='_compute_price_taxed',
         store=True,
     )
+    stock_qty_on_hand = fields.Float(
+        string="Tồn thực tế",
+        compute="_compute_stock_qty",
+        store=False,
+    )
+    stock_qty_available = fields.Float(
+        string="Tồn có thể dùng",
+        compute="_compute_stock_qty",
+        store=False,
+    )
     # ========== COMPUTE ==========
+    @api.depends('product_id')
+    def _compute_stock_qty(self):
+        """
+        Tính tồn kho cho từng dòng:
+        - Tồn thực tế: tổng quantity của product trong tất cả location usage='internal'
+        - Tồn có thể dùng: quantity - reserved_quantity
+        """
+        Quant = self.env['stock.quant']
+        Location = self.env['stock.location']
 
+        # Lấy tất cả location nội bộ 1 lần (đỡ tốn query)
+        internal_locs = Location.search([('usage', '=', 'internal')]).ids
+
+        for line in self:
+            line.stock_qty_on_hand = 0.0
+            line.stock_qty_available = 0.0
+
+            if not line.product_id or not internal_locs:
+                continue
+
+            data = Quant.read_group(
+                [
+                    ('product_id', '=', line.product_id.id),
+                    ('location_id', 'in', internal_locs),
+                ],
+                ['quantity:sum', 'reserved_quantity:sum'],
+                ['product_id'],
+            )
+
+            if data:
+                qty = data[0]['quantity'] or 0.0
+                reserved = data[0]['reserved_quantity'] or 0.0
+                line.stock_qty_on_hand = qty
+                line.stock_qty_available = qty - reserved
     @api.depends('material_id', 'product_id')
     def _compute_tax_material(self):
         """
