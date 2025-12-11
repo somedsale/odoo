@@ -123,7 +123,7 @@
                                             <span t-esc="stt"/>
                                         </td>
                                         <td>
-                                            <span t-field="line.product_id.name"/>
+                                        <span t-esc="line.product_display_name or line.product_id.name"/>
                                         </td>
                                         <t t-if="doc.is_show_image">
                                             <td style="text-align:center; border-right: 1px solid black;">
@@ -142,7 +142,7 @@
                                         </t>
                                         <td>
                                             <i>
-                                                <span t-field="line.x_thongso"/>
+                                                <span t-field="line.name"/>
                                             </i>
                                         </td>
                                         <td class="text-center">

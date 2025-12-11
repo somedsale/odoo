@@ -9,18 +9,34 @@
             <xpath expr="//sheet//field[@name=&apos;product_id&apos;]" position="before">
                 <field name="project_id"/>
                 <field name="sale_product_ids" invisible="1"/>
-
+                <field name="sale_product_id" domain="[('id', 'in', sale_product_ids or [])]" options="{'no_create': True}" invisible="not sale_product_ids" />
             </xpath>
+                <!-- chèn sau field product_id -->
+        <xpath expr="//field[@name='product_id']" position="after">
+            <field name="product_description"/>
+        </xpath>
             <!-- GẮN DOMAIN trực tiếp cho field product_id -->
             <!-- thêm domain an toàn cho product_id -->
             <!-- <xpath expr="//field[@name='product_id']" position="attributes">
                 <attribute name="domain">[('id', 'in', sale_product_ids)]</attribute>
             </xpath> -->
-            <xpath expr="//notebook//page//field[@name='product_id']" position="replace">
+            <!-- <xpath expr="//notebook//page//field[@name='product_id']" position="replace">
                 <field name="product_id" force_save="1" context="{'default_detailed_type': 'product'}" required="1" readonly="move_lines_count &gt; 0 or state == 'cancel' or (state != 'draft' and not additional)" domain="['&amp;','&amp;',
                 ('type', 'in', ['product', 'consu']),
                 ('id', '!=', parent.product_id),
                 ('categ_id.name', '=', 'Vật tư')]" />
+            </xpath> -->
+            <!-- Ẩn cột Dự báo chuẩn nếu bạn muốn -->
+            <xpath expr="//field[@name='move_raw_ids']/tree/field[@name='forecast_availability']" position="replace">
+                <field name="mrp_location_state" widget="badge" options="{
+                       'terminology': {
+                           'enough': 'Có hàng',
+                           'partial': 'Thiếu một phần',
+                           'none': 'Không có hàng'
+                       }
+                   }" />
+                <field name="mrp_qty_on_hand_location" string="Tồn có thể dùng" readonly="1"/>
+                <field name="mrp_qty_on_hand_location" string="Tồn thực tế" readonly="1"/>
             </xpath>
         </field>
     </record>

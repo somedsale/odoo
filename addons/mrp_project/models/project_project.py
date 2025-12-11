@@ -16,6 +16,7 @@ class ProjectProject(models.Model):
     def _compute_sale_product_ids(self):
         for p in self:
             if p.sale_order_id:
-                p.sale_product_ids = [(6, 0, p.sale_order_id.order_line.mapped('product_id').ids)]
-        else:
-            p.sale_product_ids = [(5, 0, 0)]
+                # recordset product.product
+                p.sale_product_ids = p.sale_order_id.order_line.mapped('product_id')
+            else:
+                p.sale_product_ids = False
