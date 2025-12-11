@@ -8,9 +8,22 @@
                     <group colspan="2">
                         <field name="name" string="Khoản mục"/>
                         <field name="classification" string="Phân loại chi phí"/>
+                        <field name="code_ref" string="Mã tham chiếu" readonly="1"/>
                     </group>
                 </sheet>
             </form>
+        </field>
+    </record>
+    <record id="view_expense_category_tree" model="ir.ui.view">
+        <field name="name">expense.category.tree</field>
+        <field name="model">expense.category</field>
+        <field name="arch" type="xml">
+            <tree string="Nhóm chi phí" default_order="parent_path">
+                <field name="name"/>
+                <field name="classification"/>
+                <field name="code_ref" string="Mã tham chiếu" readonly="1"/>
+                <field name="active"/>
+            </tree>
         </field>
     </record>
 </odoo>

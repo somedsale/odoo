@@ -9,7 +9,7 @@
         <field name="arch" type="xml">
             <tree>
                 <field name="name"/>
-                <field name="contract_number"/>
+                <field name="contract_id"/>
                 <field name="date"/>
                 <field name ="ref_code"/>
                 <field name="project_id"/>
@@ -37,7 +37,7 @@
                     <group col="2">
                         <group>
                             <field name="name"/>
-                            <field name="contract_number"/>
+                            <field name="contract_id" widget="many2one"/>
                             <field name="date"/>
                             <field name="project_id" require="1" options="{'no_create':True}"/>
                             <field name="partner_id" require="1"/>

@@ -54,6 +54,11 @@ class AccountingPaymentRequest(models.Model):
         ('not yet', 'Chưa chi'),
         ('paid', 'Đã chi'),
     ], default='not yet')
+    @api.onchange('cost_classification')
+    def _onchange_cost_classification(self):
+        """Khi đổi Phân loại chi phí -> reset lại Khoản mục cho đúng domain."""
+        for rec in self:
+            rec.expense_category_id = False
     @api.model
     def create(self, vals):
         if vals.get('name', '/') == '/':

@@ -59,15 +59,15 @@
         <!-- Khối thanh toán / tạm ứng / yêu cầu chi
              Chèn trước notebook -->
         <xpath expr="//sheet/notebook" position="before">
-          <group col="3">
+          <group col="2">
 
-            <group string="Thanh toán khi xác nhận">
+            <!-- <group string="Thanh toán khi xác nhận">
               <field name="auto_payment_on_confirm"/>
               <field name="payment_on_confirm_type" invisible="not auto_payment_on_confirm"/>
               <field name="advance_amount_type" invisible="(not auto_payment_on_confirm) or (payment_on_confirm_type != 'advance')"/>
               <field name="advance_percent" invisible="(not auto_payment_on_confirm) or (payment_on_confirm_type != 'advance') or (advance_amount_type != 'percent')"/>
               <field name="advance_amount" invisible="(not auto_payment_on_confirm) or (payment_on_confirm_type != 'advance') or (advance_amount_type != 'fixed')"/>
-            </group>
+            </group> -->
 
             <group string="Thanh toán đơn hàng">
               <field name="amount_total" readonly="1"/>
@@ -151,13 +151,7 @@
                                or has_full_request
                                or is_fully_requested
                                or (amount_requested == 0)"/>
-          <button name="action_validate_existing_receipts"
-          groups="account.group_account_manager" 
-                  type="object"
-                  string="Xác nhận phiếu nhập"
-                  class="oe_highlight"
-                  invisible="(shipping_status not in ['done']) or (receiving_status not in ['none'])"
-                  />
+            <button name="action_validate_existing_receipts" groups="account.group_account_manager" type="object" string="Xác nhận phiếu nhập" class="oe_highlight" invisible="(shipping_status not in ['done']) or (receiving_status not in ['none'])" />
 
             <!-- Hủy -->
             <button name="button_cancel" groups="account.group_account_manager" type="object" class="btn-secondary" string="Hủy" confirm="Bạn có chắc muốn hủy không?" invisible="state in ['cancel']"/>

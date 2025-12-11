@@ -10,9 +10,12 @@
                 <xpath expr="//button[@name=&apos;action_quotation_send&apos;]" position="after">
                     <button name="action_set_sent" type="object" string="Gửi báo giá" class="oe_highlight" invisible="state != &apos;draft&apos;" confirm="Bạn có chắc muốn chuyển trạng thái sang Đã gửi?"/>
                 </xpath>
+                <xpath expr="//field[@name=&apos;order_line&apos;]/tree/field[@name=&apos;name&apos;]" position="before">
+                    <field name="product_display_name" optional="show"/>
+                </xpath>
                 <xpath expr="//field[@name=&apos;order_line&apos;]/tree/field[@name=&apos;name&apos;]" position="after">
                     <field name="default_code" string="Mã SP" class="oe_ellipsis" optional="hide"/>
-                    <field name="x_thongso" string="Thông số" class="oe_ellipsis" optional="show"/>
+                    <field name="x_thongso" string="Thông số" class="oe_ellipsis" optional="hide"/>
                     <field name="x_xuatxu" string="Xuất xứ" class="oe_ellipsis" optional="show"/>
                     <field name="x_hangsx" string="Hãng SX" class="oe_ellipsis" optional="show"/>
                     <field name="x_chi_phi_nhan_cong" widget="monetary" optional="hide"/>

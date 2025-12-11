@@ -12,7 +12,7 @@
                 <field name="create_date" string="Ngày tạo"/>
                 <field name="date_payment" string="Ngày chi"/>
                 <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="1" sum="Tổng"/>
-                <field name="state" widget="badge" decoration-muted="state == 'draft'" decoration-primary="state == 'confirmed'" decoration-success="state == 'done'"/>
+                <field name="state" string="Trạng thái" widget="badge" decoration-muted="state == 'draft'" decoration-primary="state == 'confirmed'" decoration-success="state == 'done'"/>
                 <field name="status_expense" widget="badge" string="Trạng thái chi tiền" decoration-danger="status_expense == 'not yet'" decoration-success="status_expense == 'paid'"/>
             </tree>
         </field>
@@ -52,7 +52,7 @@
                         </group>
                         <group>
                             <field name="cost_classification" widget="select" readonly="state != 'draft'"/>
-                            <field name="expense_category_id"/>
+                            <field name="expense_category_id" context="{'default_classification': cost_classification}"/>
                             <field name="project_id" invisible="cost_classification != 'project'" readonly="state != 'draft'"/>
                             <field name="date" invisible="proposal_person_id == False" readonly="state != 'draft'"/>
                             <field name="date_payment" string="Ngày chi" invisible="status_expense == 'not yet'" />

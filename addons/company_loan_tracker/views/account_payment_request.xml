@@ -5,15 +5,15 @@
         <field name="inherit_id" ref="custom_account_payment_request.view_account_payment_request_form"/>
         <field name="arch" type="xml">
 
-            <!-- 📌 Chèn sau field receive_person -->
             <xpath expr="//field[@name='receive_person']" position="after">
-                <field name="loan_id" domain="[('lender_id', '=', receive_person)]" options="{'no_create': True}" invisible="cost_classification != 'loan_interest'"/>
-                <field name="loan_payment_kind" widget="selection" readonly="state != 'draft'" invisible="cost_classification != 'loan_interest'"/>
-                <field name="date_from" readonly="state != 'draft'" invisible="loan_payment_kind != 'interest' or cost_classification != 'loan_interest'" />
-                <field name="date_to" readonly="state != 'draft'" invisible="loan_payment_kind != 'interest' or cost_classification != 'loan_interest'"/>
-                <field name="interest_days" readonly="1" invisible="loan_payment_kind != 'interest' or cost_classification != 'loan_interest'"/>
-                <field name="interest_expected" invisible="loan_payment_kind != 'interest' or cost_classification != 'loan_interest'" readonly="state != 'draft'"/>
-                <field name="interest_shortfall" invisible="loan_payment_kind != 'interest' or cost_classification != 'loan_interest'" readonly="1"/>
+                <field name="is_office_loan_allowed" readonly="1" invisible="1"/>
+                <field name="loan_id" domain="[('lender_id', '=', receive_person)]" options="{'no_create': True}" invisible="not (cost_classification == 'loan_interest' or is_office_loan_allowed)"/>
+                <field name="loan_payment_kind" widget="selection" readonly="state != 'draft'" invisible="not (cost_classification == 'loan_interest' or is_office_loan_allowed)"/>
+                <field name="date_from" readonly="state != 'draft'" invisible="not (loan_payment_kind == 'interest' and (cost_classification == 'loan_interest' or is_office_loan_allowed))"/>
+                <field name="date_to" readonly="state != 'draft'" invisible="not (loan_payment_kind == 'interest' and (cost_classification == 'loan_interest' or is_office_loan_allowed))"/>
+                <field name="interest_days" readonly="1" invisible="not (loan_payment_kind == 'interest' and (cost_classification == 'loan_interest' or is_office_loan_allowed))"/>
+                <field name="interest_expected" readonly="state != 'draft'" invisible="not (loan_payment_kind == 'interest' and (cost_classification == 'loan_interest' or is_office_loan_allowed))"/>
+                <field name="interest_shortfall" readonly="1" invisible="not (loan_payment_kind == 'interest' and (cost_classification == 'loan_interest' or is_office_loan_allowed))"/>
             </xpath>
         </field>
     </record>

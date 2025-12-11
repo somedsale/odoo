@@ -1,0 +1,15 @@
+<odoo>
+    <record id="product_product_form_inherit_spec" model="ir.ui.view">
+        <field name="name">product.product.form.inherit.spec</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+
+            <!-- Chèn sau field tên biến thể -->
+            <xpath expr="//field[@name='uom_id']" position="after">
+                <field name="spec_description"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

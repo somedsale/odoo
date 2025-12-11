@@ -47,7 +47,31 @@ class PurchaseCreateSupplierInvoiceWizard(models.TransientModel):
     )
     date = fields.Date("Ngày hóa đơn", required=True, default=fields.Date.context_today)
     due_date = fields.Date("Ngày đến hạn")
-    amount = fields.Monetary("Số tiền", required=True, currency_field="currency_id",
+    po_amount_untaxed = fields.Monetary(
+        string="Giá trị trước thuế (PO)",
+        currency_field="currency_id",
+        compute="_compute_po_amounts",
+    )
+    po_amount_tax = fields.Monetary(
+        string="Tiền thuế (PO)",
+        currency_field="currency_id",
+        compute="_compute_po_amounts",
+    )
+    tax_id = fields.Many2one(
+        "account.tax",
+        string="Thuế VAT",
+        domain=[("type_tax_use", "=", "purchase")],
+        default=lambda self: self._default_tax_id(),
+        help="Mặc định lấy từ thuế trên Đơn mua. Nếu PO có nhiều loại thuế thì để trống để tự chọn.",
+    )
+
+    @api.depends("purchase_id")
+    def _compute_po_amounts(self):
+        for wiz in self:
+            po = wiz.purchase_id
+            wiz.po_amount_untaxed = po.amount_untaxed or 0.0
+            wiz.po_amount_tax = po.amount_tax or 0.0
+    amount = fields.Monetary("Số tiền (Đã bao gồm thuế)", required=True, currency_field="currency_id",
                              default=lambda self: self._default_invoice_amount())
     note = fields.Text("Diễn giải", default="")
 
@@ -76,6 +100,35 @@ class PurchaseCreateSupplierInvoiceWizard(models.TransientModel):
     # ------------------------------------------------------------------
     # Defaults
     # ------------------------------------------------------------------
+    @api.model
+    def _default_tax_id(self):
+        """
+        Lấy thuế từ các dòng PO:
+        - Nếu tất cả dòng dùng 1 loại thuế duy nhất -> trả về thuế đó
+        - Nếu nhiều loại thuế khác nhau -> trả False (user tự chọn)
+        Hỗ trợ cả chuẩn Odoo (taxes_id) lẫn custom (tax_id).
+        """
+        active_id = self.env.context.get("active_id")
+        if not active_id:
+            return False
+
+        po = self.env["purchase.order"].browse(active_id)
+        if not po or not po.exists():
+            return False
+
+        # Thử lấy theo chuẩn Odoo trước (taxes_id)
+        taxes = po.order_line.mapped("taxes_id")
+        # Nếu không có thì thử lấy custom field tax_id (nếu anh dùng)
+        if not taxes:
+            taxes = po.order_line.mapped("tax_id")
+
+        # Chỉ giữ thuế mua hàng
+        taxes = taxes.filtered(lambda t: t.type_tax_use == "purchase")
+        taxes = taxes.sorted(lambda t: t.id)
+
+        if len(taxes) == 1:
+            return taxes.id
+        return False
     @api.model
     def _default_purchase_id(self):
         active_id = self.env.context.get("active_id")
@@ -238,6 +291,9 @@ class PurchaseCreateSupplierInvoiceWizard(models.TransientModel):
     def action_confirm(self):
         self.ensure_one()
         po = self.purchase_id
+        amount_untaxed = po.amount_untaxed
+        amount_tax = po.amount_tax
+        amount_total = po.amount_total
 
         # tạo hóa đơn
         invoice = self.env["supplier.invoice"].create({
@@ -247,6 +303,9 @@ class PurchaseCreateSupplierInvoiceWizard(models.TransientModel):
             "date": self.date,
             "due_date": self.due_date,
             "amount": self.amount,
+            "amount_untaxed": amount_untaxed,
+            "amount_tax": amount_tax,
+            "account_tax_id": self.tax_id.id if self.tax_id else False,
             "currency_id": self.currency_id.id or self.env.company.currency_id.id,
             "note": self.note or "",
         })

@@ -8,13 +8,17 @@
       <field name="arch" type="xml">
         <form string="Tạo phiếu chi tạm ứng" create="false" edit="false">
           <group>
-            <field name="purchase_id" readonly="1"/>
-            <field name="leftover" readonly="1"/>
-            <field name="amount"/>
-            <field name="payment_type"/>
-            <field name="journal_id" optional="hide"/>
-            <field name="currency_id" invisible="1"/>
-            <field name="note" placeholder="Ghi chú (tuỳ chọn)"/>
+            <group>
+              <field name="purchase_id" readonly="1" string="Đơn hàng"/>
+              <field name="leftover" readonly="1"/>
+              <field name="amount"/>
+            </group>
+            <group>
+              <field name="payment_type" string="Loại thanh toán"/>
+              <!-- <field name="journal_id" optional="hide"/> -->
+              <field name="currency_id" invisible="1"/>
+              <field name="note" placeholder="Nhập ..." string="Ghi chú"/>
+            </group>
           </group>
           <footer>
             <button string="Tạo phiếu chi" type="object" name="action_confirm" class="btn-primary"/>

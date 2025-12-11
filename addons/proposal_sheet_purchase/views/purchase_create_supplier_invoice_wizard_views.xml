@@ -14,15 +14,16 @@
               <field name="currency_id" invisible="1"/>
 
               <field name="name"/>
-              <field name="contract_id"
-                     required="1"
-                     domain="[('partner_id', '=', partner_id),
+              <field name="contract_id" required="1" domain="[('partner_id', '=', partner_id),
                               ('project_id', '=', purchase_id.proposal_sheet_id.project_id)]"/>
               <field name="settlement_id" domain="[('contract_id', '=', contract_id)]"/>
             </group>
             <group>
               <field name="date"/>
               <field name="due_date"/>
+              <field name="po_amount_untaxed" readonly="1"/>
+              <field name="tax_id"/>
+              <field name="po_amount_tax" readonly="1"/>
               <field name="amount"/>
               <field name="note"/>
             </group>
@@ -31,10 +32,7 @@
           <group string="Liên kết Phiếu chi">
             <field name="auto_link_payments"/>
             <!-- Ẩn khi bật tự động liên kết -->
-            <field name="payment_request_ids"
-                   invisible="auto_link_payments"
-                   domain="[('purchase_id','=', purchase_id),
-                            ('invoice_id','=', False),
+            <field name="payment_request_ids" invisible="auto_link_payments" domain="[('purchase_id','=', purchase_id), ('invoice_id','=', False),
                             ('state','in', ('post','done','confirmed'))]"/>
             <field name="suggest_payment_total" readonly="1"/>
           </group>
