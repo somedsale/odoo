@@ -42,6 +42,19 @@ class ProjectMaterial(models.Model):
         material_category = self.env['product.category'].search([('name', '=', 'Vật tư')], limit=1)
         if not material_category:
             material_category = self.env['product.category'].create({'name': 'Vật tư'})
+        imd = self.env['ir.model.data'].sudo()
+        xml = imd.search([
+            ('module', '=', 'project_material'),          # <-- đổi 'tk_project' = technical name module của bạn
+            ('name', '=', 'product_category_vattu'),
+        ], limit=1)
+        if not xml:
+            imd.create({
+                'module': 'project_material',             # <-- đổi giống dòng trên
+                'name': 'product_category_vattu',
+                'model': 'product.category',
+                'res_id': material_category.id,
+                'noupdate': True,
+            })
         product_vals = {
             'name': material.name,
             # 'default_code': material.code,

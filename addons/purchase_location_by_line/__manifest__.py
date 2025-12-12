@@ -12,6 +12,6 @@
     "category": "Purchase Management",
     "depends": ["purchase_stock", "purchase_delivery_split_date"],
     "license": "AGPL-3",
-    "data": ["views/purchase_views.xml"],
+    "data": ["views/purchase_views.xml", "views/product_search_panel_views.xml"],
     "installable": True,
 }

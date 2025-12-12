@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Thêm search panel cho sản phẩm -->
+    <record id="view_product_template_search_panel" model="ir.ui.view">
+        <field name="name">product.template.search.panel</field>
+        <field name="model">product.template</field>
+        <!-- kế thừa search view gốc của product -->
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter name="filter_storable" string="Sản phẩm lưu kho" domain="[('detailed_type', '=', 'product')]"/>
+                <!-- PANEL BÊN TRÁI -->
+                <searchpanel>
+                    <!-- 1. Lọc theo DANH MỤC (categ_id) -->
+                    <field name="categ_id" string="Danh mục" icon="fa-folder-open" expand="1"/>
+                    <!-- 2. Lọc theo LOẠI SẢN PHẨM (type) -->
+                    <field name="detailed_type" string="Loại sản phẩm" icon="fa-files-o"/>
+                </searchpanel>
+            </xpath>
+        </field>
+    </record>
+</odoo>
