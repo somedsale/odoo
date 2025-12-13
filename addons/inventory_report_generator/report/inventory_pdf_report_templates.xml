@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Define an action for the Inventory All In One Report -->
+    <record id="action_report_inventory_all_in_one" model="ir.actions.report">
+        <field name="name">Inventory All In One Report</field>
+        <field name="model">dynamic.inventory.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">inventory_report_generator.inventory_pdf_report</field>
+        <field name="report_file">
+            inventory_report_generator.inventory_pdf_report
+        </field>
+        <field name="binding_type">report</field>
+    </record>
+    <!-- Define a template for the Inventory PDF Report -->
+    <template id="inventory_pdf_report">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <h2 style="text-align:center;margin-bottom:12px;">Inventory Movement Summary</h2>
+
+                    <div style="margin-bottom:10px;">
+                        <div>
+                            <strong>Period:</strong>
+                            <span t-esc="Filters.get('date_from')"/>
+ →
+                            <span t-esc="Filters.get('date_to')"/>
+                            <span t-if="Filters.get('period_type')">(                                <t t-esc="Filters.get('period_type')"/>
+)</span>
+                        </div>
+                        <div>
+                            <strong>Location:</strong>
+                            <span t-esc="Filters.get('location')"/>
+                        </div>
+                    </div>
+
+                    <table class="table table-sm table-bordered" style="width:100%;">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>UoM</th>
+                                <th class="text-right">Opening</th>
+                                <th class="text-right">In</th>
+                                <th class="text-right">Out</th>
+                                <th class="text-right">Closing</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="report_main_line_data" t-as="l">
+                                <tr>
+                                    <td>
+                                        <span t-esc="l.get('product_name')"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="l.get('uom')"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="l.get('opening_qty')"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="l.get('in_qty')"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="l.get('out_qty')"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="l.get('closing_qty')"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
