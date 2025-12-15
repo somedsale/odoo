@@ -17,7 +17,6 @@ export class InventoryReport extends Component {
         const nowQ = String(Math.floor(now.getMonth() / 3) + 1);
         this.defaults = { nowY, nowM, nowQ };
 
-        // ✅ UI state
         this.state = useState({
             show_filters: true,
             is_applying: false,
@@ -37,32 +36,25 @@ export class InventoryReport extends Component {
         this.locations = [];
         this.wizard_id = null;
 
-        // ✅ APPLIED (from server)
         this.orders = {};
         this.all_lines = [];
+        this.totals = {}; // ✅ NEW
 
-        // ✅ selection meta (auto-detect month key format)
-        this._monthKeys = null;    // Set<string>
-        this._quarterKeys = null;  // Set<string>
+        this._monthKeys = null;
+        this._quarterKeys = null;
 
         onWillStart(async () => {
             await this._initWizard();
-            await this._loadFieldMeta();     // ⭐ quan trọng để fix lỗi month: 2
+            await this._loadFieldMeta();
             await this._loadLocations();
             await this.load_data();
         });
     }
 
-    // -----------------------------
-    // UI
-    // -----------------------------
     toggle_filters() {
         this.state.show_filters = !this.state.show_filters;
     }
 
-    // -----------------------------
-    // Init + meta
-    // -----------------------------
     async _initWizard() {
         this.wizard_id = await jsonrpc("/web/dataset/call_kw/dynamic.inventory.report/create", {
             model: "dynamic.inventory.report",
@@ -73,17 +65,14 @@ export class InventoryReport extends Component {
     }
 
     async _loadFieldMeta() {
-        // Đọc selection keys của month/quarter từ server => biết cần "2" hay "02"
         const res = await this.orm.call(
             "dynamic.inventory.report",
             "fields_get",
             [["month", "quarter"]],
             { attributes: ["selection"] }
         );
-
         const monthSel = res?.month?.selection || [];
         const quarterSel = res?.quarter?.selection || [];
-
         this._monthKeys = new Set(monthSel.map((x) => String(x[0])));
         this._quarterKeys = new Set(quarterSel.map((x) => String(x[0])));
     }
@@ -97,9 +86,6 @@ export class InventoryReport extends Component {
         );
     }
 
-    // -----------------------------
-    // Utils
-    // -----------------------------
     _pad2(s) {
         return String(s).padStart(2, "0");
     }
@@ -111,27 +97,22 @@ export class InventoryReport extends Component {
         return `${dd}/${mm}/${yy}`;
     }
 
-    // server month could be "07" => UI show "7"
     _uiMonthFromServer(v) {
         if (!v) return "";
         const n = parseInt(String(v), 10);
         return Number.isFinite(n) ? String(n) : String(v);
     }
 
-    // normalize month/quarter before write (the KEY must match Selection keys)
     _normalizeMonthKey(v) {
         if (!v) return false;
         const n = parseInt(String(v), 10);
         if (!Number.isFinite(n)) return false;
 
-        const s1 = String(n);        // "2"
-        const s2 = this._pad2(s1);   // "02"
+        const s1 = String(n);
+        const s2 = this._pad2(s1);
 
-        // ưu tiên đúng key theo selection meta
         if (this._monthKeys?.has(s1)) return s1;
         if (this._monthKeys?.has(s2)) return s2;
-
-        // fallback: gửi string (KHÔNG gửi int)
         return s1;
     }
 
@@ -139,10 +120,9 @@ export class InventoryReport extends Component {
         if (!v) return false;
         const n = parseInt(String(v), 10);
         if (!Number.isFinite(n)) return false;
-
         const s = String(n);
         if (this._quarterKeys?.has(s)) return s;
-        return s; // fallback string
+        return s;
     }
 
     _rangeText() {
@@ -156,9 +136,6 @@ export class InventoryReport extends Component {
         return "";
     }
 
-    // -----------------------------
-    // Onchange (DRAFT)
-    // -----------------------------
     onChangeDate() {
         const f = this.state.filters;
         f.year = "";
@@ -199,9 +176,6 @@ export class InventoryReport extends Component {
         return "custom";
     }
 
-    // -----------------------------
-    // Label (luôn theo APPLIED orders)
-    // -----------------------------
     get filter_label() {
         const o = this.orders || {};
         const pt = String(o.period_type || "custom");
@@ -226,9 +200,7 @@ export class InventoryReport extends Component {
         return `Toàn bộ thời gian • ${locText}`;
     }
 
-    // -----------------------------
     // Paging
-    // -----------------------------
     get total() {
         return this.all_lines?.length || 0;
     }
@@ -266,9 +238,6 @@ export class InventoryReport extends Component {
         this.state.page = Math.min(Math.max(p, 1), this.total_pages);
     }
 
-    // -----------------------------
-    // Data
-    // -----------------------------
     async load_data() {
         const data = await jsonrpc("/web/dataset/call_kw/dynamic.inventory.report/inventory_report", {
             model: "dynamic.inventory.report",
@@ -279,9 +248,9 @@ export class InventoryReport extends Component {
 
         this.orders = data.orders || {};
         this.all_lines = data.report_lines || [];
+        this.totals = data.totals || {}; // ✅ NEW
         this.state.page = 1;
 
-        // ✅ sync APPLIED -> DRAFT
         const o = this.orders || {};
         const f = this.state.filters;
         const pt = String(o.period_type || "custom");
@@ -315,16 +284,12 @@ export class InventoryReport extends Component {
         }
     }
 
-    // -----------------------------
-    // Apply
-    // -----------------------------
     async apply_filter() {
         const f = this.state.filters;
         this.state.error = "";
         this.state.is_applying = true;
 
         try {
-            // normalize custom date
             if (f.date_from && !f.date_to) f.date_to = f.date_from;
             if (f.date_to && !f.date_from) f.date_from = f.date_to;
 
@@ -335,14 +300,12 @@ export class InventoryReport extends Component {
 
             const pt = this._detectPeriodType();
 
-            // year int (server thường là Integer)
             let yearVal = f.year ? parseInt(String(f.year), 10) : NaN;
             if (!Number.isFinite(yearVal) && (pt === "month" || pt === "quarter" || pt === "year")) {
                 yearVal = parseInt(this.defaults.nowY, 10);
                 f.year = String(yearVal);
             }
 
-            // ⭐ month/quarter MUST be Selection KEY (string)
             const monthKey = pt === "month" ? this._normalizeMonthKey(f.month) : false;
             const quarterKey = pt === "quarter" ? this._normalizeQuarterKey(f.quarter) : false;
 
@@ -359,7 +322,7 @@ export class InventoryReport extends Component {
             await jsonrpc("/web/dataset/call_kw/dynamic.inventory.report/write", {
                 model: "dynamic.inventory.report",
                 method: "write",
-                args: [[this.wizard_id], filter_data],   // ✅ write(recordset, vals)
+                args: [[this.wizard_id], filter_data],
                 kwargs: {},
             });
 
@@ -383,9 +346,6 @@ export class InventoryReport extends Component {
         await this.apply_filter();
     }
 
-    // -----------------------------
-    // Print
-    // -----------------------------
     async print_pdf(e) {
         e.preventDefault();
         const data = await jsonrpc("/web/dataset/call_kw/dynamic.inventory.report/inventory_report", {
@@ -426,7 +386,7 @@ export class InventoryReport extends Component {
                 output_format: "xlsx",
                 report_data: JSON.stringify(data.report_lines),
                 report_name: "Inventory Report",
-                dfr_data: JSON.stringify(data),
+                dfr_data: JSON.stringify(data), // ✅ có totals bên trong
             },
         });
     }

@@ -7,7 +7,6 @@
     <t t-name="InventoryReport" owl="1">
         <div>
 
-            <!-- Header + Toggle filter -->
             <div style="display:flex;justify-content:center;align-items:center;gap:10px;margin:20px 0;">
                 <h1 style="margin:0;">Báo cáo tồn kho</h1>
 
@@ -18,7 +17,6 @@
                 </button>
             </div>
 
-            <!-- Label -->
             <div style="text-align:center; margin-top:-10px; margin-bottom:10px;">
                 <span class="badge bg-light text-dark" style="font-size:13px;font-weight:600;padding:8px 12px;border:1px solid #e5e7eb;border-radius:999px;">
                     <i class="fa fa-filter" aria-hidden="true" style="margin-right:6px;opacity:.7;"></i>
@@ -26,21 +24,18 @@
                 </span>
             </div>
 
-            <!-- Error -->
             <t t-if="state.error">
                 <div class="alert alert-warning" style="width:95%;margin:0 auto 10px;">
                     <t t-esc="state.error"/>
                 </div>
             </t>
 
-            <!-- Filter panel -->
             <t t-if="state.show_filters">
                 <div class="filter_view_pr">
                     <t t-call="InventoryFilterView"/>
                 </div>
             </t>
 
-            <!-- Table + Pager -->
             <div class="table_view_pr" style="width:95%; margin:12px auto 0;">
                 <t t-call="InventoryReportTable">
                     <t t-set="report_lines" t-value="paged_lines"/>
@@ -114,8 +109,6 @@
 
                 <div style="display:flex;gap:10px;align-items:flex-end;">
                     <button type="button" class="btn btn-primary" t-on-click="apply_filter" t-att-disabled="state.is_applying ? true : false">
-                        <!-- <t t-if="state.is_applying">Đang áp dụng...</t>
-                        <t t-else="">Áp dụng</t> -->
                         Áp dụng
                     </button>
 
@@ -139,48 +132,116 @@
 
 
     <!-- =========================
-         TABLE
+         TABLE (SL + GIÁ TRỊ)
     ========================== -->
     <t t-name="InventoryReportTable" owl="1">
         <div class="table_main_view">
             <table class="table table-bordered" style="width:100%;">
                 <thead>
                     <tr class="table_pr_head">
-                        <th>Sản phẩm</th>
-                        <th>UoM</th>
-                        <th class="text-end">Opening</th>
-                        <th class="text-end">In</th>
-                        <th class="text-end">Out</th>
-                        <th class="text-end">Closing</th>
+                        <th rowspan="2" class="text-center align-middle">Mã hàng</th>
+                        <th rowspan="2" class="text-center align-middle">Sản phẩm</th>
+                        <th rowspan="2">Đơn vị</th>
+
+                        <th colspan="2" class="text-center">Đầu kỳ</th>
+                        <th colspan="2" class="text-center">Nhập</th>
+                        <th colspan="2" class="text-center">Xuất</th>
+                        <th colspan="2" class="text-center">Cuối kỳ</th>
+                    </tr>
+                    <tr class="table_pr_head">
+                        <th class="text-end">SL</th>
+                        <th class="text-end">Giá trị</th>
+
+                        <th class="text-end">SL</th>
+                        <th class="text-end">Giá trị</th>
+
+                        <th class="text-end">SL</th>
+                        <th class="text-end">Giá trị</th>
+
+                        <th class="text-end">SL</th>
+                        <th class="text-end">Giá trị</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     <t t-if="!report_lines or report_lines.length === 0">
                         <tr>
-                            <td colspan="6" class="text-center">Không có dữ liệu</td>
+                            <td colspan="11" class="text-center">Không có dữ liệu</td>
                         </tr>
                     </t>
 
+                    <!-- ✅ totals row -->
                     <t t-if="report_lines and report_lines.length">
+                        <tr class="fw-bold">
+                            <td colspan="3" class="text-center">TỔNG</td>
+
+                            <td class="text-end">
+                                <t t-esc="totals.opening_qty || 0"/>
+                            </td>
+                            <td class="text-end">
+                                <t t-esc="totals.opening_val || 0"/>
+                            </td>
+
+                            <td class="text-end">
+                                <t t-esc="totals.in_qty || 0"/>
+                            </td>
+                            <td class="text-end">
+                                <t t-esc="totals.in_val || 0"/>
+                            </td>
+
+                            <td class="text-end">
+                                <t t-esc="totals.out_qty || 0"/>
+                            </td>
+                            <td class="text-end">
+                                <t t-esc="totals.out_val || 0"/>
+                            </td>
+
+                            <td class="text-end">
+                                <t t-esc="totals.closing_qty || 0"/>
+                            </td>
+                            <td class="text-end">
+                                <t t-esc="totals.closing_val || 0"/>
+                            </td>
+                        </tr>
+
                         <t t-foreach="report_lines" t-as="l" t-key="l.product_id">
                             <tr>
+                                <td>
+                                    <t t-esc="l.product_code"/>
+                                </td>
                                 <td>
                                     <t t-esc="l.product_name"/>
                                 </td>
                                 <td>
                                     <t t-esc="l.uom"/>
                                 </td>
+
                                 <td class="text-end">
                                     <t t-esc="l.opening_qty"/>
                                 </td>
                                 <td class="text-end">
+                                    <t t-esc="l.opening_val"/>
+                                </td>
+
+                                <td class="text-end">
                                     <t t-esc="l.in_qty"/>
                                 </td>
+                                <td class="text-end">
+                                    <t t-esc="l.in_val"/>
+                                </td>
+
                                 <td class="text-end">
                                     <t t-esc="l.out_qty"/>
                                 </td>
                                 <td class="text-end">
+                                    <t t-esc="l.out_val"/>
+                                </td>
+
+                                <td class="text-end">
                                     <t t-esc="l.closing_qty"/>
+                                </td>
+                                <td class="text-end">
+                                    <t t-esc="l.closing_val"/>
                                 </td>
                             </tr>
                         </t>
