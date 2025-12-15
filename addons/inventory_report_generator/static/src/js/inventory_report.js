@@ -96,6 +96,13 @@ export class InventoryReport extends Component {
         if (!yy || !mm || !dd) return String(s);
         return `${dd}/${mm}/${yy}`;
     }
+    _fmtNum(v, digits = 0) {
+        const n = Number(v || 0);
+        return new Intl.NumberFormat("vi-VN", {
+            minimumFractionDigits: digits,
+            maximumFractionDigits: digits,
+        }).format(Number.isFinite(n) ? n : 0);
+    }
 
     _uiMonthFromServer(v) {
         if (!v) return "";

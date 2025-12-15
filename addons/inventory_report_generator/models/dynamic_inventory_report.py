@@ -389,7 +389,9 @@ class DynamicInventoryReport(models.Model):
             totals = {}
 
         output = io.BytesIO()
-        workbook = xlsxwriter.Workbook(output, {"in_memory": True})
+        workbook = xlsxwriter.Workbook(output, {
+            "in_memory": True,
+        })
         sheet = workbook.add_worksheet("Inventory")
 
         # ===== FORMATS =====
@@ -399,7 +401,11 @@ class DynamicInventoryReport(models.Model):
 
         th2 = workbook.add_format({"align": "center", "valign": "vcenter", "bold": True, "border": 1})
         td2 = workbook.add_format({"border": 1})
-        num2 = workbook.add_format({"border": 1, "align": "right"})
+
+        # ✅ tách format số: SL (2 lẻ) vs Giá trị (0 lẻ)
+        num_qty = workbook.add_format({"border": 1, "align": "right", "num_format": "#,##0"})
+        num_val = workbook.add_format({"border": 1, "align": "right", "num_format": "#,##0"})
+        # nếu muốn âm đỏ: add {"font_color": "red"} cho số âm (tuỳ)
 
         # ===== COMPANY HEADER (3 dòng) =====
         cid = int(orders.get("company_id") or self.env.company.id)
@@ -421,7 +427,6 @@ class DynamicInventoryReport(models.Model):
         sheet.merge_range("A4:K4", "BÁO CÁO TỒN KHO", head)
 
         # ===== SUB TITLE: Kho + kỳ =====
-        # location name
         loc_name = "All internal locations"
         loc_id = orders.get("location_id")
         if loc_id:
@@ -429,7 +434,7 @@ class DynamicInventoryReport(models.Model):
             if loc:
                 loc_name = loc.complete_name
 
-        period_type = (orders.get("period_type") or "custom").strip()  # custom/month/quarter/year
+        period_type = (orders.get("period_type") or "custom").strip()
         dfrom = orders.get("computed_date_from") or orders.get("date_from")
         dto = orders.get("computed_date_to") or orders.get("date_to")
 
@@ -455,7 +460,6 @@ class DynamicInventoryReport(models.Model):
             elif period_type == "year":
                 sub_text = f"Kho: {loc_name}, Năm {y}"
             else:
-                # custom range
                 if d2:
                     sub_text = f"Kho: {loc_name}, Từ ngày {d1.strftime('%d/%m/%Y')} đến ngày {d2.strftime('%d/%m/%Y')}"
                 else:
@@ -468,18 +472,15 @@ class DynamicInventoryReport(models.Model):
         row_parent = 7
         row_child = 8
 
-        # 3 cột cố định
         sheet.merge_range(row_parent, 0, row_child, 0, "Mã hàng", th2)
         sheet.merge_range(row_parent, 1, row_child, 1, "Sản phẩm/Hàng hóa", th2)
         sheet.merge_range(row_parent, 2, row_child, 2, "Đơn vị", th2)
 
-        # 4 cột cha
         sheet.merge_range(row_parent, 3, row_parent, 4, "Đầu kỳ", th2)
         sheet.merge_range(row_parent, 5, row_parent, 6, "Nhập", th2)
         sheet.merge_range(row_parent, 7, row_parent, 8, "Xuất", th2)
         sheet.merge_range(row_parent, 9, row_parent, 10, "Cuối kỳ", th2)
 
-        # cột con
         sheet.write(row_child, 3, "SL", th2)
         sheet.write(row_child, 4, "Giá trị", th2)
         sheet.write(row_child, 5, "SL", th2)
@@ -489,7 +490,6 @@ class DynamicInventoryReport(models.Model):
         sheet.write(row_child, 9, "SL", th2)
         sheet.write(row_child, 10, "Giá trị", th2)
 
-        # widths
         sheet.set_column(0, 0, 18)
         sheet.set_column(1, 1, 45)
         sheet.set_column(2, 2, 12)
@@ -497,16 +497,16 @@ class DynamicInventoryReport(models.Model):
 
         # ===== TOTAL ROW =====
         row = row_child + 1
-        sheet.merge_range(row, 0, row, 2, "TOTAL", th2)
+        sheet.merge_range(row, 0, row, 2, "Tổng", th2)
 
-        sheet.write_number(row, 3, float(totals.get("opening_qty") or 0.0), num2)
-        sheet.write_number(row, 4, float(totals.get("opening_val") or 0.0), num2)
-        sheet.write_number(row, 5, float(totals.get("in_qty") or 0.0), num2)
-        sheet.write_number(row, 6, float(totals.get("in_val") or 0.0), num2)
-        sheet.write_number(row, 7, float(totals.get("out_qty") or 0.0), num2)
-        sheet.write_number(row, 8, float(totals.get("out_val") or 0.0), num2)
-        sheet.write_number(row, 9, float(totals.get("closing_qty") or 0.0), num2)
-        sheet.write_number(row, 10, float(totals.get("closing_val") or 0.0), num2)
+        sheet.write_number(row, 3, float(totals.get("opening_qty") or 0.0), num_qty)
+        sheet.write_number(row, 4, float(totals.get("opening_val") or 0.0), num_val)
+        sheet.write_number(row, 5, float(totals.get("in_qty") or 0.0), num_qty)
+        sheet.write_number(row, 6, float(totals.get("in_val") or 0.0), num_val)
+        sheet.write_number(row, 7, float(totals.get("out_qty") or 0.0), num_qty)
+        sheet.write_number(row, 8, float(totals.get("out_val") or 0.0), num_val)
+        sheet.write_number(row, 9, float(totals.get("closing_qty") or 0.0), num_qty)
+        sheet.write_number(row, 10, float(totals.get("closing_val") or 0.0), num_val)
 
         # ===== DATA ROWS =====
         for line in report_lines:
@@ -521,17 +521,15 @@ class DynamicInventoryReport(models.Model):
             sheet.write(row, 1, line.get("product_name", ""), td2)
             sheet.write(row, 2, line.get("uom", ""), td2)
 
-            sheet.write_number(row, 3, float(line.get("opening_qty") or 0.0), num2)
-            sheet.write_number(row, 4, float(line.get("opening_val") or 0.0), num2)
-            sheet.write_number(row, 5, float(line.get("in_qty") or 0.0), num2)
-            sheet.write_number(row, 6, float(line.get("in_val") or 0.0), num2)
-            sheet.write_number(row, 7, float(line.get("out_qty") or 0.0), num2)
-            sheet.write_number(row, 8, float(line.get("out_val") or 0.0), num2)
-            sheet.write_number(row, 9, float(line.get("closing_qty") or 0.0), num2)
-            sheet.write_number(row, 10, float(line.get("closing_val") or 0.0), num2)
-
+            sheet.write_number(row, 3, float(line.get("opening_qty") or 0.0), num_qty)
+            sheet.write_number(row, 4, float(line.get("opening_val") or 0.0), num_val)
+            sheet.write_number(row, 5, float(line.get("in_qty") or 0.0), num_qty)
+            sheet.write_number(row, 6, float(line.get("in_val") or 0.0), num_val)
+            sheet.write_number(row, 7, float(line.get("out_qty") or 0.0), num_qty)
+            sheet.write_number(row, 8, float(line.get("out_val") or 0.0), num_val)
+            sheet.write_number(row, 9, float(line.get("closing_qty") or 0.0), num_qty)
+            sheet.write_number(row, 10, float(line.get("closing_val") or 0.0), num_val)
         workbook.close()
         output.seek(0)
         response.stream.write(output.read())
         output.close()
-
