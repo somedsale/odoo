@@ -42,6 +42,19 @@ class ProjectMaterial(models.Model):
         material_category = self.env['product.category'].search([('name', '=', 'Vật tư')], limit=1)
         if not material_category:
             material_category = self.env['product.category'].create({'name': 'Vật tư'})
+        imd = self.env['ir.model.data'].sudo()
+        xml = imd.search([
+            ('module', '=', 'project_material'),          # <-- đổi 'tk_project' = technical name module của bạn
+            ('name', '=', 'product_category_vattu'),
+        ], limit=1)
+        if not xml:
+            imd.create({
+                'module': 'project_material',             # <-- đổi giống dòng trên
+                'name': 'product_category_vattu',
+                'model': 'product.category',
+                'res_id': material_category.id,
+                'noupdate': True,
+            })
         product_vals = {
             'name': material.name,
             # 'default_code': material.code,
@@ -76,3 +89,27 @@ class ProjectMaterial(models.Model):
                 if product_vals:
                     material.product_id.write(product_vals)
         return res
+    def init(self):
+        """Auto-create product.category 'Vật tư' + XMLID khi module được load/install/update."""
+        # self.env có sẵn ở đây
+        imd = self.env['ir.model.data'].sudo()
+
+        # Nếu đã có XMLID thì thôi (đảm bảo không tạo lặp)
+        xml = imd.search([
+            ('module', '=', 'project_material'),
+            ('name', '=', 'product_category_vattu'),
+        ], limit=1)
+        if xml:
+            return
+
+        categ = self.env['product.category'].sudo().search([('name', '=', 'Vật tư')], limit=1)
+        if not categ:
+            categ = self.env['product.category'].sudo().create({'name': 'Vật tư'})
+
+        imd.create({
+            'module': 'project_material',
+            'name': 'product_category_vattu',
+            'model': 'product.category',
+            'res_id': categ.id,
+            'noupdate': True,
+        })

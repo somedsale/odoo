@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Thêm Đơn giá kho + Giá trị kho vào dòng move trên phiếu -->
+        <record id="view_picking_form_inherit_internal_value" model="ir.ui.view">
+            <field name="name">stock.picking.form.inherit.internal.value</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+
+                <!-- ⚠️ Nếu trên tree đang dùng field 'quantity', đổi expr cho đúng.
+             Ở đây em để product_uom_qty, nếu Odoo của ông báo lỗi xpath thì
+             sửa lại thành 'quantity'. -->
+                <xpath expr="//field[@name='move_ids_without_package']/tree/field[@name='product_uom']" position="after">
+                    <field name="unit_cost"/>
+                    <field name="value_amount"/>
+                </xpath>
+
+                <!-- Hiển thị Tổng giá trị kho phía dưới danh sách dòng -->
+                <xpath expr="//field[@name='move_ids_without_package']" position="after">
+                    <group string="Tổng giá trị kho">
+                        <field name="amount_total_value" readonly="1"/>
+                    </group>
+                </xpath>
+
+            </field>
+        </record>
+        <record id="view_move_tree_inherit_internal_value" model="ir.ui.view">
+            <field name="name">stock.move.tree.inherit.internal.value</field>
+            <field name="model">stock.move</field>
+            <field name="inherit_id" ref="stock.view_move_tree"/>
+            <field name="arch" type="xml">
+                <!-- Chèn sau product_uom cho an toàn (luôn có) -->
+                <xpath expr="//field[@name='product_uom']" position="after">
+                    <field name="unit_cost"/>
+                    <field name="value_amount"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- 3️⃣ Detailed Operations (stock.move.line tree) – nếu ông có dùng -->
+        <record id="view_move_line_tree_inherit_internal_value" model="ir.ui.view">
+            <field name="name">stock.move.line.tree.inherit.internal.value</field>
+            <field name="model">stock.move.line</field>
+            <field name="inherit_id" ref="stock.view_move_line_tree"/>
+            <field name="arch" type="xml">
+                <!-- Thêm sau quantity -->
+                <xpath expr="//field[@name='quantity']" position="after">
+                    <field name="unit_cost"/>
+                    <field name="value_amount"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

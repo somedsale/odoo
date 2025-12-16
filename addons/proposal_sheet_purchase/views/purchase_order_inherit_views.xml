@@ -46,7 +46,7 @@
         <xpath expr="//sheet/group/group" position="inside">
 
           <!-- Danh sách tất cả Phiếu Đề Xuất gom (Many2many) -->
-          <field name="proposal_sheet_ids" widget="many2many_tags" string="Phiếu đề xuất" options="{'no_create_edit': True}" readonly="state in ('purchase','done')"/>
+          <field name="proposal_sheet_ids" widget="many2many_tags" string="Phiếu đề xuất" options="{'no_create_edit': True}" domain="[('type', '=','material')] " readonly="state in ('purchase','done')"/>
 
           <!-- 1 phiếu chính (giữ tương thích cũ) -->
           <!-- <field name="proposal_sheet_id" string="Phiếu đề xuất (chính)" options="{'no_create_edit': True}" readonly="state in ('purchase','done')"/> -->
