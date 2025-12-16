@@ -122,6 +122,8 @@ class ProposalSheet(models.Model):
     @api.model
     def create(self, vals):
         _logger.info("Creating ProposalSheet with vals: %s", vals)
+
+        # Xác định type nếu chưa có
         if not vals.get('type'):
             if vals.get('material_line_ids'):
                 vals['type'] = 'material'
@@ -129,17 +131,35 @@ class ProposalSheet(models.Model):
                 vals['type'] = 'expense'
             else:
                 raise ValidationError('Vui lòng chọn loại đề xuất trước khi lưu.')
+
+        # Ver mới
         if not vals.get('is_new_proposal'):
             vals['is_new_proposal'] = True
-        if not vals.get('task_id') and self.env.context.get('default_task_id'):
-            task = self.env['project.task'].browse(self.env.context.get('default_task_id'))
+
+        # --- XỬ LÝ TASK & PROJECT AN TOÀN ---
+        task = False
+
+        # 1) Nếu chưa có task_id mà context có default_task_id -> lấy từ đó
+        ctx_task_id = self.env.context.get('default_task_id')
+        if not vals.get('task_id') and ctx_task_id:
+            task = self.env['project.task'].browse(ctx_task_id)
             vals['task_id'] = task.id
-        if not vals.get('project_id'):
-            vals['project_id'] = task.project_id.id
+
+        # 2) Nếu chưa có project_id nhưng ĐÃ có task_id -> suy ra project từ task
+        if not vals.get('project_id') and vals.get('task_id'):
+            # nếu task chưa được set ở trên thì browse lại từ task_id
+            task = task or self.env['project.task'].browse(vals['task_id'])
+            if task and task.project_id:
+                vals['project_id'] = task.project_id.id
+        # Nếu vẫn không có project_id thì thôi, cho phép để trống (hoặc bạn muốn thì raise lỗi ở đây)
+
+        # --- SEQUENCE ---
         if vals.get('name', 'New') == 'New':
             vals['name'] = self.env['ir.sequence'].next_by_code('proposal.sheet') or 'PROP/00000'
-        record = super().create(vals) 
+
+        record = super().create(vals)
         return record
+
 
     def write(self, vals):
         for rec in self:

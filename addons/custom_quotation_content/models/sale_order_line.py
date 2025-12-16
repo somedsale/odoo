@@ -2,6 +2,10 @@ from odoo import fields, models,api
 
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
+    product_display_name = fields.Char(
+        string='Tên hiển thị sản phẩm',
+        store=True,
+    )
     x_thongso = fields.Text(string='Thông số')  # ✅ Không related để cho phép chỉnh sửa
     x_xuatxu = fields.Char(string='Xuất xứ')
     x_hangsx = fields.Char(string='Hãng SX')
@@ -11,6 +15,18 @@ class SaleOrderLine(models.Model):
         string='MSP'
     )
     x_chi_phi_nhan_cong = fields.Monetary(string="Chi phí nhân công",currency_field='currency_id')
+    display_name = fields.Char(
+        string='Tên hiển thị',
+        compute='_compute_display_name',
+        store=True,
+    )
+    @api.depends('product_id', 'name', 'product_display_name')
+    def _compute_display_name(self):
+        for line in self:
+            if line.product_id:
+                line.display_name = line.product_display_name
+            else:
+                line.display_name = line.name
     @api.onchange('product_id')
     def _onchange_product_custom_fields(self):
         if self.product_id:
@@ -68,3 +84,4 @@ class SaleOrderLine(models.Model):
 
             # Gộp nội dung
             line.name = "\n".join(name_lines) if name_lines else ""
+            line.product_display_name = line.product_id.name if line.product_id else ""

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_multi_mrp_order" model="ir.sequence">
+        <field name="name">Lệnh sản xuất nhiều thành phẩm</field>
+        <field name="code">multi.mrp.order</field>
+        <field name="prefix">LSX</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>
