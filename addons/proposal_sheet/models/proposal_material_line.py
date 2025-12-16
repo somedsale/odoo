@@ -88,7 +88,10 @@ class ProposalMaterialLine(models.Model):
         'account.tax',
         string='Thuế áp dụng',
         compute='_compute_tax_material',
+        inverse='_inverse_tax_material',
         store=True,
+        readonly=False,
+        domain="[('type_tax_use', '=', 'purchase')]",
     )
     price_unit_taxed = fields.Float(
         string='Đơn giá (sau thuế)',
@@ -131,6 +134,7 @@ class ProposalMaterialLine(models.Model):
             if not line.product_id or not internal_locs:
                 continue
 
+
             data = Quant.read_group(
                 [
                     ('product_id', '=', line.product_id.id),
@@ -159,6 +163,11 @@ class ProposalMaterialLine(models.Model):
             elif line.product_id and line.product_id.supplier_taxes_id:
                 tax = line.product_id.supplier_taxes_id[:1]
             line.tax_id = tax
+    def _inverse_tax_material(self):
+        """Cho phép người dùng chỉnh tay tax_id.
+        Không cần làm gì nếu bạn chỉ lưu thẳng vào cột của chính field này."""
+        # pass là cũng được, vì Many2one này có cột thật trong DB
+        pass
 
     @api.depends('price_unit', 'quantity', 'tax_id')
     def _compute_price_taxed(self):

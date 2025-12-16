@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- =========================
+         MAIN
+    ========================== -->
+    <t t-name="InventoryReport" owl="1">
+        <div>
+
+            <div style="display:flex;justify-content:center;align-items:center;gap:10px;margin:20px 0;">
+                <h1 style="margin:0;">Báo cáo tồn kho</h1>
+
+                <button type="button" class="btn btn-sm btn-outline-secondary" t-on-click="toggle_filters" style="border-radius:999px;">
+                    <i class="fa fa-sliders" aria-hidden="true" style="margin-right:6px;"></i>
+                    <t t-if="state.show_filters">Ẩn bộ lọc</t>
+                    <t t-else="">Hiện bộ lọc</t>
+                </button>
+            </div>
+
+            <div style="text-align:center; margin-top:-10px; margin-bottom:10px;">
+                <span class="badge bg-light text-dark" style="font-size:13px;font-weight:600;padding:8px 12px;border:1px solid #e5e7eb;border-radius:999px;">
+                    <i class="fa fa-filter" aria-hidden="true" style="margin-right:6px;opacity:.7;"></i>
+                    <t t-esc="filter_label"/>
+                </span>
+            </div>
+
+            <t t-if="state.error">
+                <div class="alert alert-warning" style="width:95%;margin:0 auto 10px;">
+                    <t t-esc="state.error"/>
+                </div>
+            </t>
+
+            <t t-if="state.show_filters">
+                <div class="filter_view_pr">
+                    <t t-call="InventoryFilterView"/>
+                </div>
+            </t>
+
+            <div class="table_view_pr" style="width:95%; margin:12px auto 0;">
+                <div class="inv-scroll">
+                    <t t-call="InventoryReportTable">
+                        <t t-set="report_lines" t-value="paged_lines"/>
+                    </t>
+
+                    <t t-call="InventoryPager"/>
+                </div>
+            </div>
+
+        </div>
+    </t>
+
+
+    <!-- =========================
+         FILTER
+    ========================== -->
+    <t t-name="InventoryFilterView" owl="1">
+        <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;align-items:flex-end;padding:0 20px;">
+            <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
+
+                <div style="min-width:170px;">
+                    <label style="font-weight:600;margin-bottom:4px;display:block;">Từ ngày</label>
+                    <input type="date" class="form-control" style="width:170px;" t-model="state.filters.date_from" t-on-change="onChangeDate"/>
+                </div>
+
+                <div style="min-width:170px;">
+                    <label style="font-weight:600;margin-bottom:4px;display:block;">Đến ngày</label>
+                    <input type="date" class="form-control" style="width:170px;" t-model="state.filters.date_to" t-on-change="onChangeDate"/>
+                </div>
+
+                <div style="min-width:130px;">
+                    <label style="font-weight:600;margin-bottom:4px;display:block;">Năm</label>
+                    <input type="number" class="form-control" style="width:130px;" min="2020" max="2100" t-model="state.filters.year" t-on-change="onChangeYear"/>
+                </div>
+
+                <div style="min-width:110px;" t-att-style="state.filters.quarter ? 'opacity:.55' : ''">
+                    <label style="font-weight:600;margin-bottom:4px;display:block;">Tháng</label>
+                    <select class="form-select" style="width:110px;" t-model="state.filters.month" t-on-change="onChangeMonth" t-att-disabled="state.filters.quarter ? true : false">
+                        <option value="">--</option>
+                        <t t-foreach="['1','2','3','4','5','6','7','8','9','10','11','12']" t-as="mm" t-key="mm">
+                            <option t-att-value="mm">
+                                <t t-esc="mm"/>
+                            </option>
+                        </t>
+                    </select>
+                </div>
+
+                <div style="min-width:110px;" t-att-style="state.filters.month ? 'opacity:.55' : ''">
+                    <label style="font-weight:600;margin-bottom:4px;display:block;">Quý</label>
+                    <select class="form-select" style="width:110px;" t-model="state.filters.quarter" t-on-change="onChangeQuarter" t-att-disabled="state.filters.month ? true : false">
+                        <option value="">--</option>
+                        <t t-foreach="['1','2','3','4']" t-as="qq" t-key="qq">
+                            <option t-att-value="qq">Q<t t-esc="qq"/>
+                            </option>
+                        </t>
+                    </select>
+                </div>
+
+                <div style="min-width:320px;">
+                    <label style="font-weight:600;margin-bottom:4px;display:block;">Vị trí</label>
+                    <select class="form-select" style="width:320px;" t-model="state.filters.location_id">
+                        <option value="">All internal locations</option>
+                        <t t-if="this.locations and this.locations.length">
+                            <t t-foreach="this.locations" t-as="loc" t-key="loc.id">
+                                <option t-att-value="loc.id">
+                                    <t t-esc="loc.complete_name"/>
+                                </option>
+                            </t>
+                        </t>
+                    </select>
+                </div>
+
+                <div style="display:flex;gap:10px;align-items:flex-end;">
+                    <button type="button" class="btn btn-primary" t-on-click="apply_filter" t-att-disabled="state.is_applying ? true : false">
+                        Áp dụng
+                    </button>
+
+                    <button type="button" class="btn btn-danger" t-on-click="reset_filters" t-att-disabled="state.is_applying ? true : false">
+                        Đặt lại
+                    </button>
+                </div>
+            </div>
+
+            <div class="row report_print" style="gap:8px;align-items:center;">
+                <button type="button" class="btn btn-primary" t-on-click="print_pdf" title="Print (PDF)" style="height:42px;width:42px;display:flex;align-items:center;justify-content:center;color:white;background-color:#7c7bad;border-color:#7c7bad;padding:0;">
+                    <i class="fa fa-file-pdf-o" aria-hidden="true" style="font-size:18px;"></i>
+                </button>
+
+                <button type="button" class="btn btn-primary" t-on-click="print_xlsx" title="Export (XLSX)" style="height:42px;width:42px;display:flex;align-items:center;justify-content:center;color:white;background-color:#7c7bad;border-color:#7c7bad;padding:0;">
+                    <i class="fa fa-file-excel-o" aria-hidden="true" style="font-size:18px;"></i>
+                </button>
+            </div>
+        </div>
+    </t>
+
+
+    <!-- =========================
+         TABLE (SL + GIÁ TRỊ)
+    ========================== -->
+    <t t-name="InventoryReportTable" owl="1">
+        <div class="table_main_view">
+            <table class="table table-bordered" style="width:100%; border:1px solid #ccc">
+                <thead>
+                    <tr class="table_pr_head">
+                        <th rowspan="2" class="text-center align-middle">Mã hàng</th>
+                        <th rowspan="2" class="text-center align-middle">Sản phẩm</th>
+                        <th rowspan="2">Đơn vị</th>
+
+                        <th colspan="2" class="text-center">Đầu kỳ</th>
+                        <th colspan="2" class="text-center">Nhập</th>
+                        <th colspan="2" class="text-center">Xuất</th>
+                        <th colspan="2" class="text-center">Cuối kỳ</th>
+                    </tr>
+                    <tr class="table_pr_head">
+                        <th class="text-end">SL</th>
+                        <th class="text-end">Giá trị</th>
+
+                        <th class="text-end">SL</th>
+                        <th class="text-end">Giá trị</th>
+
+                        <th class="text-end">SL</th>
+                        <th class="text-end">Giá trị</th>
+
+                        <th class="text-end">SL</th>
+                        <th class="text-end">Giá trị</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <t t-if="!report_lines or report_lines.length === 0">
+                        <tr>
+                            <td colspan="11" class="text-center">Không có dữ liệu</td>
+                        </tr>
+                    </t>
+
+                    <t t-if="report_lines and report_lines.length">
+                        <!-- ✅ totals row (FORMAT) -->
+                        <tr class="fw-bold">
+                            <td colspan="3" class="text-center">TỔNG</td>
+
+                            <td class="text-end">
+                                <t t-esc="this._fmtNum(totals.opening_qty || 0)"/>
+                            </td>
+                            <td class="text-end">
+                                <t t-esc="this._fmtNum(totals.opening_val || 0)"/>
+                            </td>
+
+                            <td class="text-end">
+                                <t t-esc="this._fmtNum(totals.in_qty || 0)"/>
+                            </td>
+                            <td class="text-end">
+                                <t t-esc="this._fmtNum(totals.in_val || 0)"/>
+                            </td>
+
+                            <td class="text-end">
+                                <t t-esc="this._fmtNum(totals.out_qty || 0)"/>
+                            </td>
+                            <td class="text-end">
+                                <t t-esc="this._fmtNum(totals.out_val || 0)"/>
+                            </td>
+
+                            <td class="text-end">
+                                <t t-esc="this._fmtNum(totals.closing_qty || 0)"/>
+                            </td>
+                            <td class="text-end">
+                                <t t-esc="this._fmtNum(totals.closing_val || 0)"/>
+                            </td>
+                        </tr>
+
+                        <!-- ✅ lines (FORMAT) -->
+                        <t t-foreach="report_lines" t-as="l" t-key="l.product_id">
+                            <tr>
+                                <td>
+                                    <t t-esc="l.product_code"/>
+                                </td>
+                                <td>
+                                    <t t-esc="l.product_name"/>
+                                </td>
+                                <td>
+                                    <t t-esc="l.uom"/>
+                                </td>
+
+                                <td class="text-end">
+                                    <t t-esc="this._fmtNum(l.opening_qty || 0)"/>
+                                </td>
+                                <td class="text-end">
+                                    <t t-esc="this._fmtNum(l.opening_val || 0)"/>
+                                </td>
+
+                                <td class="text-end">
+                                    <t t-esc="this._fmtNum(l.in_qty || 0)"/>
+                                </td>
+                                <td class="text-end">
+                                    <t t-esc="this._fmtNum(l.in_val || 0)"/>
+                                </td>
+
+                                <td class="text-end">
+                                    <t t-esc="this._fmtNum(l.out_qty || 0)"/>
+                                </td>
+                                <td class="text-end">
+                                    <t t-esc="this._fmtNum(l.out_val || 0)"/>
+                                </td>
+
+                                <td class="text-end">
+                                    <t t-esc="this._fmtNum(l.closing_qty || 0)"/>
+                                </td>
+                                <td class="text-end">
+                                    <t t-esc="this._fmtNum(l.closing_val || 0)"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+    </t>
+
+
+    <!-- =========================
+         PAGER
+    ========================== -->
+    <t t-name="InventoryPager" owl="1">
+        <div class="inv-pager" style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:12px;flex-wrap:wrap;">
+
+            <div style="font-size:13px;opacity:.8;padding-left:4px;">
+                Hiển thị
+                <t t-esc="total ? (start_index + 1) : 0"/>
+                -
+                <t t-esc="end_index"/>
+                /
+                <t t-esc="total"/>
+            </div>
+
+            <div style="display:flex;gap:8px;align-items:center;">
+                <button type="button" class="btn btn-sm btn-outline-secondary" t-on-click="prev_page" t-att-disabled="current_page &lt;= 1">
+                    <i class="fa fa-angle-left" aria-hidden="true"/>
+                </button>
+
+                <span style="min-width:110px;text-align:center;">
+                    Page <t t-esc="current_page"/>
+                    /                <t t-esc="total_pages"/>
+            </span>
+
+            <button type="button" class="btn btn-sm btn-outline-secondary" t-on-click="next_page" t-att-disabled="current_page &gt;= total_pages">
+                <i class="fa fa-angle-right" aria-hidden="true"/>
+            </button>
+
+            <select class="form-select form-select-sm" style="width:110px;" t-model="state.page_size" t-on-change="onPageSizeChange">
+                <option value="20">20/page</option>
+                <option value="50">50/page</option>
+                <option value="100">100/page</option>
+            </select>
+
+            <input type="number" min="1" t-att-max="total_pages" class="form-control form-control-sm" style="width:90px;" t-model="state.page" t-on-change="goToPage"/>
+        </div>
+
+    </div>
+</t>
+
+</templates>

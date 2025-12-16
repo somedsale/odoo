@@ -69,7 +69,13 @@
                         <page string="Chi Tiết Vật Tư" invisible="type != 'material'">
                             <field name="material_line_ids" context="{'default_type': 'material'}" readonly="state !='draft'">
                                 <tree editable="bottom">
-                                    <field name="product_id" column_invisible="parent.is_new_proposal == False" />
+                                    <field name="product_id" column_invisible="parent.is_new_proposal == False" context="{
+                                        'default_categ_id': %(project_material.product_category_vattu)d,
+                                        'default_detailed_type': 'product',
+                                        'default_purchase_ok': True,
+                                        'default_sale_ok': False,
+                                        'search_default_vattu_only': 1
+                                    }"/>
                                     <field name="material_id" column_invisible="parent.is_new_proposal == True"/>
                                     <field name="quantity" required="1"/>
                                     <field name="stock_qty_on_hand"/>
