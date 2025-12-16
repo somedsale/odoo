@@ -89,3 +89,27 @@ class ProjectMaterial(models.Model):
                 if product_vals:
                     material.product_id.write(product_vals)
         return res
+    def init(self):
+        """Auto-create product.category 'Vật tư' + XMLID khi module được load/install/update."""
+        # self.env có sẵn ở đây
+        imd = self.env['ir.model.data'].sudo()
+
+        # Nếu đã có XMLID thì thôi (đảm bảo không tạo lặp)
+        xml = imd.search([
+            ('module', '=', 'project_material'),
+            ('name', '=', 'product_category_vattu'),
+        ], limit=1)
+        if xml:
+            return
+
+        categ = self.env['product.category'].sudo().search([('name', '=', 'Vật tư')], limit=1)
+        if not categ:
+            categ = self.env['product.category'].sudo().create({'name': 'Vật tư'})
+
+        imd.create({
+            'module': 'project_material',
+            'name': 'product_category_vattu',
+            'model': 'product.category',
+            'res_id': categ.id,
+            'noupdate': True,
+        })

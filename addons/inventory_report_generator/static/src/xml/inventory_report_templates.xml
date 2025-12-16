@@ -37,11 +37,13 @@
             </t>
 
             <div class="table_view_pr" style="width:95%; margin:12px auto 0;">
-                <t t-call="InventoryReportTable">
-                    <t t-set="report_lines" t-value="paged_lines"/>
-                </t>
+                <div class="inv-scroll">
+                    <t t-call="InventoryReportTable">
+                        <t t-set="report_lines" t-value="paged_lines"/>
+                    </t>
 
-                <t t-call="InventoryPager"/>
+                    <t t-call="InventoryPager"/>
+                </div>
             </div>
 
         </div>
@@ -136,7 +138,7 @@
     ========================== -->
     <t t-name="InventoryReportTable" owl="1">
         <div class="table_main_view">
-            <table class="table table-bordered" style="width:100%;">
+            <table class="table table-bordered" style="width:100%; border:1px solid #ccc">
                 <thead>
                     <tr class="table_pr_head">
                         <th rowspan="2" class="text-center align-middle">Mã hàng</th>
@@ -257,9 +259,9 @@
          PAGER
     ========================== -->
     <t t-name="InventoryPager" owl="1">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:12px;flex-wrap:wrap;">
+        <div class="inv-pager" style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:12px;flex-wrap:wrap;">
 
-            <div style="font-size:13px;opacity:.8;">
+            <div style="font-size:13px;opacity:.8;padding-left:4px;">
                 Hiển thị
                 <t t-esc="total ? (start_index + 1) : 0"/>
                 -
