@@ -28,6 +28,7 @@
                             <group>
                                 <field name="type_revenue"/>
                                 <field name="project_id" invisible="type_revenue !='done_revenue' and type_revenue !='advance'"/>
+                                <field name="attachment_ids" widget="many2many_binary"/>
                             </group>
                         </group>
                     </sheet>

@@ -34,11 +34,44 @@ class AccountReceipt(models.Model):
         ('explain', 'Giải chi'),
         ('other', 'Các khoản thu khác'),
     ], string='Loại doanh thu', required=True, default='done_revenue')
-    @api.model
-    def create(self, vals):
-        if not vals.get('name'):
-            vals['name'] = self.env['ir.sequence'].next_by_code('account.receipt') or '/'
-        return super(AccountReceipt, self).create(vals)
+    attachment_ids = fields.Many2many(
+        'ir.attachment',
+        string="Tệp đính kèm",
+    )
+    @api.model_create_multi
+    def create(self, vals_list):
+        # xử lý sequence trước
+        for vals in vals_list:
+            if not vals.get('name') or vals.get('name') == 'new':
+                vals['name'] = self.env['ir.sequence'].next_by_code('account.receipt') or '/'
+        records = super().create(vals_list)
+
+        # gán res_model/res_id cho các attachment "mồ côi"
+        for rec in records:
+            orphan_attachments = rec.attachment_ids.filtered(
+                lambda a: not a.res_model or not a.res_id
+            )
+            if orphan_attachments:
+                orphan_attachments.sudo().write({
+                    'res_model': rec._name,
+                    'res_id': rec.id,
+                })
+        return records
+
+    # ---------- WRITE: phiếu cũ bổ sung file ----------
+    def write(self, vals):
+        res = super().write(vals)
+        if 'attachment_ids' in vals:
+            for rec in self:
+                orphan_attachments = rec.attachment_ids.filtered(
+                    lambda a: not a.res_model or not a.res_id
+                )
+                if orphan_attachments:
+                    orphan_attachments.sudo().write({
+                        'res_model': rec._name,
+                        'res_id': rec.id,
+                    })
+        return res
 
     def action_post(self):
         for receipt in self:

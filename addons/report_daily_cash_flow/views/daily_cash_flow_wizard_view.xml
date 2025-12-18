@@ -6,9 +6,32 @@
         <field name="arch" type="xml">
             <form string="Generate Sale Report">
                 <group>
-                    <field name="date_report" widget="date" string="Chọn ngày báo cáo"/>
-
+                    <field name="period_type" required="1" string="Chọn kỳ báo cáo" widget="radio" options="{'horizontal': true}"/>
                 </group>
+
+                <group invisible="period_type != 'custom'">
+                    <field name="date_from" widget="date" string="Từ ngày"/>
+                    <field name="date_to" widget="date" string="Đến ngày"/>
+                </group>
+
+                <group invisible="period_type != 'month'">
+                    <field name="month"/>
+                    <field name="year" widget="year"/>
+                </group>
+
+                <group invisible="period_type != 'quarter'">
+                    <field name="quarter"/>
+                    <field name="year" widget="year"/>
+                </group>
+
+                <group invisible="period_type != 'year'">
+                    <field name="year" widget="year"/>
+                </group>
+
+                <group>
+                    <field name="period_label" readonly="1"/>
+                </group>
+
                 <group string="Tồn đầu kỳ (nhập lần đầu)">
                     <field name="opening_bank" placeholder="0" help="Nhập tay nếu là ngày đầu tiên."/>
                     <field name="opening_cash" placeholder="0" help="Nhập tay nếu là ngày đầu tiên."/>
@@ -28,5 +51,5 @@
         <field name="target">new</field>
     </record>
 
-    <menuitem id="menu_cash_flow_report_daily" name="Báo cáo thu chi hàng ngày" parent="expense_proposal.menu_expense_proposal_root" action="action_daily_cash_flow_report_wizard" sequence="100"/>
+    <menuitem id="menu_cash_flow_report_daily" name="Báo cáo thu chi" parent="expense_proposal.menu_expense_proposal_root" action="action_daily_cash_flow_report_wizard" sequence="100"/>
 </odoo>

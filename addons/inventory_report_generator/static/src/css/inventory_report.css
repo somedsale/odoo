@@ -1,0 +1,48 @@
+.inv-scroll {
+  max-height: 65vh;
+  overflow: auto;
+  background: #fff;
+  position: relative;
+}
+
+.inv-scroll table {
+  margin-bottom: 0;
+}
+
+/* Sticky nguyên cụm thead (2 dòng header luôn dính cùng nhau) */
+.inv-scroll thead {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #f8fafc;
+}
+
+/* gạch phân cách giữa header và body cho rõ */
+.inv-scroll thead tr:last-child th {
+  border-bottom: 1px solid #e5e7eb;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Khi scroll xuống thì cho bóng cả block header */
+.inv-scroll.is-scrolled thead {
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.12);
+}
+
+/* Sticky pager ở đáy */
+.inv-scroll .inv-pager {
+  position: sticky;
+  bottom: 0;
+  z-index: 6;
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+  padding: 8px 12px 12px;
+}
+
+/* Dòng TỔNG dính theo dưới header */
+.inv-scroll tbody tr.inv-total-row {
+  height: 20px;
+  position: sticky;
+  bottom: 43px; /* xấp xỉ chiều cao .inv-pager, chỉnh nếu cần */
+  z-index: 4; /* thấp hơn z-index của pager (6) */
+  background: #f8fafc; /* che phần dòng phía sau */
+}
