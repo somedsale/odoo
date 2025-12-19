@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_picking_form_inherit_lsx_button" model="ir.ui.view">
+        <field name="name">stock.picking.form.lsx.button</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form/sheet/div[@name='button_box']" position="inside">
+                <button type="object"
+                        name="action_view_lsx"
+                        class="oe_stat_button"
+                        icon="fa-industry"
+                        invisible="lsx_count == 0">
+                    <field name="lsx_count" widget="statinfo" string="LSX"/>
+                </button>
+                                <button type="object"
+                        name="action_view_purchase_orders"
+                        class="oe_stat_button"
+                        icon="fa-shopping-cart"
+                        invisible="purchase_order_count == 0">
+                    <field name="purchase_order_count" widget="statinfo" string="Phiếu mua"/>
+                </button>
+            </xpath>
+             <!-- Chèn vào vùng thông tin chung -->
+      <xpath expr="//form/sheet//group/group" position="inside">
+        <field name="delivery_reason"
+               placeholder="Ví dụ: Xuất cho công trình…, Xuất bảo hành…, Xuất demo…, Xuất nội bộ…"
+               invisible="picking_type_code != 'outgoing'"/>
+      </xpath>
+
+        </field>
+    </record>
+</odoo>

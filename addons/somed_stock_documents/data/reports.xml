@@ -1,0 +1,22 @@
+<odoo>
+<record id="report_pnk" model="ir.actions.report">
+  <field name="name">Phiếu nhập kho (PNK)</field>
+  <field name="model">stock.picking</field>
+  <field name="binding_model_id" ref="stock.model_stock_picking"/>
+  <field name="binding_type">report</field>
+  <field name="report_type">qweb-pdf</field>
+  <field name="report_name">somed_stock_documents.report_stock_picking_pnk</field>
+  <field name="report_file">somed_stock_documents.report_stock_picking_pnk</field>
+  <field name="paperformat_id" ref="paperformat_a4_stock"/>
+</record>
+
+
+  <record id="report_pxk" model="ir.actions.report">
+    <field name="name">Phiếu xuất kho (PXK)</field>
+    <field name="model">stock.picking</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">somed_stock_documents.report_stock_picking_pxk</field>
+    <field name="report_file">somed_stock_documents.report_stock_picking_pxk</field>
+    <field name="paperformat_id" ref="paperformat_a4_stock"/>
+  </record>
+</odoo>

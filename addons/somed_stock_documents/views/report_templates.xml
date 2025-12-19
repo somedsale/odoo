@@ -1,0 +1,678 @@
+<odoo>
+  <template id="custom_account_external_layout">
+    <t t-call="web.html_container">
+      <t t-set="o" t-value="o or doc"/>
+      <div  t-attf-class="header o_company_#{res_company.id}_layout" style="display: block; justify-content: space-between; font-family: Times New Roman;">
+
+        <div>
+        <table style="width:100%; border-collapse: collapse; border: 1px solid #fff;">
+          <tr>
+            <td style="text-align: left; vertical-align: middle; border-collapse: collapse; border: 1px solid #fff; width: 50%;">
+                        <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)" alt="Logo" style="width:150px;"/>
+            </td>
+
+            <td style="text-align: right; vertical-align: middle; border-collapse: collapse; border: 1px solid #fff; font-size: 11px; text-transform: capitalize; width: 50%;">
+              <span t-esc="res_company.name" style="text-transform: uppercase;"/>
+              <br/>
+                MST: <span t-esc="res_company.partner_id.vat"/>
+            <br/>
+                Địa chỉ: <span t-esc="res_company.partner_id.street"/>
+          <br/>
+                SĐT: <span t-esc="res_company.phone_accounting"/>
+        <br/>
+                Email: <span style="text-transform: lowercase;" t-esc="res_company.account_email"/>
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+</div>
+<t t-set="layout_background_url" t-value="'data:image/png;base64,%s' % res_company.layout_background_image.decode('utf-8') if res_company.layout_background_image and res_company.layout_background == 'Custom' else '/base/static/img/bg_background_template.jpg' if res_company.layout_background == 'Geometric' else ''"/>
+<div t-attf-class="article pt-2 o_report_layout_boxed o_company_#{res_company.id}_layout {{  'o_report_layout_background' if res_company.layout_background in ['Geometric', 'Custom']  else  '' }}" t-attf-style="{{ 'background-image: url(%s);' % layout_background_url if layout_background_url else '' }}" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+  <t t-raw="0"/>
+  <!-- Nội dung chính của báo cáo -->
+</div>
+<div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt;">
+  <p>
+    <span class="page"/>
+  </p>
+</div>
+</t>
+</template><!-- Template for Sale Contract Report -->
+<template id="report_stock_picking_pnk">
+<t t-call="somed_stock_documents.custom_account_external_layout">
+<t t-foreach="docs" t-as="o">
+  <!-- <t t-call="web.external_layout"> -->
+  <main class="page" style="font-size:13px; font-family:Arial, sans-serif; color:#333;">
+
+    <!-- ===== TITLE ===== -->
+    <div style="text-align:center; margin-bottom:10px;">
+      <div style="font-size:20px; font-weight:700; letter-spacing:0.5px;">PHIẾU NHẬP KHO</div>
+      <div style="margin-top:2px; color:#555; font-weight:600;">
+        <i>
+        <span>Ngày </span>
+        <span t-esc="o.date_done and o.date_done.strftime('%d') or ''"/>
+        <span> Tháng </span>
+        <span t-esc="o.date_done and o.date_done.strftime('%m') or ''"/>
+        <span> Năm </span>
+        <span t-esc="o.date_done and o.date_done.strftime('%Y') or ''"/>
+        </i>
+      </div>
+      <div style="margin-top:2px; color:#555;">
+        <span>Số: </span>
+            <span t-field="o.name"/>
+      </div>
+    </div>
+
+    <!-- ===== INFO BLOCK ===== -->
+    <div style="border:1px solid transparent; border-radius:8px; padding:0; margin-bottom:10px;">
+      <div style="display:flex; gap:16px;">
+
+        <div style="flex:1;">
+          <div style="margin:0;">
+            <strong>Người giao hàng:</strong>
+            <span t-field="o.partner_id"/>
+          </div>
+          <div style="margin:0;">
+            <strong>Nhập tại kho:</strong>
+            <span t-esc="o.location_dest_id and o.location_dest_id.complete_name or ''"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TABLE ===== -->
+    <table style="width:100%; border-collapse:collapse; border:1px solid #d1d5db;">
+      <thead>
+        <tr style="background: transparent;">
+          <th rowspan="2" style="width:40px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle; text-transform:capitalize;">STT</th>
+          <th rowspan="2" style="border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Sản phẩm</th>
+          <th rowspan="2" style="width:110px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Mã số</th>
+          <th rowspan="2" style="width:70px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">ĐVT</th>
+          <th colspan="2" style="border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Số lượng</th>
+          <th rowspan="2" style="width:120px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Đơn giá</th>
+          <th rowspan="2" style="width:130px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Thành tiền</th>
+          <th rowspan="2" style="width:110px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Thuế</th>
+          <th rowspan="2" style="width:140px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Sau thuế</th>
+        </tr>
+        <tr style="background: transparent;">
+          <!-- FIX: Nhu cầu trước, Thực nhập sau -->
+          <th style="width:90px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize; line-height:1.2;">Nhu cầu</th>
+          <th style="width:90px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize; line-height:1.2;">Thực nhập</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <!-- Currency mặc định -->
+        <t t-set="curr" t-value="o.company_id and o.company_id.currency_id or False"/>
+
+        <!-- Tổng -->
+        <t t-set="line_no" t-value="0"/>
+        <t t-set="sum_sub" t-value="0.0"/>
+        <t t-set="sum_tax" t-value="0.0"/>
+        <t t-set="sum_total" t-value="0.0"/>
+
+        <t t-if="o.move_line_ids_without_package">
+          <t t-foreach="o.move_line_ids_without_package" t-as="l">
+            <t t-set="line_no" t-value="line_no + 1"/>
+
+            <t t-set="pl" t-value="l.move_id and l.move_id.purchase_line_id or False"/>
+            <t t-if="pl and pl.order_id and pl.order_id.currency_id">
+              <t t-set="curr" t-value="pl.order_id.currency_id"/>
+            </t>
+
+            <t t-set="qty" t-value="l.quantity or 0.0"/>
+            <t t-set="po_qty" t-value="(pl and (pl.product_qty or 0.0)) or 0.0"/>
+
+            <t t-set="unit_sub" t-value="(pl and po_qty and (pl.price_subtotal / po_qty)) or (pl and (pl.price_unit or 0.0)) or 0.0"/>
+            <t t-set="unit_total" t-value="(pl and po_qty and (pl.price_total / po_qty)) or unit_sub"/>
+
+            <t t-set="line_sub" t-value="unit_sub * qty"/>
+            <t t-set="line_total" t-value="unit_total * qty"/>
+            <t t-set="line_tax" t-value="line_total - line_sub"/>
+
+            <t t-set="sum_sub" t-value="sum_sub + line_sub"/>
+            <t t-set="sum_tax" t-value="sum_tax + line_tax"/>
+            <t t-set="sum_total" t-value="sum_total + line_total"/>
+
+            <tr>
+              <td style="border:1px solid #d1d5db; vertical-align:middle; padding:7px; text-align:center;">
+                <span t-esc="line_no"/>
+              </td>
+
+              <td style="border:1px solid #d1d5db; vertical-align:middle; padding:7px;">
+                <div style="font-weight:600;">
+                  <span t-field="l.product_id.name"/>
+                </div>
+              </td>
+
+              <td style="border:1px solid #d1d5db; vertical-align:middle; padding:7px;">
+                <span t-esc="l.product_id and l.product_id.default_code or ''"/>
+              </td>
+
+              <td style="border:1px solid #d1d5db; vertical-align:middle; padding:7px; text-align:center;">
+                <span t-field="l.product_uom_id"/>
+              </td>
+
+              <!-- Nhu cầu -->
+              <td style="border:1px solid #d1d5db; vertical-align:middle; padding:7px; text-align:right;">
+                <span t-esc="l.move_id and (l.move_id.product_uom_qty or 0.0) or 0.0"/>
+              </td>
+
+              <!-- Thực nhập -->
+              <td style="border:1px solid #d1d5db; vertical-align:middle; padding:7px; text-align:right;">
+                <span t-esc="qty"/>
+              </td>
+
+              <td style="border:1px solid #d1d5db; vertical-align:middle; padding:7px; text-align:right;">
+                <span t-esc="'{:,.0f}'.format(unit_sub or 0.0)"/>
+              </td>
+
+              <td style="border:1px solid #d1d5db; vertical-align:middle; padding:7px; text-align:right;">
+                <span t-esc="'{:,.0f}'.format(line_sub or 0.0)"/>
+              </td>
+
+              <td style="border:1px solid #d1d5db; vertical-align:middle; padding:7px; text-align:right;">
+                <span t-esc="'{:,.0f}'.format(line_tax or 0.0)"/>
+              </td>
+
+              <td style="border:1px solid #d1d5db; vertical-align:middle; padding:7px; text-align:right; background-color:transparent;">
+                <span t-esc="'{:,.0f}'.format(line_total or 0.0)"/>
+              </td>
+            </tr>
+          </t>
+
+          <!-- TOTAL ROW -->
+          <tr style="background: transparent;">
+            <td colspan="7" style="border:1px solid #d1d5db; vertical-align:middle; padding:9px; text-align:right;">
+              <strong>TỔNG CỘNG</strong>
+            </td>
+            <td style="border:1px solid #d1d5db; vertical-align:middle; padding:9px; text-align:right;">
+              <strong>
+                <span t-esc="'{:,.0f}'.format(sum_sub or 0.0)"/>
+              </strong>
+            </td>
+            <td style="border:1px solid #d1d5db; vertical-align:middle; padding:9px; text-align:right;">
+              <strong>
+                <span t-esc="'{:,.0f}'.format(sum_tax or 0.0)"/>
+              </strong>
+            </td>
+            <td style="border:1px solid #d1d5db; vertical-align:middle; padding:9px; text-align:right;  background-color:transparent;">
+              <strong>
+                <span t-esc="'{:,.0f}'.format(sum_total or 0.0)"/>
+              </strong>
+            </td>
+          </tr>
+        </t>
+
+        <t t-else="">
+          <tr>
+            <td colspan="10" style="border:1px solid #d1d5db; vertical-align:middle; padding:12px; text-align:center; color:#6b7280;">
+                    Không có dòng sản phẩm.
+            </td>
+          </tr>
+        </t>
+      </tbody>
+    </table>
+
+    <!-- ===== AMOUNT IN WORDS + RELATED DOCS ===== -->
+    <div style="margin-top:10px; border:1px dashed transparent; border-radius:8px; padding:0;">
+      <div style="margin-bottom:6px;">
+        <strong>Số tiền bằng chữ:</strong>
+        <span style="font-style:italic; font-weight:600;">
+          <t t-set="amt_txt" t-value="(curr and curr.amount_to_text(sum_total)) or ''"/>
+          <span t-esc="amt_txt.replace('Dong', 'Đồng').replace('DONG', 'ĐỒNG').replace('dong', 'đồng')"/>
+        </span>
+      </div>
+
+      <div>
+        <strong>Chứng từ gốc kèm theo:</strong>
+
+        <t t-set="po_seen" t-value="'|'"/>
+        <t t-set="po_names" t-value="''"/>
+
+        <t t-if="o.move_line_ids_without_package">
+          <t t-foreach="o.move_line_ids_without_package" t-as="l">
+            <t t-set="po" t-value="l.move_id and l.move_id.purchase_line_id and l.move_id.purchase_line_id.order_id or False"/>
+            <t t-if="po and po.name">
+              <t t-set="key" t-value="'|' + po.name + '|'"/>
+              <t t-if="key not in po_seen">
+                <t t-set="po_seen" t-value="po_seen + po.name + '|'"/>
+                <t t-if="po_names">
+                  <t t-set="po_names" t-value="po_names + ', ' + po.name"/>
+                </t>
+                <t t-else="">
+                  <t t-set="po_names" t-value="po.name"/>
+                </t>
+              </t>
+            </t>
+          </t>
+        </t>
+        <t t-if="po_names">
+        <div style="margin-top:4px;">
+                - Đơn mua hàng: <span t-esc="po_names or ''"/>
+        </div>
+        </t>
+        <t t-set="inv_seen" t-value="'|'"/>
+        <t t-set="inv_names" t-value="''"/>
+
+        <t t-if="o.move_line_ids_without_package">
+          <t t-foreach="o.move_line_ids_without_package" t-as="l">
+            <t t-set="po" t-value="l.move_id and l.move_id.purchase_line_id and l.move_id.purchase_line_id.order_id or False"/>
+            <t t-if="po and po.supplier_invoice_ids">
+              <t t-foreach="po.supplier_invoice_ids" t-as="inv">
+                <t t-set="inv_label" t-value="inv.name or inv.code or inv.number or inv.ref or ''"/>
+                <t t-if="inv_label">
+                  <t t-set="ikey" t-value="'|' + inv_label + '|'"/>
+                  <t t-if="ikey not in inv_seen">
+                    <t t-set="inv_seen" t-value="inv_seen + inv_label + '|'"/>
+                    <t t-if="inv_names">
+                      <t t-set="inv_names" t-value="inv_names + ', ' + inv_label"/>
+                    </t>
+                    <t t-else="">
+                      <t t-set="inv_names" t-value="inv_label"/>
+                    </t>
+                  </t>
+                </t>
+              </t>
+            </t>
+          </t>
+        </t>
+        <t t-if="inv_names">
+        <div style="margin-top:2px;">
+                - Hóa đơn NCC: <span t-esc="inv_names or ''"/>
+        </div>
+        </t>
+        <!-- 4) Lệnh sản xuất (multi.mrp.order) -->
+<t t-set="mmo" t-value="o.origin and o.env['multi.mrp.order'].search([('name', '=', o.origin)], limit=1) or False"/>
+
+
+<t t-if="mmo">
+<div style="margin-top:2px;">
+  - Lệnh sản xuất:
+  <span t-esc="(mmo and mmo.name) or (o.origin or '')"/>
+</div>
+  <!-- <div style="margin-top:2px;">
+    - Ngày lệnh: <span t-field="mmo.date"/>
+  </div>
+  <div style="margin-top:2px;">
+    - Hợp đồng: <span t-esc="mmo.contract_id and mmo.contract_id.display_name or ''"/>
+  </div> -->
+</t>
+
+      </div>
+    </div>
+
+    <!-- ===== SIGNATURE (TABLE 4 CỘT) ===== -->
+    <table style="width:100%; margin-top:26px; border:none; border-collapse:collapse; border-color:transparent;">
+      <tr >
+        <td style="width:25%; color:#000; text-align:center; vertical-align:top;  border-color:transparent;">
+        </td>
+        <td style="width:25%; color:#000; text-align:center; vertical-align:top;  border-color:transparent;">
+        </td>
+        <td style="width:25%; color:#000; text-align:center; vertical-align:top;  border-color:transparent;">
+        </td>
+        <td style="width:25%; color:#000; text-align:center; vertical-align:top;  border-color:transparent; background-color:transparent;">
+          <div>
+            <i> Ngày ... tháng ... năm ... </i>
+          </div>
+          <div style="height:10px;"></div>
+        </td>
+      </tr>
+      <tr>
+        <td style="width:25%; color:#000; text-align:center; vertical-align:top;  border-color:transparent; background-color:transparent;">
+          <div style="font-weight:600;">Người lập biểu</div>
+          <div style="height:10px;"></div>
+          <div style="font-size:12px;">(Ký, ghi rõ họ tên)</div>
+        </td>
+
+        <td style="width:25%; color:#000; text-align:center; vertical-align:top;  border-color:transparent;">
+          <div style="font-weight:600;">Người giao hàng</div>
+          <div style="height:10px;"></div>
+          <div style="font-size:12px;">(Ký, ghi rõ họ tên)</div>
+        </td>
+
+        <td style="width:25%; color:#000; text-align:center; vertical-align:top;  border-color:transparent;">
+          <div style="font-weight:600;">Thủ Kho</div>
+          <div style="height:10px;"></div>
+          <div style="font-size:12px;">(Ký, ghi rõ họ tên)</div>
+        </td>
+
+        <td style="width:25%; color:#000; text-align:center; vertical-align:top;  border-color:transparent; background-color:transparent;">
+          <div style="font-weight:600;">Kế toán trưởng</div>
+          <div style="font-weight:600;">(Hoặc bộ phận có nhu cầu)</div>
+          <div style="height:10px;"></div>
+          <div style="font-size:12px;">(Ký, ghi rõ họ tên)</div>
+        </td>
+      </tr>
+    </table>
+
+
+  </main>
+  <!-- </t> -->
+</t>
+</t>
+</template>
+
+
+
+<template id="report_stock_picking_pxk">
+<t t-call="somed_stock_documents.custom_account_external_layout">
+<t t-foreach="docs" t-as="o">
+  <!-- <t t-call="web.external_layout"> -->
+  <main class="page" style="font-size:13px; font-family:Arial, sans-serif; color:#333;">
+
+    <!-- ===== TITLE ===== -->
+    <div style="text-align:center; margin-bottom:10px;">
+      <div style="font-size:20px; font-weight:700; letter-spacing:0.5px;">PHIẾU XUẤT KHO</div>
+      <div style="margin-top:2px; color:#555; font-weight:600;">
+        <i>
+        <span>Ngày </span>
+        <span t-esc="o.date_done and o.date_done.strftime('%d') or ''"/>
+        <span> Tháng </span>
+        <span t-esc="o.date_done and o.date_done.strftime('%m') or ''"/>
+        <span> Năm </span>
+        <span t-esc="o.date_done and o.date_done.strftime('%Y') or ''"/>
+        </i>
+      </div>
+      <div style="margin-top:2px; color:#555;">
+        <span>Số: </span>
+            <span t-field="o.name"/>
+      </div>
+    </div>
+
+    <!-- ===== INFO BLOCK ===== -->
+    <div style="border:1px solid transparent; border-radius:8px; padding:0; margin-bottom:10px;">
+      <div style="display:flex; gap:16px;">
+
+        <div style="flex:1;">
+          <div style="margin:0;">
+            <strong>Người nhận hàng:</strong>
+            <span t-field="o.partner_id"/>
+          </div>
+          <div style="margin:0;">
+            <strong>Lý do xuất kho:</strong>
+            <span t-esc="o.delivery_reason or ''"/>
+          </div>
+          <div style="margin:0;">
+            <strong>Xuất tại kho:</strong>
+            <span t-esc="o.location_id and o.location_id.complete_name or ''"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TABLE ===== -->
+    <table style="width:100%; border-collapse:collapse; border:1px solid #d1d5db;">
+      <thead>
+        <tr style="background: transparent;">
+          <th rowspan="2" style="width:40px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle; text-transform:capitalize;">STT</th>
+          <th rowspan="2" style="border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Sản phẩm</th>
+          <th rowspan="2" style="width:110px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Mã số</th>
+          <th rowspan="2" style="width:70px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">ĐVT</th>
+          <th colspan="2" style="border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Số lượng</th>
+          <th rowspan="2" style="width:120px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Đơn giá</th>
+          <th rowspan="2" style="width:130px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Thành tiền</th>
+          <th rowspan="2" style="width:110px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Thuế</th>
+          <th rowspan="2" style="width:140px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Sau thuế</th>
+        </tr>
+        <tr style="background: transparent;">
+          <!-- FIX: Nhu cầu trước, Thực nhập sau -->
+          <th style="width:90px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize; line-height:1.2;">Nhu cầu</th>
+          <th style="width:90px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize; line-height:1.2;">Thực nhập</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <!-- Currency mặc định -->
+        <t t-set="curr" t-value="o.company_id and o.company_id.currency_id or False"/>
+
+        <!-- Tổng -->
+        <t t-set="line_no" t-value="0"/>
+        <t t-set="sum_sub" t-value="0.0"/>
+        <t t-set="sum_tax" t-value="0.0"/>
+        <t t-set="sum_total" t-value="0.0"/>
+        <!-- Đơn giá    -->
+        <t t-if="o.move_line_ids_without_package">
+          <t t-foreach="o.move_line_ids_without_package" t-as="l">
+            <t t-set="line_no" t-value="line_no + 1"/>
+
+            <t t-set="pl" t-value="l.move_id and l.move_id.purchase_line_id or False"/>
+            <t t-if="pl and pl.order_id and pl.order_id.currency_id">
+              <t t-set="curr" t-value="pl.order_id.currency_id"/>
+            </t>
+
+            <t t-set="qty" t-value="l.quantity or 0.0"/>
+            <t t-set="po_qty" t-value="(pl and (pl.product_qty or 0.0)) or 0.0"/>
+
+            <t t-set="unit_sub" t-value="(pl and po_qty and (pl.price_subtotal / po_qty)) or (pl and (pl.price_unit or 0.0)) or 0.0"/>
+            <t t-set="unit_total" t-value="(pl and po_qty and (pl.price_total / po_qty)) or unit_sub"/>
+
+            <t t-set="line_sub" t-value="unit_sub * qty"/>
+            <t t-set="line_total" t-value="unit_total * qty"/>
+            <t t-set="line_tax" t-value="line_total - line_sub"/>
+
+            <t t-set="sum_sub" t-value="sum_sub + line_sub"/>
+            <t t-set="sum_tax" t-value="sum_tax + line_tax"/>
+            <t t-set="sum_total" t-value="sum_total + line_total"/>
+
+            <tr>
+              <td style="border:1px solid #d1d5db; vertical-align:middle; padding:7px; text-align:center;">
+                <span t-esc="line_no"/>
+              </td>
+
+              <td style="border:1px solid #d1d5db; vertical-align:middle; padding:7px;">
+                <div style="font-weight:600;">
+                  <span t-field="l.product_id.name"/>
+                </div>
+              </td>
+
+              <td style="border:1px solid #d1d5db; vertical-align:middle; padding:7px;">
+                <span t-esc="l.product_id and l.product_id.default_code or ''"/>
+              </td>
+
+              <td style="border:1px solid #d1d5db; vertical-align:middle; padding:7px; text-align:center;">
+                <span t-field="l.product_uom_id"/>
+              </td>
+
+              <!-- Nhu cầu -->
+              <td style="border:1px solid #d1d5db; vertical-align:middle; padding:7px; text-align:right;">
+                <span t-esc="l.move_id and (l.move_id.product_uom_qty or 0.0) or 0.0"/>
+              </td>
+
+              <!-- Thực nhập -->
+              <td style="border:1px solid #d1d5db; vertical-align:middle; padding:7px; text-align:right;">
+                <span t-esc="qty"/>
+              </td>
+
+              <td style="border:1px solid #d1d5db; vertical-align:middle; padding:7px; text-align:right;">
+                <span t-esc="'{:,.0f}'.format(unit_sub or 0.0)"/>
+              </td>
+
+              <td style="border:1px solid #d1d5db; vertical-align:middle; padding:7px; text-align:right;">
+                <span t-esc="'{:,.0f}'.format(line_sub or 0.0)"/>
+              </td>
+
+              <td style="border:1px solid #d1d5db; vertical-align:middle; padding:7px; text-align:right;">
+                <span t-esc="'{:,.0f}'.format(line_tax or 0.0)"/>
+              </td>
+
+              <td style="border:1px solid #d1d5db; vertical-align:middle; padding:7px; text-align:right; background-color:transparent;">
+                <span t-esc="'{:,.0f}'.format(line_total or 0.0)"/>
+              </td>
+            </tr>
+          </t>
+
+          <!-- TOTAL ROW -->
+          <tr style="background: transparent;">
+            <td colspan="7" style="border:1px solid #d1d5db; vertical-align:middle; padding:9px; text-align:right;">
+              <strong>TỔNG CỘNG</strong>
+            </td>
+            <td style="border:1px solid #d1d5db; vertical-align:middle; padding:9px; text-align:right;">
+              <strong>
+                <span t-esc="'{:,.0f}'.format(sum_sub or 0.0)"/>
+              </strong>
+            </td>
+            <td style="border:1px solid #d1d5db; vertical-align:middle; padding:9px; text-align:right;">
+              <strong>
+                <span t-esc="'{:,.0f}'.format(sum_tax or 0.0)"/>
+              </strong>
+            </td>
+            <td style="border:1px solid #d1d5db; vertical-align:middle; padding:9px; text-align:right;  background-color:transparent;">
+              <strong>
+                <span t-esc="'{:,.0f}'.format(sum_total or 0.0)"/>
+              </strong>
+            </td>
+          </tr>
+        </t>
+
+        <t t-else="">
+          <tr>
+            <td colspan="10" style="border:1px solid #d1d5db; vertical-align:middle; padding:12px; text-align:center; color:#6b7280;">
+                    Không có dòng sản phẩm.
+            </td>
+          </tr>
+        </t>
+      </tbody>
+    </table>
+
+    <!-- ===== AMOUNT IN WORDS + RELATED DOCS ===== -->
+    <div style="margin-top:10px; border:1px dashed transparent; border-radius:8px; padding:0;">
+      <div style="margin-bottom:6px;">
+        <strong>Số tiền bằng chữ:</strong>
+        <span style="font-style:italic; font-weight:600;">
+          <t t-set="amt_txt" t-value="(curr and curr.amount_to_text(sum_total)) or ''"/>
+          <span t-esc="amt_txt.replace('Dong', 'Đồng').replace('DONG', 'ĐỒNG').replace('dong', 'đồng')"/>
+        </span>
+      </div>
+
+      <div>
+        <strong>Chứng từ gốc kèm theo:</strong>
+
+        <t t-set="po_seen" t-value="'|'"/>
+        <t t-set="po_names" t-value="''"/>
+
+        <t t-if="o.move_line_ids_without_package">
+          <t t-foreach="o.move_line_ids_without_package" t-as="l">
+            <t t-set="po" t-value="l.move_id and l.move_id.purchase_line_id and l.move_id.purchase_line_id.order_id or False"/>
+            <t t-if="po and po.name">
+              <t t-set="key" t-value="'|' + po.name + '|'"/>
+              <t t-if="key not in po_seen">
+                <t t-set="po_seen" t-value="po_seen + po.name + '|'"/>
+                <t t-if="po_names">
+                  <t t-set="po_names" t-value="po_names + ', ' + po.name"/>
+                </t>
+                <t t-else="">
+                  <t t-set="po_names" t-value="po.name"/>
+                </t>
+              </t>
+            </t>
+          </t>
+        </t>
+        <t t-if="po_names">
+        <div style="margin-top:4px;">
+                - Đơn mua hàng: <span t-esc="po_names or ''"/>
+        </div>
+        </t>
+        <t t-set="inv_seen" t-value="'|'"/>
+        <t t-set="inv_names" t-value="''"/>
+
+        <t t-if="o.move_line_ids_without_package">
+          <t t-foreach="o.move_line_ids_without_package" t-as="l">
+            <t t-set="po" t-value="l.move_id and l.move_id.purchase_line_id and l.move_id.purchase_line_id.order_id or False"/>
+            <t t-if="po and po.supplier_invoice_ids">
+              <t t-foreach="po.supplier_invoice_ids" t-as="inv">
+                <t t-set="inv_label" t-value="inv.name or inv.code or inv.number or inv.ref or ''"/>
+                <t t-if="inv_label">
+                  <t t-set="ikey" t-value="'|' + inv_label + '|'"/>
+                  <t t-if="ikey not in inv_seen">
+                    <t t-set="inv_seen" t-value="inv_seen + inv_label + '|'"/>
+                    <t t-if="inv_names">
+                      <t t-set="inv_names" t-value="inv_names + ', ' + inv_label"/>
+                    </t>
+                    <t t-else="">
+                      <t t-set="inv_names" t-value="inv_label"/>
+                    </t>
+                  </t>
+                </t>
+              </t>
+            </t>
+          </t>
+        </t>
+        <t t-if="inv_names">
+        <div style="margin-top:2px;">
+                - Hóa đơn NCC: <span t-esc="inv_names or ''"/>
+        </div>
+        </t>
+        <!-- 4) Lệnh sản xuất (multi.mrp.order) -->
+<t t-set="mmo" t-value="o.origin and o.env['multi.mrp.order'].search([('name', '=', o.origin)], limit=1) or False"/>
+
+
+<t t-if="mmo">
+<div style="margin-top:2px;">
+  - Lệnh sản xuất:
+  <span t-esc="(mmo and mmo.name) or (o.origin or '')"/>
+</div>
+  <!-- <div style="margin-top:2px;">
+    - Ngày lệnh: <span t-field="mmo.date"/>
+  </div>
+  <div style="margin-top:2px;">
+    - Hợp đồng: <span t-esc="mmo.contract_id and mmo.contract_id.display_name or ''"/>
+  </div> -->
+</t>
+
+      </div>
+    </div>
+
+    <!-- ===== SIGNATURE (TABLE 4 CỘT) ===== -->
+    <table style="width:100%; margin-top:26px; border:none; border-collapse:collapse; border-color:transparent;">
+      <tr >
+        <td style="width:25%; color:#000; text-align:center; vertical-align:top;  border-color:transparent;">
+        </td>
+        <td style="width:25%; color:#000; text-align:center; vertical-align:top;  border-color:transparent;">
+        </td>
+        <td style="width:25%; color:#000; text-align:center; vertical-align:top;  border-color:transparent;">
+        </td>
+        <td style="width:25%; color:#000; text-align:center; vertical-align:top;  border-color:transparent; background-color:transparent;">
+          <div>
+            <i> Ngày ... tháng ... năm ... </i>
+          </div>
+          <div style="height:10px;"></div>
+        </td>
+      </tr>
+      <tr>
+        <td style="width:25%; color:#000; text-align:center; vertical-align:top;  border-color:transparent; background-color:transparent;">
+          <div style="font-weight:600;">Người lập biểu</div>
+          <div style="height:10px;"></div>
+          <div style="font-size:12px;">(Ký, ghi rõ họ tên)</div>
+        </td>
+
+        <td style="width:25%; color:#000; text-align:center; vertical-align:top;  border-color:transparent;">
+          <div style="font-weight:600;">Người giao hàng</div>
+          <div style="height:10px;"></div>
+          <div style="font-size:12px;">(Ký, ghi rõ họ tên)</div>
+        </td>
+
+        <td style="width:25%; color:#000; text-align:center; vertical-align:top;  border-color:transparent;">
+          <div style="font-weight:600;">Thủ Kho</div>
+          <div style="height:10px;"></div>
+          <div style="font-size:12px;">(Ký, ghi rõ họ tên)</div>
+        </td>
+
+        <td style="width:25%; color:#000; text-align:center; vertical-align:top;  border-color:transparent; background-color:transparent;">
+          <div style="font-weight:600;">Kế toán trưởng</div>
+          <div style="font-weight:600;">(Hoặc bộ phận có nhu cầu)</div>
+          <div style="height:10px;"></div>
+          <div style="font-size:12px;">(Ký, ghi rõ họ tên)</div>
+        </td>
+      </tr>
+    </table>
+
+
+  </main>
+  <!-- </t> -->
+</t>
+</t>
+</template>
+</odoo>
