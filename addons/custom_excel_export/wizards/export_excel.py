@@ -189,11 +189,11 @@ class ExportExcelWizard(models.TransientModel):
             for line in doc.order_line:
                 if line.display_type != 'line_section':
                     stt += 1
-                    row_data = [stt, line.product_id.name]
+                    row_data = [stt, line.product_display_name or line.product_id.name]
                     if doc.is_show_ma_sp:
                         row_data.append(line.product_id.default_code or '')
                     row_data.extend([
-                        line.x_thongso or '',
+                        line.name or line.x_thong_so or '',
                         line.x_xuatxu or '',
                         line.product_uom.name,
                         line.product_uom_qty,

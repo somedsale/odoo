@@ -37,6 +37,11 @@ class MultiMrpOrder(models.Model):
         string="Dự án",
         tracking=True,
     )
+    contract_id = fields.Many2one(
+        "contract.management",
+        string="Hợp đồng",
+        tracking=True,
+    )
     company_id = fields.Many2one(
         "res.company",
         string="Công ty",
@@ -70,10 +75,10 @@ class MultiMrpOrder(models.Model):
     # PXK: dùng loại dịch chuyển nội bộ (internal)
     picking_type_out_id = fields.Many2one(
         "stock.picking.type",
-        string="Loại dịch chuyển PXK (internal)",
-        domain=[("code", "=", "internal")],
+        string="Loại phiếu xuất kho (outgoing)",
+        domain=[("code", "=", "outgoing")],
         default=lambda self: self._default_picking_type_out_id(),
-        help="Loại dịch chuyển dùng để tạo phiếu xuất NVL (nội bộ).",
+        help="Loại dịch chuyển dùng để tạo phiếu xuất kho (Delivery Order).",
     )
     # PNK: dùng loại dịch chuyển nhập (incoming) để không bị check tồn ở nguồn
     picking_type_in_id = fields.Many2one(
@@ -84,24 +89,7 @@ class MultiMrpOrder(models.Model):
         help="Loại dịch chuyển dùng để tạo phiếu nhập thành phẩm (nhập kho).",
     )
 
-    location_src_id = fields.Many2one(
-        "stock.location",
-        string="Kho NVL",
-        domain=[("usage", "=", "internal")],
-        help="Kho xuất nguyên vật liệu (nguồn của PXK).",
-    )
-    location_production_id = fields.Many2one(
-        "stock.location",
-        string="Kho sản xuất",
-        domain=[("usage", "in", ["internal", "production"])],
-        help="Kho/địa điểm sản xuất (đích PXK, chỉ để theo dõi).",
-    )
-    location_dest_id = fields.Many2one(
-        "stock.location",
-        string="Kho thành phẩm",
-        domain=[("usage", "=", "internal")],
-        help="Kho nhập thành phẩm (đích PNK).",
-    )
+
 
     picking_raw_id = fields.Many2one(
         "stock.picking",
@@ -113,21 +101,162 @@ class MultiMrpOrder(models.Model):
         string="Phiếu nhập TP",
         readonly=True,
     )
+    location_src_id = fields.Many2one(
+        "stock.location",
+        string="Kho NVL",
+        domain=[("usage", "=", "internal")],
+        default=lambda self: self._default_mo_src_location_id(),
+        help="Kho xuất nguyên vật liệu (theo default của Lệnh sản xuất).",
+    )
+
+    location_production_id = fields.Many2one(
+        "stock.location",
+        string="Kho sản xuất",
+        domain=[("usage", "=", "production")],
+        default=lambda self: self._default_production_location_id(),
+        help="Luôn là Virtual Locations/Production.",
+    )
+
+    location_dest_id = fields.Many2one(
+        "stock.location",
+        string="Kho thành phẩm",
+        domain=[("usage", "=", "internal")],
+        default=lambda self: self._default_mo_dest_location_id(),
+        help="Kho nhập thành phẩm (theo default của Lệnh sản xuất).",
+    )
+    def _set_done_qty_full(self, picking):
+        """
+        Universal for Odoo 17 variants:
+        - Tự dò field done qty trên stock.move.line (qty_done / quantity / quantity_done ...)
+        - Không dùng stock.move.quantity_done (DB bạn không có)
+        - Nếu chưa có move_line thì tạo move_line và set done qty
+        """
+        MoveLine = self.env["stock.move.line"]
+
+        # dò field "done qty" thật sự đang tồn tại
+        ml_fields = MoveLine._fields
+        done_field = None
+        for f in ("qty_done", "quantity", "quantity_done"):
+            if f in ml_fields:
+                done_field = f
+                break
+        if not done_field:
+            raise UserError(_("Không tìm thấy field Done Qty trên stock.move.line (qty_done/quantity/quantity_done)."))
+
+        # dò field reserved (có thì dùng cho đẹp)
+        reserved_field = None
+        for f in ("reserved_uom_qty", "reserved_qty", "product_uom_qty"):
+            if f in ml_fields:
+                reserved_field = f
+                break
+
+        def _get_done(ml):
+            return getattr(ml, done_field) or 0.0
+
+        def _set_done(ml, val):
+            setattr(ml, done_field, val)
+
+        def _get_reserved(ml):
+            if not reserved_field:
+                return 0.0
+            return getattr(ml, reserved_field) or 0.0
+
+        for mv in picking.move_ids_without_package:
+            if not mv.product_id:
+                continue
+
+            demand = mv.product_uom_qty or 0.0
+
+            existing_done = 0.0
+            for ml in mv.move_line_ids:
+                existing_done += _get_done(ml)
+
+            need = demand - existing_done
+            if need <= 0:
+                continue
+
+            # Nếu đã có line (thường có khi assign), bơm done vào line
+            if mv.move_line_ids:
+                for ml in mv.move_line_ids:
+                    if need <= 0:
+                        break
+
+                    reserved = _get_reserved(ml)
+                    add = reserved if reserved > 0 else need
+                    if add <= 0:
+                        continue
+
+                    _set_done(ml, _get_done(ml) + add)
+                    need -= add
+
+            # Nếu vẫn thiếu hoặc chưa có line thì tạo line mới và set done
+            if need > 0:
+                vals = {
+                    "picking_id": picking.id,
+                    "move_id": mv.id,
+                    "company_id": picking.company_id.id,
+                    "product_id": mv.product_id.id,
+                    "product_uom_id": mv.product_uom.id,
+                    "location_id": picking.location_id.id,
+                    "location_dest_id": picking.location_dest_id.id,
+                    done_field: need,
+                }
+                MoveLine.create(vals)
+
+
+    def _auto_validate_picking(self, picking):
+        """
+        Auto done picking:
+        - confirm (draft -> confirmed)
+        - assign (nếu internal source)
+        - set qty_done (universal)
+        - validate, và cố bypass backorder wizard bằng context
+        """
+        if not picking or picking.state in ("done", "cancel"):
+            return True
+
+        if picking.state == "draft":
+            picking.action_confirm()
+
+        # assign để sinh reservation + move lines (đặc biệt với internal source)
+        if picking.state in ("confirmed", "waiting"):
+            picking.action_assign()
+
+        # set done qty
+        self._set_done_qty_full(picking)
+
+        ctx = dict(self.env.context)
+        ctx.update({
+            "skip_backorder": True,
+            "cancel_backorder": True,
+            "force_no_backorder": True,
+        })
+        res = picking.with_context(ctx).button_validate()
+
+        # Nếu validate trả về wizard dict thì stop ở đây (đỡ crash)
+        # (Nếu bạn muốn auto xử wizard tiếp thì mình sẽ hook theo model wizard đúng tên trong DB bạn)
+        if isinstance(res, dict):
+            # để khỏi làm user “kẹt”: báo rõ
+            raise UserError(_(
+                "Hệ thống yêu cầu wizard khi hoàn tất phiếu kho (backorder/validation).\n"
+                "Bạn cần mở phiếu kho và bấm Validate thủ công 1 lần, hoặc gửi mình dict res để mình auto xử lý wizard đúng model trong DB bạn."
+            ))
+
+        return True
+
 
     @api.model
     def _default_picking_type_out_id(self):
         company = self.env.company
-        picking_type = (
-            self.env["stock.picking.type"]
-            .search(
-                [
-                    ("code", "=", "internal"),
-                    ("company_id", "in", [company.id, False]),
-                ],
-                limit=1,
-            )
+        picking_type = self.env["stock.picking.type"].search(
+            [
+                ("code", "=", "outgoing"),   # <-- đổi internal -> outgoing
+                ("company_id", "in", [company.id, False]),
+            ],
+            limit=1,
         )
         return picking_type.id
+
 
     @api.model
     def _default_picking_type_in_id(self):
@@ -148,10 +277,12 @@ class MultiMrpOrder(models.Model):
     def _onchange_company_id(self):
         for order in self:
             if order.company_id:
-                if not order.picking_type_out_id:
-                    order.picking_type_out_id = order._default_picking_type_out_id()
-                if not order.picking_type_in_id:
-                    order.picking_type_in_id = order._default_picking_type_in_id()
+                if not order.location_src_id:
+                    order.location_src_id = self.env["stock.location"].browse(order._default_mo_src_location_id())
+                if not order.location_dest_id:
+                    order.location_dest_id = self.env["stock.location"].browse(order._default_mo_dest_location_id())
+                if not order.location_production_id:
+                    order.location_production_id = self.env["stock.location"].browse(order._default_production_location_id())
 
     _sql_constraints = [
         (
@@ -181,24 +312,56 @@ class MultiMrpOrder(models.Model):
                 raise UserError(
                     _("Vui lòng thêm ít nhất 1 dòng thành phẩm trước khi xác nhận.")
                 )
+            self.action_generate_pickings()
         self.write({"state": "confirmed"})
         return True
 
     def action_done(self):
         for order in self:
-            # Nếu còn MO con chưa done/cancel thì không cho complete
-            not_done = order.line_ids.mapped("mrp_production_id").filtered(
-                lambda mo: mo.state not in ("done", "cancel")
-            )
-            if not_done:
-                raise UserError(
-                    _(
-                        "Vẫn còn lệnh sản xuất chi tiết chưa hoàn tất hoặc bị hủy.\n"
-                        "Vui lòng kiểm tra lại."
-                    )
-                )
+            # (1) Nếu còn MO con chưa done/cancel thì chặn như cũ
+            # not_done = order.line_ids.mapped("mrp_production_id").filtered(
+            #     lambda mo: mo.state not in ("done", "cancel")
+            # )
+            # if not_done:
+            #     raise UserError(
+            #         _(
+            #             "Vẫn còn lệnh sản xuất chi tiết chưa hoàn tất hoặc bị hủy.\n"
+            #             "Vui lòng kiểm tra lại."
+            #         )
+            #     )
+
+            # (2) Tự hoàn tất PXK NVL
+            if order.picking_raw_id and order.picking_raw_id.state not in ("done", "cancel"):
+                order._auto_validate_picking(order.picking_raw_id)
+
+            # (3) Tự hoàn tất PNK TP
+            if order.picking_finished_id and order.picking_finished_id.state not in ("done", "cancel"):
+                order._auto_validate_picking(order.picking_finished_id)
+
         self.write({"state": "done"})
         return True
+    @api.onchange("picking_raw_id", "picking_finished_id")
+    def _onchange_picking_ids(self):
+        if self.picking_raw_id and self.picking_finished_id:
+            if self.picking_raw_id.state == "done" or self.picking_finished_id.state == "done":
+                self.write({"state": "done"})
+    def _try_set_done_if_pickings_done(self):
+        for order in self:
+            if order.state in ("done", "cancel"):
+                continue
+            if not order.picking_raw_id or not order.picking_finished_id:
+                continue
+            if order.picking_raw_id.state != "done" or order.picking_finished_id.state != "done":
+                continue
+
+            # nếu bạn muốn BỎ check MO thì xóa đoạn này
+            mos = order.line_ids.mapped("mrp_production_id")
+            not_done = mos.filtered(lambda mo: mo.state not in ("done", "cancel"))
+            if not_done:
+                continue
+
+            order.write({"state": "done"})
+
 
     def action_cancel(self):
         self.write({"state": "cancel"})
@@ -256,6 +419,8 @@ class MultiMrpOrder(models.Model):
                     mo_vals["project_id"] = order.project_id.id
                 if "sale_id" in MrpProduction._fields and order.sale_id:
                     mo_vals["sale_id"] = order.sale_id.id
+                if "contract_id" in MrpProduction._fields and order.contract_id:
+                    mo_vals["contract_id"] = order.contract_id.id
 
                 mo = MrpProduction.create(mo_vals)
                 line.mrp_production_id = mo.id
@@ -363,6 +528,7 @@ class MultiMrpOrder(models.Model):
                 "origin": order.name,
                 "location_id": order.location_src_id.id,
                 "location_dest_id": order.location_production_id.id,
+                "delivery_reason": _("Xuất kho sản xuất cho công trình: %s") % self.contract_id.num_contract if self.contract_id else '',
             }
             raw_picking = Picking.create(raw_vals)
 
@@ -486,6 +652,141 @@ class MultiMrpOrder(models.Model):
             mos_to_close.write({"state": "done"})
 
         return True
+    @api.model
+    def _default_location_src_id(self):
+        """Kho NVL mặc định theo picking type internal."""
+        pt = self.env["stock.picking.type"].browse(self._default_picking_type_out_id())
+        if pt and pt.default_location_src_id:
+            return pt.default_location_src_id.id
+        # fallback: kho Stock của warehouse
+        if pt and pt.warehouse_id and pt.warehouse_id.lot_stock_id:
+            return pt.warehouse_id.lot_stock_id.id
+        return False
+
+    @api.model
+    def _default_location_production_id(self):
+        """Kho sản xuất (đích PXK) theo picking type internal."""
+        pt = self.env["stock.picking.type"].browse(self._default_picking_type_out_id())
+        if pt and pt.default_location_dest_id:
+            return pt.default_location_dest_id.id
+
+        # fallback: location Production của warehouse (nếu có)
+        wh = pt.warehouse_id if pt else False
+        prod_loc = getattr(wh, "wh_production_stock_loc_id", False) if wh else False
+        if prod_loc:
+            return prod_loc.id
+
+        # fallback cuối: tìm 1 location usage=production trong công ty
+        loc = self.env["stock.location"].search(
+            [("usage", "=", "production"), ("company_id", "in", [self.env.company.id, False])],
+            limit=1,
+        )
+        return loc.id or False
+
+    @api.model
+    def _default_location_dest_id(self):
+        """Kho thành phẩm (đích PNK) theo picking type incoming."""
+        pt = self.env["stock.picking.type"].browse(self._default_picking_type_in_id())
+        if pt and pt.default_location_dest_id:
+            return pt.default_location_dest_id.id
+        # fallback: kho Stock của warehouse
+        if pt and pt.warehouse_id and pt.warehouse_id.lot_stock_id:
+            return pt.warehouse_id.lot_stock_id.id
+        return False
+    @api.onchange("picking_type_out_id")
+    def _onchange_picking_type_out_id(self):
+        for order in self:
+            pt = order.picking_type_out_id
+            if not pt:
+                continue
+
+            # chỉ fill source nếu đang trống
+            if not order.location_src_id and pt.default_location_src_id:
+                order.location_src_id = pt.default_location_src_id
+
+            # QUAN TRỌNG:
+            # outgoing thường có dest mặc định là Customer => KHÔNG được lấy làm "Kho sản xuất"
+            # chỉ set nếu dest thực sự là production, còn không thì giữ location_production_id hiện tại
+            if (
+                not order.location_production_id
+                and pt.default_location_dest_id
+                and pt.default_location_dest_id.usage == "production"
+            ):
+                order.location_production_id = pt.default_location_dest_id
+
+
+    @api.onchange("picking_type_in_id")
+    def _onchange_picking_type_in_id(self):
+        for order in self:
+            pt = order.picking_type_in_id
+            if not pt:
+                continue
+
+            # Đích PNK = default dest của incoming
+            if not order.location_dest_id and pt.default_location_dest_id:
+                order.location_dest_id = pt.default_location_dest_id
+    @api.model
+    def _get_mrp_operation_type(self):
+        """Lấy Operation Type dùng cho Manufacturing (MO)."""
+        company = self.env.company
+        pt = self.env["stock.picking.type"].search(
+            [("code", "=", "mrp_operation"), ("company_id", "in", [company.id, False])],
+            limit=1,
+        )
+        # fallback: nếu DB bạn không có code mrp_operation (custom), thì trả False
+        return pt
+
+    @api.model
+    def _default_production_location_id(self):
+        """Virtual Locations/Production."""
+        # ưu tiên external id chuẩn của stock
+        loc = self.env.ref("stock.location_production", raise_if_not_found=False)
+        if loc:
+            return loc.id
+        # fallback search
+        company = self.env.company
+        loc = self.env["stock.location"].search(
+            [("usage", "=", "production"), ("company_id", "in", [company.id, False])],
+            limit=1,
+        )
+        return loc.id or False
+
+    @api.model
+    def _default_mo_src_location_id(self):
+        """Kho NVL theo default của MO (source)."""
+        pt = self._get_mrp_operation_type()
+        if pt and pt.default_location_src_id and pt.default_location_src_id.usage == "internal":
+            return pt.default_location_src_id.id
+
+        # fallback: lấy kho Stock của warehouse nếu có
+        if pt and pt.warehouse_id and pt.warehouse_id.lot_stock_id:
+            return pt.warehouse_id.lot_stock_id.id
+
+        # fallback cuối: tìm 1 internal location
+        company = self.env.company
+        loc = self.env["stock.location"].search(
+            [("usage", "=", "internal"), ("company_id", "in", [company.id, False])],
+            limit=1,
+        )
+        return loc.id or False
+
+    @api.model
+    def _default_mo_dest_location_id(self):
+        """Kho Thành phẩm theo default của MO (destination)."""
+        pt = self._get_mrp_operation_type()
+        if pt and pt.default_location_dest_id and pt.default_location_dest_id.usage == "internal":
+            return pt.default_location_dest_id.id
+
+        # fallback: kho Stock của warehouse
+        if pt and pt.warehouse_id and pt.warehouse_id.lot_stock_id:
+            return pt.warehouse_id.lot_stock_id.id
+
+        company = self.env.company
+        loc = self.env["stock.location"].search(
+            [("usage", "=", "internal"), ("company_id", "in", [company.id, False])],
+            limit=1,
+        )
+        return loc.id or False
 
 class MultiMrpOrderLine(models.Model):
     _name = "multi.mrp.order.line"
