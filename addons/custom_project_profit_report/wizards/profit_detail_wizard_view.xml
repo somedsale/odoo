@@ -5,14 +5,16 @@
         <field name="name">profit.detail.wizard.form</field>
         <field name="model">profit.detail.wizard</field>
         <field name="arch" type="xml">
-            <form string="In lãi lỗ chi tiết công trình">
+            <form string="Báo cáo lãi lỗ công trình">
                 <group>
-                    <field name="project_id" options="{'no_create': True}"/>
+                    <field name="report_scope" string="Chọn phạm vi báo cáo"/>
+                    <field name="project_id" options="{'no_create': True}" invisible="report_scope == 'summary'" required="report_scope == 'detail'" />
                 </group>
 
                 <footer>
-                    <button name="action_print_report" type="object" string="Xem báo cáo" class="btn-primary" />
-                    <button string="Hủy" special="cancel" class="btn-secondary" />
+                    <button name="action_print_report" type="object" string="Xem báo cáo" class="btn-primary"/>
+                    <button name="action_export_excel" type="object" string="Xuất Excel" class="btn-primary"/>
+                    <button string="Hủy" special="cancel" class="btn-secondary"/>
                 </footer>
             </form>
         </field>
