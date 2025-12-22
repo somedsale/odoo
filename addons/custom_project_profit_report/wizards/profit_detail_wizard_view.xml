@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Form view: Profit Detail Wizard -->
+    <record id="view_profit_detail_wizard_form" model="ir.ui.view">
+        <field name="name">profit.detail.wizard.form</field>
+        <field name="model">profit.detail.wizard</field>
+        <field name="arch" type="xml">
+            <form string="In lãi lỗ chi tiết công trình">
+                <group>
+                    <field name="project_id" options="{'no_create': True}"/>
+                </group>
+
+                <footer>
+                    <button name="action_print_report" type="object" string="Xem báo cáo" class="btn-primary" />
+                    <button string="Hủy" special="cancel" class="btn-secondary" />
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_profit_detail_wizard" model="ir.actions.act_window">
+        <field name="name">Chi tiết lãi lỗ công trình</field>
+        <field name="res_model">profit.detail.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{}</field>
+    </record>
+    <menuitem id="menu_project_profit_detail" name="Chi tiết lãi lỗ công trình" parent="menu_project_profit_root" action="action_profit_detail_wizard" sequence="2" />
+</odoo>

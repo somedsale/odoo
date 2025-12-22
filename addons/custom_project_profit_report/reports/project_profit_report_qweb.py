@@ -25,6 +25,9 @@ class ProjectProfitReportQweb(models.AbstractModel):
                 'project_id': rec.project_id,           # dùng .name trong QWeb
                 'num_contract': rec.num_contract,
                 'contract_value': rec.contract_value,
+                'settlement_value': rec.settlement_value,
+                'invoice_amount': rec.invoice_amount,
+                'receivable_amount': rec.receivable_amount,
                 'revenue': rec.revenue,
                 'material_cost': rec.material_cost,
                 'labor_cost': rec.labor_cost,

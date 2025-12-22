@@ -3,6 +3,10 @@ from odoo import models, fields, api
 from odoo.exceptions import UserError
 from datetime import date
 import calendar
+import io
+import base64
+from odoo.tools.misc import xlsxwriter
+from datetime import timedelta
 
 
 class DailyCashFlowWizard(models.TransientModel):
@@ -299,3 +303,267 @@ class DailyCashFlowWizard(models.TransientModel):
         }
 
         return self.env.ref("report_daily_cash_flow.daily_cash_flow_report").report_action(self, data=data)
+    def _get_report_title(self):
+        """Trả về title + filename theo filter"""
+        self.ensure_one()
+
+        if self.period_type == "month":
+            return f"Báo cáo thu chi tháng {int(self.month)} năm {self.year}"
+
+        if self.period_type == "quarter":
+            return f"Báo cáo thu chi quý {int(self.quarter)} năm {self.year}"
+
+        if self.period_type == "year":
+            return f"Báo cáo thu chi năm {self.year}"
+
+        # custom range
+        df = self.date_from.strftime("%d/%m/%Y") if self.date_from else ""
+        dt = self.date_to.strftime("%d/%m/%Y") if self.date_to else ""
+        return f"Báo cáo thu chi từ {df} đến {dt}"
+    def action_export_excel(self):
+        self.ensure_one()
+
+        date_from, date_to = self._resolve_dates()
+        opening_date = date_from - timedelta(days=1)
+        closing_date = date_to
+
+        opening_date_str = opening_date.strftime("%d/%m/%Y")
+        closing_date_str = closing_date.strftime("%d/%m/%Y")
+
+        # Thu / Chi
+        r_bank, r_cash, receipts = self._sum_receipts(date_from, date_to)
+        p_bank, p_cash, payments = self._sum_payments(date_from, date_to)
+
+        opening_bank = self.opening_bank or 0.0
+        opening_cash = self.opening_cash or 0.0
+
+        closing_bank = opening_bank + r_bank - p_bank
+        closing_cash = opening_cash + r_cash - p_cash
+
+        # -------------------------
+        # Tạo file Excel
+        # -------------------------
+        output = io.BytesIO()
+        workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+        sheet = workbook.add_worksheet("Báo cáo thu chi")
+
+        # ===== FORMAT =====
+        fmt_title = workbook.add_format({
+            'bold': True,
+            'font_size': 16,
+            'align': 'center',
+            'valign': 'vcenter'
+        })
+
+        fmt_group_thu = workbook.add_format({
+            'bold': True,
+            'border': 1,
+            'align': 'center',
+            'valign': 'vcenter',
+            'bg_color': '#92D050'
+        })
+
+        fmt_group_chi = workbook.add_format({
+            'bold': True,
+            'border': 1,
+            'align': 'center',
+            'valign': 'vcenter',
+            'bg_color': '#FFF2CC'
+        })
+
+        fmt_head_thu = workbook.add_format({
+            'bold': True,
+            'border': 1,
+            'align': 'center',
+            'bg_color': '#92D050'
+        })
+
+        fmt_head_chi = workbook.add_format({
+            'bold': True,
+            'border': 1,
+            'align': 'center',
+            'bg_color': '#FFF2CC'
+        })
+
+        fmt_head_stt = workbook.add_format({
+            'bold': True,
+            'border': 1,
+            'align': 'center',
+            'bg_color': '#D9E1F2'
+        })
+
+        # 🔥 FORMAT TEXT CÓ WRAP (QUAN TRỌNG)
+        fmt_text = workbook.add_format({
+            'border': 1,
+            'valign': 'top',
+            'align': 'left',
+            'text_wrap': True
+        })
+
+        fmt_money = workbook.add_format({
+            'border': 1,
+            'num_format': '#,##0',
+            'align': 'right',
+            'valign': 'vcenter'
+        })
+
+        fmt_money_bold = workbook.add_format({
+            'border': 1,
+            'num_format': '#,##0',
+            'bold': True,
+            'align': 'right',
+            'valign': 'vcenter'
+        })
+
+        fmt_center_bold = workbook.add_format({
+            'border': 1,
+            'bold': True,
+            'align': 'center',
+            'valign': 'vcenter'
+        })
+
+        # ===== COLUMN WIDTH =====
+        sheet.set_column("A:A", 5)
+        sheet.set_column("B:B", 38)
+        sheet.set_column("C:D", 16)
+        sheet.set_column("E:E", 38)
+        sheet.set_column("F:G", 16)
+        sheet.set_column("H:H", 48)
+
+        # ===== TITLE =====
+        report_title = self._get_report_title()
+        sheet.merge_range("A1:H1", report_title.upper(), fmt_title)
+
+        row = 3
+
+        # ===== HEADER GROUP =====
+        sheet.write(row, 0, "", fmt_head_stt)
+        sheet.merge_range(row, 1, row, 3, "THU TIỀN", fmt_group_thu)
+        sheet.merge_range(row, 4, row, 7, "CHI TIỀN", fmt_group_chi)
+        row += 1
+
+        # ===== HEADER DETAIL =====
+        sheet.write(row, 0, "STT", fmt_head_stt)
+
+        sheet.write(row, 1, "Nội dung thu", fmt_head_thu)
+        sheet.write(row, 2, "Ngân hàng", fmt_head_thu)
+        sheet.write(row, 3, "Tiền mặt", fmt_head_thu)
+
+        sheet.write(row, 4, "Nội dung chi", fmt_head_chi)
+        sheet.write(row, 5, "Ngân hàng", fmt_head_chi)
+        sheet.write(row, 6, "Tiền mặt", fmt_head_chi)
+        sheet.write(
+            row, 7,
+            "GÓI THẦU / CÔNG TRÌNH / ĐỊA ĐIỂM / CHỦ ĐẦU TƯ",
+            fmt_head_chi
+        )
+        row += 1
+
+        # ===== TỒN ĐẦU KỲ =====
+        sheet.write(row, 0, "", fmt_text)
+        sheet.write(
+            row, 1,
+            f"TỒN ĐẦU KỲ\n({opening_date_str})",
+            fmt_center_bold
+        )
+        sheet.write(row, 2, opening_bank, fmt_money_bold)
+        sheet.write(row, 3, opening_cash, fmt_money_bold)
+        sheet.write_row(row, 4, ["", "", "", ""], fmt_text)
+        sheet.set_row(row, 30)
+        row += 1
+
+        # ===== DATA =====
+        max_len = max(len(receipts), len(payments))
+
+        for i in range(max_len):
+            sheet.write(row, 0, i + 1, fmt_text)
+
+            # ---- THU ----
+            if i < len(receipts):
+                r = receipts[i]
+                sheet.write(row, 1, r.note or "", fmt_text)
+                if r.payment_method == "bank":
+                    sheet.write(row, 2, r.amount, fmt_money)
+                    sheet.write(row, 3, "", fmt_text)
+                else:
+                    sheet.write(row, 2, "", fmt_text)
+                    sheet.write(row, 3, r.amount, fmt_money)
+            else:
+                sheet.write_row(row, 1, ["", "", ""], fmt_text)
+
+            # ---- CHI ----
+            if i < len(payments):
+                p = payments[i]
+                sheet.write(row, 4, p.note or "", fmt_text)
+                if p.payment_type == "bank":
+                    sheet.write(row, 5, p.total, fmt_money)
+                    sheet.write(row, 6, "", fmt_text)
+                else:
+                    sheet.write(row, 5, "", fmt_text)
+                    sheet.write(row, 6, p.total, fmt_money)
+
+                project_text = ""
+                if p.cost_classification == "project":
+                    if p.expense_category_id:
+                        project_text += p.expense_category_id.name + " - "
+                    if p.project_id:
+                        project_text += p.project_id.name
+                elif p.expense_category_id:
+                    project_text = p.expense_category_id.name
+
+                sheet.write(row, 7, project_text, fmt_text)
+            else:
+                sheet.write_row(row, 4, ["", "", "", ""], fmt_text)
+
+            sheet.set_row(row, 32)
+            row += 1
+
+        # ===== TỔNG =====
+        sheet.write(row, 0, "", fmt_text)
+        sheet.write(row, 1, "TỔNG THU / CHI", fmt_center_bold)
+        sheet.write(row, 2, r_bank, fmt_money_bold)
+        sheet.write(row, 3, r_cash, fmt_money_bold)
+        sheet.write(row, 4, "", fmt_text)
+        sheet.write(row, 5, p_bank, fmt_money_bold)
+        sheet.write(row, 6, p_cash, fmt_money_bold)
+        sheet.write(row, 7, "", fmt_text)
+        sheet.set_row(row, 30)
+        row += 1
+
+        # ===== TỒN CUỐI =====
+        sheet.write(row, 0, "", fmt_text)
+        sheet.write(
+            row, 1,
+            f"TỒN CUỐI KỲ\n( {closing_date_str})",
+            fmt_center_bold
+        )
+        sheet.write(row, 2, closing_bank, fmt_money_bold)
+        sheet.write(row, 3, closing_cash, fmt_money_bold)
+        sheet.write_row(row, 4, ["", "", "", ""], fmt_text)
+        sheet.set_row(row, 30)
+
+        # Freeze header (2 dòng header)
+        sheet.freeze_panes(6, 0)
+
+        workbook.close()
+        output.seek(0)
+
+        # -------------------------
+        # Download
+        # -------------------------
+        safe_name = report_title.replace(" ", "_").replace("/", "-")
+        attachment = self.env["ir.attachment"].create({
+            "name": f"{safe_name}.xlsx",
+            "type": "binary",
+            "datas": base64.b64encode(output.read()),
+            "res_model": self._name,
+            "res_id": self.id,
+            "mimetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        })
+
+        return {
+            "type": "ir.actions.act_url",
+            "url": f"/web/content/{attachment.id}?download=true",
+            "target": "self",
+        }
+

@@ -16,16 +16,16 @@
 
                 <group invisible="period_type != 'month'">
                     <field name="month"/>
-                    <field name="year" widget="year"/>
+                    <field name="year" widget="yearpicker"/>
                 </group>
 
                 <group invisible="period_type != 'quarter'">
                     <field name="quarter"/>
-                    <field name="year" widget="year"/>
+                    <field name="year" widget="yearpicker"/>
                 </group>
 
                 <group invisible="period_type != 'year'">
-                    <field name="year" widget="year"/>
+                    <field name="year" widget="yearpicker"/>
                 </group>
 
                 <group>
@@ -38,6 +38,7 @@
                 </group>
                 <footer>
                     <button name="action_generate_report" string="Xem báo cáo" type="object" class="btn-primary"/>
+                    <button name="action_export_excel" string="Xuất Excel" type="object" class="btn-secondary"/>
                     <button string="Cancel" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
