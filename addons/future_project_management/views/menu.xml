@@ -1,0 +1,19 @@
+<odoo>
+    <record id="action_future_project" model="ir.actions.act_window">
+        <field name="name">Future Projects</field>
+        <field name="res_model">future.project</field>
+        <field name="view_mode">kanban,tree,form</field>
+    </record>
+
+    <menuitem
+        id="menu_future_project_root"
+        name="Future Projects"
+        sequence="15"/>
+
+    <menuitem
+        id="menu_future_project"
+        name="Future Project Pipeline"
+        parent="menu_future_project_root"
+        action="action_future_project"
+        sequence="1"/>
+</odoo>

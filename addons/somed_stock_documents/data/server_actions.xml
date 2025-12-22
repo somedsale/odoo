@@ -1,0 +1,27 @@
+<odoo>
+  <record id="action_print_pnk" model="ir.actions.server">
+    <field name="name">In Phiếu nhập kho (PNK)</field>
+    <field name="model_id" ref="stock.model_stock_picking"/>
+    <field name="binding_model_id" ref="stock.model_stock_picking"/>
+    <field name="binding_type">action</field>
+    <field name="state">code</field>
+    <field name="code">
+if any(r.picking_type_id.id != env.ref('somed_stock_documents.picking_type_pnk').id for r in records):
+    raise UserError("Chỉ in được cho Phiếu nhập kho (PNK).")
+action = env.ref('somed_stock_documents.report_pnk').report_action(records)
+    </field>
+  </record>
+
+  <record id="action_print_pxk" model="ir.actions.server">
+    <field name="name">In Phiếu xuất kho (PXK)</field>
+    <field name="model_id" ref="stock.model_stock_picking"/>
+    <field name="binding_model_id" ref="stock.model_stock_picking"/>
+    <field name="binding_type">action</field>
+    <field name="state">code</field>
+    <field name="code">
+if any(r.picking_type_id.id != env.ref('somed_stock_documents.picking_type_pxk').id for r in records):
+    raise UserError("Chỉ in được cho Phiếu xuất kho (PXK).")
+action = env.ref('somed_stock_documents.report_pxk').report_action(records)
+    </field>
+  </record>
+</odoo>
