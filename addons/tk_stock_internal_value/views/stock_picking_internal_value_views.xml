@@ -15,8 +15,14 @@
                 <xpath expr="//field[@name='move_ids_without_package']/tree/field[@name='product_uom']" position="after">
                     <field name="unit_cost"/>
                     <field name="value_amount"/>
-                </xpath>
+                    <field name="tax_ids" widget="many2many_tags"/>
+                    <field name="price_total"/>
+                    <field name="company_currency_id" column_invisible="1"/>
 
+                </xpath>
+                <xpath expr="//field[@name='move_ids_without_package']/tree/field[@name='product_packaging_id']" position="replace">
+                    <field name="product_packaging_id" options="{'no_create': True}" optional= "hide"/>
+                </xpath>
                 <!-- Hiển thị Tổng giá trị kho phía dưới danh sách dòng -->
                 <xpath expr="//field[@name='move_ids_without_package']" position="after">
                     <group string="Tổng giá trị kho">
@@ -35,6 +41,10 @@
                 <xpath expr="//field[@name='product_uom']" position="after">
                     <field name="unit_cost"/>
                     <field name="value_amount"/>
+                    <field name="tax_ids" widget="many2many_tags"/>
+                    <field name="price_total"/>
+                    <field name="company_currency_id" column_invisible="1"/>
+
                 </xpath>
             </field>
         </record>
@@ -49,6 +59,10 @@
                 <xpath expr="//field[@name='quantity']" position="after">
                     <field name="unit_cost"/>
                     <field name="value_amount"/>
+                    <field name="tax_ids" widget="many2many_tags"/>
+                    <field name="price_total"/>
+                    <field name="company_currency_id" column_invisible="1"/>
+
                 </xpath>
             </field>
         </record>

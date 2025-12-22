@@ -1,0 +1,47 @@
+<odoo noupdate="1">
+
+    <record id="stage_draft" model="future.project.stage">
+        <field name="name">Thu thập thông tin</field>
+        <field name="sequence">1</field>
+        <field name="probability">0.05</field>
+    </record>
+
+    <record id="stage_researching" model="future.project.stage">
+        <field name="name">Đang tìm hiểu</field>
+        <field name="sequence">2</field>
+        <field name="probability">0.15</field>
+    </record>
+
+    <record id="stage_contacting" model="future.project.stage">
+        <field name="name">Đã tiếp cận</field>
+        <field name="sequence">3</field>
+        <field name="probability">0.30</field>
+    </record>
+
+    <record id="stage_proposal" model="future.project.stage">
+        <field name="name">Chuẩn bị hồ sơ</field>
+        <field name="sequence">4</field>
+        <field name="probability">0.50</field>
+    </record>
+
+    <record id="stage_bidding" model="future.project.stage">
+        <field name="name">Đang / Sắp đấu thầu</field>
+        <field name="sequence">5</field>
+        <field name="probability">0.70</field>
+    </record>
+
+    <record id="stage_won" model="future.project.stage">
+        <field name="name">Trúng thầu</field>
+        <field name="sequence">6</field>
+        <field name="probability">1.0</field>
+        <field name="fold">True</field>
+    </record>
+
+    <record id="stage_lost" model="future.project.stage">
+        <field name="name">Không khả thi</field>
+        <field name="sequence">7</field>
+        <field name="probability">0.0</field>
+        <field name="fold">True</field>
+    </record>
+
+</odoo>

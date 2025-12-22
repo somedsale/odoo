@@ -6,6 +6,11 @@ class StockPicking(models.Model):
     _inherit = "stock.picking"
 
     lsx_count = fields.Integer(string="LSX", compute="_compute_lsx_count")
+    contract_id = fields.Many2one(
+        "contract.management",
+        string="Hợp đồng",
+        domain=[("stage", "in", ["executing", "completed"])],
+    )
     purchase_order_count = fields.Integer(string="PO", compute="_compute_purchase_order_count")
     delivery_reason = fields.Text(string="Lý do xuất kho")
     def _get_related_purchase_orders(self):

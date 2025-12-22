@@ -23,6 +23,8 @@
             </xpath>
              <!-- Chèn vào vùng thông tin chung -->
       <xpath expr="//form/sheet//group/group" position="inside">
+        <field name="contract_id"
+               placeholder="Chọn hợp đồng liên quan" options = "{'no_create': True}"/>
         <field name="delivery_reason"
                placeholder="Ví dụ: Xuất cho công trình…, Xuất bảo hành…, Xuất demo…, Xuất nội bộ…"
                invisible="picking_type_code != 'outgoing'"/>
