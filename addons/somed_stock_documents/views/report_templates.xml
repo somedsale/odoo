@@ -117,21 +117,17 @@
           <t t-foreach="o.move_line_ids_without_package" t-as="l">
             <t t-set="line_no" t-value="line_no + 1"/>
 
-            <t t-set="pl" t-value="l.move_id and l.move_id.purchase_line_id or False"/>
-            <t t-if="pl and pl.order_id and pl.order_id.currency_id">
-              <t t-set="curr" t-value="pl.order_id.currency_id"/>
-            </t>
-
+            <!-- Số lượng -->
             <t t-set="qty" t-value="l.quantity or 0.0"/>
-            <t t-set="po_qty" t-value="(pl and (pl.product_qty or 0.0)) or 0.0"/>
+            <t t-set="demand" t-value="l.move_id and (l.move_id.product_uom_qty or 0.0) or 0.0"/>
 
-            <t t-set="unit_sub" t-value="(pl and po_qty and (pl.price_subtotal / po_qty)) or (pl and (pl.price_unit or 0.0)) or 0.0"/>
-            <t t-set="unit_total" t-value="(pl and po_qty and (pl.price_total / po_qty)) or unit_sub"/>
+            <!-- Giá theo model custom -->
+            <t t-set="unit_sub" t-value="l.unit_cost or 0.0"/>
+            <t t-set="line_sub" t-value="l.price_subtotal or (unit_sub * qty)"/>
+            <t t-set="line_tax" t-value="l.price_tax or 0.0"/>
+            <t t-set="line_total" t-value="l.price_total or (line_sub + line_tax)"/>
 
-            <t t-set="line_sub" t-value="unit_sub * qty"/>
-            <t t-set="line_total" t-value="unit_total * qty"/>
-            <t t-set="line_tax" t-value="line_total - line_sub"/>
-
+            <!-- cộng dồn -->
             <t t-set="sum_sub" t-value="sum_sub + line_sub"/>
             <t t-set="sum_tax" t-value="sum_tax + line_tax"/>
             <t t-set="sum_total" t-value="sum_total + line_total"/>
@@ -293,12 +289,11 @@
   - Lệnh sản xuất:
   <span t-esc="(mmo and mmo.name) or (o.origin or '')"/>
 </div>
-  <!-- <div style="margin-top:2px;">
-    - Ngày lệnh: <span t-field="mmo.date"/>
-  </div>
+</t>
+  <t t-if="o.contract_id">
   <div style="margin-top:2px;">
-    - Hợp đồng: <span t-esc="mmo.contract_id and mmo.contract_id.display_name or ''"/>
-  </div> -->
+    - Hợp đồng: <span t-esc="o.contract_id and o.contract_id.display_name or ''"/>
+  </div> 
 </t>
 
       </div>
@@ -408,13 +403,13 @@
       <thead>
         <tr style="background: transparent;">
           <th rowspan="2" style="width:40px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle; text-transform:capitalize;">STT</th>
-          <th rowspan="2" style="border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Sản phẩm</th>
+          <th rowspan="2" style="width:110px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Sản phẩm</th>
           <th rowspan="2" style="width:110px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Mã số</th>
           <th rowspan="2" style="width:70px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">ĐVT</th>
           <th colspan="2" style="border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Số lượng</th>
           <th rowspan="2" style="width:120px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Đơn giá</th>
           <th rowspan="2" style="width:130px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Thành tiền</th>
-          <th rowspan="2" style="width:110px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Thuế</th>
+          <th rowspan="2" style="width:80px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Thuế</th>
           <th rowspan="2" style="width:140px; border:1px solid #d1d5db; padding:8px; text-align:center; vertical-align:middle;  text-transform:capitalize;">Sau thuế</th>
         </tr>
         <tr style="background: transparent;">
@@ -438,21 +433,17 @@
           <t t-foreach="o.move_line_ids_without_package" t-as="l">
             <t t-set="line_no" t-value="line_no + 1"/>
 
-            <t t-set="pl" t-value="l.move_id and l.move_id.purchase_line_id or False"/>
-            <t t-if="pl and pl.order_id and pl.order_id.currency_id">
-              <t t-set="curr" t-value="pl.order_id.currency_id"/>
-            </t>
-
+            <!-- Số lượng -->
             <t t-set="qty" t-value="l.quantity or 0.0"/>
-            <t t-set="po_qty" t-value="(pl and (pl.product_qty or 0.0)) or 0.0"/>
+            <t t-set="demand" t-value="l.move_id and (l.move_id.product_uom_qty or 0.0) or 0.0"/>
 
-            <t t-set="unit_sub" t-value="(pl and po_qty and (pl.price_subtotal / po_qty)) or (pl and (pl.price_unit or 0.0)) or 0.0"/>
-            <t t-set="unit_total" t-value="(pl and po_qty and (pl.price_total / po_qty)) or unit_sub"/>
+            <!-- Giá theo model custom -->
+            <t t-set="unit_sub" t-value="l.unit_cost or 0.0"/>
+            <t t-set="line_sub" t-value="l.price_subtotal or (unit_sub * qty)"/>
+            <t t-set="line_tax" t-value="l.price_tax or 0.0"/>
+            <t t-set="line_total" t-value="l.price_total or (line_sub + line_tax)"/>
 
-            <t t-set="line_sub" t-value="unit_sub * qty"/>
-            <t t-set="line_total" t-value="unit_total * qty"/>
-            <t t-set="line_tax" t-value="line_total - line_sub"/>
-
+            <!-- cộng dồn -->
             <t t-set="sum_sub" t-value="sum_sub + line_sub"/>
             <t t-set="sum_tax" t-value="sum_tax + line_tax"/>
             <t t-set="sum_total" t-value="sum_total + line_total"/>
@@ -614,12 +605,14 @@
   - Lệnh sản xuất:
   <span t-esc="(mmo and mmo.name) or (o.origin or '')"/>
 </div>
+</t>
   <!-- <div style="margin-top:2px;">
     - Ngày lệnh: <span t-field="mmo.date"/>
-  </div>
-  <div style="margin-top:2px;">
-    - Hợp đồng: <span t-esc="mmo.contract_id and mmo.contract_id.display_name or ''"/>
   </div> -->
+  <t t-if="o.contract_id">
+  <div style="margin-top:2px;">
+    - Hợp đồng: <span t-esc="o.contract_id and o.contract_id.display_name or ''"/>
+  </div> 
 </t>
 
       </div>

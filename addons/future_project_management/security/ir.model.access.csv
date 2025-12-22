@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_future_project_user,future.project user,model_future_project,,1,1,1,0
+access_future_project_location_user,future.project.location user,model_future_project_location,,1,1,1,0
+access_future_project_manager,future.project manager,model_future_project,,1,1,1,1
+
+access_future_project_stage_manager,future.project.stage manager,model_future_project_stage,,1,1,1,1

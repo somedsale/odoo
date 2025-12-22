@@ -10,7 +10,8 @@
         "data/reports.xml",
         "views/report_templates.xml",
         "views/stock_picking_view.xml",
-        "data/server_actions.xml",
+        'views/report_xlsx_actions.xml',
+        # "data/server_actions.xml",
     ],
     "installable": True,
 }

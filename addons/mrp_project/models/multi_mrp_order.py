@@ -526,6 +526,7 @@ class MultiMrpOrder(models.Model):
                 "picking_type_id": order.picking_type_out_id.id,
                 "company_id": order.company_id.id,
                 "origin": order.name,
+                "contract_id": self.contract_id.id if self.contract_id else False,
                 "location_id": order.location_src_id.id,
                 "location_dest_id": order.location_production_id.id,
                 "delivery_reason": _("Xuất kho sản xuất cho công trình: %s") % self.contract_id.num_contract if self.contract_id else '',
@@ -568,6 +569,7 @@ class MultiMrpOrder(models.Model):
                 "picking_type_id": order.picking_type_in_id.id,
                 "company_id": order.company_id.id,
                 "origin": order.name,
+                "contract_id": self.contract_id.id if self.contract_id else False,
                 "location_id": src_in.id,
                 "location_dest_id": dest_in.id,
             }
