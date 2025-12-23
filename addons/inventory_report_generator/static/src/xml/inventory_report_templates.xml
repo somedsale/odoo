@@ -37,7 +37,7 @@
             </t>
 
             <div class="table_view_pr" style="width:95%; margin:12px auto 0;">
-                <div class="inv-scroll">
+                <div t-att-class="'inv-scroll ' + (state.is_scrolled ? 'is-scrolled' : '')" t-on-scroll="onScrollInvrep">
                     <t t-call="InventoryReportTable">
                         <t t-set="report_lines" t-value="paged_lines"/>
                     </t>
@@ -138,7 +138,7 @@
     ========================== -->
     <t t-name="InventoryReportTable" owl="1">
         <div class="table_main_view">
-            <table class="table table-bordered" style="width:100%; border:1px solid #ccc">
+            <table class="table table-bordered" style="width:100%;">
                 <thead>
                     <tr class="table_pr_head">
                         <th rowspan="2" class="text-center align-middle">Mã hàng</th>
@@ -173,39 +173,6 @@
                     </t>
 
                     <t t-if="report_lines and report_lines.length">
-                        <!-- ✅ totals row (FORMAT) -->
-                        <tr class="fw-bold">
-                            <td colspan="3" class="text-center">TỔNG</td>
-
-                            <td class="text-end">
-                                <t t-esc="this._fmtNum(totals.opening_qty || 0)"/>
-                            </td>
-                            <td class="text-end">
-                                <t t-esc="this._fmtNum(totals.opening_val || 0)"/>
-                            </td>
-
-                            <td class="text-end">
-                                <t t-esc="this._fmtNum(totals.in_qty || 0)"/>
-                            </td>
-                            <td class="text-end">
-                                <t t-esc="this._fmtNum(totals.in_val || 0)"/>
-                            </td>
-
-                            <td class="text-end">
-                                <t t-esc="this._fmtNum(totals.out_qty || 0)"/>
-                            </td>
-                            <td class="text-end">
-                                <t t-esc="this._fmtNum(totals.out_val || 0)"/>
-                            </td>
-
-                            <td class="text-end">
-                                <t t-esc="this._fmtNum(totals.closing_qty || 0)"/>
-                            </td>
-                            <td class="text-end">
-                                <t t-esc="this._fmtNum(totals.closing_val || 0)"/>
-                            </td>
-                        </tr>
-
                         <!-- ✅ lines (FORMAT) -->
                         <t t-foreach="report_lines" t-as="l" t-key="l.product_id">
                             <tr>
@@ -248,6 +215,37 @@
                                 </td>
                             </tr>
                         </t>
+                        <tr class="fw-bold inv-total-row">
+                            <td colspan="3" class="text-center">TỔNG</td>
+
+                            <td class="text-end">
+                                <t t-esc="this._fmtNum(totals.opening_qty || 0)"/>
+                            </td>
+                            <td class="text-end">
+                                <t t-esc="this._fmtNum(totals.opening_val || 0)"/>
+                            </td>
+
+                            <td class="text-end">
+                                <t t-esc="this._fmtNum(totals.in_qty || 0)"/>
+                            </td>
+                            <td class="text-end">
+                                <t t-esc="this._fmtNum(totals.in_val || 0)"/>
+                            </td>
+
+                            <td class="text-end">
+                                <t t-esc="this._fmtNum(totals.out_qty || 0)"/>
+                            </td>
+                            <td class="text-end">
+                                <t t-esc="this._fmtNum(totals.out_val || 0)"/>
+                            </td>
+
+                            <td class="text-end">
+                                <t t-esc="this._fmtNum(totals.closing_qty || 0)"/>
+                            </td>
+                            <td class="text-end">
+                                <t t-esc="this._fmtNum(totals.closing_val || 0)"/>
+                            </td>
+                        </tr>
                     </t>
                 </tbody>
             </table>

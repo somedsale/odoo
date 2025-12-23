@@ -31,7 +31,7 @@
                     <br/>
                             SĐT: <span t-esc="res_company.phone_accounting"/>
                 <br/>
-                            Email: <span style="text-transform: lowercase;" t-esc="res_company.partner_id.email"/>
+                            Email: <span style="text-transform: lowercase;" t-esc="res_company.account_email"/>
             </td>
         </tr>
     </table>
@@ -50,55 +50,56 @@
 <template id="custom_project_profit_report.project_profit_template">
 <t t-call="custom_project_profit_report.custom_project_profit_layout">
 <style>
-               
-                *{
-                    font-family: "Times New Roman"; color: #000;
-                }
-                h1 {
-                    text-align:center; margin-bottom: 20px; font-size: 24pt; text-transform: uppercase;
-                }
+* {
+    font-family: "Times New Roman";
+    color: #000;
+}
 
-                table.report-table{
-                    margin: 0 auto;
-                    border: 1px solid #000;
-                    width: 100%;
-                    border-collapse: collapse;
-                    font-size: 15px;
-                    overflow: hidden;
-                    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-                }
-                table.report-table th, table.report-table td {
-                    border: 1px solid #000;
-                    padding: 6px 8px;
-                    text-align: center;
-                    vertical-align: middle;
-                }
-                table.report-table th {
-                    background-color: #C6E0B4;
-                    font-weight: bold;
-                    color: #000;
-                    text-align: center;
-                }
-                td.stt {
-                    text-align: right;
-                    font-weight: bold;
-                }
-                .money {
-                    text-align: right !important;
-                }
-                table.report-table tbody tr:nth-child(even) {
-                    background-color: #f9f9f9;
-                }
-                table.report-table tbody tr:nth-child(odd)  { background-color: #fff; }
-                table.report-table tbody tr:hover {
-                    background-color: #D9EAD3;;
-                }
-                .table-item{
-                    text-transform: uppercase;
-                    background-color: #E2EFDA;
-                    font-weight: bold;
-                    color: #000;
-                }
+h1 {
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 18pt;
+    text-transform: uppercase;
+}
+
+table.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;        /* 🔥 QUAN TRỌNG */
+    font-size: 11px;            /* 🔽 GIẢM */
+}
+
+table.report-table th,
+table.report-table td {
+    border: 1px solid #000;
+    padding: 3px 4px;           /* 🔽 GIẢM */
+    text-align: center;
+    vertical-align: middle;
+    word-wrap: break-word;      /* 🔥 */
+    white-space: normal;        /* 🔥 */
+}
+
+table.report-table th {
+    background-color: #C6E0B4;
+    font-weight: bold;
+}
+
+.money {
+    text-align: right !important;
+}
+
+.table-item {
+    text-transform: uppercase;
+    background-color: #E2EFDA;
+    font-weight: bold;
+}
+.col-stt        { width: 3%;  }
+.col-project    { width: 18%; text-align: left; }
+.col-contract-no{ width: 5%;  }
+.col-contract-v { width: 8%;  }
+
+.col-money      { width: 7%;  }
+.col-profit     { width: 7%;  }
 </style>
 
 <h1 style="text-align:center; margin-bottom:20px;padding-top: 10px;">BÁO CÁO TỔNG HỢP LÃI LỖ CÁC CÔNG TRÌNH</h1>
@@ -106,20 +107,23 @@
 <table class="report-table">
     <thead>
         <tr>
-            <th rowspan="2" class="table-item">STT</th>
-            <th rowspan="2" class="table-item">Dự án</th>
+            <th rowspan="2" class="table-item col-stt">STT</th>
+            <th rowspan="2" class="table-item col-project">Dự án</th>
             <th colspan="2" class="table-item">Hợp đồng</th>
-            <th rowspan="2" class="table-item">Số tiền đã thanh toán</th>
+            <th rowspan="2" class="table-item col-money">Giá trị quyết toán</th>
+            <th rowspan="2" class="table-item col-money">Số tiền hóa đơn</th>
+            <th rowspan="2" class="table-item col-money">Đã thanh toán</th>
+            <th rowspan="2" class="table-item col-money">Nợ phải thu</th>
             <th colspan="4" class="table-item">Chi phí</th>
-            <th rowspan="2" class="table-item">Lãi / Lỗ</th>
+            <th rowspan="2" class="table-item col-profit">Lãi / Lỗ</th>
         </tr>
         <tr>
-            <th class="table-item">Số HĐ</th>
-            <th class="table-item">Giá trị HĐ</th>
-            <th class="table-item">Nguyên vật liệu</th>
-            <th class="table-item">Nhân công</th>
-            <th class="table-item">Sản xuất chung</th>
-            <th class="table-item">Tổng chi phí</th>
+            <th class="table-item col-contract-no">Số HĐ</th>
+            <th class="table-item col-contract-v">Giá trị HĐ</th>
+            <th class="table-item col-money">Nguyên vật liệu</th>
+            <th class="table-item col-money">Nhân công</th>
+            <th class="table-item col-money">Sản xuất chung</th>
+            <th class="table-item col-money">Tổng chi phí</th>
         </tr>
     </thead>
     <tbody>
@@ -129,7 +133,16 @@
                 <t t-esc="'{:,.0f}'.format(sum(d['contract_value'] for d in docs)).replace(',', '.')"/>
             </td>
             <td class="money">
+                <t t-esc="'{:,.0f}'.format(sum(d['settlement_value'] for d in docs)).replace(',', '.')"/>
+            </td>
+            <td class="money">
+                <t t-esc="'{:,.0f}'.format(sum(d['invoice_amount'] for d in docs)).replace(',', '.')"/>
+            </td>
+            <td class="money">
                 <t t-esc="'{:,.0f}'.format(sum(d['revenue'] for d in docs)).replace(',', '.')"/>
+            </td>
+            <td class="money">
+                <t t-esc="'{:,.0f}'.format(sum(d['receivable_amount'] for d in docs)).replace(',', '.')"/>
             </td>
             <td class="money">
                 <t t-esc="'{:,.0f}'.format(sum(d['material_cost'] or 0 for d in docs)).replace(',', '.')"/>
@@ -164,7 +177,16 @@
                     <t t-esc="'{:,.0f}'.format(doc['contract_value']).replace(',', '.')"/>
                 </td>
                 <td class="money">
+                    <t t-esc="'{:,.0f}'.format(doc['settlement_value']).replace(',', '.')"/>
+                </td>
+                <td class="money">
+                    <t t-esc="'{:,.0f}'.format(doc['invoice_amount']).replace(',', '.')"/>
+                </td>
+                <td class="money">
                     <t t-esc="'{:,.0f}'.format(doc['revenue']).replace(',', '.')"/>
+                </td>
+                <td class="money">
+                    <t t-esc="'{:,.0f}'.format(doc['receivable_amount']).replace(',', '.')"/>
                 </td>
                 <td class="money">
                     <t t-esc="'{:,.0f}'.format(doc['material_cost'] or 0).replace(',', '.')"/>

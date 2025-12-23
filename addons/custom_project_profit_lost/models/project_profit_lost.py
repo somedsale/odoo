@@ -15,7 +15,7 @@ class ProjectProfitLost(models.Model):
 
     num_contract = fields.Char(string='Số hợp đồng')
     contract_value = fields.Monetary(string='Giá trị hợp đồng', currency_field='currency_id')
-    settlement_value = fields.Monetary(string='Giá trị quyết toán', currency_field='currency_id')  
+    settlement_value = fields.Monetary(string='Giá trị quyết toán', currency_field='currency_id', compute='_compute_settlement_value', store=True)  
     invoice_amount = fields.Monetary(string='Số tiền hóa đơn', currency_field='currency_id', store=True, compute="_compute_fill_invoice_amount")  
     revenue = fields.Monetary(string='Số tiền đã thanh toán', currency_field='currency_id',  store=True)
     material_cost = fields.Monetary(string='Chi phí nguyên vật liệu (VT)', currency_field='currency_id', store=True)
@@ -27,6 +27,44 @@ class ProjectProfitLost(models.Model):
 
     detail_ids = fields.One2many("project.profit.lost.detail", "profit_lost_id", string="Chi tiết")
     is_highlighted = fields.Boolean(string="Highlighted", default=False)
+    settlement_ids = fields.One2many(
+    'customer.settlement',
+    compute="_compute_settlement_ids",
+    string="Hồ sơ quyết toán",
+)
+    invoice_ids = fields.One2many(
+    'customer.invoice',
+    compute='_compute_invoice_ids',
+    string='Hóa đơn khách hàng',
+)
+    receivable_amount = fields.Monetary(
+    string="Số tiền nợ phải thu",
+    currency_field='currency_id',
+    compute='_compute_receivable_amount',
+    store=True
+)
+    @api.depends('settlement_value', 'revenue')
+    def _compute_receivable_amount(self):
+        for rec in self:
+            rec.receivable_amount = (rec.settlement_value or 0.0) - (rec.revenue or 0.0)
+    def _compute_invoice_ids(self):
+        Invoice = self.env['customer.invoice']
+        for rec in self:
+            rec.invoice_ids = Invoice.search([
+                ('project_id', '=', rec.project_id.id)
+            ])
+    @api.depends('settlement_ids.amount_settlement','settlement_ids')
+    def _compute_settlement_value(self):
+        for rec in self:
+            rec.settlement_value = sum(
+                rec.settlement_ids.mapped('amount_settlement')
+            )
+    def _compute_settlement_ids(self):
+        Settlement = self.env['customer.settlement']
+        for rec in self:
+            rec.settlement_ids = Settlement.search([
+                ('project_id', '=', rec.project_id.id)
+            ])
     @api.depends("project_id")
     def _compute_name(self):
         for rec in self:
@@ -41,13 +79,18 @@ class ProjectProfitLost(models.Model):
                 rec.profit = rec.settlement_value - rec.expense
             else:
                 rec.profit = 0
-    @api.depends("settlement_value")
+    @api.depends(
+        'settlement_value',
+        'invoice_ids.amount_total'
+    )
     def _compute_fill_invoice_amount(self):
         for rec in self:
-            if rec.settlement_value:
-                rec.invoice_amount = rec.settlement_value
+            if rec.invoice_ids:
+                rec.invoice_amount = sum(
+                    rec.invoice_ids.mapped('amount_total')
+                )
             else:
-                rec.invoice_amount = 0
+                rec.invoice_amount = rec.settlement_value or 0.0
 
     def _recompute_values(self):
         for rec in self:
@@ -92,7 +135,6 @@ class ProjectProfitLost(models.Model):
                     vals['other_amount'] = p.total
 
                 rec.detail_ids.create(vals)
-
             # Lợi nhuận
             if rec.settlement_value:
                 rec.profit = rec.settlement_value - rec.expense
@@ -146,6 +188,3 @@ class ProjectProfitLost(models.Model):
     def action_highlight(self):
         for rec in self:
             rec.is_highlighted = not rec.is_highlighted
-
-    
-

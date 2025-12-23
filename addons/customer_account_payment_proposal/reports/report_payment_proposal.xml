@@ -427,7 +427,10 @@ Email: <span style="text-transform:lowercase;" t-esc="res_company.email"/>
                 </td>
                 <td class="sig-cell">
                     <div class="sign-name">
-                        <t t-esc="''"/>
+                        <div class="sign-name">
+                            <t t-set="user" t-value="env['res.users'].search([('login','=','ketoan@somed.vn')], limit=1)"/>
+                            <t t-esc="user.employee_id.name or ''"/>
+                        </div>
                     </div>
                 </td>
                 <td class="sig-cell">

@@ -2,11 +2,11 @@
 <odoo>
 
     <record id="daily_cash_flow_report" model="ir.actions.report">
-        <field name="name">Daily Cash Flow Report (HTML)</field>
+        <field name="name">Báo cáo thu chi</field>
         <field name="model">daily.cash.flow.wizard</field>
         <field name="report_type">qweb-html</field>
         <field name="report_name">report_daily_cash_flow.daily_cash_flow_report_template</field>
-        <field name="print_report_name">'Daily Cash Flow Report'</field>
+        <field name="print_report_name">'Báo cáo thu chi'</field>
     </record>
     <record id="custom_sale_report_a4_portrait" model="report.paperformat">
         <field name="name">Custom Sale Report A4 Portrait</field>
@@ -108,7 +108,8 @@
 </style>
 
 <div class="page" style="font-family: Times New Roman, sans-serif; font-size: 14px; color: #333; padding: 20px;">
-    <h2 style="text-align: center; color: #2c3e50;">Báo cáo thu chi ngày <t t-esc="date_report"/>
+    <h2 style="text-align: center; color: #2c3e50;">
+    Báo cáo thu chi <t t-esc="period_label"/>
     </h2>
     <table class="report-table">
         <!-- 1) Ấn định độ rộng từng cột -->
@@ -152,7 +153,7 @@
                 <td></td>
                 <td style="text-align: center;">
                     <div style="font-weight:bold">TỒN ĐẦU KỲ</div>
-                    <div> NGÀY <t t-esc="date_report"/>
+                    <div> TỪ NGÀY <t t-esc="date_from"/>
                     </div>
                 </td>
                 <td style="text-align:right;font-weight:bold">
@@ -252,7 +253,7 @@
                     <div>TỒN TIỀN</div>
                     <div>NGÂN HÀNG/ MẶT</div>
                     <div>
-                        <t t-esc="date_report"/>
+    ĐẾN NGÀY <t t-esc="date_to"/>
                     </div>
                 </td>
                 <td style="text-align:right; font-weight: bold">
@@ -268,49 +269,47 @@
             </tr>
         </tbody>
     </table>
-                <div style="page-break-inside: avoid; font-weight: bold">
-                    <div class="row">
-                        <div class="col-6" style="text-align:center;line-height:1.8">
-                            <div>
+    <div style="page-break-inside: avoid; font-weight: bold">
+        <div class="row">
+            <div class="col-6" style="text-align:center;line-height:1.8">
+                <div>
                                 TP Hồ Chí Minh, Ngày &#160;&#160;
                                 Tháng &#160;&#160;
                                 Năm <span t-esc="datetime.datetime.today().year"/>
-                            </div>
-                            <div>
-                                <span>Người lập biểu</span>
-                            </div>
-                            <div style="height:65px">
-                                <t t-if="user_id.digital_signature">
-                                    <img t-att-src="'data:image/png;base64,' + (user_id.digital_signature.decode() if isinstance(user_id.digital_signature, bytes) else user_id.digital_signature)"
-                                         style="max-height:65px; max-width:150px;"/>
-                                </t>
-                            </div>
-                            <div>
-                                <span t-field="user_id.name"/>
-                            </div>
-                        </div>
-
-                        <div class="col-6" style="text-align:center;line-height:1.8">
-                            <div>
-                                TP Hồ Chí Minh, Ngày &#160;&#160;
-                                Tháng &#160;&#160;
-                                Năm <span t-esc="datetime.datetime.today().year"/>
-                            </div>
-                            <div>Giám Đốc</div>
-                            <div style="height:65px">
-                                <t t-set="director_group" t-value="env.ref('custom_director_role.group_director')"/>
-                                <t t-set="director" t-value="env['res.users'].search([('groups_id', 'in', director_group.id)], limit=1)"/>
-                                <t t-if="director and director.digital_signature">
-                                    <img t-att-src="'data:image/png;base64,' + (director.digital_signature.decode() if isinstance(director.digital_signature, bytes) else director.digital_signature)"
-                                         style="max-height:65px; max-width:150px;"/>
-                                </t>
-                            </div>
-                            <div>
-                                <span> Đỗ Minh Toàn </span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
+                <div>
+                    <span>Người lập biểu</span>
+                </div>
+                <div style="height:65px">
+                    <t t-if="user_id.digital_signature">
+                        <img t-att-src="'data:image/png;base64,' + (user_id.digital_signature.decode() if isinstance(user_id.digital_signature, bytes) else user_id.digital_signature)" style="max-height:65px; max-width:150px;"/>
+                    </t>
+                </div>
+                <div>
+                    <span t-field="user_id.name"/>
+                </div>
+            </div>
+
+            <div class="col-6" style="text-align:center;line-height:1.8">
+                <div>
+                                TP Hồ Chí Minh, Ngày &#160;&#160;
+                                Tháng &#160;&#160;
+                                Năm <span t-esc="datetime.datetime.today().year"/>
+                </div>
+                <div>Giám Đốc</div>
+                <div style="height:65px">
+                    <t t-set="director_group" t-value="env.ref('custom_director_role.group_director')"/>
+                    <t t-set="director" t-value="env['res.users'].search([('groups_id', 'in', director_group.id)], limit=1)"/>
+                    <t t-if="director and director.digital_signature">
+                        <img t-att-src="'data:image/png;base64,' + (director.digital_signature.decode() if isinstance(director.digital_signature, bytes) else director.digital_signature)" style="max-height:65px; max-width:150px;"/>
+                    </t>
+                </div>
+                <div>
+                    <span> Đỗ Minh Toàn </span>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 </t>
 </template>

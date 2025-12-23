@@ -44,9 +44,28 @@ class CustomerSettlement(models.Model):
     )
 
     # ====== Số tiền ======
+    tax_id = fields.Many2one(
+    'account.tax',
+    string="Thuế GTGT",
+    domain=[('type_tax_use', '=', 'sale')],
+    help="Chỉ chọn các loại thuế dùng cho bán hàng (sale).",
+    )
+    amount_untaxed = fields.Monetary(
+        string="Giá trị trước thuế",
+        currency_field="currency_id",
+    )
+
+    amount_tax = fields.Monetary(
+        string="Tiền thuế",
+        currency_field="currency_id",
+        compute="_compute_tax_amounts",
+        store=True,
+    )
     amount_settlement = fields.Monetary(
         string="Số tiền quyết toán",
         currency_field="currency_id",
+        compute="_compute_tax_amounts",
+        store=True,
         tracking=True
     )
     currency_id = fields.Many2one(
@@ -61,6 +80,18 @@ class CustomerSettlement(models.Model):
         compute="_compute_display_name",
         store=True
     )
+    @api.depends('amount_untaxed', 'tax_id')
+    def _compute_tax_amounts(self):
+        for rec in self:
+            base = rec.amount_untaxed or 0.0
+            tax_amount = 0.0
+
+            if rec.tax_id:
+                for tax in rec.tax_id:
+                    tax_amount += base * tax.amount / 100
+
+            rec.amount_tax = tax_amount
+            rec.amount_settlement = base + tax_amount
 
     @api.depends('settlement_number', 'name')
     def _compute_display_name(self):

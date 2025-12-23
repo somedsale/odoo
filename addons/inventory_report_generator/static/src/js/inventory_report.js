@@ -21,6 +21,7 @@ export class InventoryReport extends Component {
             show_filters: true,
             is_applying: false,
             error: "",
+            is_scrolled: false,
             filters: {
                 date_from: "",
                 date_to: "",
@@ -181,6 +182,12 @@ export class InventoryReport extends Component {
         if (f.quarter) return "quarter";
         if (f.year) return "year";
         return "custom";
+    }
+    onScrollInvrep(ev) {
+        const scrolled = ev.target.scrollTop > 2;
+        if (this.state.is_scrolled !== scrolled) {
+            this.state.is_scrolled = scrolled;
+        }
     }
 
     get filter_label() {

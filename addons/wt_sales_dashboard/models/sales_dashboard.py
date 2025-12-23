@@ -39,10 +39,10 @@ class SalesDashboard(models.AbstractModel):
         order_count = len(sales_orders)
         avg_order_value = total_sales / order_count if order_count else 0.0
 
-        low_stock_products = self.env['product.product'].sudo().search_count([
-            ('type', 'in', ['product', 'consu']),
-            ('qty_available', '<=', 10),
-        ])
+        # low_stock_products = self.env['product.product'].sudo().search_count([
+        #     ('type', 'in', ['product', 'consu']),
+        #     ('qty_available', '<=', 10),
+        # ])
         category_count = self.env['sale.order.category'].search_count([])
 
         # Sales by day (theo khoảng)
@@ -140,7 +140,7 @@ class SalesDashboard(models.AbstractModel):
                 'total_sales': total_sales,
                 'avg_order_value': avg_order_value,
                 'order_count': order_count,
-                'low_stock_products': low_stock_products,
+                # 'low_stock_products': low_stock_products,
                 'category_count': category_count,
             },
             'charts': {

@@ -248,7 +248,7 @@ Email: <span t-esc="res_company.email"/>
                                     <t t-esc="i + 1"/>
                                 </td>
                                 <td>
-                                    <t t-esc="line.material_id.name"/>
+                                    <t t-esc="line.product_id and line.product_id.name or line.material_id and line.material_id.name or ''"/>
                                 </td>
                                 <td class="text-center col-unit">
                                     <t t-esc="line.unit.name"/>
@@ -446,7 +446,10 @@ Email: <span t-esc="res_company.email"/>
                                         <span>&#160;</span>
                                     </t>
                                 </div>
-                                <div class="sign-name">Đặng Thị Kiều Oanh</div>
+                                <div class="sign-name">
+                                    <t t-set="user" t-value="env['res.users'].search([('login','=','ketoan@somed.vn')], limit=1)"/>
+                                    <t t-esc="user.employee_id.name or ''"/>
+                                </div>
                             </div>
                         </td>
 
