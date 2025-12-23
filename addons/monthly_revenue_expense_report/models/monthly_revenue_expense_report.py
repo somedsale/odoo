@@ -4,6 +4,7 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 from collections import defaultdict
 
+
 class MonthlyRevenueExpenseReport(models.TransientModel):
     _name = 'monthly.revenue.expense.report'
     _description = 'Báo cáo doanh thu - chi phí hàng tháng'
@@ -30,13 +31,14 @@ class AccountReceiptReport(models.AbstractModel):
 
     @api.model
     def _get_report_values(self, docids, data=None):
+        data = data or {}
         month = int(data.get('month'))
         year = int(data.get('year'))
         start_date = date(year, month, 1)
         end_date = start_date + relativedelta(months=1, days=-1)
 
         # ==============================
-        # 🔹 Doanh thu
+        # 🔹 Doanh thu (GIỮ NGUYÊN)
         # ==============================
         receipts = self.env['account.receipt'].search([
             ('date', '>=', start_date),
@@ -76,53 +78,97 @@ class AccountReceiptReport(models.AbstractModel):
             })
 
         # ==============================
-        # 🔹 Chi phí
+        # 🔹 Chi phí (A/B GÁN CỨNG theo expense_bucket)
         # ==============================
+
+        FIXED_A = [
+            ("rent_office_factory", "Chi phí thuê văn phòng + xưởng"),
+        ]
+
+        FIXED_B_COMPANY = [
+            ("loan_principal", "Trả gốc vay (Ngân hàng + cá nhân)"),
+            ("loan_interest", "Lãi vay (Ngân hàng, Cá nhân)"),
+            ("bank_fee", "Phí ngân hàng (CK, Phí số dư, mua SEC,...)"),
+            ("salary_board", "Chi phí lương ban Giám Đốc"),
+            ("salary_sales", "Chi phí lương Kinh Doanh"),
+            ("salary_accounting", "Chi phí lương Kế Toán"),
+            ("salary_planning_tech_production", "Chi phí lương bộ phận kế hoạch kỹ thuật và sản xuất"),
+            ("insurance_215", "Chi phí BHXH, BHYT, BHTN 21,5%"),
+            ("electric_water", "Chi phí điện, Nước sinh hoạt"),
+            ("phone_fee", "Chi phí Cước điện thoại (di động, cố định, số hotline...)"),
+            ("internet_fee", "Cước Internet văn phòng"),
+            ("stationery_hygiene_shipping", "Văn phòng phẩm + vật dụng vệ sinh + cước vận chuyển"),
+            ("garbage_fee", "Chi phí đổ rác"),
+            ("reception", "Chi phí Tiếp khách"),
+            ("drinking_water", "Chi phí nước uống bình nhân viên"),
+            ("badminton", "Chi phí cầu lông (đặt sân, mua cầu..)"),
+            ("worship", "Chi phí cúng (mùng 1,15, ....)"),
+        ]
+
+        A_KEYS = [k for k, _ in FIXED_A]
+        B_KEYS = [k for k, _ in FIXED_B_COMPANY]
+
         payments = self.env['account.payment.request'].search([
             ('date_payment', '>=', start_date),
             ('date_payment', '<=', end_date),
             ('state', 'in', ['post', 'done']),
         ])
 
-        # ---- A. TỔNG ĐỊNH PHÍ ----
-        fixed_costs = defaultdict(float)
-        for p in payments.filtered(lambda x: x.cost_classification == 'fixed_cost'):
-            key = p.expense_category_id.name or _('(Không có khoản mục)')
-            fixed_costs[key] += p.total
+        def _sum_fixed(records, keys):
+            sums = {k: 0.0 for k in keys}
+            unknown = 0.0
+            for p in records:
+                k = p.expense_bucket
+                amt = p.total or 0.0
+                if k in sums:
+                    sums[k] += amt
+                else:
+                    unknown += amt
+            return sums, unknown
 
-        # ---- B. TỔNG BIẾN PHÍ THƯỜNG XUYÊN ----
-        # a. Chi phí công ty
-        office_costs = defaultdict(float)
-        for p in payments.filtered(lambda x: x.cost_classification == 'office'):
-            key = p.expense_category_id.name or _('(Không có khoản mục)')
-            office_costs[key] += p.total
+        # ✅ A: CHỈ theo bucket rent_office_factory
+        A_recs = payments.filtered(lambda x: x.expense_bucket in A_KEYS)
+        A_SUMS, A_UNKNOWN = _sum_fixed(A_recs, A_KEYS)
 
-        # b. Chi phí công trình
+        # ✅ B/a: theo 17 bucket còn lại
+        B_recs = payments.filtered(lambda x: x.expense_bucket in B_KEYS)
+        B_SUMS, B_UNKNOWN = _sum_fixed(B_recs, B_KEYS)
+
+        # b. Chi phí công trình (GIỮ NGUYÊN)
         project_costs = defaultdict(float)
         for p in payments.filtered(lambda x: x.cost_classification == 'project'):
             key = p.project_id.name or _('(Không có dự án)')
-            project_costs[key] += p.total
+            project_costs[key] += (p.total or 0.0)
 
-        # ---- C. TỔNG BIẾN PHÍ KHÔNG THƯỜNG XUYÊN ----
+        # C. Biến phí không thường xuyên (GIỮ NGUYÊN)
         irregular_costs = defaultdict(float)
         for p in payments.filtered(lambda x: x.cost_classification == 'irregular_expenses'):
             key = p.expense_category_id.name or _('(Không có khoản mục)')
-            irregular_costs[key] += p.total
+            irregular_costs[key] += (p.total or 0.0)
 
-        # Gom thành cấu trúc hiển thị
+        # Luôn đủ dòng
+        A_LINES = [{'key': k, 'name': label, 'expense': A_SUMS.get(k, 0.0)} for k, label in FIXED_A]
+        B_LINES = [{'key': k, 'name': label, 'expense': B_SUMS.get(k, 0.0)} for k, label in FIXED_B_COMPANY]
+
+        # Nếu muốn bắt lỗi phiếu chi chọn bucket ngoài list / không chọn bucket thì bật dòng dưới
+        # if A_UNKNOWN:
+        #     A_LINES.append({'key': 'unclassified', 'name': 'Chưa phân loại (A)', 'expense': A_UNKNOWN})
+        # if B_UNKNOWN:
+        #     B_LINES.append({'key': 'unclassified', 'name': 'Chưa phân loại (B/a)', 'expense': B_UNKNOWN})
+
         expense_data = [
             {
                 'type_label': 'A. TỔNG ĐỊNH PHÍ',
-                'lines': [{'name': k, 'expense': v} for k, v in fixed_costs.items()],
-                'subtotal': sum(fixed_costs.values()),
+                'lines': A_LINES,
+                'subtotal': sum(x['expense'] for x in A_LINES),
             },
             {
                 'type_label': 'B. TỔNG BIẾN PHÍ THƯỜNG XUYÊN',
                 'subgroups': [
                     {
                         'sub_label': 'a. Chi phí công ty',
-                        'lines': [{'name': k, 'expense': v} for k, v in office_costs.items()],
-                        'subtotal': sum(office_costs.values()),
+                        'lines': B_LINES,
+                        'subtotal': sum(x['expense'] for x in B_LINES),
                     },
                     {
                         'sub_label': 'b. Chi phí công trình',
@@ -130,7 +176,7 @@ class AccountReceiptReport(models.AbstractModel):
                         'subtotal': sum(project_costs.values()),
                     },
                 ],
-                'subtotal': sum(office_costs.values()) + sum(project_costs.values()),
+                'subtotal': sum(x['expense'] for x in B_LINES) + sum(project_costs.values()),
             },
             {
                 'type_label': 'C. TỔNG BIẾN PHÍ KHÔNG THƯỜNG XUYÊN',
@@ -140,7 +186,7 @@ class AccountReceiptReport(models.AbstractModel):
         ]
 
         # ==============================
-        # 🔹 Tổng hợp cuối
+        # 🔹 Tổng hợp cuối (GIỮ NGUYÊN)
         # ==============================
         total_revenue = sum(r.amount for r in receipts if r.type_revenue not in ('explain',))
         total_expense = sum(p.total for p in payments)

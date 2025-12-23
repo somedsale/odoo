@@ -8,11 +8,10 @@
             <form string="Báo cáo Doanh thu - Chi phí hàng tháng">
                 <group>
                     <field name="month"/>
-                    <field name="year"/>
+                    <field name="year" widget="yearpicker"/>
                 </group>
                 <footer>
-                    <button string="Xem Báo cáo" type="object" name="action_view_report"
-                            class="btn-primary"/>
+                    <button string="Xem Báo cáo" type="object" name="action_view_report" class="btn-primary"/>
                     <button string="Đóng" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
@@ -28,11 +27,7 @@
     </record>
 
     <!-- Menu -->
-    <menuitem id="menu_report_revenue_expense_root"
-              name="Báo cáo Doanh thu - Chi phí"
-              parent="custom_account_menu.menu_accounting_reporting"
-              action="action_monthly_revenue_expense_wizard"
-              sequence="20"/>
+    <menuitem id="menu_report_revenue_expense_root" name="Báo cáo Doanh thu - Chi phí" parent="custom_account_menu.menu_accounting_reporting" action="action_monthly_revenue_expense_wizard" sequence="20"/>
     <record id="revenue_report_a4_landscape" model="report.paperformat">
         <field name="name">Report A4 Landscape</field>
         <field name="format">A4</field>
@@ -45,13 +40,13 @@
         <field name="dpi">110</field>
     </record>
     <!-- QWeb report definition -->
-<record id="report_monthly_revenue_expense_action_html" model="ir.actions.report">
-    <field name="name">Báo cáo Doanh thu - Chi phí</field>
-    <field name="model">monthly.revenue.expense.report</field>
-    <field name="report_type">qweb-html</field>
-    <field name="report_name">monthly_revenue_expense_report.report_template</field>
-    <field name="report_file">monthly_revenue_expense_report.report_template</field>
-    <field name="paperformat_id" ref="revenue_report_a4_landscape"/>
-</record>
+    <record id="report_monthly_revenue_expense_action_html" model="ir.actions.report">
+        <field name="name">Báo cáo Doanh thu - Chi phí</field>
+        <field name="model">monthly.revenue.expense.report</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">monthly_revenue_expense_report.report_template</field>
+        <field name="report_file">monthly_revenue_expense_report.report_template</field>
+        <field name="paperformat_id" ref="revenue_report_a4_landscape"/>
+    </record>
 
 </odoo>
