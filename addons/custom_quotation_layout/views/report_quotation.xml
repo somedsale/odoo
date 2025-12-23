@@ -142,7 +142,7 @@
                                         </t>
                                         <td>
                                             <i>
-                                                <span t-field="line.name"/>
+                                                <span t-esc="line.name or line.x_thong_so"/>
                                             </i>
                                         </td>
                                         <td class="text-center">

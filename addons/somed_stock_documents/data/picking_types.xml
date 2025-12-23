@@ -1,0 +1,23 @@
+<odoo>
+  <!-- PNK -->
+  <record id="picking_type_pnk" model="stock.picking.type">
+    <field name="name">Phiếu nhập kho</field>
+    <field name="code">incoming</field>
+    <field name="sequence_id" ref="seq_pnk"/>
+    <field name="sequence_code">stock.picking.in</field>
+    <field name="warehouse_id" ref="stock.warehouse0"/>
+    <field name="default_location_src_id" ref="stock.stock_location_suppliers"/>
+    <field name="default_location_dest_id" ref="stock.stock_location_stock"/>
+  </record>
+
+  <!-- PXK -->
+  <record id="picking_type_pxk" model="stock.picking.type">
+    <field name="name">Phiếu xuất kho</field>
+    <field name="code">outgoing</field>
+    <field name="sequence_id" ref="seq_pxk"/>
+    <field name="sequence_code">stock.picking.out</field>
+    <field name="warehouse_id" ref="stock.warehouse0"/>
+    <field name="default_location_src_id" ref="stock.stock_location_stock"/>
+    <field name="default_location_dest_id" ref="stock.stock_location_customers"/>
+  </record>
+</odoo>

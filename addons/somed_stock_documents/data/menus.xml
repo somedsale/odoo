@@ -1,0 +1,38 @@
+<odoo>
+  <record id="action_pnk_list" model="ir.actions.act_window">
+    <field name="name">Phiếu nhập kho</field>
+    <field name="res_model">stock.picking</field>
+    <field name="view_mode">tree,form</field>
+
+    <!-- ✅ eval + ref -->
+    <field name="domain" eval="[('picking_type_id', '=', ref('somed_stock_documents.picking_type_pnk'))]"/>
+    <field name="context" eval="{'default_picking_type_id': ref('somed_stock_documents.picking_type_pnk')}"/>
+  </record>
+
+  <record id="action_pxk_list" model="ir.actions.act_window">
+    <field name="name">Phiếu xuất kho</field>
+    <field name="res_model">stock.picking</field>
+    <field name="view_mode">tree,form</field>
+
+    <!-- ✅ eval + ref -->
+    <field name="domain" eval="[('picking_type_id', '=', ref('somed_stock_documents.picking_type_pxk'))]"/>
+    <field name="context" eval="{'default_picking_type_id': ref('somed_stock_documents.picking_type_pxk')}"/>
+  </record>
+
+  <menuitem id="menu_pnk" name="Phiếu nhập kho"
+            parent="custom_account_menu.menu_accounting_stock"
+            action="action_pnk_list" sequence="10"/>
+
+  <menuitem id="menu_pxk" name="Phiếu xuất kho"
+            parent="custom_account_menu.menu_accounting_stock"
+            action="action_pxk_list" sequence="11"/>
+
+  <!-- <menuitem id="menu_pnk" name="Phiếu nhập kho"
+            parent="stock.menu_stock_warehouse_mgmt"
+            action="action_pnk_list" sequence="10"/>
+
+  <menuitem id="menu_pxk" name="Phiếu xuất kho"
+            parent="stock.menu_stock_warehouse_mgmt"
+            action="action_pxk_list" sequence="11"/> -->
+
+</odoo>
