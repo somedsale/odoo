@@ -98,6 +98,9 @@
                                     <field name="project_id"/>
                                     <field name="partner_id"/>
                                     <field name="date"/>
+                                    <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}" optional="show"/>
+                                    <field name="tax_id" optional="show"/>
+                                    <field name="amount_tax" widget="monetary" options="{'currency_field': 'currency_id'}" optional="show"/>
                                     <field name="amount_settlement" sum="Tổng quyết toán" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                                     <field name="currency_id" string="Tiền tệ" optional="hide"/>
                                 </tree>

@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Paperformat -->
+    <record id="custom_profit_report_a4_landscape" model="report.paperformat">
+        <field name="name">Custom Profit Report A4 Landscape</field>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">30</field>
+        <field name="margin_bottom">30</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_spacing">25</field>
+        <field name="dpi">110</field>
+    </record>
+
+    <!-- QWeb Template -->
+    <template id="project_profit_detail">
+        <t t-call="custom_project_profit_report.custom_project_profit_layout">
+
+            <style>
+* {
+    font-family: "Times New Roman";
+    color: #000;
+}
+
+h1 {
+    text-align: center;
+    font-size: 18pt;
+    margin: 10px 0 15px 0;
+    text-transform: uppercase;
+}
+
+table.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 11px;
+}
+
+table.report-table th,
+table.report-table td {
+    border: 1px solid #000;
+    padding: 3px 4px;
+    vertical-align: top;
+    white-space: normal;
+    word-break: break-word;
+}
+
+table.report-table thead th {
+    background-color: #C6E0B4;
+    font-weight: bold;
+    text-align: center;
+}
+
+thead {
+    display: table-header-group;
+}
+
+.text-center { text-align: center; }
+.money { text-align: right; }
+
+.tr-summary {
+    font-weight: bold;
+    background-color: #E2EFDA;
+}
+
+table.report-table tr {
+    page-break-inside: avoid;
+}
+            </style>
+
+            <h1 style="padding-top: 5px;">
+                <t t-esc="project.name"/>
+            </h1>
+
+            <!-- ===== PREPARE TOTALS ===== -->
+            <t t-set="total_material" t-value="sum(detail_ids.mapped('material_amount'))"/>
+            <t t-set="total_labor" t-value="sum(detail_ids.mapped('labor_amount'))"/>
+            <t t-set="total_other" t-value="sum(detail_ids.mapped('other_amount'))"/>
+            <t t-set="total_cost" t-value="sum(detail_ids.mapped('total_amount'))"/>
+
+            <t t-set="settlement_tax" t-value="sum(doc.settlement_ids.mapped('amount_tax'))"/>
+            <t t-set="invoice_tax" t-value="sum(doc.invoice_ids.mapped('amount_tax'))"/>
+
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width:35px">STT</th>
+                        <th colspan="2">HỢP ĐỒNG</th>
+                        <th colspan="2">QUYẾT TOÁN</th>
+                        <th colspan="2">HÓA ĐƠN</th>
+                        <th rowspan="2">Đã TT</th>
+                        <th rowspan="2">Cần thu</th>
+                        <th colspan="5">CHI PHÍ</th>
+                        <th rowspan="2">Lãi / Lỗ</th>
+                        <th rowspan="2" style="width:220px">Ghi chú</th>
+                    </tr>
+                    <tr>
+                        <th>Số HĐ</th>
+                        <th>Giá trị HĐ</th>
+                        <th>Giá trị</th>
+                        <th>Thuế</th>
+                        <th>Giá trị</th>
+                        <th>Thuế</th>
+                        <th>Ngày</th>
+                        <th>Vật tư</th>
+                        <th>Nhân công</th>
+                        <th>SXC</th>
+                        <th>Tổng CP</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <!-- ===== SUMMARY ROW ===== -->
+                    <tr class="tr-summary">
+                        <td colspan="2" class="text-center">TỔNG CỘNG</td>
+                        <td class="money">
+                            <t t-esc="'{:,.0f}'.format(doc.contract_value or 0).replace(',', '.')"/>
+                        </td>
+                        <td class="money">
+                            <t t-esc="'{:,.0f}'.format(doc.settlement_value or 0).replace(',', '.')"/>
+                        </td>
+                        <td class="money">
+                            <t t-esc="'{:,.0f}'.format(settlement_tax or 0).replace(',', '.')"/>
+                        </td>
+                        <td class="money">
+                            <t t-esc="'{:,.0f}'.format(doc.invoice_amount or 0).replace(',', '.')"/>
+                        </td>
+                        <td class="money">
+                            <t t-esc="'{:,.0f}'.format(invoice_tax or 0).replace(',', '.')"/>
+                        </td>
+                        <td class="money">
+                            <t t-esc="'{:,.0f}'.format(doc.revenue or 0).replace(',', '.')"/>
+                        </td>
+                        <td class="money">
+                            <t t-esc="'{:,.0f}'.format(doc.receivable_amount or 0).replace(',', '.')"/>
+                        </td>
+                        <td class="text-center">–</td>
+                        <td class="money">
+                            <t t-esc="'{:,.0f}'.format(total_material or 0).replace(',', '.')"/>
+                        </td>
+                        <td class="money">
+                            <t t-esc="'{:,.0f}'.format(total_labor or 0).replace(',', '.')"/>
+                        </td>
+                        <td class="money">
+                            <t t-esc="'{:,.0f}'.format(total_other or 0).replace(',', '.')"/>
+                        </td>
+                        <td class="money">
+                            <t t-esc="'{:,.0f}'.format(total_cost or 0).replace(',', '.')"/>
+                        </td>
+                        <td class="money">
+                            <t t-esc="'{:,.0f}'.format(doc.profit or 0).replace(',', '.')"/>
+                        </td>
+                        <td></td>
+                    </tr>
+
+                    <!-- ===== DETAIL ROWS (SAFE FOR PAGE BREAK) ===== -->
+                    <t t-set="stt" t-value="1"/>
+
+                    <t t-foreach="detail_ids" t-as="line">
+                        <tr>
+                            <!-- STT -->
+                            <td class="text-center">
+                                <t t-esc="stt"/>
+                            </td>
+
+                            <!-- ===== HỢP ĐỒNG / QUYẾT TOÁN / HÓA ĐƠN (CHỈ HIỆN 1 LẦN) ===== -->
+                            <t t-if="stt == 1">
+                                <td class="text-center">
+                                    <t t-esc="doc.num_contract"/>
+                                </td>
+                                <td class="money">
+                                    <t t-esc="'{:,.0f}'.format(doc.contract_value or 0).replace(',', '.')"/>
+                                </td>
+
+                                <td class="money">
+                                    <t t-esc="'{:,.0f}'.format(doc.settlement_value or 0).replace(',', '.')"/>
+                                </td>
+                                <td class="money">
+                                    <t t-esc="'{:,.0f}'.format(settlement_tax or 0).replace(',', '.')"/>
+                                </td>
+
+                                <td class="money">
+                                    <t t-esc="'{:,.0f}'.format(doc.invoice_amount or 0).replace(',', '.')"/>
+                                </td>
+                                <td class="money">
+                                    <t t-esc="'{:,.0f}'.format(invoice_tax or 0).replace(',', '.')"/>
+                                </td>
+
+                                <td class="money">
+                                    <t t-esc="'{:,.0f}'.format(doc.revenue or 0).replace(',', '.')"/>
+                                </td>
+                                <td class="money">
+                                    <t t-esc="'{:,.0f}'.format(doc.receivable_amount or 0).replace(',', '.')"/>
+                                </td>
+                            </t>
+
+                            <!-- ===== DÒNG SAU → ĐỂ TRỐNG ===== -->
+                            <t t-if="stt != 1">
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </t>
+
+                            <!-- ===== CHI PHÍ ===== -->
+                            <td class="text-center">
+                                <t t-esc="line.date and line.date.strftime('%d/%m/%Y') or ''"/>
+                            </td>
+                            <td class="money">
+                                <t t-esc="'{:,.0f}'.format(line.material_amount or 0).replace(',', '.')"/>
+                            </td>
+                            <td class="money">
+                                <t t-esc="'{:,.0f}'.format(line.labor_amount or 0).replace(',', '.')"/>
+                            </td>
+                            <td class="money">
+                                <t t-esc="'{:,.0f}'.format(line.other_amount or 0).replace(',', '.')"/>
+                            </td>
+                            <td class="money">
+                                <t t-esc="'{:,.0f}'.format(line.total_amount or 0).replace(',', '.')"/>
+                            </td>
+
+                            <!-- LÃI / LỖ -->
+                            <td class="money">
+                                <t t-esc="'{:,.0f}'.format(doc.profit or 0).replace(',', '.')"/>
+                            </td>
+
+                            <!-- GHI CHÚ -->
+                            <td>
+                                <t t-esc="line.description"/>
+                            </td>
+                        </tr>
+
+                        <t t-set="stt" t-value="stt + 1"/>
+                    </t>
+
+                </tbody>
+            </table>
+
+        </t>
+    </template>
+
+    <!-- Report Action -->
+    <record id="project_profit_detail_report" model="ir.actions.report">
+        <field name="name">Báo cáo lãi lỗ chi tiết công trình</field>
+        <field name="model">project.profit.lost</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">custom_project_profit_report.project_profit_detail</field>
+        <field name="report_file">custom_project_profit_report.project_profit_detail</field>
+        <field name="paperformat_id" ref="custom_project_profit_report.custom_profit_report_a4_landscape"/>
+    </record>
+
+</odoo>

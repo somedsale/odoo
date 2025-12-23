@@ -7,6 +7,12 @@ class CashDailyBalance(models.Model):
     _description = 'Daily Closing Balance (Bank/Cash)'
     _order = 'date desc, id desc'
     _rec_name = 'date'
+    company_id = fields.Many2one(
+        "res.company",
+        required=True,
+        default=lambda self: self.env.company,
+        index=True,
+    )
 
     date = fields.Date(required=True, index=True)
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)

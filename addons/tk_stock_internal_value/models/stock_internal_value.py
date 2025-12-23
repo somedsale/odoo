@@ -13,7 +13,7 @@ class StockMove(models.Model):
 
     # ✅ Đơn giá kho – nhập tay, hoặc lấy từ Đơn mua
     unit_cost = fields.Monetary(
-        string="Đơn giá nhập kho",
+        string="Đơn giá",
         currency_field="company_currency_id",
         help="Đơn giá nhập/xuất nội bộ, không liên quan tới kế toán.",
     )
@@ -24,7 +24,7 @@ class StockMove(models.Model):
     )
     # ✅ Giá trị kho = Đơn giá * Số lượng
     value_amount = fields.Monetary(
-        string="Tổng giá trị",
+        string="Giá trị",
         currency_field="company_currency_id",
         compute="_compute_value_amount",
         store=True,

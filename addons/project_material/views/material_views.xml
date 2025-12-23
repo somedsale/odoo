@@ -45,4 +45,7 @@
     <!-- hoặc parent nào bạn thấy phù hợp -->
 
     <menuitem id="menu_project_material_list" name="Danh sách vật tư" parent="menu_material_root" action="action_project_material"/>
+    <menuitem id="menu_project_products_root" name="Sản phẩm" parent="menu_material_root" sequence="65"/>
+    <!-- Danh sách Sản phẩm (Product Templates) -->
+    <menuitem id="menu_project_products_templates" name="Sản phẩm" parent="menu_project_products_root" action="product.product_template_action" sequence="10"/>
 </odoo>

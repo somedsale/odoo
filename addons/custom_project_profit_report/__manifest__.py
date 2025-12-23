@@ -9,7 +9,9 @@
     'data': [
         'security/ir.model.access.csv',
         'reports/project_profit_report_template.xml',
-        'views/project_profit_report_menu_action.xml'
+        'reports/project_profit_detail_report.xml',
+        'views/project_profit_report_menu_action.xml',
+        'wizards/profit_detail_wizard_view.xml',
     ],
     'installable': True,
     'application': True,
