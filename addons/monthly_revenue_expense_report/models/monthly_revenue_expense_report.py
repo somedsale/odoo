@@ -3,6 +3,12 @@ from odoo import models, fields, api, _
 from datetime import date
 from dateutil.relativedelta import relativedelta
 from collections import defaultdict
+from odoo.exceptions import UserError
+import io
+import base64
+from odoo.exceptions import UserError
+from odoo.tools.misc import xlsxwriter
+
 
 
 class MonthlyRevenueExpenseReport(models.TransientModel):
@@ -23,6 +29,216 @@ class MonthlyRevenueExpenseReport(models.TransientModel):
         return self.env.ref(
             'monthly_revenue_expense_report.report_monthly_revenue_expense_action_html'
         ).report_action(self, data=data)
+    def action_export_excel(self):
+        self.ensure_one()
+
+        # Lấy data y như report HTML
+        report_model = self.env['report.monthly_revenue_expense_report.report_template']
+        vals = report_model._get_report_values([], data={'month': self.month, 'year': self.year})
+
+        month = int(vals['month'])
+        year = int(vals['year'])
+
+        revenue_data = vals.get("revenue_data") or []
+        expense_data = vals.get("expense_data") or []
+
+        company = self.env.company
+        company_name = company.name or ""
+        company_address = ", ".join(filter(None, [
+            company.street,
+            company.street2,
+            company.city,
+            company.state_id.name if company.state_id else None,
+            company.country_id.name if company.country_id else None,
+        ]))
+        company_vat = company.vat or ""
+
+        # =====================================================
+        # FORMAT (GIỐNG THẰNG LÃI LỖ)
+        # =====================================================
+        def init_formats(wb):
+            return {
+                "fmt_company_name": wb.add_format({"bold": True, "font_size": 11}),
+                "fmt_company_info": wb.add_format({"font_size": 10}),
+                "fmt_title": wb.add_format({
+                    "bold": True, "font_size": 16,
+                    "align": "center", "valign": "vcenter"
+                }),
+                "fmt_group": wb.add_format({
+                    "bold": True, "border": 1,
+                    "align": "center", "valign": "vcenter",
+                    "bg_color": "#E2EFDA"
+                }),
+                "fmt_head": wb.add_format({
+                    "bold": True, "border": 1,
+                    "align": "center", "valign": "vcenter",
+                    "bg_color": "#C6E0B4",
+                    "text_wrap": True
+                }),
+                "fmt_stt": wb.add_format({
+                    "border": 1, "align": "center", "valign": "vcenter"
+                }),
+                "fmt_text_left": wb.add_format({
+                    "border": 1, "align": "left",
+                    "valign": "top", "text_wrap": True
+                }),
+                "fmt_money": wb.add_format({
+                    "border": 1, "num_format": "#,##0",
+                    "align": "right", "valign": "vcenter"
+                }),
+                "fmt_money_bold": wb.add_format({
+                    "border": 1, "num_format": "#,##0",
+                    "bold": True, "align": "right", "valign": "vcenter"
+                }),
+            }
+
+        # =====================================================
+        # BUILD FILE
+        # =====================================================
+        output = io.BytesIO()
+        wb = xlsxwriter.Workbook(output, {"in_memory": True})
+        ws = wb.add_worksheet(f"T{month}-{year}")
+        F = init_formats(wb)
+
+        ws.set_column("A:A", 6)      # STT
+        ws.set_column("B:B", 70)     # Nội dung (RỘNG hơn nhiều)
+        ws.set_column("C:C", 20)     # Doanh thu
+        ws.set_column("D:D", 20)     # Chi phí
+        ws.set_column("E:E", 22) 
+
+        # LOGO + INFO
+        if company.logo:
+            ws.insert_image(
+                0, 0, "logo.png",
+                {"image_data": io.BytesIO(base64.b64decode(company.logo))}
+            )
+
+        ws.merge_range(0, 2, 0, 6, company_name, F["fmt_company_name"])
+        ws.merge_range(1, 2, 1, 6, f"Địa chỉ: {company_address}", F["fmt_company_info"])
+        ws.merge_range(2, 2, 2, 6, f"MST: {company_vat}", F["fmt_company_info"])
+
+        ws.merge_range(4, 0, 4, 6,
+            f"BÁO CÁO DOANH THU - CHI PHÍ  THÁNG {month} NĂM {year}",
+            F["fmt_title"]
+        )
+        ws.set_row(4, 36)
+
+        row = 6
+        # HEADER TABLE
+        ws.write_row(row, 0, ["STT", "Nội dung", "Doanh thu", "Chi phí", "Chênh lệch"], F["fmt_head"])
+        ws.set_row(row, 26)
+        ws.freeze_panes(row + 1, 0)
+        row += 1
+        total_revenue = vals.get("total_revenue", 0.0) or 0.0
+        total_expense = vals.get("total_expense", 0.0) or 0.0
+        net_profit = total_revenue - total_expense
+
+        ws.merge_range(row, 0, row, 1, "TỔNG CỘNG", F["fmt_group"])
+        ws.write(row, 2, total_revenue, F["fmt_money_bold"])
+        ws.write(row, 3, total_expense, F["fmt_money_bold"])
+        ws.write(row, 4, net_profit, F["fmt_money_bold"])
+
+        # cho dòng tổng nổi bật hơn
+        ws.set_row(row, 28)
+
+        row += 1
+
+        # =====================================================
+        # I. DOANH THU
+        # =====================================================
+        total_revenue = vals.get("total_revenue", 0.0) or 0.0
+
+        ws.merge_range(row, 0, row, 1, "I. DOANH THU", F["fmt_group"])
+        ws.write(row, 2, total_revenue, F["fmt_money_bold"])
+        ws.write(row, 3, 0, F["fmt_money_bold"])
+        ws.write(row, 4, total_revenue, F["fmt_money_bold"])
+        row += 1
+
+        stt = 1
+        for grp in revenue_data:
+            ws.merge_range(row, 0, row, 1, grp["type_label"], F["fmt_group"])
+            ws.write(row, 2, grp["subtotal"], F["fmt_money_bold"])
+            ws.write(row, 3, 0, F["fmt_money_bold"])
+            ws.write(row, 4, grp["subtotal"], F["fmt_money_bold"])
+            row += 1
+
+            for line in grp.get("projects", []):
+                ws.write(row, 0, stt, F["fmt_stt"])
+                ws.write(row, 1, line["name"], F["fmt_text_left"])
+                ws.write(row, 2, line["revenue"], F["fmt_money"])
+                ws.write(row, 3, 0, F["fmt_money"])
+                ws.write(row, 4, line["revenue"], F["fmt_money"])
+                row += 1
+                stt += 1
+
+        row += 1
+
+        # =====================================================
+        # II. CHI PHÍ
+        # =====================================================
+        total_expense = vals.get("total_expense", 0.0) or 0.0
+
+        ws.merge_range(row, 0, row, 1, "II. CHI PHÍ", F["fmt_group"])
+        ws.write(row, 2, 0, F["fmt_money_bold"])
+        ws.write(row, 3, total_expense, F["fmt_money_bold"])
+        ws.write(row, 4, -total_expense, F["fmt_money_bold"])
+        row += 1
+
+        stt = 1
+        for grp in expense_data:
+            ws.merge_range(row, 0, row, 1, grp["type_label"], F["fmt_group"])
+            ws.write(row, 2, 0, F["fmt_money_bold"])
+            ws.write(row, 3, grp["subtotal"], F["fmt_money_bold"])
+            ws.write(row, 4, -grp["subtotal"], F["fmt_money_bold"])
+            row += 1
+
+            if grp.get("subgroups"):
+                for sub in grp["subgroups"]:
+                    ws.merge_range(row, 0, row, 1, sub["sub_label"], F["fmt_group"])
+                    ws.write(row, 2, 0, F["fmt_money_bold"])
+                    ws.write(row, 3, sub["subtotal"], F["fmt_money_bold"])
+                    ws.write(row, 4, -sub["subtotal"], F["fmt_money_bold"])
+                    row += 1
+
+                    for line in sub["lines"]:
+                        ws.write(row, 0, stt, F["fmt_stt"])
+                        ws.write(row, 1, line["name"], F["fmt_text_left"])
+                        ws.write(row, 2, 0, F["fmt_money"])
+                        ws.write(row, 3, line["expense"], F["fmt_money"])
+                        ws.write(row, 4, -line["expense"], F["fmt_money"])
+                        row += 1
+                        stt += 1
+            else:
+                for line in grp["lines"]:
+                    ws.write(row, 0, stt, F["fmt_stt"])
+                    ws.write(row, 1, line["name"], F["fmt_text_left"])
+                    ws.write(row, 2, 0, F["fmt_money"])
+                    ws.write(row, 3, line["expense"], F["fmt_money"])
+                    ws.write(row, 4, -line["expense"], F["fmt_money"])
+                    row += 1
+                    stt += 1
+
+            row += 1
+
+        wb.close()
+        output.seek(0)
+
+        filename = f"BAO_CAO_DOANH_THU_CHI_PHI_T{month}_{year}.xlsx"
+        attachment = self.env["ir.attachment"].create({
+            "name": filename,
+            "type": "binary",
+            "datas": base64.b64encode(output.read()),
+            "res_model": self._name,
+            "res_id": self.id,
+            "mimetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "description": "TEMP_EXPORT_EXCEL",
+        })
+
+        return {
+            "type": "ir.actions.act_url",
+            "url": f"/web/content/{attachment.id}?download=true",
+            "target": "self",
+        }
 
 
 class AccountReceiptReport(models.AbstractModel):

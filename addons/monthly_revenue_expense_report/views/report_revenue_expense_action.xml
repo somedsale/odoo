@@ -12,6 +12,7 @@
                 </group>
                 <footer>
                     <button string="Xem Báo cáo" type="object" name="action_view_report" class="btn-primary"/>
+                    <button string="Xuất Excel" type="object" name="action_export_excel" class="btn-primary"/>
                     <button string="Đóng" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
