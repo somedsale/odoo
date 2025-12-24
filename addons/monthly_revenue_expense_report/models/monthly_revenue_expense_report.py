@@ -14,6 +14,25 @@ from odoo.tools.misc import xlsxwriter
 class MonthlyRevenueExpenseReport(models.TransientModel):
     _name = 'monthly.revenue.expense.report'
     _description = 'Báo cáo doanh thu - chi phí hàng tháng'
+    period_type = fields.Selection(
+    [
+        ('month', 'Theo tháng'),
+        ('quarter', 'Theo quý'),
+        ('year', 'Theo năm'),
+    ],
+    string='Kỳ báo cáo',
+    required=True,
+    default='month'
+)
+    quarter = fields.Selection(
+    [
+        ('1', 'Quý I'),
+        ('2', 'Quý II'),
+        ('3', 'Quý III'),
+        ('4', 'Quý IV'),
+    ],
+    string='Quý'
+)
 
     month = fields.Selection(
         [(str(m), f'Tháng {m}') for m in range(1, 13)],
@@ -22,10 +41,41 @@ class MonthlyRevenueExpenseReport(models.TransientModel):
     year = fields.Integer(
         string='Năm', required=True, default=lambda self: date.today().year
     )
+    def _get_date_range(self):
+        self.ensure_one()
+        year = int(self.year)
+
+        if self.period_type == 'month':
+            month = int(self.month)
+            date_from = date(year, month, 1)
+            date_to = date_from + relativedelta(months=1, days=-1)
+
+        elif self.period_type == 'quarter':
+            if not self.quarter:
+                raise UserError(_("Vui lòng chọn Quý"))
+            q = int(self.quarter)
+            month_from = (q - 1) * 3 + 1
+            date_from = date(year, month_from, 1)
+            date_to = date_from + relativedelta(months=3, days=-1)
+
+        else:  # year
+            date_from = date(year, 1, 1)
+            date_to = date(year, 12, 31)
+        return date_from, date_to
 
     def action_view_report(self):
         self.ensure_one()
-        data = {'month': self.month, 'year': self.year}
+        date_from, date_to = self._get_date_range()
+
+        data = {
+            'period_type': self.period_type,
+            'month': self.month,
+            'quarter': self.quarter,
+            'year': self.year,
+            'date_from': date_from,
+            'date_to': date_to,
+        }
+
         return self.env.ref(
             'monthly_revenue_expense_report.report_monthly_revenue_expense_action_html'
         ).report_action(self, data=data)
@@ -34,10 +84,35 @@ class MonthlyRevenueExpenseReport(models.TransientModel):
 
         # Lấy data y như report HTML
         report_model = self.env['report.monthly_revenue_expense_report.report_template']
-        vals = report_model._get_report_values([], data={'month': self.month, 'year': self.year})
+        date_from, date_to = self._get_date_range()
+
+        vals = report_model._get_report_values([], data={
+            'period_type': self.period_type,
+            'month': self.month,
+            'quarter': self.quarter,
+            'year': self.year,
+            'date_from': date_from,
+            'date_to': date_to,
+        })
 
         month = int(vals['month'])
         year = int(vals['year'])
+        period_type = vals.get('period_type')
+        year = int(vals.get('year'))
+
+        if period_type == 'month':
+            month = int(vals.get('month'))
+            period_label = f"THÁNG {month} NĂM {year}"
+            period_code = f"T{month}-{year}"
+
+        elif period_type == 'quarter':
+            quarter = vals.get('quarter')
+            period_label = f"QUÝ {quarter} NĂM {year}"
+            period_code = f"Q{quarter}-{year}"
+
+        else:  # year
+            period_label = f"NĂM {year}"
+            period_code = f"Y{year}"
 
         revenue_data = vals.get("revenue_data") or []
         expense_data = vals.get("expense_data") or []
@@ -97,7 +172,7 @@ class MonthlyRevenueExpenseReport(models.TransientModel):
         # =====================================================
         output = io.BytesIO()
         wb = xlsxwriter.Workbook(output, {"in_memory": True})
-        ws = wb.add_worksheet(f"T{month}-{year}")
+        ws = wb.add_worksheet(period_code)
         F = init_formats(wb)
 
         ws.set_column("A:A", 6)      # STT
@@ -118,7 +193,7 @@ class MonthlyRevenueExpenseReport(models.TransientModel):
         ws.merge_range(2, 2, 2, 6, f"MST: {company_vat}", F["fmt_company_info"])
 
         ws.merge_range(4, 0, 4, 6,
-            f"BÁO CÁO DOANH THU - CHI PHÍ  THÁNG {month} NĂM {year}",
+            f"BÁO CÁO DOANH THU - CHI PHÍ {period_label}",
             F["fmt_title"]
         )
         ws.set_row(4, 36)
@@ -223,7 +298,7 @@ class MonthlyRevenueExpenseReport(models.TransientModel):
         wb.close()
         output.seek(0)
 
-        filename = f"BAO_CAO_DOANH_THU_CHI_PHI_T{month}_{year}.xlsx"
+        filename = f"BAO_CAO_DOANH_THU_CHI_PHI_{period_code}.xlsx"
         attachment = self.env["ir.attachment"].create({
             "name": filename,
             "type": "binary",
@@ -248,14 +323,17 @@ class AccountReceiptReport(models.AbstractModel):
     @api.model
     def _get_report_values(self, docids, data=None):
         data = data or {}
-        month = int(data.get('month'))
-        year = int(data.get('year'))
-        start_date = date(year, month, 1)
-        end_date = start_date + relativedelta(months=1, days=-1)
+        start_date = data.get('date_from')
+        end_date = data.get('date_to')
 
-        # ==============================
-        # 🔹 Doanh thu (GIỮ NGUYÊN)
-        # ==============================
+        if not start_date or not end_date:
+            raise UserError(_("Thiếu khoảng thời gian báo cáo"))
+
+        month = data.get('month')
+        year = data.get('year')
+        quarter = data.get('quarter')
+        period_type = data.get('period_type')
+
         receipts = self.env['account.receipt'].search([
             ('date', '>=', start_date),
             ('date', '<=', end_date),
@@ -411,6 +489,8 @@ class AccountReceiptReport(models.AbstractModel):
         return {
             'doc_ids': docids,
             'doc_model': 'account.receipt',
+            'period_type': period_type,
+            'quarter': quarter,
             'month': month,
             'year': year,
             'start_date': start_date,

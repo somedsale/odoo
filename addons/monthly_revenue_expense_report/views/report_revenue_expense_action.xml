@@ -7,7 +7,9 @@
         <field name="arch" type="xml">
             <form string="Báo cáo Doanh thu - Chi phí hàng tháng">
                 <group>
-                    <field name="month"/>
+                    <field name="period_type"/>
+                    <field name="month" invisible="period_type != 'month'"/>
+                    <field name="quarter" invisible="period_type != 'quarter'"/>
                     <field name="year" widget="yearpicker"/>
                 </group>
                 <footer>
