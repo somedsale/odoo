@@ -39,10 +39,19 @@ class SalesDashboard(models.AbstractModel):
         order_count = len(sales_orders)
         avg_order_value = total_sales / order_count if order_count else 0.0
 
-        # low_stock_products = self.env['product.product'].sudo().search_count([
-        #     ('type', 'in', ['product', 'consu']),
-        #     ('qty_available', '<=', 10),
-        # ])
+        quotation_orders = self.env['sale.order'].search([
+            ('date_order', '>=', dt_from),
+            ('date_order', '<=', dt_to),
+            ('state', 'in', ['sent']),
+        ])
+        total_quotations = sum(quotation_orders.mapped('amount_total'))
+        quotation_count = len(quotation_orders)
+        contract_orders = self.env['contract.management'].search([
+            ('signature_date', '>=', dt_from),
+            ('signature_date', '<=', dt_to),
+        ])
+        total_contract = sum(contract_orders.mapped('contract_value'))
+        contract_count = len(contract_orders)
         category_count = self.env['sale.order.category'].search_count([])
 
         # Sales by day (theo khoảng)
@@ -140,7 +149,10 @@ class SalesDashboard(models.AbstractModel):
                 'total_sales': total_sales,
                 'avg_order_value': avg_order_value,
                 'order_count': order_count,
-                # 'low_stock_products': low_stock_products,
+                'total_quotations': total_quotations,
+                'quotation_count': (quotation_count),
+                'total_contract': total_contract,
+                'contract_count': contract_count,
                 'category_count': category_count,
             },
             'charts': {

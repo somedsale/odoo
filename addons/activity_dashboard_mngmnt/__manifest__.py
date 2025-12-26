@@ -34,6 +34,7 @@
     'depends': ['mail'],
     'data': [
         'security/ir.model.access.csv',
+        'security/rules.xml',
         'views/activity_tag_views.xml',
         'views/activity_dashbord_views.xml',
         'views/mail_activity_views.xml'

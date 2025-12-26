@@ -5,14 +5,14 @@
 
     <!-- Ẩn Chi phí -->
     <record id="hr_expense.menu_hr_expense_root" model="ir.ui.menu">
-        <field name="active" eval="False"/>
+        <field name="active" eval="True"/>
     </record>
     <record id="hr_timesheet.timesheet_menu_root" model="ir.ui.menu">
-        <field name="active" eval="False"/>
+        <field name="active" eval="True"/>
     </record>
 
     <!-- Ẩn Link Tracker -->
     <record id="utm.menu_link_tracker_root" model="ir.ui.menu">
-        <field name="active" eval="False"/>
+        <field name="active" eval="True"/>
     </record>
 </odoo>

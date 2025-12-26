@@ -20,7 +20,7 @@ class SalesDashboard extends Component {
 
         // 1) Khởi tạo state
         this.state = useState({
-            kpis: { total_sales: 0, avg_order_value: 0, order_count: 0, category_count: 0 },
+            kpis: { total_sales: 0, avg_order_value: 0, order_count: 0, category_count: 0, total_quotations: 0, quotation_count: 0, contract_count: 0, total_contract: 0, },
             charts: {
                 sales_trend: { labels: [], data: [] },
                 top_products: { labels: [], data: [], uoms: [] },
@@ -312,18 +312,22 @@ class SalesDashboard extends Component {
     }
 
     openTotalOrders() { this.openTotalSales(); }
-
-    // openLowStockProducts() {
-    //     this.action.doAction({
-    //         type: "ir.actions.act_window",
-    //         name: _t("Sản phẩm sắp hết hàng"),
-    //         res_model: "product.product",
-    //         views: [[false, "list"], [false, "form"]],
-    //         domain: [["type", "in", ["product", "consu"]], ["qty_available", "<=", 10]],
-    //         target: "current",
-    //     });
-    // }
-
+    openTotalAmountQuotations() {
+        const { date_from, date_to } = this.state.filters;
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: _t("Báo giá theo khoảng ngày"),
+            res_model: "sale.order",
+            views: [[false, "list"], [false, "form"]],
+            domain: [
+                ["date_order", ">=", date_from],
+                ["date_order", "<=", date_to],
+                ["state", "in", ["sent"]],
+            ],
+            target: "current",
+        });
+    }
+    openTotalQuotations() { this.openTotalAmountQuotations(); }
     openCategories() {
         this.action.doAction({
             type: "ir.actions.act_window",
@@ -333,6 +337,22 @@ class SalesDashboard extends Component {
             target: "current",
         });
     }
+    openContracts() {
+        const { date_from, date_to } = this.state.filters;
+
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: _t("Hợp đồng theo khoảng ngày"),
+            res_model: "contract.management",
+            views: [[false, "list"], [false, "form"]],
+            domain: [
+                ["signature_date", ">=", date_from],
+                ["signature_date", "<=", date_to],
+            ],
+            target: "current",
+        });
+    }
+
 }
 
 registry.category("actions").add("wt_sales_dashboard.dashboard", SalesDashboard);

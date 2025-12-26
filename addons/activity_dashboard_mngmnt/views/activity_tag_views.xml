@@ -47,12 +47,4 @@
             </p>
         </field>
     </record>
-    <!--    Activity Dashboard menu-->
-    <menuitem id="activity_menu_root" name="Activity Dashboard" sequence="25" web_icon="activity_dashboard_mngmnt,static/description/icon.png"/>
-    <!--    Configuration menu-->
-    <!-- <menuitem id="activity_menu_configuration" name="Configuration" parent="activity_menu_root" sequence="30"/> -->
-    <!--    Activity tag menu-->
-    <!-- <menuitem id="activity_tag_menu" name="Activity Tag" parent="activity_menu_configuration" action="activity_tag_action" sequence="100"/> -->
-    <!--    Activity type menu-->
-    <!-- <menuitem id="activity_type_menu" name="Activity Type" parent="activity_menu_configuration" action="mail.mail_activity_type_action" sequence="100"/> -->
 </odoo>

@@ -25,127 +25,171 @@
             <!-- Nội dung -->
             <div class="wt-content o_content">
                 <!-- Thẻ KPI -->
+
+
                 <div class="wt-kpi-grid">
-                    <div class="wt-card wt-card--click" t-on-click="() => this.openTotalSales()">
-                        <h2 class="wt-card-sub">Doanh thu <span class="wt-kpi-period">(                            <t t-esc="this.periodLabel"/>
-)</span>
-                    </h2>
-                    <p class="wt-card-val">
-                        <t t-esc="state.kpis.total_sales.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })"/>
-                    </p>
-                </div>
+                    <div class="wt-card wt-card--click wt-card--has-badge" t-on-click="() => this.openTotalQuotations()">
 
-                <div class="wt-card">
-                    <h2 class="wt-card-sub">Giá trị đơn TB</h2>
-                    <p class="wt-card-val">
-                        <t t-esc="state.kpis.avg_order_value.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })"/>
-                    </p>
-                </div>
+                        <!-- Badge -->
+                        <span class="wt-kpi-badge">
+                            <t t-esc="state.kpis.quotation_count || 0"/>
+ báo giá
+                        </span>
 
-                <div class="wt-card wt-card--click" t-on-click="() => this.openTotalOrders()">
-                    <h2 class="wt-card-sub">Tổng số đơn <span class="wt-kpi-period">(                        <t t-esc="this.periodLabel"/>
-)</span>
-                </h2>
-                <p class="wt-card-val">
-                    <t t-esc="(state.kpis.order_count || 0).toLocaleString('vi-VN')"/>
-                </p>
-            </div>
+                        <h2 class="wt-card-sub">
+        Báo giá
+                            <span class="wt-kpi-period">
+            (                                <t t-esc="this.periodLabel"/>
+)
+                            </span>
+                        </h2>
 
-            <div class="wt-card wt-card--click" t-on-click="() => this.openCategories()">
-                <h2 class="wt-card-sub">
+                        <p class="wt-card-val">
+                            <t t-esc="state.kpis.total_quotations.toLocaleString(
+            'vi-VN',{style:'currency',currency:'VND'}
+        )"/>
+                        </p>
+                    </div>
+                    <div class="wt-card wt-card--click wt-card--has-badge" t-on-click="() => this.openTotalSales()">
+
+                        <!-- Badge -->
+                        <span class="wt-kpi-badge wt-kpi-badge--success">
+                            <t t-esc="state.kpis.order_count || 0"/>
+ đơn
+                        </span>
+
+                        <h2 class="wt-card-sub">
+        Doanh thu
+                            <span class="wt-kpi-period">
+            (                                <t t-esc="this.periodLabel"/>
+)
+                            </span>
+                        </h2>
+
+                        <p class="wt-card-val">
+                            <t t-esc="state.kpis.total_sales.toLocaleString(
+            'vi-VN',{style:'currency',currency:'VND'}
+        )"/>
+                        </p>
+                    </div>
+                    <div class="wt-card wt-card--click wt-card--has-badge" t-on-click="() => this.openContracts()">
+
+                        <!-- Badge -->
+                        <span class="wt-kpi-badge wt-kpi-badge--success">
+                            <t t-esc="state.kpis.contract_count || 0"/>
+ hợp đồng
+                        </span>
+
+                        <h2 class="wt-card-sub">
+        Hợp đồng
+                            <span class="wt-kpi-period">
+            (                                <t t-esc="this.periodLabel"/>
+)
+                            </span>
+                        </h2>
+
+                        <p class="wt-card-val">
+                            <t t-esc="state.kpis.total_contract.toLocaleString(
+            'vi-VN',{style:'currency',currency:'VND'}
+        )"/>
+                        </p>
+                    </div>
+
+                    <div class="wt-card wt-card--click" t-on-click="() => this.openCategories()">
+                        <h2 class="wt-card-sub">
     Số lượng hạng mục bán hàng
-                </h2>
-                <p class="wt-card-val">
-                    <t t-esc="(state.kpis.category_count || 0).toLocaleString('vi-VN')"/>
-                </p>
-            </div>
-        </div>
-
-        <!-- Biểu đồ -->
-        <div class="wt-charts-grid">
-            <div class="wt-card">
-                <h3 class="wt-card-title">Xu hướng doanh thu</h3>
-                <div class="wt-chart-box">
-                    <canvas t-ref="salesTrendChart"/>
+                        </h2>
+                        <p class="wt-card-val">
+                            <t t-esc="(state.kpis.category_count || 0).toLocaleString('vi-VN')"/>
+                        </p>
+                    </div>
                 </div>
-            </div>
 
-            <div class="wt-card">
-                <h3 class="wt-card-title">Top 5 sản phẩm bán chạy</h3>
-                <div class="wt-chart-box">
-                    <canvas t-ref="topProductsChart"/>
-                </div>
-            </div>
-            <div class="wt-card">
-                <h3 class="wt-card-title">Hạng mục bán hàng (số đơn)</h3>
-                <div class="wt-chart-box">
-                    <canvas t-ref="categoryChart"/>
-                </div>
-            </div>
-        </div>
+                <!-- Biểu đồ -->
+                <div class="wt-charts-grid">
+                    <div class="wt-card">
+                        <h3 class="wt-card-title">Xu hướng doanh thu</h3>
+                        <div class="wt-chart-box">
+                            <canvas t-ref="salesTrendChart"/>
+                        </div>
+                    </div>
 
-        <!-- Bảng đơn bán gần đây -->
-        <div class="wt-card wt-table-wrap">
-            <h3 class="wt-card-title">Đơn bán gần đây</h3>
-            <div class="wt-table-scroll">
-                <table class="wt-table">
-                    <thead>
-                        <tr>
-                            <th>Số đơn</th>
-                            <th>Khách hàng</th>
-                            <th>Ngày</th>
-                            <th>Hạng mục</th>
-                            <th>Tổng tiền</th>
-                            <th>Trạng thái</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <t t-foreach="state.recent_orders" t-as="order" t-key="order.id">
-                            <tr class="wt-row--click" t-on-click="() => this.openSaleOrder(order.id)">
-                                <td class="wt-link">
-                                    <t t-esc="order.name"/>
-                                </td>
-                                <td>
-                                    <t t-esc="order.partner"/>
-                                </td>
-                                <td>
-                                    <t t-esc="order.date"/>
-                                </td>
-                                <td>
-                                    <div class="wt-tags">
-                                        <t t-set="cats" t-value="order.categories or []"/>
-                                        <!-- Hiển thị tối đa 3 badge: dùng slice(0,3) -->
-                                        <t t-foreach="cats.slice(0, 3)" t-as="cat" t-key="cat.id">
-                                            <span t-att-class="'wt-tag wt-tag--c' + (cat.color || 0)">
-                                                <t t-esc="cat.name"/>
-                                            </span>
-                                        </t>
-                                        <!-- Nếu còn dư, hiện +N -->
-                                        <t t-if="cats.length &gt; 3">
-                                            <span class="wt-tag wt-tag--more">+                                                <t t-esc="cats.length - 3"/>
-                                            </span>
-                                        </t>
-                                    </div>
-                                </td>
-                                <td>
-                                    <t t-esc="order.total.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })"/>
-                                </td>
-                                <td>
-                                    <span class="wt-badge" t-att-class="{
+                    <div class="wt-card">
+                        <h3 class="wt-card-title">Top 5 sản phẩm bán chạy</h3>
+                        <div class="wt-chart-box">
+                            <canvas t-ref="topProductsChart"/>
+                        </div>
+                    </div>
+                    <div class="wt-card">
+                        <h3 class="wt-card-title">Hạng mục bán hàng (số đơn)</h3>
+                        <div class="wt-chart-box">
+                            <canvas t-ref="categoryChart"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bảng đơn bán gần đây -->
+                <div class="wt-card wt-table-wrap">
+                    <h3 class="wt-card-title">Đơn bán gần đây</h3>
+                    <div class="wt-table-scroll">
+                        <table class="wt-table">
+                            <thead>
+                                <tr>
+                                    <th>Số đơn</th>
+                                    <th>Khách hàng</th>
+                                    <th>Ngày</th>
+                                    <th>Hạng mục</th>
+                                    <th>Tổng tiền</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="state.recent_orders" t-as="order" t-key="order.id">
+                                    <tr class="wt-row--click" t-on-click="() => this.openSaleOrder(order.id)">
+                                        <td class="wt-link">
+                                            <t t-esc="order.name"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="order.partner"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="order.date"/>
+                                        </td>
+                                        <td>
+                                            <div class="wt-tags">
+                                                <t t-set="cats" t-value="order.categories or []"/>
+                                                <!-- Hiển thị tối đa 3 badge: dùng slice(0,3) -->
+                                                <t t-foreach="cats.slice(0, 3)" t-as="cat" t-key="cat.id">
+                                                    <span t-att-class="'wt-tag wt-tag--c' + (cat.color || 0)">
+                                                        <t t-esc="cat.name"/>
+                                                    </span>
+                                                </t>
+                                                <!-- Nếu còn dư, hiện +N -->
+                                                <t t-if="cats.length &gt; 3">
+                                                    <span class="wt-tag wt-tag--more">+                                                        <t t-esc="cats.length - 3"/>
+                                                    </span>
+                                                </t>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <t t-esc="order.total.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })"/>
+                                        </td>
+                                        <td>
+                                            <span class="wt-badge" t-att-class="{
                                                     'wt-badge--success': order.state === 'Sales Order' || order.state === 'Đã xác nhận',
                                                     'wt-badge--info': order.state === 'Quotation' || order.state === 'Báo giá',
                                                     'wt-badge--warning': order.state === 'To Invoice' || order.state === 'Chờ xuất hóa đơn'
                                                   }">
-                                        <t t-esc="order.state"/>
-                                    </span>
-                                </td>
-                            </tr>
-                        </t>
-                    </tbody>
-                </table>
+                                                <t t-esc="order.state"/>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
-</t>
+    </t>
 </templates>
