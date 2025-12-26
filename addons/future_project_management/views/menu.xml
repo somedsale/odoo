@@ -3,17 +3,46 @@
         <field name="name">Future Projects</field>
         <field name="res_model">future.project</field>
         <field name="view_mode">kanban,tree,form</field>
-    </record>
+            <!-- 🔥 GROUP BY MẶC ĐỊNH -->
+        <field name="context">
+            {'default_group_by': 'stage_id'}
+        </field>
+    <!-- <field name="search_view_id" ref="view_future_project_search"/> -->
 
+    </record>
+    <record id="action_future_project_location" model="ir.actions.act_window">
+        <field name="name">Khu vực</field>
+        <field name="res_model">future.project.location</field>
+        <field name="view_mode">kanban,tree,form</field>
+    </record>
+    <record id="action_future_project_report_wizard" model="ir.actions.act_window">
+        <field name="name">Báo cáo Future Project</field>
+        <field name="res_model">future.project.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
     <menuitem
         id="menu_future_project_root"
-        name="Future Projects"
+        name="Dự án dự kiến"
+        parent="sale.sale_menu_root"
         sequence="15"/>
 
     <menuitem
         id="menu_future_project"
-        name="Future Project Pipeline"
+        name="Danh sách dự án"
         parent="menu_future_project_root"
         action="action_future_project"
+        sequence="2"/>
+    <menuitem
+        id="menu_future_project_location"
+        name="Khu vực"
+        parent="menu_future_project_root"
+        action="action_future_project_location"
         sequence="1"/>
+    <!-- <menuitem
+        id="menu_future_project_report"
+        name="Báo cáo"
+        parent="menu_future_project_root"
+        action="action_future_project_report_wizard"
+        sequence="50"/> -->
 </odoo>

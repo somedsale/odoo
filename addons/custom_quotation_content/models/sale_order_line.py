@@ -26,7 +26,7 @@ class SaleOrderLine(models.Model):
             if line.product_id:
                 line.display_name = line.product_display_name
             else:
-                line.display_name = line.name
+                line.display_name = line.product_id.name or line.name
     @api.onchange('product_id')
     def _onchange_product_custom_fields(self):
         if self.product_id:
@@ -81,7 +81,8 @@ class SaleOrderLine(models.Model):
             # ---- Lấy field x_thong_so nếu có ----
             if hasattr(product, "x_thong_so") and product.x_thong_so:
                 name_lines.append(f"{product.x_thong_so}")
-
+            else:
+                name_lines.append(" ")  # Thêm dòng trống nếu không có thông số
             # Gộp nội dung
             line.name = "\n".join(name_lines) if name_lines else ""
             line.product_display_name = line.product_id.name if line.product_id else ""
