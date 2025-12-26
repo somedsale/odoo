@@ -8,8 +8,8 @@
         <field name="arch" type="xml">
             <form string="Contract">
                 <header>
-                    <button name="action_cancel" type="object" string="Hủy hợp đồng" class="btn-danger" invisible="stage in ('completed','canceled')"/>
-                    <button name="action_to_executing" type="object" string="Bắt đầu thực hiện" class="btn-primary" invisible="stage != 'negotiating'"/>
+                    <button name="action_cancel" type="object" string="Hủy hợp đồng" class="btn-danger" invisible="stage in ('completed','canceled') or context.get('from_project_menu')"/>
+                    <button name="action_to_executing" type="object" string="Bắt đầu thực hiện" class="btn-primary" invisible="stage != 'negotiating' or context.get('from_project_menu')"/>
                     <!-- <button name="action_to_completed" type="object" string="Hoàn thành" class="btn-success" invisible="stage != 'executing'"/> -->
                     <field name="stage" widget="statusbar" decoration-info="stage == 'negotiating'" decoration-primary="stage == 'executing'" decoration-success="stage == 'completed'" statusbar_visible="negotiating,executing,completed,canceled"/>
                 </header>
@@ -62,11 +62,13 @@
             <tree string="Contracts">
                 <field name="name"/>
                 <field name="num_contract"/>
-                <field name="contract_value" sum="Tổng"/>
+                <field name="contract_value" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="sale_order_id"/>
                 <field name="project_id"/>
                 <field name="partner_id"/>
+                <field name="activity_ids" widget="list_activity"/>
                 <field name="signature_date"/>
+                <field name="currency_id" optional="hide"/>
                 <field name="stage" widget="badge" decoration-info="stage == 'negotiating'" decoration-primary="stage == 'executing'" decoration-success="stage == 'completed'"/>
             </tree>
         </field>
@@ -147,9 +149,24 @@
             <p class="oe_view_nocontent_create">Click to create a new contract.</p>
         </field>
     </record>
-
+    <record id="action_project_contract_readonly" model="ir.actions.act_window">
+        <field name="name">Hợp đồng dự án</field>
+        <field name="res_model">contract.management</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">
+        {
+            'from_project_menu': True,
+            'create': False,
+            'edit': False,
+            'delete': False,
+            'form_view_initial_mode': 'readonly'
+        }
+        </field>
+        <field name="domain"> [('project_id','!=',False)]
+        </field>
+    </record>
     <!-- Menu -->
     <menuitem id="menu_contract_management_root" name="Hợp đồng" sequence="10" parent="sale.sale_menu_root"/>
     <menuitem id="menu_contract_management" name="Hợp đồng" action="action_contract_management" parent="menu_contract_management_root" sequence="10"/>
-
+    <menuitem id="menu_project_contract_readonly" name="Hợp đồng" parent="project.menu_main_pm" action="action_project_contract_readonly" sequence="60"/>
 </odoo>

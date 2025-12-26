@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+  <t t-name="future_project_management.FutureProjectDashboard">
+    <div class="fp_dash">
+
+      <!-- Loading overlay -->
+      <!-- <t t-if="state.loading">
+        <div class="fp_loading">
+          <div class="fp_loading__box">
+            <i class="fa fa-spinner fa-spin me-2"/>
+            Đang tải dữ liệu...
+          </div>
+        </div>
+      </t> -->
+
+      <!-- Header -->
+      <div class="fp_header">
+        <div class="fp_header__left">
+          <div class="fp_title">
+            <i class="fa fa-line-chart fp_title__icon"/>
+            <div>
+              <div class="fp_title__h1">Dashboard dự án tiềm năng</div>
+              <div class="fp_title__sub">
+                <t t-esc="state.metaText"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fp_header__right">
+          <div class="fp_filters">
+            <select class="form-select fp_input" t-model="state.filters.period_type">
+              <option value="all">Tất cả</option>
+              <option value="month">Theo tháng</option>
+              <option value="quarter">Theo quý</option>
+              <option value="year">Theo năm</option>
+            </select>
+
+<select class="form-select fp_input fp_input--year"
+        t-if="state.filters.period_type !== 'all'"
+        t-model="state.filters.year">
+    <t t-foreach="state.yearOptions" t-as="y" t-key="y">
+        <option t-att-value="y"><t t-esc="y"/></option>
+    </t>
+</select>
+
+
+            <select class="form-select fp_input"
+                    t-if="state.filters.period_type === 'month'"
+                    t-model="state.filters.month">
+              <t t-foreach="state.monthOptions" t-as="m" t-key="m.value">
+                <option t-att-value="m.value"><t t-esc="m.label"/></option>
+              </t>
+            </select>
+
+            <select class="form-select fp_input"
+                    t-if="state.filters.period_type === 'quarter'"
+                    t-model="state.filters.quarter">
+              <option value="1">Quý I</option>
+              <option value="2">Quý II</option>
+              <option value="3">Quý III</option>
+              <option value="4">Quý IV</option>
+            </select>
+
+            <select class="form-select fp_input"
+                    t-model="state.filters.location_id">
+              <option value="">Tất cả khu vực</option>
+              <t t-foreach="state.locationOptions" t-as="l" t-key="l.id">
+                <option t-att-value="l.id"><t t-esc="l.name"/></option>
+              </t>
+            </select>
+
+            <button class="btn btn-primary fp_btn" t-on-click="onApply">
+              <i class="fa fa-filter me-1"/>Áp dụng
+            </button>
+
+            <button class="btn btn-outline-secondary fp_btn" t-on-click="onOpenListAll">
+              <i class="fa fa-list me-1"/>Danh sách
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI -->
+      <div class="fp_kpi">
+        <div class="fp_kpi__card">
+          <div class="fp_kpi__icon fp_kpi__icon--a"><i class="fa fa-folder-open"/></div>
+          <div class="fp_kpi__meta">
+            <div class="fp_kpi__label">Tổng dự án</div>
+            <div class="fp_kpi__value"><t t-esc="state.data.kpi.total_projects || 0"/></div>
+          </div>
+        </div>
+
+        <div class="fp_kpi__card">
+          <div class="fp_kpi__icon fp_kpi__icon--b"><i class="fa fa-trophy"/></div>
+          <div class="fp_kpi__meta">
+            <div class="fp_kpi__label">Trúng thầu</div>
+            <div class="fp_kpi__value"><t t-esc="state.data.kpi.won_projects || 0"/></div>
+            <div class="fp_kpi__hint">Tỷ lệ: <t t-esc="state.data.kpi.win_rate || 0"/>%</div>
+          </div>
+        </div>
+
+        <div class="fp_kpi__card">
+          <div class="fp_kpi__icon fp_kpi__icon--c"><i class="fa fa-ban"/></div>
+          <div class="fp_kpi__meta">
+            <div class="fp_kpi__label">Không khả thi</div>
+            <div class="fp_kpi__value"><t t-esc="state.data.kpi.lost_projects || 0"/></div>
+          </div>
+        </div>
+
+        <div class="fp_kpi__card fp_kpi__card--wide">
+          <div class="fp_kpi__icon fp_kpi__icon--d"><i class="fa fa-money"/></div>
+          <div class="fp_kpi__meta">
+            <div class="fp_kpi__label">Tổng giá trị</div>
+            <div class="fp_kpi__value"><t t-esc="formatMoney(state.data.kpi.total_value || 0)"/></div>
+            <div class="fp_kpi__hint">Giá trị trúng: <t t-esc="formatMoney(state.data.kpi.won_value || 0)"/></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid -->
+      <div class="fp_grid">
+
+        <!-- Stage summary -->
+        <div class="fp_panel">
+          <div class="fp_panel__head">
+            <div class="fp_panel__title">
+              <i class="fa fa-tasks me-2"/>Thống kê theo trạng thái
+            </div>
+          </div>
+
+          <div class="fp_panel__body">
+            <div class="fp_table_wrap fp_table_wrap--rows6">
+
+            <table class="table table-sm fp_table">
+              <thead>
+                <tr>
+                  <th>Trạng thái</th>
+                  <th class="text-end">Số lượng</th>
+                  <th class="text-end">Giá trị</th>
+                  <th class="text-end">Tỷ trọng</th>
+                </tr>
+              </thead>
+              <tbody>
+                <t t-foreach="state.data.stage_summary" t-as="s" t-key="s.id">
+                  <tr class="fp_tr fp_tr--click"
+                      t-on-click="onOpenListByStage"
+                      t-att-data-stage-id="s.id">
+                    <td>
+                      <span class="fp_badge" t-att-class="s.is_won ? 'fp_badge--won' : ''">
+                        <t t-esc="s.name"/>
+                      </span>
+                    </td>
+                    <td class="text-end"><t t-esc="s.count"/></td>
+                    <td class="text-end"><t t-esc="formatMoney(s.value || 0)"/></td>
+                    <td class="text-end">
+                      <t t-esc="percentOf(s.value || 0, state.data.kpi.total_value || 0)"/>%
+                    </td>
+                  </tr>
+                </t>
+              </tbody>
+            </table>
+            </div>
+            <div class="fp_note">Click dòng để mở danh sách dự án theo trạng thái (theo filter góc).</div>
+          </div>
+        </div>
+
+        <!-- Location summary -->
+        <div class="fp_panel">
+          <div class="fp_panel__head">
+            <div class="fp_panel__title">
+              <i class="fa fa-map-marker me-2"/>Thống kê theo khu vực
+            </div>
+          </div>
+
+          <div class="fp_panel__body">
+            <div class="fp_table_wrap fp_table_wrap--rows6">
+
+            <table class="table table-sm fp_table">
+              <thead>
+                <tr>
+                  <th>Khu vực</th>
+                  <th class="text-end">Tổng</th>
+                  <th class="text-end">Trúng</th>
+                  <th class="text-end">Giá trị</th>
+                </tr>
+              </thead>
+              <tbody>
+                <t t-foreach="state.data.location_summary" t-as="l" t-key="l.id">
+                  <tr class="fp_tr fp_tr--click"
+                      t-on-click="onOpenListByLocation"
+                      t-att-data-location-id="l.id">
+                    <td><t t-esc="l.name"/></td>
+                    <td class="text-end"><t t-esc="l.count"/></td>
+                    <td class="text-end"><t t-esc="l.won_count"/></td>
+                    <td class="text-end"><t t-esc="formatMoney(l.value || 0)"/></td>
+                  </tr>
+                </t>
+              </tbody>
+            </table>
+            </div>
+            <div class="fp_note">Click dòng để mở danh sách dự án theo khu vực (theo filter góc).</div>
+          </div>
+        </div>
+
+        <!-- Projects list -->
+        <div class="fp_panel fp_panel--full">
+          <div class="fp_panel__head fp_panel__head--split">
+            <div class="fp_panel__title">
+              <i class="fa fa-table me-2"/>Danh sách dự án (đang theo dõi)
+            </div>
+            <div class="fp_panel__actions">
+              <button class="btn btn-link fp_link" t-on-click="onOpenListFromList">
+                <i class="fa fa-external-link me-1"/>Mở danh sách
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter by stage -->
+          <div class="fp_toolbar">
+            <div class="fp_chips">
+              <button class="fp_chip"
+                      t-att-class="(state.listFilters.stage_id or '') == '' ? 'is-active' : ''"
+                      data-stage-id=""
+                      t-on-click="onPickStageClick">
+                <i class="fa fa-circle-o me-1"/>Tất cả
+              </button>
+
+              <t t-foreach="state.stageOptions" t-as="st" t-key="st.id">
+                <button class="fp_chip"
+                        t-att-class="(state.listFilters.stage_id or '') == (st.id + '') ? 'is-active' : ''"
+                        t-att-data-stage-id="st.id"
+                        t-on-click="onPickStageClick">
+                  <t t-esc="st.name"/>
+                </button>
+              </t>
+            </div>
+
+            <div class="fp_toolbar__hint">
+              <i class="fa fa-info-circle me-1"/>
+              <t t-esc="state.stageHint"/>
+            </div>
+          </div>
+
+          <div class="fp_panel__body">
+            <div class="fp_table_wrap fp_table_wrap--rows6">
+
+            <table class="table table-sm fp_table fp_table--list">
+              <thead>
+                <tr>
+                  <th>Dự án</th>
+                  <th>Chủ đầu tư</th>
+                  <th>Khu vực</th>
+                  <th>Trạng thái</th>
+                  <th class="text-end">Giá trị</th>
+                  <th class="text-center">Ngày dự kiến</th>
+                  <th class="text-center">Theo dõi</th>
+                </tr>
+              </thead>
+              <tbody>
+                <t t-if="!state.data.projects || !state.data.projects.length">
+                  <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                      <i class="fa fa-inbox me-1"/>Không có dữ liệu.
+                    </td>
+                  </tr>
+                </t>
+
+                <t t-foreach="state.data.projects" t-as="p" t-key="p.id">
+                  <tr class="fp_tr fp_tr--click"
+                      t-on-click="onOpenForm"
+                      t-att-data-project-id="p.id">
+                    <td>
+                      <div class="fp_name"><t t-esc="p.name"/></div>
+                      <div class="fp_sub" t-if="p.code">Mã: <t t-esc="p.code"/></div>
+                    </td>
+                    <td><t t-esc="p.customer"/></td>
+                    <td><t t-esc="p.location"/></td>
+                    <td><span class="fp_badge"><t t-esc="p.stage"/></span></td>
+                    <td class="text-end"><t t-esc="formatMoney(p.expected_value || 0)"/></td>
+                    <td class="text-center"><t t-esc="formatDate(p.expected_bid_date)"/></td>
+                    <td class="text-center">
+                      <span t-att-class="p.active ? 'fp_dot fp_dot--on' : 'fp_dot fp_dot--off'"
+                            t-att-title="p.active ? 'Đang theo dõi' : 'Không theo dõi'"/>
+                    </td>
+                  </tr>
+                </t>
+              </tbody>
+            </table>
+            </div>
+            <div class="fp_note">Click 1 dòng để mở form dự án.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </t>
+
+</templates>

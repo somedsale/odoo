@@ -16,16 +16,30 @@ Manage future & potential projects:
         "mail",
         "crm",
         "project",
+        "sale"
     ],
     "data": [
         "security/security.xml",
         "security/ir.model.access.csv",
         "data/future_project_stage_data.xml",  # 👈 BẮT BUỘC
-
+        "views/future_project_location_action.xml",
+        "views/future_project_location_views.xml",
         "views/future_project_kanban.xml",
         "views/future_project_views.xml",
+        "wizard/future_project_report_wizard_views.xml",
+        "report/future_project_template.xml",
+        "report/future_project_pdf_report.xml",
+        "report/future_project_html_report.xml",
         "views/menu.xml",
+        "views/future_project_report_dashboard_views.xml",
     ],
+    "assets": {
+        "web.assets_backend": [
+            "future_project_management/static/src/report_dashboard/dashboard.scss",
+            "future_project_management/static/src/report_dashboard/dashboard.xml",
+            "future_project_management/static/src/report_dashboard/dashboard.js",
+        ],
+    },
     "application": True,
     "installable": True,
 }

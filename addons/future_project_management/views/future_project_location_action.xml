@@ -1,0 +1,13 @@
+<odoo>
+    <record id="action_future_project_by_location" model="ir.actions.act_window">
+        <field name="name">Dự án theo khu vực</field>
+        <field name="res_model">future.project</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">
+            [('location_id', '=', active_id)]
+        </field>
+        <field name="context">
+            {'default_location_id': active_id}
+        </field>
+    </record>
+</odoo>

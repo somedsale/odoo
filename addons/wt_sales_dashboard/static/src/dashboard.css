@@ -370,3 +370,27 @@
   color: #9f1239;
   border-color: #fecdd3;
 }
+.wt-card--has-badge {
+  position: relative;
+}
+
+.wt-kpi-badge {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+
+  background: #eef2ff; /* xanh nhạt */
+  color: #3730a3;
+
+  white-space: nowrap;
+}
+
+.wt-kpi-badge--success {
+  background: #ecfdf5; /* xanh lá nhạt */
+  color: #065f46;
+}

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <template id="future_project_report" name="Future Project Report">
+        <t t-call="web.external_layout">
+            <t t-set="company" t-value="env.company"/>
+
+            <div class="page">
+
+                <!-- ===== HEADER ===== -->
+                <div style="display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:14px;">
+                    <div>
+                        <div style="font-size:18px; font-weight:700; letter-spacing:.2px;">
+                            BÁO CÁO DỰ ÁN TIỀM NĂNG
+                        </div>
+                        <div style="margin-top:4px; color:#667085; font-size:12px;">
+                            Kỳ báo cáo:
+                            <strong style="color:#101828;">
+                                <t t-esc="start_date"/> - <t t-esc="end_date"/>
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div style="text-align:right; color:#667085; font-size:12px;">
+                        <div><t t-esc="company.name"/></div>
+                    </div>
+                </div>
+
+                <!-- ===== KPI CARDS ===== -->
+                <div style="display:flex; gap:10px; margin-bottom:14px;">
+                    <!-- card 1 -->
+                    <div style="flex:1; border:1px solid #EAECF0; border-radius:10px; padding:10px 12px; background:#FCFCFD;">
+                        <div style="color:#667085; font-size:12px; margin-bottom:4px;">Tổng dự án</div>
+                        <div style="font-size:22px; font-weight:700; color:#101828;">
+                            <t t-esc="total_projects or 0"/>
+                        </div>
+                    </div>
+
+                    <!-- card 2 -->
+                    <div style="flex:1; border:1px solid #EAECF0; border-radius:10px; padding:10px 12px; background:#FCFCFD;">
+                        <div style="color:#667085; font-size:12px; margin-bottom:4px;">Trúng thầu</div>
+                        <div style="font-size:22px; font-weight:700; color:#101828;">
+                            <t t-esc="won_projects or 0"/>
+                        </div>
+                    </div>
+
+                    <!-- card 3 -->
+                    <div style="flex:1; border:1px solid #EAECF0; border-radius:10px; padding:10px 12px; background:#FCFCFD;">
+                        <div style="color:#667085; font-size:12px; margin-bottom:4px;">Tỷ lệ trúng</div>
+                        <div style="display:flex; align-items:baseline; gap:6px;">
+                            <div style="font-size:22px; font-weight:700; color:#101828;">
+                                <t t-esc="win_rate or 0"/>
+                            </div>
+                            <div style="color:#667085; font-size:12px;">%</div>
+                        </div>
+                    </div>
+
+                    <!-- card 4 -->
+                    <div style="flex:1.2; border:1px solid #EAECF0; border-radius:10px; padding:10px 12px; background:#FCFCFD;">
+                        <div style="color:#667085; font-size:12px; margin-bottom:4px;">Tổng giá trị</div>
+                        <div style="font-size:18px; font-weight:700; color:#101828;">
+                            <t t-esc="total_value or 0"
+                               t-options="{'widget': 'monetary', 'display_currency': company.currency_id}"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== TABLE ===== -->
+                <table style="width:100%; border-collapse:separate; border-spacing:0; border:1px solid #EAECF0; border-radius:10px; overflow:hidden;">
+                    <thead>
+                        <tr style="background:#F9FAFB; color:#344054;">
+                            <th style="padding:8px 8px; font-size:12px; text-align:center; width:38px; border-bottom:1px solid #EAECF0;">#</th>
+                            <th style="padding:8px 10px; font-size:12px; text-align:left; border-bottom:1px solid #EAECF0;">Dự án</th>
+                            <th style="padding:8px 10px; font-size:12px; text-align:left; width:22%; border-bottom:1px solid #EAECF0;">Chủ đầu tư</th>
+                            <th style="padding:8px 10px; font-size:12px; text-align:left; width:14%; border-bottom:1px solid #EAECF0;">Khu vực</th>
+                            <th style="padding:8px 10px; font-size:12px; text-align:center; width:110px; border-bottom:1px solid #EAECF0;">Ngày dự kiến</th>
+                            <th style="padding:8px 10px; font-size:12px; text-align:left; width:14%; border-bottom:1px solid #EAECF0;">Trạng thái</th>
+                            <th style="padding:8px 10px; font-size:12px; text-align:right; width:140px; border-bottom:1px solid #EAECF0;">Giá trị</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <t t-if="not docs">
+                            <tr>
+                                <td colspan="7" style="padding:16px; text-align:center; color:#667085; font-size:12px;">
+                                    Không có dữ liệu trong kỳ báo cáo.
+                                </td>
+                            </tr>
+                        </t>
+
+                        <t t-if="docs">
+                            <t t-set="no" t-value="0"/>
+                            <t t-foreach="docs" t-as="p">
+                                <t t-set="no" t-value="(no or 0) + 1"/>
+
+                                <tr t-att-style="'background:%s;' % ('#FFFFFF' if (no % 2) else '#FCFCFD')">
+                                    <td style="padding:8px 8px; font-size:12px; text-align:center; border-bottom:1px solid #F2F4F7;">
+                                        <t t-esc="no"/>
+                                    </td>
+
+                                    <td style="padding:8px 10px; border-bottom:1px solid #F2F4F7;">
+                                        <div style="font-size:13px; font-weight:600; color:#101828; line-height:1.2;">
+                                            <t t-esc="p.name or ''"/>
+                                        </div>
+                                        <t t-if="p.code">
+                                            <div style="font-size:11px; color:#667085; margin-top:2px;">
+                                                Mã: <t t-esc="p.code"/>
+                                            </div>
+                                        </t>
+                                    </td>
+
+                                    <td style="padding:8px 10px; font-size:12px; color:#344054; border-bottom:1px solid #F2F4F7;">
+                                        <t t-esc="p.customer_id.name or ''"/>
+                                    </td>
+
+                                    <td style="padding:8px 10px; font-size:12px; color:#344054; border-bottom:1px solid #F2F4F7;">
+                                        <t t-esc="p.location_id.name or ''"/>
+                                    </td>
+
+                                    <td style="padding:8px 10px; font-size:12px; text-align:center; color:#344054; border-bottom:1px solid #F2F4F7;">
+                                        <t t-if="p.expected_bid_date">
+                                            <t t-esc="p.expected_bid_date" t-options="{'widget': 'date'}"/>
+                                        </t>
+                                        <t t-else="">-</t>
+                                    </td>
+
+                                    <td style="padding:8px 10px; font-size:12px; border-bottom:1px solid #F2F4F7;">
+                                        <span style="display:inline-block; padding:2px 8px; border-radius:999px; border:1px solid #EAECF0; background:#FFFFFF; color:#344054;">
+                                            <t t-esc="p.stage_id.name or ''"/>
+                                        </span>
+                                    </td>
+
+                                    <td style="padding:8px 10px; font-size:12px; text-align:right; color:#101828; border-bottom:1px solid #F2F4F7;">
+                                        <t t-esc="p.expected_value or 0"
+                                           t-options="{'widget': 'monetary', 'display_currency': (p.currency_id or company.currency_id)}"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+                    </tbody>
+                </table>
+
+                <!-- FOOT NOTE -->
+                <div style="margin-top:10px; font-size:11px; color:#667085;">
+                    Ghi chú: Giá trị hiển thị theo tiền tệ công ty / dự án.
+                </div>
+
+            </div>
+        </t>
+    </template>
+
+</odoo>
