@@ -123,7 +123,7 @@
                                             <span t-esc="stt"/>
                                         </td>
                                         <td>
-                                        <span t-esc="line.product_display_name or line.product_id.name"/>
+                                            <span t-esc="line.product_display_name or line.product_id.name"/>
                                         </td>
                                         <t t-if="doc.is_show_image">
                                             <td style="text-align:center; border-right: 1px solid black;">
@@ -312,6 +312,24 @@
                     <t t-out="line_num"/>
 . Phương thức thanh toán: <t t-out="doc.x_payment_method_id.name"/>
                 </p>
+                <t t-set="bank" t-value="doc.company_bank_id or (doc.company_id.partner_id.bank_ids and doc.company_id.partner_id.bank_ids[0])"/>
+                <t t-if="bank">
+                    <div style="margin-left:15px;">
+                        <p>
+                            <span>Chủ tài khoản:</span>
+                            <t t-esc="bank.acc_holder_name or bank.partner_id.name or ''"/>
+                        </p>
+                        <p>
+                            <span>Số tài khoản:</span>
+                            <t t-esc="bank.acc_number or ''"/>
+                        </p>
+                        <p>
+                            <span>Tại Ngân hàng:</span>
+                            <t t-esc="bank.bank_id.name or ''"/>
+                        </p>
+                    </div>
+                </t>
+
                 <t t-set="line_num" t-value="line_num + 1"/>
                 <t t-if="doc.x_delivery_location">
                     <p>

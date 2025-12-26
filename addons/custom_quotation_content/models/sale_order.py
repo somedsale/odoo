@@ -55,6 +55,23 @@ class SaleOrder(models.Model):
         string='Customer',
         domain="[('customer_rank', '>', 0)]"
     )
+    company_partner_id = fields.Many2one(
+        "res.partner",
+        related="company_id.partner_id",
+        store=True,
+        readonly=True,
+    )
+
+    company_bank_id = fields.Many2one(
+        "res.partner.bank",
+        string="Tài khoản ngân hàng",
+    )
+
+    @api.onchange("company_id")
+    def _onchange_company_id_bank_default(self):
+        for o in self:
+            banks = o.company_id.partner_id.bank_ids
+            o.company_bank_id = banks[:1].id if banks else False
     @api.onchange('x_quote_valid_until', 'date_order')
     def _onchange_quote_valid_until(self):
         for order in self:

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="action_future_project_pdf" model="ir.actions.report">
+        <field name="name">Báo cáo dự án tiềm năng (PDF)</field>
+        <field name="model">future.project.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">future_project_management.future_project_report</field>
+        <field name="report_file">future_project_management.future_project_report</field>
+    </record>
+</odoo>
