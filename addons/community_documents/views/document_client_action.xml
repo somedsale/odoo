@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="action_documents_dashboard" model="ir.actions.client">
+        <field name="name">Documents</field>
+        <field name="tag">community_documents.dashboard</field>
+    </record>
+</odoo>

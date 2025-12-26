@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- SEARCH (SAFE) -->
+    <record id="view_document_document_search" model="ir.ui.view">
+        <field name="name">document.document.search</field>
+        <field name="model">document.document</field>
+        <field name="arch" type="xml">
+            <search string="Search Documents">
+                <field name="name"/>
+                <field name="folder_id"/>
+                <field name="owner_id"/>
+                <field name="tag_ids"/>
+                <filter name="my" string="My Documents" domain="[('owner_id','=',uid)]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- TREE -->
+    <record id="view_document_document_tree" model="ir.ui.view">
+        <field name="name">document.document.tree</field>
+        <field name="model">document.document</field>
+        <field name="arch" type="xml">
+            <tree string="Documents">
+                <field name="name"/>
+                <field name="folder_id"/>
+                <field name="owner_id"/>
+                <field name="tag_ids" widget="many2many_tags"/>
+                <field name="attachment_id"/>
+                <field name="write_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- KANBAN -->
+    <record id="view_document_document_kanban" model="ir.ui.view">
+        <field name="name">document.document.kanban</field>
+        <field name="model">document.document</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="name"/>
+                <field name="owner_id"/>
+                <field name="tag_ids"/>
+                <field name="download_url"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click o_kanban_record">
+                            <div class="o_kanban_record_top">
+                                <strong><field name="name"/></strong>
+                            </div>
+
+                            <div class="mt8">
+                                <span class="text-muted">Owner:</span>
+                                <field name="owner_id"/>
+                            </div>
+
+                            <div class="mt8">
+                                <field name="tag_ids" widget="many2many_tags"/>
+                            </div>
+
+                            <div class="mt8">
+                                <a t-att-href="record.download_url.raw_value"
+                                   target="_blank"
+                                   class="btn btn-sm btn-secondary">
+                                    Download
+                                </a>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- FORM -->
+    <record id="view_document_document_form" model="ir.ui.view">
+        <field name="name">document.document.form</field>
+        <field name="model">document.document</field>
+        <field name="arch" type="xml">
+            <form string="Document">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="folder_id"/>
+                        <field name="owner_id" groups="community_documents.group_documents_manager"/>
+                        <field name="partner_id"/>
+                        <field name="tag_ids" widget="many2many_tags"/>
+                        <field name="active"/>
+                    </group>
+
+                    <group string="File">
+                        <field name="attachment_id" options="{'no_create': True}"/>
+                        <field name="datas" filename="datas_filename"/>
+                        <field name="datas_filename"/>
+                        <field name="mimetype" readonly="1"/>
+                        <field name="file_size" readonly="1"/>
+                        <field name="download_url" readonly="1"/>
+                    </group>
+
+                    <group string="Notes">
+                        <field name="note"/>
+                    </group>
+
+                    <chatter/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

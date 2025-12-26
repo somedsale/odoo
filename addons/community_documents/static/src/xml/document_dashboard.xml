@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+  <t t-name="community_documents.document_dashboard_templates">
+    <t t-name="community_documents.DocumentDashboard" owl="1">
+      <div class="o_comm_docs">
+        <!-- Top bar -->
+        <div class="o_comm_docs_topbar">
+          <div class="o_comm_docs_title">Documents</div>
+          <div class="o_comm_docs_actions">
+            <button class="btn btn-primary" t-on-click="onUpload">Upload</button>
+            <button class="btn btn-secondary" t-on-click="onAddLink">Add a Link</button>
+          </div>
+          <div class="o_comm_docs_search">
+            <input class="form-control" placeholder="Search..."
+                   t-model="state.search" t-on-input="onSearchInput"/>
+          </div>
+        </div>
+
+        <div class="o_comm_docs_body">
+          <!-- Left: Workspace + Tags -->
+          <aside class="o_comm_docs_left">
+            <div class="o_comm_docs_panel">
+              <div class="o_comm_docs_panel_title">WORKSPACE</div>
+  <button class="btn btn-sm btn-light" title="Create Folder" t-on-click="onCreateFolder">+</button>
+
+                <div class="o_comm_docs_item"
+                    t-att-class="state.folderId ? '' : 'active'"
+                    t-att-data-id="''"
+                    t-on-click="onFolderClick">
+                <span class="o_comm_docs_folder_icon">📁</span> All
+                </div>
+
+<t t-foreach="state.folders" t-as="f" t-key="f.id">
+  <div class="o_comm_docs_item"
+       t-att-class="state.folderId === f.id ? 'active' : ''"
+       t-att-data-id="f.id"
+       t-on-click="onFolderClick">
+
+    <div class="o_comm_docs_item_label">
+      <span class="o_comm_docs_folder_icon">📁</span>
+      <t t-esc="f.name"/>
+    </div>
+
+    <div class="o_comm_docs_item_actions">
+      <button class="btn btn-sm btn-light"
+              title="Edit"
+              t-att-data-id="f.id"
+              t-on-click="onEditFolder">✎</button>
+      <button class="btn btn-sm btn-light"
+              title="Delete"
+              t-att-data-id="f.id"
+              t-on-click="onDeleteFolder">🗑</button>
+    </div>
+
+  </div>
+</t>
+
+
+            </div>
+
+            <div class="o_comm_docs_panel">
+              <div class="o_comm_docs_panel_title">TAGS</div>
+                <t t-foreach="state.tags" t-as="tTag" t-key="tTag.id">
+                <label class="o_comm_docs_tag_row">
+                    <input type="checkbox"
+                        t-att-data-id="tTag.id"
+                        t-att-checked="state.tagIds.has(tTag.id) ? true : false"
+                        t-on-change="onTagToggle"/>
+                    <span class="o_comm_docs_tag_name"><t t-esc="tTag.name"/></span>
+                </label>
+                </t>
+
+            </div>
+          </aside>
+
+          <!-- Middle: Grid -->
+          <main class="o_comm_docs_center">
+            <div class="o_comm_docs_grid">
+              <t t-foreach="state.docs" t-as="d" t-key="d.id">
+                <div class="o_comm_docs_card"
+                    t-att-class="state.selectedId === d.id ? 'selected' : ''"
+                    t-att-data-id="d.id"
+                    t-on-click="onDocClick">
+                  <div class="o_comm_docs_card_icon">
+                    <t t-esc="iconFor(d.mimetype, d.is_link)"/>
+                  </div>
+                  <div class="o_comm_docs_card_body">
+                    <div class="o_comm_docs_card_title"><t t-esc="d.name"/></div>
+                    <div class="o_comm_docs_card_meta">
+                      <t t-esc="d.write_date || ''"/>
+                    </div>
+                    <div class="o_comm_docs_card_meta">
+                      <t t-esc="d.owner_id ? d.owner_id[1] : ''"/>
+                    </div>
+                  </div>
+                </div>
+              </t>
+
+              <t t-if="!state.docs.length">
+                <div class="o_comm_docs_empty">No documents found.</div>
+              </t>
+            </div>
+          </main>
+
+          <!-- Right: Inspector -->
+          <aside class="o_comm_docs_right">
+            <t t-if="state.selected">
+              <div class="o_comm_docs_preview">
+                <t t-if="isImage(state.selected.mimetype)">
+                  <img t-att-src="contentUrl(state.selected.attachment_id  &amp;&amp; state.selected.attachment_id[0])"/>
+                </t>
+                <t t-elif="isPdf(state.selected.mimetype)">
+                  <iframe t-att-src="contentUrl(state.selected.attachment_id  &amp;&amp; state.selected.attachment_id[0])"/>
+                </t>
+                <t t-else="">
+                  <div class="o_comm_docs_preview_placeholder">
+                    <t t-esc="iconFor(state.selected.mimetype, state.selected.is_link)"/>
+                  </div>
+                </t>
+              </div>
+
+              <div class="o_comm_docs_inspector">
+                <div class="o_comm_docs_field">
+                  <div class="label">Name</div>
+                  <div class="value"><t t-esc="state.selected.name"/></div>
+                </div>
+
+                <div class="o_comm_docs_field">
+                  <div class="label">MIME Type</div>
+                  <div class="value"><t t-esc="state.selected.mimetype || ''"/></div>
+                </div>
+
+                <div class="o_comm_docs_field">
+                  <div class="label">Owner</div>
+                  <div class="value"><t t-esc="state.selected.owner_id ? state.selected.owner_id[1] : ''"/></div>
+                </div>
+
+                <div class="o_comm_docs_field">
+                  <div class="label">Workspace</div>
+                  <div class="value"><t t-esc="state.selected.folder_id ? state.selected.folder_id[1] : ''"/></div>
+                </div>
+
+                <div class="o_comm_docs_field">
+                  <div class="label">Tags</div>
+                  <div class="value">
+                    <t t-foreach="state.selected.tag_ids || []" t-as="tid" t-key="tid">
+                      <span class="badge text-bg-primary me-1">#<t t-esc="tid"/></span>
+                    </t>
+                  </div>
+                </div>
+
+                <div class="o_comm_docs_inspector_actions">
+                  <button class="btn btn-secondary" t-on-click="openSelected">Open</button>
+                  <button class="btn btn-primary" t-on-click="downloadSelected">Download</button>
+                </div>
+              </div>
+            </t>
+
+            <t t-else="">
+              <div class="o_comm_docs_right_empty">
+                Select a document to see details.
+              </div>
+            </t>
+          </aside>
+        </div>
+      </div>
+    </t>
+  </t>
+</templates>

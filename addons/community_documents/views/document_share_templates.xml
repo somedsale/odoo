@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="document_share_page" name="Document Share Page">
+        <t t-call="website.layout">
+            <div class="container mt32 mb32">
+                <h2 t-esc="share.name"/>
+                <p class="text-muted">Shared by <span t-esc="share.owner_id.name"/>.</p>
+
+                <t t-if="share.expiration_date">
+                    <p class="text-muted">
+                        Expires at: <span t-esc="share.expiration_date"/>
+                    </p>
+                </t>
+
+                <div class="card mt16">
+                    <div class="card-body">
+                        <h4>Documents</h4>
+                        <ul class="list-group">
+                            <t t-foreach="docs" t-as="d">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <strong t-esc="d.name"/> —
+                                        <span class="text-muted" t-esc="d.filename"/>
+                                    </span>
+                                    <a t-att-href="d.download_url" class="btn btn-sm btn-primary" target="_blank">Download</a>
+                                </li>
+                            </t>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

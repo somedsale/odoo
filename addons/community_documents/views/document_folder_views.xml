@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_document_folder_tree" model="ir.ui.view">
+        <field name="name">document.folder.tree</field>
+        <field name="model">document.folder</field>
+        <field name="arch" type="xml">
+            <tree string="Folders">
+                <field name="name"/>
+                <field name="parent_id"/>
+                <field name="access_level"/>
+                <field name="owner_id"/>
+                <field name="document_count" widget="statinfo"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_document_folder_form" model="ir.ui.view">
+        <field name="name">document.folder.form</field>
+        <field name="model">document.folder</field>
+        <field name="arch" type="xml">
+            <form string="Folder">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="parent_id"/>
+                        <field name="owner_id" groups="community_documents.group_documents_manager"/>
+                        <field name="access_level"/>
+                    </group>
+                    <group string="USERS" col="2" invisible="access_level != 'shared'">
+    <field name="writable_user_ids" widget="many2many_tags" domain="[('share','=',False)]"/>
+    <field name="readable_user_ids" widget="many2many_tags" domain="[('share','=',False)]"/>
+    <field name="own_document_only_user_ids" widget="many2many_tags" domain="[('share','=',False)]"/>
+</group>
+
+                    <notebook>
+                        <page string="Documents">
+                            <field name="document_ids"
+                                   context="{'default_folder_id': active_id}"
+                                   nolabel="1">
+                                <tree editable="bottom">
+                                    <field name="name"/>
+                                    <field name="owner_id"/>
+                                    <field name="tag_ids" widget="many2many_tags"/>
+                                    <field name="attachment_id"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

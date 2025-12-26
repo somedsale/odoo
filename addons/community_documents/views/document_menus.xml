@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ACTIONS -->
+    <record id="action_document_documents" model="ir.actions.act_window">
+        <field name="name">Documents</field>
+        <field name="res_model">document.document</field>
+        <field name="view_mode">kanban,tree,form</field>
+    </record>
+
+    <record id="action_document_folders" model="ir.actions.act_window">
+        <field name="name">Folders</field>
+        <field name="res_model">document.folder</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_document_tags" model="ir.actions.act_window">
+        <field name="name">Tags</field>
+        <field name="res_model">document.tag</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_document_shares" model="ir.actions.act_window">
+        <field name="name">Shares</field>
+        <field name="res_model">document.share</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- MENUS (no groups for debug, rely on ACL) -->
+<menuitem id="menu_documents_root" name="Documents" sequence="30" action="action_documents_dashboard"/>
+
+    <menuitem id="menu_documents_documents" name="Documents" parent="menu_documents_root"
+              action="action_document_documents" sequence="10"/>
+
+    <menuitem id="menu_documents_folders" name="Folders" parent="menu_documents_root"
+              action="action_document_folders" sequence="20"/>
+
+    <menuitem id="menu_documents_tags" name="Tags" parent="menu_documents_root"
+              action="action_document_tags" sequence="30"/>
+
+    <menuitem id="menu_documents_shares" name="Shares" parent="menu_documents_root"
+              action="action_document_shares" sequence="40"/>
+
+</odoo>
