@@ -7,7 +7,6 @@
         <field name="target">current</field>
     </record>
     <!--    Dashboard menu-->
-    <menuitem id="activity_management_dashboard_menu" name="Việc cần làm" parent="activity_menu_root" action="activity_management_dashboard_action" sequence="2"
-              groups = "custom_director_role.group_director,base.group_system"/>
-
+    <menuitem id="activity_menu_root" name="Activity Dashboard" sequence="25" web_icon="activity_dashboard_mngmnt,static/description/icon.png" groups="base.group_user"/>
+    <menuitem id="activity_management_dashboard_menu" name="Việc cần làm" parent="activity_menu_root" action="activity_management_dashboard_action" sequence="2" groups="base.group_user"/>
 </odoo>

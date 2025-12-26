@@ -116,6 +116,7 @@ class ContractManagement(models.Model):
     description = fields.Text(string='Mô tả')
     attachment_ids = fields.Many2many('ir.attachment', string='Tài liệu')
     warranty_time = fields.Integer(string="Thời gian bảo hành (tháng)", store=True)
+    activity_ids = fields.One2many('mail.activity', 'res_id', domain=[('res_model', '=', 'contract.management')], string='Hoạt động liên quan')
 
     # ---------- Computed Fields ----------
 

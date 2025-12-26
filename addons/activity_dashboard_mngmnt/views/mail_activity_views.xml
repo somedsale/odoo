@@ -30,6 +30,7 @@
             </form>
         </field>
     </record>
+
     <!--Inherit mail activity tree view to add extra fields-->
     <record id="mail_activity_view_tree" model="ir.ui.view">
         <field name="name">mail.activity.view.tree.inherit.activity.dashboard
@@ -52,9 +53,4 @@
             </xpath>
         </field>
     </record>
-    <!--    Activity Dashboard menu-->
-    <menuitem id="activity_menu_root" name="Activity Management" sequence="25" web_icon="activity_dashboard_mngmnt,static/description/icon.png"
-              groups = "custom_director_role.group_director,base.group_system"/>
-    <!--   Mail activity Menu-->
-    <!-- <menuitem id="mail_activity_menu" name="Activity" parent="activity_menu_root" action="mail.mail_activity_action" sequence="2" /> -->
 </odoo>
