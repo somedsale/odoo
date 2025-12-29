@@ -6,6 +6,7 @@ class SaleOrderLine(models.Model):
         string='Tên hiển thị sản phẩm',
         store=True,
     )
+    name = fields.Text(string='Diễn giải')
     x_thongso = fields.Text(string='Thông số')  # ✅ Không related để cho phép chỉnh sửa
     x_xuatxu = fields.Char(string='Xuất xứ')
     x_hangsx = fields.Char(string='Hãng SX')

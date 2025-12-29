@@ -1,0 +1,23 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_document_folder_user,document.folder user,model_document_folder,,1,1,1,0
+access_document_folder_manager,document.folder manager,model_document_folder,,1,1,1,1
+
+access_document_tag_user,document.tag user,model_document_tag,,1,1,1,0
+access_document_tag_manager,document.tag manager,model_document_tag,,1,1,1,1
+
+access_document_document_user,document.document user,model_document_document,,1,1,1,0
+access_document_document_manager,document.document manager,model_document_document,,1,1,1,1
+access_document_share_wizard_user,document.share.wizard user,model_document_share_wizard,,1,1,1,1
+
+access_document_share_user,document.share user,model_document_share,,1,1,1,0
+access_document_share_manager,document.share manager,model_document_share,,1,1,1,1
+access_document_add_link_wizard_user,document.add link wizard user,model_document_add_link_wizard,,1,1,1,1
+access_document_team_user,document.team user,model_document_team,,1,1,1,0
+access_document_team_manager,document.team manager,model_document_team,,1,1,1,1
+access_document_create_folder_wizard_user,document.create folder wizard user,model_document_create_folder_wizard,,1,1,1,1
+access_document_folder_member_user,document.folder.member user,model_document_folder_member,,1,1,1,1
+access_document_folder_member_manager,document.folder.member manager,model_document_folder_member,,1,1,1,1
+access_doc_create_folder_wiz_readable_user,doc.create.folder.wiz.readable user,model_doc_create_folder_wiz_readable,,1,1,1,1
+access_doc_create_folder_wiz_writable_user,doc.create.folder.wiz.writable user,model_doc_create_folder_wiz_writable,,1,1,1,1
+access_doc_create_folder_wiz_ownonly_user,doc.create.folder.wiz.ownonly user,model_doc_create_folder_wiz_ownonly,,1,1,1,1
+access_document_move_copy_wizard,document.move.copy.wizard,model_document_move_copy_wizard,base.group_user,1,1,1,1

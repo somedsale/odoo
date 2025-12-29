@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <template id="share_document_page">
+    <t t-set="doc" t-value="doc"/>
+    <html>
+      <head>
+        <meta charset="utf-8"/>
+        <title><t t-esc="doc.name"/></title>
+        <style>
+          body{font-family:Arial;margin:20px;}
+          .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+          .box{border:1px solid #ddd;border-radius:10px;padding:12px;}
+          iframe{width:100%;height:80vh;border:1px solid #ddd;border-radius:10px;}
+          img{max-width:100%;border:1px solid #ddd;border-radius:10px;}
+          a.btn{display:inline-block;padding:8px 12px;border:1px solid #444;border-radius:8px;text-decoration:none;}
+        </style>
+      </head>
+      <body>
+        <div class="top">
+          <h2 style="margin:0"><t t-esc="doc.name"/></h2>
+          <t t-if="share.allow_download">
+            <a class="btn" t-att-href="'/docs/s/%s/content?download=1' % share.token">Download</a>
+          </t>
+        </div>
+
+        <div class="box">
+          <t t-if="doc.attachment_id and doc.attachment_id.type == 'url'">
+            <a t-att-href="doc.attachment_id.url" target="_blank"><t t-esc="doc.attachment_id.url"/></a>
+          </t>
+          <t t-elif="doc.mimetype == 'application/pdf'">
+            <iframe t-att-src="'/docs/s/%s/content?download=0' % share.token"></iframe>
+          </t>
+          <t t-elif="doc.mimetype and doc.mimetype.startswith('image/')">
+            <img t-att-src="'/docs/s/%s/content?download=0' % share.token"/>
+          </t>
+          <t t-else="">
+            <p>Preview not available. Use Download.</p>
+          </t>
+        </div>
+      </body>
+    </html>
+  </template>
+
+  <template id="share_folder_page">
+    <html>
+      <head>
+        <meta charset="utf-8"/>
+        <title><t t-esc="folder.name"/></title>
+        <style>
+          body{font-family:Arial;margin:20px;}
+          .item{display:flex;justify-content:space-between;gap:12px;padding:10px;border-bottom:1px solid #eee;}
+          .name{font-weight:600;}
+          a.btn{display:inline-block;padding:6px 10px;border:1px solid #444;border-radius:8px;text-decoration:none;}
+        </style>
+      </head>
+      <body>
+        <h2 style="margin-top:0">Folder: <t t-esc="folder.name"/></h2>
+
+        <div>
+          <t t-foreach="docs" t-as="d" t-key="d.id">
+            <div class="item">
+              <div>
+                <div class="name"><t t-esc="d.name"/></div>
+                <div style="opacity:.7;font-size:12px;"><t t-esc="d.mimetype or ''"/></div>
+              </div>
+              <div>
+                <a class="btn" t-att-href="'/docs/s/%s/content?doc_id=%s&amp;download=0' % (share.token, d.id)" target="_blank">View</a>
+                <t t-if="share.allow_download">
+                  <a class="btn" t-att-href="'/docs/s/%s/content?doc_id=%s&amp;download=1' % (share.token, d.id)">Download</a>
+                </t>
+              </div>
+            </div>
+          </t>
+        </div>
+      </body>
+    </html>
+  </template>
+</odoo>

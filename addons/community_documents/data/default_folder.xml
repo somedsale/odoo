@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <record id="folder_general" model="document.folder">
+    <field name="name">General</field>
+    <field name="access_level">internal</field>
+    <field name="owner_id" ref="base.user_admin"/>
+  </record>
+</odoo>

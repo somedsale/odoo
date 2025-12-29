@@ -1,0 +1,766 @@
+.o_comm_docs {
+  height: calc(100vh - 56px);
+  display: flex;
+  flex-direction: column;
+  background: #f6f7fb;
+}
+
+.o_comm_docs_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+
+.o_comm_docs_header_left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.o_comm_docs_title {
+  font-weight: 700;
+  font-size: 18px;
+  white-space: nowrap;
+}
+
+.o_comm_docs_search {
+  position: relative;
+  flex: 1 1 auto;
+  max-width: 520px;
+  min-width: 220px;
+}
+.o_comm_docs_search_icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: .55;
+}
+.o_comm_docs_search_input {
+  width: 100%;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.10);
+  padding: 0 12px 0 34px;
+  outline: none;
+  background: #fafafa;
+}
+.o_comm_docs_search_input:focus {
+  background: #fff;
+  border-color: rgba(0,0,0,.18);
+  box-shadow: 0 0 0 3px rgba(13,110,253,.12);
+}
+
+.o_comm_docs_layout {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: 280px 1fr 340px;
+  gap: 14px;
+  padding: 14px;
+  overflow: hidden;
+}
+
+.o_comm_docs_sidebar,
+.o_comm_docs_inspector_wrap,
+.o_comm_docs_main {
+  min-height: 0;
+}
+
+.o_comm_docs_panel {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 14px;
+  box-shadow: 0 8px 22px rgba(0,0,0,.04);
+  overflow: hidden;
+}
+
+.o_comm_docs_panel_head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.o_comm_docs_panel_title {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: .06em;
+  opacity: .75;
+}
+
+.o_comm_docs_nav {
+  padding: 8px;
+}
+.o_comm_docs_nav_item {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 0;
+  background: transparent;
+}
+.o_comm_docs_nav_item:hover {
+  background: rgba(0,0,0,.04);
+}
+.o_comm_docs_nav_item.active {
+  background: rgba(13,110,253,.10);
+  color: #0d6efd;
+  font-weight: 600;
+}
+.o_comm_docs_nav_row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.o_comm_docs_nav_actions {
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity .15s ease;
+}
+.o_comm_docs_nav_row:hover .o_comm_docs_nav_actions { opacity: 1; }
+
+.o_comm_docs_tags {
+  padding: 10px 12px 12px;
+  display: grid;
+  gap: 8px;
+}
+.o_comm_docs_tag {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 10px;
+}
+.o_comm_docs_tag:hover { background: rgba(0,0,0,.04); }
+
+.o_comm_docs_main {
+  overflow: auto;
+  padding: 2px;
+}
+
+.o_comm_docs_grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
+}
+
+.o_comm_docs_card {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 14px;
+  padding: 10px;
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.o_comm_docs_card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(0,0,0,.08);
+}
+.o_comm_docs_card.is-selected {
+  border-color: rgba(13,110,253,.55);
+  box-shadow: 0 0 0 3px rgba(13,110,253,.10), 0 10px 28px rgba(0,0,0,.08);
+}
+
+.o_comm_docs_card_top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.o_comm_docs_check {
+  width: 16px;
+  height: 16px;
+}
+.o_comm_docs_card_actions {
+  opacity: 0;
+  transition: opacity .15s ease;
+}
+.o_comm_docs_card:hover .o_comm_docs_card_actions { opacity: 1; }
+
+.o_comm_docs_card_icon{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 8px 0;
+}
+.o_comm_docs_file_icon{
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  background: #fff;
+  border: 2px solid rgba(0,0,0,.10);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+.o_comm_docs_file_i{
+  font-size: 30px;
+  line-height: 1;
+}
+
+/* Thumbnail ảnh */
+.o_comm_docs_file_thumb{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Màu giống kiểu bạn gửi */
+.o_comm_docs_file_icon.type-pdf   { border-color:#c9302c; color:#c9302c; }
+.o_comm_docs_file_icon.type-word  { border-color:#4e5bd5; color:#4e5bd5; }
+.o_comm_docs_file_icon.type-excel { border-color:#2e9d47; color:#2e9d47; }
+.o_comm_docs_file_icon.type-ppt   { border-color:#f0ad4e; color:#f0ad4e; }
+.o_comm_docs_file_icon.type-image { border-color:#6c757d; color:#6c757d; }
+.o_comm_docs_file_icon.type-video { border-color:#17a2b8; color:#17a2b8; }
+.o_comm_docs_file_icon.type-zip   { border-color:#795548; color:#795548; }
+.o_comm_docs_file_icon.type-link  { border-color:#6f42c1; color:#6f42c1; }
+.o_comm_docs_card_body {
+  padding: 10px 2px 2px;
+}
+.o_comm_docs_card_name {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.o_comm_docs_card_meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  opacity: .75;
+}
+.o_comm_docs_dot { opacity: .35; }
+
+.o_comm_docs_preview_panel { margin-bottom: 12px; }
+.o_comm_docs_preview {
+  padding: 10px 12px 12px;
+}
+.o_comm_docs_preview_img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,.08);
+}
+.o_comm_docs_preview_pdf {
+  width: 100%;
+  height: 45vh;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 12px;
+}
+.o_comm_docs_preview_placeholder {
+  height: 180px;
+  border-radius: 12px;
+  background: rgba(0,0,0,.04);
+  display: grid;
+  place-items: center;
+  font-size: 46px;
+}
+
+.o_comm_docs_inspector { padding-bottom: 10px; }
+.o_comm_docs_kv {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 10px;
+  padding: 8px 12px;
+}
+.o_comm_docs_kv .k { opacity: .65; font-size: 12px; }
+.o_comm_docs_kv .v { font-weight: 600; font-size: 13px; }
+
+.o_comm_docs_inspector_buttons { padding: 10px 12px 12px; }
+
+.o_comm_docs_empty {
+  padding: 24px;
+  text-align: center;
+  background: #fff;
+  border: 1px dashed rgba(0,0,0,.14);
+  border-radius: 14px;
+  opacity: .8;
+}
+
+.o_comm_docs_right_empty {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+.o_comm_docs_empty_hint { opacity: .75; }
+
+.o_comm_docs_ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+/* =========================
+   Drag & Drop Overlay
+   ========================= */
+
+.o_comm_docs {
+  position: relative; /* bắt buộc để overlay phủ đúng */
+}
+
+/* lớp phủ toàn màn dashboard */
+.o_comm_docs_drop_overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* mờ nền */
+  background: rgba(13, 110, 253, 0.10);
+  backdrop-filter: blur(2px);
+
+  /* không chặn click nếu bạn muốn vẫn click được; 
+     nếu muốn "khóa" UI khi kéo thì đổi thành pointer-events:auto */
+  pointer-events: none;
+
+  /* animation */
+  animation: commDocsFadeIn 120ms ease-out;
+}
+
+@keyframes commDocsFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* hộp drop */
+.o_comm_docs_drop_box {
+  pointer-events: none;
+  min-width: 360px;
+  max-width: 520px;
+
+  background: rgba(255, 255, 255, 0.92);
+  border: 2px dashed rgba(13, 110, 253, 0.55);
+  border-radius: 18px;
+
+  padding: 22px 26px;
+  text-align: center;
+
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.14),
+    0 0 0 10px rgba(13, 110, 253, 0.08);
+
+  transform: translateY(-2px);
+}
+
+/* icon */
+.o_comm_docs_drop_box .fa {
+  font-size: 34px;
+  line-height: 1;
+  color: #0d6efd;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+/* tiêu đề */
+.o_comm_docs_drop_box_title {
+  font-weight: 800;
+  font-size: 16px;
+  color: #111;
+  letter-spacing: 0.2px;
+}
+
+/* phụ đề */
+.o_comm_docs_drop_hint {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.60);
+}
+
+/* trạng thái uploading (nếu bạn có state.isUploading) */
+.o_comm_docs_drop_progress {
+  margin-top: 12px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(13, 110, 253, 0.12);
+  overflow: hidden;
+}
+
+.o_comm_docs_drop_progress > span {
+  display: block;
+  height: 100%;
+  width: 38%;
+  background: rgba(13, 110, 253, 0.75);
+  border-radius: 999px;
+  animation: commDocsProgress 900ms ease-in-out infinite;
+}
+
+@keyframes commDocsProgress {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(320%); }
+}
+
+/* ===== Preview placeholder icon ===== */
+.o_comm_docs_preview_placeholder{
+  height: 100%;
+  min-height: 220px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap: 10px;
+  padding: 14px;
+
+  border: 1px dashed rgba(0,0,0,.18);
+  border-radius: 12px;
+  background: #fff;
+  color: rgba(0,0,0,.65);
+}
+
+.o_comm_docs_preview_file_icon{
+  width: 74px;
+  height: 74px;
+  border-radius: 14px;
+  background: #fff;
+  border: 2px solid rgba(0,0,0,.10);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  box-shadow: 0 10px 24px rgba(0,0,0,.08);
+}
+
+.o_comm_docs_preview_file_icon i{
+  font-size: 40px;
+  line-height: 1;
+}
+
+/* tên + hint */
+.o_comm_docs_preview_file_name{
+  max-width: 100%;
+  font-weight: 800;
+  font-size: 13px;
+  color:#111;
+  text-align:center;
+}
+
+.o_comm_docs_preview_file_hint{
+  font-size: 12px;
+  font-weight: 600;
+  opacity: .75;
+  text-align:center;
+  max-width: 420px;
+}
+
+/* Màu theo type (đồng bộ list) */
+.o_comm_docs_preview_file_icon.type-pdf   { border-color:#c9302c; color:#c9302c; }
+.o_comm_docs_preview_file_icon.type-word  { border-color:#4e5bd5; color:#4e5bd5; }
+.o_comm_docs_preview_file_icon.type-excel { border-color:#2e9d47; color:#2e9d47; }
+.o_comm_docs_preview_file_icon.type-ppt   { border-color:#f0ad4e; color:#f0ad4e; }
+.o_comm_docs_preview_file_icon.type-image { border-color:#6c757d; color:#6c757d; }
+.o_comm_docs_preview_file_icon.type-video { border-color:#17a2b8; color:#17a2b8; }
+.o_comm_docs_preview_file_icon.type-zip   { border-color:#795548; color:#795548; }
+.o_comm_docs_preview_file_icon.type-link  { border-color:#6f42c1; color:#6f42c1; }
+.o_comm_docs_nav_row{
+  display:flex;
+  align-items:center;
+  gap: 6px;
+}
+
+.o_comm_docs_nav_caret{
+  width: 22px;
+  height: 22px;
+  border: 0;
+  background: transparent;
+  border-radius: 8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color: rgba(0,0,0,.55);
+  flex: 0 0 auto;
+}
+
+.o_comm_docs_nav_caret:hover{
+  background: rgba(0,0,0,.06);
+}
+
+.o_comm_docs_nav_caret.o_empty{
+  opacity: 0;       /* giữ chỗ để canh thẳng hàng */
+  pointer-events: none;
+}
+
+.o_comm_docs_folder_tree{
+  display:flex;
+  flex-direction:column;
+  gap: 2px;
+}
+
+.o_comm_docs_folder_row{
+  display:flex;
+  align-items:center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  cursor: default;
+}
+
+.o_comm_docs_folder_row:hover{
+  background: rgba(0,0,0,.04);
+}
+
+.o_comm_docs_folder_row.is-active{
+  background: rgba(13,110,253,.10);
+  border: 1px solid rgba(13,110,253,.18);
+}
+
+.o_comm_docs_folder_caret{
+  width: 22px;
+  height: 22px;
+  border: 0;
+  background: transparent;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius: 8px;
+  color: rgba(0,0,0,.55);
+}
+
+.o_comm_docs_folder_caret:hover{
+  background: rgba(0,0,0,.06);
+}
+
+.o_comm_docs_folder_caret.o-empty{
+  opacity: .0; /* giữ chỗ cho folder không có con */
+}
+
+.o_comm_docs_folder_name{
+  display:flex;
+  align-items:center;
+  gap: 6px;
+  flex:1;
+  min-width:0;
+  font-weight: 650;
+  color: #111;
+  cursor: pointer;
+}
+/* 2 cột: Left (flex) + Right (preview fixed) */
+.o_comm_docs_shell{
+  --comm-docs-right-w: 420px;          /* ✅ width preview cố định */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--comm-docs-right-w);
+  height: calc(100vh - 64px);          /* chỉnh theo header của bạn */
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Cột trái: sidebar + resizer + main */
+.o_comm_docs_left{
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.o_comm_docs_sidebar{
+  flex: 0 0 auto;
+  min-width: 220px;
+  max-width: 520px;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Resizer */
+.o_comm_docs_sidebar_resizer{
+  flex: 0 0 8px;
+  width: 8px;
+  cursor: col-resize;
+  position: relative;
+  user-select: none;
+}
+.o_comm_docs_sidebar_resizer::before{
+  content:"";
+  position:absolute;
+  top: 10px; bottom: 10px;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: rgba(0,0,0,.08);
+}
+.o_comm_docs_sidebar_resizer:hover::before{
+  background: rgba(13,110,253,.45);
+}
+
+/* Main: co giãn bù trừ theo sidebar */
+.o_comm_docs_main{
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 8px;
+}
+
+/* Cột phải: preview giữ nguyên */
+.o_comm_docs_right{
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  border-left: 1px solid rgba(0,0,0,.08);
+  background: #fff;
+  padding-left: 10px;
+}
+
+/* Khi kéo resize */
+body.o_comm_docs_resizing{
+  cursor: col-resize !important;
+  user-select: none;
+}
+body.o_comm_docs_resizing *{
+  cursor: col-resize !important;
+  user-select: none;
+}
+/* ===== Base: desktop 2 columns ===== */
+.o_comm_docs_shell{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px; /* preview fixed */
+  min-height: 0;
+  height: calc(100vh - 64px);
+  overflow: hidden;
+}
+
+.o_comm_docs_left{
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.o_comm_docs_main{
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.o_comm_docs_inspector_wrap{
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  border-left: 1px solid rgba(0,0,0,.08);
+  background: #fff;
+}
+
+/* Header wrap tốt hơn */
+.o_comm_docs_header{
+  display:flex;
+  justify-content:space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.o_comm_docs_header_left,
+.o_comm_docs_header_right{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Nút toggle chỉ hiện trên <=992 */
+.o_comm_docs_sidebar_toggle{ display:none; }
+
+/* Resizer: desktop dùng bình thường */
+.o_comm_docs_sidebar_resizer{
+  flex: 0 0 8px;
+  width: 8px;
+  cursor: col-resize;
+  position: relative;
+  user-select: none;
+}
+.o_comm_docs_sidebar_resizer::before{
+  content:"";
+  position:absolute;
+  top: 10px; bottom: 10px;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: rgba(0,0,0,.08);
+}
+.o_comm_docs_sidebar_resizer:hover::before{
+  background: rgba(13,110,253,.45);
+}
+
+/* Grid card responsive */
+.o_comm_docs_grid{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap: 12px;
+}
+@media (max-width: 1400px){
+  .o_comm_docs_shell{ grid-template-columns: minmax(0,1fr) 380px; }
+  .o_comm_docs_grid{ grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+@media (max-width: 1200px){
+  .o_comm_docs_shell{ grid-template-columns: minmax(0,1fr) 360px; }
+  .o_comm_docs_grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+
+/* ===== Tablet/Mobile: sidebar off-canvas + preview xuống dưới ===== */
+@media (max-width: 992px){
+  .o_comm_docs_sidebar_toggle{ display:inline-flex; }
+
+  /* preview chuyển xuống dưới */
+  .o_comm_docs_shell{
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0,1fr) 360px; /* hàng dưới cho preview/details */
+  }
+  .o_comm_docs_left{ grid-row: 1; }
+  .o_comm_docs_inspector_wrap{
+    grid-row: 2;
+    border-left: 0;
+    border-top: 1px solid rgba(0,0,0,.08);
+  }
+
+  /* sidebar thành drawer overlay */
+  .o_comm_docs_left{ position: relative; }
+  .o_comm_docs_sidebar{
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    z-index: 30;
+    width: 280px !important;
+    max-width: 90vw;
+    transform: translateX(-105%);
+    transition: transform .18s ease;
+    box-shadow: 0 20px 60px rgba(0,0,0,.18);
+    background: #fff;
+  }
+  .o_comm_docs_sidebar.is-open{ transform: translateX(0); }
+
+  /* resizer không cần trên mobile */
+  .o_comm_docs_sidebar_resizer{ display:none; }
+
+  /* backdrop */
+  .o_comm_docs_sidebar_backdrop{
+    display:none;
+    position: fixed;
+    inset: 0;
+    z-index: 25;
+    background: rgba(0,0,0,.35);
+  }
+  .o_comm_docs_sidebar_backdrop.show{ display:block; }
+
+  /* grid card */
+  .o_comm_docs_grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+
+@media (max-width: 576px){
+  .o_comm_docs_grid{ grid-template-columns: 1fr; }
+  .o_comm_docs_shell{ grid-template-rows: minmax(0,1fr) 45vh; } /* preview cao hơn trên mobile */
+}

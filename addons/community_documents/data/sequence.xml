@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="seq_document_share" model="ir.sequence">
+        <field name="name">Document Share</field>
+        <field name="code">document.share</field>
+        <field name="prefix">SHARE/</field>
+        <field name="padding">5</field>
+    </record>
+</odoo>

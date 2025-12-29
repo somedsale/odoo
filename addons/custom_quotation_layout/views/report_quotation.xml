@@ -142,7 +142,7 @@
                                         </t>
                                         <td>
                                             <i>
-                                                <span t-esc="line.name or line.x_thong_so"/>
+                                                <span t-esc="line.name or line.x_thong_so" t-options='{"widget": "text"}'/>
                                             </i>
                                         </td>
                                         <td class="text-center">

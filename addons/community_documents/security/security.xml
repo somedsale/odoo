@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Folder rules -->
+    <record id="rule_document_folder_user" model="ir.rule">
+        <field name="name">Documents Folder - user access</field>
+        <field name="model_id" ref="model_document_folder"/>
+        <field name="groups" eval="[(4, ref('community_documents.group_documents_user'))]"/>
+        <field name="domain_force">
+            ['|','|',
+                ('access_level','=','internal'),
+                ('owner_id','=',user.id),
+                '&amp;',('access_level','=','shared'),('member_ids.user_id','=',user.id)
+            ]
+        </field>
+    </record>
+
+    <record id="rule_document_folder_manager" model="ir.rule">
+        <field name="name">Documents Folder - manager full</field>
+        <field name="model_id" ref="model_document_folder"/>
+        <field name="groups" eval="[(4, ref('community_documents.group_documents_manager'))]"/>
+        <field name="domain_force">[(1,'=',1)]</field>
+    </record>
+
+    <!-- Document rules: theo folder -->
+    <record id="rule_document_document_user" model="ir.rule">
+        <field name="name">Documents - user access</field>
+        <field name="model_id" ref="model_document_document"/>
+        <field name="groups" eval="[(4, ref('community_documents.group_documents_user'))]"/>
+        <field name="domain_force">
+            ['|','|',
+                ('folder_id.access_level','=','internal'),
+                ('owner_id','=',user.id),
+                '&amp;',('folder_id.access_level','=','shared'),('folder_id.member_ids.user_id','=',user.id)
+            ]
+        </field>
+    </record>
+
+    <record id="rule_document_document_manager" model="ir.rule">
+        <field name="name">Documents - manager full</field>
+        <field name="model_id" ref="model_document_document"/>
+        <field name="groups" eval="[(4, ref('community_documents.group_documents_manager'))]"/>
+        <field name="domain_force">[(1,'=',1)]</field>
+    </record>
+
+</odoo>
