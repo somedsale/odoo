@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Category -->
+    <record id="module_category_documents" model="ir.module.category">
+        <field name="name">Documents</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <!-- Documents / User -->
+    <record id="group_documents_user" model="res.groups">
+        <field name="name">Documents / User</field>
+        <field name="category_id" ref="module_category_documents"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- Documents / Manager -->
+    <record id="group_documents_manager" model="res.groups">
+        <field name="name">Documents / Manager</field>
+        <field name="category_id" ref="module_category_documents"/>
+        <field name="implied_ids" eval="[(4, ref('community_documents.group_documents_user'))]"/>
+        <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+    </record>
+</odoo>
