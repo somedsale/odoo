@@ -29,7 +29,7 @@
     <!-- MENUS (no groups for debug, rely on ACL) -->
 <menuitem id="menu_documents_root" name="Documents" sequence="30" action="action_documents_dashboard"/>
 
-    <menuitem id="menu_documents_documents" name="Documents" parent="menu_documents_root"
+    <!-- <menuitem id="menu_documents_documents" name="Documents" parent="menu_documents_root"
               action="action_document_documents" sequence="10"/>
 
     <menuitem id="menu_documents_folders" name="Folders" parent="menu_documents_root"
@@ -39,6 +39,6 @@
               action="action_document_tags" sequence="30"/>
 
     <menuitem id="menu_documents_shares" name="Shares" parent="menu_documents_root"
-              action="action_document_shares" sequence="40"/>
+              action="action_document_shares" sequence="40"/> -->
 
 </odoo>

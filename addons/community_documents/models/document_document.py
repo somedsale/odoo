@@ -284,3 +284,70 @@ class DocumentDocument(models.Model):
             pass
 
         return res
+    def action_get_share_link(self):
+        self.ensure_one()
+        Share = self.env["document.share"].sudo()
+        share = Share.search([
+            ("share_type", "=", "document"),
+            ("document_id", "=", self.id),
+            ("active", "=", True),
+        ], limit=1)
+        if not share:
+            share = Share.create({
+                "share_type": "document",
+                "document_id": self.id,
+                "name": f"Share Document: {self.name}",
+            })
+        return share.get_share_url()
+    def action_rename(self, new_name):
+        """
+        Rename document + attachment.
+        - Nếu user nhập không có đuôi => tự giữ đuôi từ tên file hiện tại (datas_fname/name).
+        - Nếu user nhập có đuôi => dùng đúng cái user nhập.
+        """
+        new_name = (new_name or "").strip()
+        if not new_name:
+            raise UserError(_("Tên file không được để trống."))
+
+        def _get_ext(filename):
+            filename = (filename or "").strip()
+            if not filename:
+                return ""
+            # lấy phần sau dấu chấm cuối cùng (bỏ trường hợp ".bashrc" đơn)
+            if "." in filename and not filename.endswith("."):
+                base, ext = filename.rsplit(".", 1)
+                if base and ext:
+                    return "." + ext
+            return ""
+
+        def _has_user_ext(name):
+            # user đã gõ đuôi nếu có dấu "." và phần sau không rỗng
+            name = (name or "").strip()
+            if "." in name and not name.endswith("."):
+                base, ext = name.rsplit(".", 1)
+                return bool(base and ext)
+            return False
+
+        for doc in self:
+            att = doc.attachment_id.exists() if getattr(doc, "attachment_id", False) else self.env["ir.attachment"]
+            current_filename = ""
+            if att and att.id:
+                current_filename = (getattr(att, "datas_fname", "") or "") or (att.name or "")
+            if not current_filename:
+                current_filename = doc.name or ""
+
+            old_ext = _get_ext(current_filename)
+
+            final_name = new_name
+            if old_ext and not _has_user_ext(new_name):
+                final_name = f"{new_name}{old_ext}"
+
+            doc.write({"name": final_name})
+
+            if att and att.id:
+                vals = {"name": final_name}
+                if "datas_fname" in att._fields:
+                    vals["datas_fname"] = final_name
+                att.write(vals)
+
+        return True

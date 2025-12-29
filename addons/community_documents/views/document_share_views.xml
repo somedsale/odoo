@@ -1,43 +1,38 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<!-- <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <record id="view_document_share_tree" model="ir.ui.view">
-        <field name="name">document.share.tree</field>
-        <field name="model">document.share</field>
-        <field name="arch" type="xml">
-            <tree string="Shares">
-                <field name="name"/>
-                <field name="owner_id"/>
-                <field name="expiration_date"/>
-                <field name="state"/>
-                <field name="active"/>
-            </tree>
-        </field>
-    </record>
+  <record id="view_document_share_wizard_form" model="ir.ui.view">
+    <field name="name">document.share.wizard.form</field>
+    <field name="model">document.share.wizard</field>
+    <field name="arch" type="xml">
+      <form string="Share">
+        <group>
+          <field name="share_type"/>
+          <field name="document_id" invisible="share_type != 'document'"/>
+          <field name="folder_id" invisible="share_type != 'folder'"/>
+          <field name="expiration_date"/>
+        </group>
 
-    <record id="view_document_share_form" model="ir.ui.view">
-        <field name="name">document.share.form</field>
-        <field name="model">document.share</field>
-        <field name="arch" type="xml">
-            <form string="Share">
-                <header>
-                    <button name="action_open_share" type="object" string="Open Share Link" class="btn-primary"/>
-                </header>
-                <sheet>
-                    <group>
-                        <field name="name"/>
-                        <field name="owner_id" groups="community_documents.group_documents_manager"/>
-                        <field name="expiration_date"/>
-                        <field name="active"/>
-                        <field name="state" readonly="1"/>
-                    </group>
-                    <group>
-                        <field name="share_url" readonly="1"/>
-                    </group>
-                    <group>
-                        <field name="document_ids" widget="many2many_tags"/>
-                    </group>
-                </sheet>
-            </form>
-        </field>
-    </record>
-</odoo>
+        <group string="USERS">
+          <field name="writable_user_ids" widget="many2many_tags"/>
+          <field name="readable_user_ids" widget="many2many_tags"/>
+        </group>
+
+        <group string="LINK" attrs="{'invisible': [('share_url','=',False)]}">
+          <field name="share_url" readonly="1"/>
+        </group>
+
+        <footer>
+          <button string="Create link" type="object" name="action_create_link" class="btn-primary"/>
+          <button string="Close" special="cancel" class="btn-secondary"/>
+        </footer>
+      </form>
+    </field>
+  </record>
+
+  <record id="action_document_share_wizard" model="ir.actions.act_window">
+    <field name="name">Share</field>
+    <field name="res_model">document.share.wizard</field>
+    <field name="view_mode">form</field>
+    <field name="target">new</field>
+  </record>
+</odoo> -->

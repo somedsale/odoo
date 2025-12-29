@@ -2,167 +2,329 @@
 <templates xml:space="preserve">
   <t t-name="community_documents.document_dashboard_templates">
     <t t-name="community_documents.DocumentDashboard" owl="1">
-      <div class="o_comm_docs">
-        <!-- Top bar -->
-        <div class="o_comm_docs_topbar">
-          <div class="o_comm_docs_title">Documents</div>
-          <div class="o_comm_docs_actions">
-            <button class="btn btn-primary" t-on-click="onUpload">Upload</button>
-            <button class="btn btn-secondary" t-on-click="onAddLink">Add a Link</button>
-          </div>
-          <div class="o_comm_docs_search">
-            <input class="form-control" placeholder="Search..."
-                   t-model="state.search" t-on-input="onSearchInput"/>
-          </div>
-        </div>
+      <div class="o_comm_docs"  t-ref="dropRoot">
+    <!-- Drag overlay -->
+    <t t-if="state.isDragging">
+      <div class="o_comm_docs_drop_overlay">
+        <div class="o_comm_docs_drop_box">
+  <i class="fa fa-cloud-upload"/>
+  <div class="o_comm_docs_drop_box_title">
+    <t t-esc="state.isUploading ? 'Uploading...' : 'Drop files to upload'"/>
+  </div>
+  <div class="o_comm_docs_drop_hint">Upload into current folder</div>
 
-        <div class="o_comm_docs_body">
-          <!-- Left: Workspace + Tags -->
-          <aside class="o_comm_docs_left">
-            <div class="o_comm_docs_panel">
-              <div class="o_comm_docs_panel_title">WORKSPACE</div>
-  <button class="btn btn-sm btn-light" title="Create Folder" t-on-click="onCreateFolder">+</button>
+  <t t-if="state.isUploading">
+    <div class="o_comm_docs_drop_progress"><span/></div>
+  </t>
+</div>
 
-                <div class="o_comm_docs_item"
-                    t-att-class="state.folderId ? '' : 'active'"
-                    t-att-data-id="''"
-                    t-on-click="onFolderClick">
-                <span class="o_comm_docs_folder_icon">📁</span> All
+      </div>
+    </t>
+        <!-- Header -->
+        <header class="o_comm_docs_header">
+          <div class="o_comm_docs_header_left">
+          <button class="btn btn-light o_comm_docs_sidebar_toggle"
+                  title="Menu"
+                  t-on-click="toggleSidebar">
+            <i class="fa fa-bars"/>
+          </button>
+
+            <div class="o_comm_docs_title">
+              <i class="fa fa-folder-open-o me-2"/> Documents
+            </div>
+
+            <div class="o_comm_docs_search">
+              <i class="fa fa-search o_comm_docs_search_icon"/>
+              <input class="o_comm_docs_search_input"
+                     placeholder="Search files..."
+                     t-model="state.search"
+                     t-on-input="onSearchInput"/>
+            </div>
+          </div>
+
+          <div class="o_comm_docs_header_right">
+            <div class="btn-group" role="group">
+              <button class="btn btn-primary" t-on-click="onUpload">
+                <i class="fa fa-upload me-1"/> Upload
+              </button>
+              <button class="btn btn-outline-secondary" t-on-click="onAddLink">
+                <i class="fa fa-link me-1"/> Add link
+              </button>
+            </div>
+
+            <div class="btn-group ms-2" role="group">
+              <button class="btn btn-outline-secondary"
+                      t-att-disabled="(!(state.selectedIds &amp;&amp; state.selectedIds.length) &amp;&amp; !state.folderId)"
+                      t-on-click="onShareSelected">
+                <i class="fa fa-share-alt me-1"/> Share
+              </button>
+<button class="btn btn-outline-secondary"
+        t-att-disabled="!(state.selectedIds &amp;&amp; state.selectedIds.length === 1)"
+        t-on-click="onRenameSelected">
+  <i class="fa fa-pencil me-1"/> Rename
+</button>
+
+              <button class="btn btn-outline-primary"
+                      t-att-disabled="!state.selectedIds.length"
+                      t-on-click="downloadSelected">
+                <i class="fa fa-download me-1"/> Download
+                <span class="badge text-bg-primary ms-1" t-esc="state.selectedIds.length"/>
+              </button>
+
+              <button class="btn btn-outline-danger"
+                      t-att-disabled="!state.selectedIds.length"
+                      t-on-click="deleteSelected">
+                <i class="fa fa-trash me-1"/> Delete
+                <span class="badge text-bg-danger ms-1" t-esc="state.selectedIds.length"/>
+              </button>
+              <button class="btn btn-outline-secondary"
+        t-att-disabled="!state.selectedIds.length"
+        t-on-click="onCopySelected">
+  <i class="fa fa-copy me-1"/> Copy
+</button>
+
+<button class="btn btn-outline-secondary"
+        t-att-disabled="!state.selectedIds.length"
+        t-on-click="onMoveSelected">
+  <i class="fa fa-arrows me-1"/> Move
+</button>
+
+            </div>
+
+            <button class="btn btn-light ms-2" t-on-click="toggleSelectAll">
+              <i class="fa fa-check-square-o me-1"/>
+              <t t-esc="state.allSelected ? 'Unselect all' : 'Select all'"/>
+            </button>
+          </div>
+        </header>
+
+        <!-- Layout -->
+        <div class="o_comm_docs_shell">
+          <div class="o_comm_docs_left">
+          <!-- Left -->
+          <aside t-att-class="state.isSidebarOpen ? 'o_comm_docs_sidebar is-open' : 'o_comm_docs_sidebar'"
+       t-attf-style="width: {{ state.sidebarWidth }}px;">
+
+              <section class="o_comm_docs_panel">
+                <div class="o_comm_docs_panel_head">
+                  <span class="o_comm_docs_panel_title">Workspace</span>
+                  <button class="btn btn-sm btn-light" title="Create folder" t-on-click="onCreateFolder">
+                    <i class="fa fa-plus"/>
+                  </button>
                 </div>
 
-<t t-foreach="state.folders" t-as="f" t-key="f.id">
-  <div class="o_comm_docs_item"
-       t-att-class="state.folderId === f.id ? 'active' : ''"
-       t-att-data-id="f.id"
-       t-on-click="onFolderClick">
+              <div class="o_comm_docs_nav">
+                <button class="o_comm_docs_nav_item"
+                        t-att-class="state.folderId ? '' : 'active'"
+                        t-att-data-id="''"
+                        t-on-click="onFolderClick">
+                  <i class="fa fa-folder me-2"/> All
+                </button>
 
-    <div class="o_comm_docs_item_label">
-      <span class="o_comm_docs_folder_icon">📁</span>
-      <t t-esc="f.name"/>
-    </div>
+              <t t-foreach="(state.folderTree || [])" t-as="f" t-key="f.id">
+              <div class="o_comm_docs_nav_row">
 
-    <div class="o_comm_docs_item_actions">
-      <button class="btn btn-sm btn-light"
-              title="Edit"
-              t-att-data-id="f.id"
-              t-on-click="onEditFolder">✎</button>
-      <button class="btn btn-sm btn-light"
-              title="Delete"
-              t-att-data-id="f.id"
-              t-on-click="onDeleteFolder">🗑</button>
-    </div>
+                <!-- caret -->
+                <button class="o_comm_docs_nav_caret"
+                        type="button"
+                        t-att-class="f.hasChildren ? '' : 'o_empty'"
+                        t-att-data-id="f.id"
+                        t-on-click.stop="onToggleFolder">
+                  <i t-att-class="f.isExpanded ? 'fa fa-caret-down' : 'fa fa-caret-right'"/>
+                </button>
 
-  </div>
-</t>
+                <!-- ✅ indent wrapper -->
+              <div class="o_comm_docs_nav_itemwrap"
+                  t-att-style="'padding-left:' + (f.level * 16) + 'px'">
 
 
-            </div>
+                  <button class="o_comm_docs_nav_item"
+                          t-att-class="state.folderId === f.id ? 'active' : ''"
+                          t-att-data-id="f.id"
+                          t-on-click="onFolderClick">
+                    <i class="fa fa-folder-o me-2"/>
+                    <span class="o_comm_docs_ellipsis"><t t-esc="f.name"/></span>
+                  </button>
+                </div>
 
-            <div class="o_comm_docs_panel">
-              <div class="o_comm_docs_panel_title">TAGS</div>
-                <t t-foreach="state.tags" t-as="tTag" t-key="tTag.id">
-                <label class="o_comm_docs_tag_row">
-                    <input type="checkbox"
-                        t-att-data-id="tTag.id"
-                        t-att-checked="state.tagIds.has(tTag.id) ? true : false"
-                        t-on-change="onTagToggle"/>
-                    <span class="o_comm_docs_tag_name"><t t-esc="tTag.name"/></span>
-                </label>
-                </t>
+                <div class="o_comm_docs_nav_actions">
+                  <button class="btn btn-sm btn-light" title="Edit" t-att-data-id="f.id" t-on-click.stop="onEditFolder">
+                    <i class="fa fa-pencil"/>
+                  </button>
+                  <button class="btn btn-sm btn-light" title="Share" t-att-data-id="f.id" t-on-click.stop="onShareFolder">
+                    <i class="fa fa-link"/>
+                  </button>
+                  <button class="btn btn-sm btn-light" title="Delete" t-att-data-id="f.id" t-on-click.stop="onDeleteFolder">
+                    <i class="fa fa-trash"/>
+                  </button>
+                </div>
+              </div>
 
-            </div>
+              </t>
+
+              </div>
+            </section>
           </aside>
-
-          <!-- Middle: Grid -->
-          <main class="o_comm_docs_center">
+              <div class="o_comm_docs_sidebar_resizer"
+                  title="Kéo để đổi chiều rộng"
+                  t-on-mousedown="onSidebarResizeStart"/>
+          <!-- Center -->
+          <main class="o_comm_docs_main">
             <div class="o_comm_docs_grid">
               <t t-foreach="state.docs" t-as="d" t-key="d.id">
-                <div class="o_comm_docs_card"
-                    t-att-class="state.selectedId === d.id ? 'selected' : ''"
-                    t-att-data-id="d.id"
-                    t-on-click="onDocClick">
+                <article class="o_comm_docs_card"
+                         t-att-class="state.selectedIds.includes(d.id) ? 'is-selected' : ''"
+                         t-att-data-id="d.id"
+                         t-on-click="onDocClick">
+
+                  <div class="o_comm_docs_card_top">
+                    <input type="checkbox"
+                           class="o_comm_docs_check"
+                           t-att-data-id="d.id"
+                           t-att-checked="state.selectedIds.includes(d.id) ? true : false"
+                           t-on-click.stop="onToggleDoc"/>
+
+                    <div class="o_comm_docs_card_actions">
+                      <button class="btn btn-sm btn-light" title="Delete" t-att-data-id="d.id" t-on-click.stop="onDeleteDoc">
+                        <i class="fa fa-trash"/>
+                      </button>
+                    </div>
+                  </div>
+
                   <div class="o_comm_docs_card_icon">
-                    <t t-esc="iconFor(d.mimetype, d.is_link)"/>
+                    <div class="o_comm_docs_file_icon" t-att-class="fileIconWrapClass(d)">
+                      <t t-if="isImage(d.mimetype) and d.attachment_id">
+                        <img class="o_comm_docs_file_thumb"
+                            t-att-src="contentUrl(d.attachment_id[0])"/>
+                      </t>
+                      <t t-else="">
+                        <i t-att-class="fileIconClass(d)"/>
+                      </t>
+                    </div>
                   </div>
+
+
                   <div class="o_comm_docs_card_body">
-                    <div class="o_comm_docs_card_title"><t t-esc="d.name"/></div>
+                    <div class="o_comm_docs_card_name o_comm_docs_ellipsis" title=""><t t-esc="d.name"/></div>
                     <div class="o_comm_docs_card_meta">
-                      <t t-esc="d.write_date || ''"/>
-                    </div>
-                    <div class="o_comm_docs_card_meta">
-                      <t t-esc="d.owner_id ? d.owner_id[1] : ''"/>
+                      <span class="o_comm_docs_ellipsis"><t t-esc="d.owner_id ? d.owner_id[1] : ''"/></span>
+                      <span class="o_comm_docs_dot">•</span>
+                      <span class="o_comm_docs_ellipsis"><t t-esc="d.write_date || ''"/></span>
                     </div>
                   </div>
-                </div>
+                </article>
               </t>
 
               <t t-if="!state.docs.length">
-                <div class="o_comm_docs_empty">No documents found.</div>
+                <div class="o_comm_docs_empty">
+                  <i class="fa fa-inbox me-2"/> No documents found.
+                </div>
               </t>
             </div>
           </main>
+          </div>
+          <!-- Right -->
+          <aside class="o_comm_docs_inspector_wrap">
+            <t t-if="state.selectedIds.length &gt; 1">
+              <section class="o_comm_docs_panel o_comm_docs_inspector">
+                <div class="o_comm_docs_panel_head">
+                  <span class="o_comm_docs_panel_title">Selection</span>
+                </div>
 
-          <!-- Right: Inspector -->
-          <aside class="o_comm_docs_right">
-            <t t-if="state.selected">
-              <div class="o_comm_docs_preview">
-                <t t-if="isImage(state.selected.mimetype)">
-                  <img t-att-src="contentUrl(state.selected.attachment_id  &amp;&amp; state.selected.attachment_id[0])"/>
-                </t>
-                <t t-elif="isPdf(state.selected.mimetype)">
-                  <iframe t-att-src="contentUrl(state.selected.attachment_id  &amp;&amp; state.selected.attachment_id[0])"/>
-                </t>
-                <t t-else="">
-                  <div class="o_comm_docs_preview_placeholder">
-                    <t t-esc="iconFor(state.selected.mimetype, state.selected.is_link)"/>
+                <div class="o_comm_docs_kv">
+                  <div class="k">Selected</div>
+                  <div class="v"><t t-esc="state.selectedIds.length"/> documents</div>
+                </div>
+
+                <div class="o_comm_docs_inspector_buttons">
+                  <button class="btn btn-primary w-100" t-on-click="downloadSelected">
+                    <i class="fa fa-download me-1"/> Download
+                  </button>
+                  <button class="btn btn-outline-danger w-100 mt-2" t-on-click="deleteSelected">
+                    <i class="fa fa-trash me-1"/> Delete
+                  </button>
+                </div>
+              </section>
+            </t>
+
+            <t t-elif="state.selected">
+              <section class="o_comm_docs_panel o_comm_docs_preview_panel">
+                <div class="o_comm_docs_panel_head">
+                  <span class="o_comm_docs_panel_title">Preview</span>
+                </div>
+
+                <div class="o_comm_docs_preview">
+                  <t t-if="isImage(state.selected.mimetype)">
+                    <img class="o_comm_docs_preview_img"
+                         t-att-src="contentUrl(state.selected.attachment_id &amp;&amp; state.selected.attachment_id[0])"/>
+                  </t>
+                  <t t-elif="isPdf(state.selected.mimetype)">
+                    <iframe class="o_comm_docs_preview_pdf"
+                            t-att-src="contentUrl(state.selected.attachment_id &amp;&amp; state.selected.attachment_id[0])"/>
+                  </t>
+              <t t-else="">
+                <div class="o_comm_docs_preview_placeholder">
+                  <div class="o_comm_docs_preview_file_icon" t-att-class="fileIconWrapClass(state.selected)">
+                    <i t-att-class="fileIconClass(state.selected)"/>
                   </div>
-                </t>
-              </div>
-
-              <div class="o_comm_docs_inspector">
-                <div class="o_comm_docs_field">
-                  <div class="label">Name</div>
-                  <div class="value"><t t-esc="state.selected.name"/></div>
-                </div>
-
-                <div class="o_comm_docs_field">
-                  <div class="label">MIME Type</div>
-                  <div class="value"><t t-esc="state.selected.mimetype || ''"/></div>
-                </div>
-
-                <div class="o_comm_docs_field">
-                  <div class="label">Owner</div>
-                  <div class="value"><t t-esc="state.selected.owner_id ? state.selected.owner_id[1] : ''"/></div>
-                </div>
-
-                <div class="o_comm_docs_field">
-                  <div class="label">Workspace</div>
-                  <div class="value"><t t-esc="state.selected.folder_id ? state.selected.folder_id[1] : ''"/></div>
-                </div>
-
-                <div class="o_comm_docs_field">
-                  <div class="label">Tags</div>
-                  <div class="value">
-                    <t t-foreach="state.selected.tag_ids || []" t-as="tid" t-key="tid">
-                      <span class="badge text-bg-primary me-1">#<t t-esc="tid"/></span>
-                    </t>
+                  <div class="o_comm_docs_preview_file_name o_comm_docs_ellipsis" t-att-title="state.selected.name">
+                    <t t-esc="state.selected.name"/>
+                  </div>
+                  <div class="o_comm_docs_preview_file_hint">
+                    Không hỗ trợ preview. Vui lòng tải xuống để xem.
                   </div>
                 </div>
+              </t>
 
-                <div class="o_comm_docs_inspector_actions">
-                  <button class="btn btn-secondary" t-on-click="openSelected">Open</button>
-                  <button class="btn btn-primary" t-on-click="downloadSelected">Download</button>
                 </div>
-              </div>
+              </section>
+
+              <section class="o_comm_docs_panel o_comm_docs_inspector">
+                <div class="o_comm_docs_panel_head">
+                  <span class="o_comm_docs_panel_title">Details</span>
+                </div>
+
+                <div class="o_comm_docs_kv">
+                  <div class="k">Name</div>
+                  <div class="v o_comm_docs_ellipsis"><t t-esc="state.selected.name"/></div>
+                </div>
+                <div class="o_comm_docs_kv">
+                  <div class="k">Owner</div>
+                  <div class="v o_comm_docs_ellipsis"><t t-esc="state.selected.owner_id ? state.selected.owner_id[1] : ''"/></div>
+                </div>
+                <div class="o_comm_docs_kv">
+                  <div class="k">Workspace</div>
+                  <div class="v o_comm_docs_ellipsis"><t t-esc="state.selected.folder_id ? state.selected.folder_id[1] : ''"/></div>
+                </div>
+                <div class="o_comm_docs_kv">
+                  <div class="k">MIME</div>
+                  <div class="v o_comm_docs_ellipsis"><t t-esc="state.selected.mimetype || ''"/></div>
+                </div>
+
+                <div class="o_comm_docs_inspector_buttons">
+                  <button class="btn btn-primary w-100 mt-2" t-on-click="downloadSelected">
+                    <i class="fa fa-download me-1"/> Download
+                  </button>
+                  <button class="btn btn-outline-danger w-100 mt-2" t-on-click="deleteSelected">
+                    <i class="fa fa-trash me-1"/> Delete
+                  </button>
+                </div>
+              </section>
             </t>
 
             <t t-else="">
-              <div class="o_comm_docs_right_empty">
-                Select a document to see details.
-              </div>
+              <section class="o_comm_docs_panel o_comm_docs_right_empty">
+                <div class="o_comm_docs_empty_hint">
+                  <i class="fa fa-info-circle me-2"/> Select a document to see details.
+                </div>
+              </section>
             </t>
           </aside>
         </div>
+        <div class="o_comm_docs_sidebar_backdrop"
+     t-att-class="state.isSidebarOpen ? 'show' : ''"
+     t-on-click="toggleSidebar"/>
+
       </div>
     </t>
   </t>
