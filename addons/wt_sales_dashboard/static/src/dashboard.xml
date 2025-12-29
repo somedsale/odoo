@@ -72,26 +72,13 @@
         )"/>
                         </p>
                     </div>
-                    <div class="wt-card wt-card--click wt-card--has-badge" t-on-click="() => this.openContracts()">
-
-                        <!-- Badge -->
-                        <span class="wt-kpi-badge wt-kpi-badge--success">
-                            <t t-esc="state.kpis.contract_count || 0"/>
- hợp đồng
-                        </span>
-
+                    <div class="wt-card wt-card--click" t-on-click="() => this.openCategories()">
                         <h2 class="wt-card-sub">
-        Hợp đồng
-                            <span class="wt-kpi-period">
-            (                                <t t-esc="this.periodLabel"/>
-)
-                            </span>
+    Tỉ lệ chuyển đổi
                         </h2>
-
                         <p class="wt-card-val">
-                            <t t-esc="state.kpis.total_contract.toLocaleString(
-            'vi-VN',{style:'currency',currency:'VND'}
-        )"/>
+                            <t t-esc="state.kpis.close_rate_value"/>
+%
                         </p>
                     </div>
 

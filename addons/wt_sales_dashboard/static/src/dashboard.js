@@ -20,7 +20,10 @@ class SalesDashboard extends Component {
 
         // 1) Khởi tạo state
         this.state = useState({
-            kpis: { total_sales: 0, avg_order_value: 0, order_count: 0, category_count: 0, total_quotations: 0, quotation_count: 0, contract_count: 0, total_contract: 0, },
+            kpis: {
+                total_sales: 0, avg_order_value: 0, order_count: 0, category_count: 0, total_quotations: 0, quotation_count: 0,
+                close_rate_value: 0.0, close_rate_count: 0.0,
+            },
             charts: {
                 sales_trend: { labels: [], data: [] },
                 top_products: { labels: [], data: [], uoms: [] },
@@ -322,7 +325,7 @@ class SalesDashboard extends Component {
             domain: [
                 ["date_order", ">=", date_from],
                 ["date_order", "<=", date_to],
-                ["state", "in", ["sent"]],
+                ["state", "in", ["sent", "sale"]],
             ],
             target: "current",
         });
