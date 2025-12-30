@@ -72,7 +72,7 @@
         )"/>
                         </p>
                     </div>
-                    <div class="wt-card wt-card--click" t-on-click="() => this.openCategories()">
+                    <div class="wt-card wt-card--click">
                         <h2 class="wt-card-sub">
     Tỉ lệ chuyển đổi
                         </h2>
