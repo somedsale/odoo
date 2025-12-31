@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="report_bank_daily_balance_html" model="ir.actions.report">
+        <field name="name">Bank Daily Balance Report (HTML)</field>
+        <field name="model">bank.balance.wizard</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">bank_balance.bank_daily_balance_report_template</field>
+        <field name="print_report_name">'Bank Daily Balance'</field>
+    </record>
+
+    <template id="bank_daily_balance_report_template">
+        <t t-call="web.html_container">
+            <t t-set="o" t-value="o or doc"/>
+            <div class="page" style="font-family: Times New Roman; font-size: 13px;">
+                <h3 style="text-align:center; margin: 8px 0;">
+                    TỒN NGÂN HÀNG NGÀY <t t-esc="date_label"/>
+                </h3>
+
+                <table style="width:100%; border-collapse:collapse;" border="1">
+                    <thead>
+                        <tr>
+                            <th style="padding:6px; text-align:center;">Ngân hàng</th>
+                            <th style="padding:6px; text-align:center;">Tồn đầu</th>
+                            <th style="padding:6px; text-align:center;">PS thu</th>
+                            <th style="padding:6px; text-align:center;">PS chi</th>
+                            <th style="padding:6px; text-align:center;">Tồn cuối</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="lines" t-as="l">
+                            <tr>
+                                <td style="padding:6px;">
+                                    <t t-esc="l.get('bank_name')"/>
+                                </td>
+                                <td style="padding:6px; text-align:right;">
+                                    <t t-esc="l.get('opening_balance', 0.0)" t-options="{'widget':'monetary','display_currency': currency_id}"/>
+                                </td>
+                                <td style="padding:6px; text-align:right;">
+                                    <t t-esc="l.get('receipt_amount', 0.0)" t-options="{'widget':'monetary','display_currency': currency_id}"/>
+                                </td>
+                                <td style="padding:6px; text-align:right;">
+                                    <t t-esc="l.get('payment_amount', 0.0)" t-options="{'widget':'monetary','display_currency': currency_id}"/>
+                                </td>
+                                <td style="padding:6px; text-align:right; font-weight:bold;">
+                                    <t t-esc="l.get('closing_balance', 0.0)" t-options="{'widget':'monetary','display_currency': currency_id}"/>
+                                </td>
+                            </tr>
+                        </t>
+
+                        <tr style="font-weight:bold;">
+                            <td style="padding:6px; text-align:center;">TỔNG</td>
+                            <td style="padding:6px; text-align:right;">
+                                <t t-esc="total_open" t-options="{'widget':'monetary','display_currency': currency_id}"/>
+                            </td>
+                            <td style="padding:6px; text-align:right;">
+                                <t t-esc="total_r" t-options="{'widget':'monetary','display_currency': currency_id}"/>
+                            </td>
+                            <td style="padding:6px; text-align:right;">
+                                <t t-esc="total_p" t-options="{'widget':'monetary','display_currency': currency_id}"/>
+                            </td>
+                            <td style="padding:6px; text-align:right;">
+                                <t t-esc="total_close" t-options="{'widget':'monetary','display_currency': currency_id}"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+
+</odoo>
