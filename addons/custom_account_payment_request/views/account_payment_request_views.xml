@@ -59,6 +59,7 @@
                             <field name="proposal_person_id" widget="many2one_avatar_user" invisible="proposal_person_id == False"/>
                             <field name="expense_type" widget="select" invisible="cost_classification != 'project'" readonly="state != 'draft'"/>
                             <field name="payment_type" widget="select" readonly="state != 'draft'"/>
+                            <field name="bank_id" string="Ngân hàng" invisible="payment_type != 'bank'" readonly="state != 'draft'" placeholder="Chọn ngân hàng dùng để chi"/>
                         </group>
                     </group>
                 </sheet>
@@ -77,13 +78,16 @@
                 <field name="project_id"/>
                 <field name="name"/>
                 <field name="note"/>
+                <field name="date_payment"/>
+                <field name="bank_id"/>
                 <filter string="Đã xác nhận" name="confirmed" domain="[('state','=','confirmed')]" />
                 <filter string="Không có dự án" name="no_project" domain="[('project_id','=',False)]"/>
                 <searchpanel>
                     <field name="project_id" string="Dự án" enable_counters="1" />
                     <field name="state" string="Trạng thái" icon="fa-bullseye" select="multi" enable_counters="1"/>
                     <field name="status_expense" string="Trạng thái chi" icon="fa-bullseye" select="multi" enable_counters="1"/>
-                    <field name="cost_classification" string="Phân loại chi phí" icon="fa-money-check-dollar" select="multi" enable_counters="1"/>
+                    <field name="cost_classification" string="Phân loại chi phí" icon="fa fa-money" select="multi" enable_counters="1"/>
+                    <field name="bank_id" string="Ngân hàng" icon="fa fa-university" select="multi" enable_counters="1"/>
                 </searchpanel>
             </search>
         </field>

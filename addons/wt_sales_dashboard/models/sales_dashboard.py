@@ -33,19 +33,20 @@ class SalesDashboard(models.AbstractModel):
         sales_orders = self.env['sale.order'].search([
             ('date_order', '>=', dt_from),
             ('date_order', '<=', dt_to),
-            ('state', 'in', ['sale', 'done']),
+            ('state', 'in', ['sale']),
         ])
         total_sales = sum(sales_orders.mapped('amount_total'))
         order_count = len(sales_orders)
-        avg_order_value = total_sales / order_count if order_count else 0.0
 
         quotation_orders = self.env['sale.order'].search([
             ('date_order', '>=', dt_from),
             ('date_order', '<=', dt_to),
-            ('state', 'in', ['sent']),
+            ('state', 'in', ['sent','sale']),
         ])
         total_quotations = sum(quotation_orders.mapped('amount_total'))
         quotation_count = len(quotation_orders)
+        close_rate_value = (total_sales / total_quotations * 100) if total_quotations else 0.0
+        close_rate_count = (order_count / quotation_count * 100) if quotation_count else 0.0
         contract_orders = self.env['contract.management'].search([
             ('signature_date', '>=', dt_from),
             ('signature_date', '<=', dt_to),
@@ -147,12 +148,13 @@ class SalesDashboard(models.AbstractModel):
         return {
             'kpis': {
                 'total_sales': total_sales,
-                'avg_order_value': avg_order_value,
+        
                 'order_count': order_count,
                 'total_quotations': total_quotations,
+                'close_rate_value': round(close_rate_value, 1),
+                'close_rate_count': round(close_rate_count, 1),
                 'quotation_count': (quotation_count),
-                'total_contract': total_contract,
-                'contract_count': contract_count,
+
                 'category_count': category_count,
             },
             'charts': {

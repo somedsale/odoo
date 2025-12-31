@@ -38,6 +38,7 @@ class AccountReceipt(models.Model):
         'ir.attachment',
         string="Tệp đính kèm",
     )
+    bank_id = fields.Many2one('res.bank', string='Ngân hàng')
     @api.model_create_multi
     def create(self, vals_list):
         # xử lý sequence trước
