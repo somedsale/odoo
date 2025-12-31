@@ -23,6 +23,7 @@
                                 <field name="amount" widget="monetary"/>
                                 <field name="currency_id" invisible="1" optional="hide"/>
                                 <field name="payment_method"/>
+                                <field name="bank_id" invisible="payment_method != 'bank'"/>
                                 <field name="note" string="Nội dung thu"/>
                             </group>
                             <group>

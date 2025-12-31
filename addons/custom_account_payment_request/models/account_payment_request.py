@@ -41,7 +41,7 @@ class AccountingPaymentRequest(models.Model):
         ('cash', 'Tiền mặt'),
         ('bank', 'Chuyển khoản')
     ], string="Loại thanh toán", default='cash',required=True)
-    bankids = fields.Many2one('res.partner.bank', string="Tài khoản ngân hàng" , domain="[('partner_id', '=', receive_person)]")
+    bankids = fields.Many2one('res.partner.bank', string="Tài khoản người nhận" , domain="[('partner_id', '=', receive_person)]")
     note = fields.Text(string="Nội dung")
     state = fields.Selection([
         ('draft', 'Nháp'),
@@ -54,6 +54,7 @@ class AccountingPaymentRequest(models.Model):
         ('not yet', 'Chưa chi'),
         ('paid', 'Đã chi'),
     ], default='not yet')
+    bank_id = fields.Many2one('res.bank', string="Ngân hàng")
     @api.onchange('cost_classification')
     def _onchange_cost_classification(self):
         """Khi đổi Phân loại chi phí -> reset lại Khoản mục cho đúng domain."""

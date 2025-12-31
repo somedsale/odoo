@@ -66,5 +66,19 @@
                 </xpath>
             </field>
         </record>
+        <record id="sale_order_tree_inherit_sales_category" model="ir.ui.view">
+            <field name="name">sale.order.tree.inherit.sales.category</field>
+            <field name="model">sale.order</field>
+            <!-- Tree view mặc định của sale.order -->
+            <field name="inherit_id" ref="sale.view_quotation_tree"/>
+            <field name="arch" type="xml">
+
+                <!-- Chèn sau cột Customer (partner_id) -->
+                <xpath expr="//tree/field[@name='partner_id']" position="after">
+                    <field name="sales_category_ids" widget="many2many_tags" options="{'color_field': 'color'}" string="Hạng mục bán hàng" optional="hide"/>
+                </xpath>
+
+            </field>
+        </record>
     </data>
 </odoo>
