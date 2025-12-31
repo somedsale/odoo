@@ -290,3 +290,11 @@ class BankBalanceWizardLine(models.TransientModel):
         for line in self:
             if line.wizard_id:
                 line.wizard_id._recalc_one_line(line)
+    @api.onchange("bank_id")
+    def _onchange_bank_id(self):
+        for line in self:
+            if line.wizard_id and line.bank_id:
+                line.wizard_id._recalc_one_line(line)
+            else:
+                # chưa chọn bank thì cho phép nhập tay
+                line.need_manual_opening = True

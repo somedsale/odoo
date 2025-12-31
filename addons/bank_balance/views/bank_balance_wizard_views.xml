@@ -14,17 +14,15 @@
                 <notebook>
                     <page string="Danh sách ngân hàng">
                         <field name="line_ids" nolabel="1">
-                            <tree editable="bottom" delete="false">
-                                <field name="bank_id" options="{'no_create': true}"/>
+                            <tree editable="bottom">
+                                <field name="bank_id"/>
+                                <field name="opening_manual" widget="monetary" string="Tồn đầu nhập" invisible="not need_manual_opening" />
+                                <field name="opening_balance" widget="monetary" sum="Tổng tồn đầu"/>
+                                <field name="receipt_amount" widget="monetary" sum="Tổng PS thu"/>
+                                <field name="payment_amount" widget="monetary" sum="Tổng PS chi"/>
+                                <field name="closing_balance" widget="monetary" sum="Tổng tồn cuối"/>
                                 <field name="need_manual_opening" optional="hide"/>
-
-                                <!-- modifier expression -->
-                                <field name="opening_manual" string="Tồn đầu nhập" readonly="not need_manual_opening"/>
-
-                                <field name="opening_balance" sum="Tổng tồn đầu"/>
-                                <field name="receipt_amount" sum="Tổng PS thu"/>
-                                <field name="payment_amount" sum="Tổng PS chi"/>
-                                <field name="closing_balance" sum="Tổng tồn cuối"/>
+                                <field name="currency_id" optional="hide"/>
                             </tree>
                         </field>
                     </page>
