@@ -135,12 +135,12 @@ class SupplierInvoice(models.Model):
                 rec.display_name = f"{rec.invoice_number} - {rec.name}"
             else:
                 rec.display_name = rec.name
-    @api.model
-    def create(self, vals):
-        """Tự động sinh mã hóa đơn nếu chưa có"""
-        if vals.get("name", "New") == "New":
-            vals["name"] = self.env["ir.sequence"].next_by_code("supplier.invoice") or "New"
-        return super().create(vals)
+    # @api.model
+    # def create(self, vals):
+    #     """Tự động sinh mã hóa đơn nếu chưa có"""
+    #     if vals.get("name", "New") == "New":
+    #         vals["name"] = self.env["ir.sequence"].next_by_code("supplier.invoice") or "New"
+    #     return super().create(vals)
 
     @api.depends("contract_id.partner_id", "purchase_id.partner_id")
     def _compute_partner_id(self):
@@ -193,12 +193,31 @@ class SupplierInvoice(models.Model):
             if record.date and record.due_date and record.due_date < record.date:
                 raise ValidationError("Ngày đến hạn không được nhỏ hơn Ngày hóa đơn.")
 
+    # _sql_constraints = [
+    #     ("unique_invoice_number", "unique(invoice_number)", "Số hóa đơn đã tồn tại, vui lòng nhập số khác."),
+    # ]
     _sql_constraints = [
-        ("unique_invoice_number", "unique(invoice_number)", "Số hóa đơn đã tồn tại, vui lòng nhập số khác."),
-    ]
+    (
+        "unique_invoice_number_partner",
+        "unique(partner_id, invoice_number)",
+        "Số hóa đơn đã tồn tại cho nhà cung cấp này, vui lòng nhập số khác.",
+    ),
+]
     @api.model
     def create(self, vals):
+        # 1) Sinh mã (sequence) nếu chưa có
+        if vals.get("name", "New") == "New":
+            vals["name"] = self.env["ir.sequence"].next_by_code("supplier.invoice") or "New"
+
+        # 2) (khuyến nghị) chuẩn hoá invoice_number để tránh dính '' gây unique “ảo”
+        if "invoice_number" in vals:
+            inv = (vals.get("invoice_number") or "").strip()
+            vals["invoice_number"] = inv or False
+
         rec = super().create(vals)
+
+        # 3) Tăng supplier_rank
         if rec.partner_id:
-            rec.partner_id._increase_rank('supplier_rank')
+            rec.partner_id._increase_rank("supplier_rank")
+
         return rec
