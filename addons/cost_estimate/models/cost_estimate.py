@@ -95,6 +95,12 @@ class CostEstimate(models.Model):
         currency_field="currency_id",
         store=False,
     )
+    activity_ids = fields.One2many(
+        'mail.activity',
+        'res_id',
+        domain=[('res_model', '=', 'cost.estimate')],
+        string='Hoạt động',
+    )
 
     @api.depends("sale_order_id")
     def _compute_contract_id(self):

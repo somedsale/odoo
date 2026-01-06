@@ -16,6 +16,7 @@
                 <field name="total_final_tax" string="Tổng dự toán (ST)" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name ="state" widget="badge" decoration-muted="state == 'draft'" decoration-primary="state == 'summitted'" decoration-success="state == 'approved'"/>
                 <field name="currency_id" optional="hide"/>
+                <field name="activity_ids" widget="list_activity" string="Hoạt động" optional="hide"/>
             </tree>
         </field>
     </record>
@@ -103,6 +104,11 @@
                             </field>
                         </page>
                     </notebook>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
                 </sheet>
             </form>
         </field>
