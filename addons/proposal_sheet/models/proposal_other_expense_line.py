@@ -26,7 +26,7 @@ class ProposalOtherExpenseLine(models.Model):
 
     # Nội dung chi / thông tin chính
     content = fields.Char(string='Nội dung chi', required=True, tracking=True)
-    amount = fields.Float(string='Số tiền', required=True, tracking=True,compute ='_compute_amount', store=True)
+    amount = fields.Float(string='Số tiền',tracking=True,compute ='_compute_amount', store=True)
     date = fields.Date(string='Ngày dự chi', default=fields.Date.today, tracking=True)
     object = fields.Many2one('res.partner', string='Đối tượng/NCC')
     note = fields.Text(string='Ghi chú')
