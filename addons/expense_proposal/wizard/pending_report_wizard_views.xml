@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Wizard Form View -->
+    <record id="view_pending_report_wizard_form" model="ir.ui.view">
+        <field name="name">pending.report.wizard.form</field>
+        <field name="model">pending.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Dự kiến thanh toán">
+                <group col="6">
+                    <field name="company_id"/>
+                    <field name="project_id"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                </group>
+
+                <group string="Nguồn dữ liệu" col="6">
+                    <field name="include_material"/>
+                    <field name="include_expense"/>
+                    <field name="include_other"/>
+                </group>
+
+                <group string="Chọn phiếu (nếu muốn lấy đúng phiếu đã chọn)">
+                    <field name="sheet_ids" widget="many2many_tags" options="{'no_create': True}" domain="[('project_id', '=', project_id)]"/>
+                </group>
+
+                <separator string="Danh sách mục (tick chọn để đưa vào report)"/>
+
+                <field name="line_ids" nolabel="1">
+                    <tree create="false" delete="false">
+                        <field name="selected" widget="boolean_toggle"/>
+                        <field name="date"/>
+                        <field name="sheet_id"/>
+                        <field name="proposal_type"/>
+                        <field name="cost_classification"/>
+                        <field name="object_name"/>
+                        <field name="content"/>
+                        <field name="amount" sum="Tổng"/>
+                        <field name="project_name"/>
+                        <field name="note"/>
+                    </tree>
+                </field>
+
+                <footer>
+                    <button name="action_load_lines" type="object" string="Nạp dữ liệu" class="btn-primary"/>
+
+                    <button name="action_print_html" type="object" string="In HTML" class="btn-secondary"/>
+
+                    <button name="action_print_pdf" type="object" string="In PDF" class="btn-secondary"/>
+
+                    <button string="Đóng" special="cancel" class="btn-link"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action open wizard -->
+    <record id="action_pending_report_wizard" model="ir.actions.act_window">
+        <field name="name">Dự kiến thanh toán</field>
+        <field name="res_model">pending.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Menu (đổi parent theo menu của bạn) -->
+    <menuitem id="menu_pending_report_wizard" name="Dự kiến thanh toán" parent="menu_expense_proposal_root" action="action_pending_report_wizard" sequence="30"/>
+
+</odoo>
