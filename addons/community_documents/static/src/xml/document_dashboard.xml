@@ -93,7 +93,12 @@
 
             <button class="btn btn-light ms-2" t-on-click="toggleSelectAll">
               <i class="fa fa-check-square-o me-1"/>
-              <t t-esc="state.allSelected ? 'Unselect all' : 'Select all'"/>
+              <t t-if="state.allSelected" >
+                Unselect all
+              </t>
+              <t t-else="" >
+                Select all
+              </t>
             </button>
           </div>
         </header>
@@ -121,46 +126,47 @@
                   <i class="fa fa-folder me-2"/> All
                 </button>
 
-              <t t-foreach="(state.folderTree || [])" t-as="f" t-key="f.id">
-              <div class="o_comm_docs_nav_row">
+<t t-foreach="(state.folderRows || [])" t-as="f" t-key="f.id">
+  <t t-if="f.isVisible">
+    <div class="o_comm_docs_nav_row">
 
-                <!-- caret -->
-                <button class="o_comm_docs_nav_caret"
-                        type="button"
-                        t-att-class="f.hasChildren ? '' : 'o_empty'"
-                        t-att-data-id="f.id"
-                        t-on-click.stop="onToggleFolder">
-                  <i t-att-class="f.isExpanded ? 'fa fa-caret-down' : 'fa fa-caret-right'"/>
-                </button>
+      <!-- caret -->
+      <button class="o_comm_docs_nav_caret"
+              type="button"
+              t-att-class="f.hasChildren ? '' : 'o_empty'"
+              t-att-data-id="f.id"
+              t-on-click.stop="onToggleFolder">
+        <i t-att-class="f.isExpanded ? 'fa fa-caret-down' : 'fa fa-caret-right'"/>
+      </button>
 
-                <!-- ✅ indent wrapper -->
-              <div class="o_comm_docs_nav_itemwrap"
-                  t-att-style="'padding-left:' + (f.level * 16) + 'px'">
+      <!-- item (indent bằng margin-left cho chắc) -->
+      <div class="o_comm_docs_nav_itemwrap"
+           t-att-style="'margin-left:' + (f.level * 16) + 'px'">
+        <button class="o_comm_docs_nav_item"
+                t-att-class="state.folderId === f.id ? 'active' : ''"
+                t-att-data-id="f.id"
+                t-on-click="onFolderClick">
+          <i class="fa fa-folder-o me-2"/>
+          <span class="o_comm_docs_ellipsis"><t t-esc="f.name"/></span>
+        </button>
+      </div>
 
+      <div class="o_comm_docs_nav_actions">
+        <button class="btn btn-sm btn-light" title="Edit" t-att-data-id="f.id" t-on-click.stop="onEditFolder">
+          <i class="fa fa-pencil"/>
+        </button>
+        <button class="btn btn-sm btn-light" title="Share" t-att-data-id="f.id" t-on-click.stop="onShareFolder">
+          <i class="fa fa-link"/>
+        </button>
+        <button class="btn btn-sm btn-light" title="Delete" t-att-data-id="f.id" t-on-click.stop="onDeleteFolder">
+          <i class="fa fa-trash"/>
+        </button>
+      </div>
 
-                  <button class="o_comm_docs_nav_item"
-                          t-att-class="state.folderId === f.id ? 'active' : ''"
-                          t-att-data-id="f.id"
-                          t-on-click="onFolderClick">
-                    <i class="fa fa-folder-o me-2"/>
-                    <span class="o_comm_docs_ellipsis"><t t-esc="f.name"/></span>
-                  </button>
-                </div>
+    </div>
+  </t>
+</t>
 
-                <div class="o_comm_docs_nav_actions">
-                  <button class="btn btn-sm btn-light" title="Edit" t-att-data-id="f.id" t-on-click.stop="onEditFolder">
-                    <i class="fa fa-pencil"/>
-                  </button>
-                  <button class="btn btn-sm btn-light" title="Share" t-att-data-id="f.id" t-on-click.stop="onShareFolder">
-                    <i class="fa fa-link"/>
-                  </button>
-                  <button class="btn btn-sm btn-light" title="Delete" t-att-data-id="f.id" t-on-click.stop="onDeleteFolder">
-                    <i class="fa fa-trash"/>
-                  </button>
-                </div>
-              </div>
-
-              </t>
 
               </div>
             </section>
