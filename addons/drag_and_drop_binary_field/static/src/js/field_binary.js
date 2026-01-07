@@ -3,8 +3,6 @@
 const FIELD_WIDGET_SEL = ".o_field_many2many_binary";
 const ROW_SEL = "tr.o_data_row";
 const ACTIVE_ROW_CLASS = "o_selected_row";
-
-// ưu tiên đúng cột field
 const FIELD_NAME = "attachment_ids";
 
 if (!window.__m2mBinaryDragDropInstalled) {
@@ -49,10 +47,8 @@ if (!window.__m2mBinaryDragDropInstalled) {
 
     function preferredCell(row) {
         if (!row) return null;
-        // đúng cột field
         const td = row.querySelector(`td[data-name="${FIELD_NAME}"]`);
         if (td) return td;
-        // fallback: tìm cell có widget
         return row.querySelector(FIELD_WIDGET_SEL)?.closest("td") || null;
     }
 
@@ -75,13 +71,7 @@ if (!window.__m2mBinaryDragDropInstalled) {
         return new Promise((r) => setTimeout(r, ms));
     }
 
-    /**
-     * Key fix:
-     * - ép active row/cell
-     * - đợi widget render + input xuất hiện (retry)
-     */
     async function ensureReadyInput(evTarget) {
-        // Nếu drop ngay trên widget sẵn có
         let fieldEl = findFieldElFrom(evTarget);
         if (fieldEl) {
             const input = findInput(fieldEl);
@@ -93,20 +83,11 @@ if (!window.__m2mBinaryDragDropInstalled) {
 
         const cell = preferredCell(row) || row;
 
-        // 1) ép active row bằng click đúng cell attachment
-        if (!row.classList.contains(ACTIVE_ROW_CLASS)) {
-            cell.click?.();
-            await wait(0);
-        } else {
-            // row active rồi nhưng widget chưa render => click lại cell
-            cell.click?.();
-            await wait(0);
-        }
+        // ép active row/cell để widget render đúng
+        cell.click?.();
+        await wait(0);
 
-        // 2) retry chờ widget + input (render list view có thể chậm)
-        //    tổng ~ 10 * 80ms = 800ms, đủ cho hầu hết case
         for (let i = 0; i < 10; i++) {
-            // tìm widget trong cell hoặc trong row
             fieldEl =
                 cell.querySelector?.(FIELD_WIDGET_SEL) ||
                 row.querySelector?.(FIELD_WIDGET_SEL) ||
@@ -116,7 +97,7 @@ if (!window.__m2mBinaryDragDropInstalled) {
                 const input = findInput(fieldEl);
                 if (input) return input;
             }
-            await wait(i < 2 ? 0 : 80); // vài vòng đầu tick nhanh, sau đó mới delay
+            await wait(i < 2 ? 0 : 80);
         }
 
         return null;
@@ -124,10 +105,20 @@ if (!window.__m2mBinaryDragDropInstalled) {
 
     let hoverEl = null;
 
+    // NEW: global drag mode để show “drop zones”
+    let dragDepth = 0;
+    function setGlobalDragMode(on) {
+        document.body.classList.toggle("o_drag_files", !!on);
+    }
+
     document.addEventListener(
         "dragenter",
         (ev) => {
             if (!hasFiles(ev)) return;
+
+            // bật global mode khi file vừa vào cửa sổ
+            dragDepth++;
+            if (dragDepth === 1) setGlobalDragMode(true);
 
             const row = findRow(ev.target);
             const fieldEl = findFieldElFrom(ev.target);
@@ -165,8 +156,14 @@ if (!window.__m2mBinaryDragDropInstalled) {
         (ev) => {
             if (!hasFiles(ev)) return;
             prevent(ev);
-            if (hoverEl) hoverEl.classList.remove("o_drag_drop_active");
-            hoverEl = null;
+
+            // giảm depth; khi ra khỏi window => tắt global mode
+            dragDepth = Math.max(0, dragDepth - 1);
+            if (dragDepth === 0) {
+                setGlobalDragMode(false);
+                if (hoverEl) hoverEl.classList.remove("o_drag_drop_active");
+                hoverEl = null;
+            }
         },
         true
     );
@@ -182,6 +179,10 @@ if (!window.__m2mBinaryDragDropInstalled) {
 
             prevent(ev);
 
+            // tắt global mode ngay khi drop
+            dragDepth = 0;
+            setGlobalDragMode(false);
+
             if (hoverEl) hoverEl.classList.remove("o_drag_drop_active");
             hoverEl = null;
 
@@ -189,9 +190,7 @@ if (!window.__m2mBinaryDragDropInstalled) {
             if (!files.length) return;
 
             const input = await ensureReadyInput(ev.target);
-
             if (!input) {
-                // Không spam warning nữa, chỉ log nhẹ (bạn có thể comment dòng này)
                 console.debug("[DD] input file chưa sẵn (row chưa lưu hoặc widget chưa render kịp).");
                 return;
             }
