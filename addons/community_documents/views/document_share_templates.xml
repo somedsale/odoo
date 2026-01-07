@@ -1,78 +1,802 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
+
+  <!-- =========================================================
+       SHARE: DOCUMENT PAGE (single file)
+  ========================================================== -->
   <template id="share_document_page">
     <t t-set="doc" t-value="doc"/>
+    <t t-set="company" t-value="request.env.company"/>
+    <t t-set="ICON_BASE" t-value="'/web/static/img/mimetypes/'"/>
+
+    <!-- icon name for this document -->
+    <t t-set="mt" t-value="doc.mimetype or ''"/>
+    <t t-set="icon_name" t-value="'unknown.svg'"/>
+    <t t-if="doc.attachment_id and doc.attachment_id.type == 'url'">
+      <t t-set="icon_name" t-value="'text.svg'"/>
+    </t>
+    <t t-elif="mt == 'application/pdf'">
+      <t t-set="icon_name" t-value="'pdf.svg'"/>
+    </t>
+    <t t-elif="mt and mt.startswith('image/')">
+      <t t-if="mt == 'image/svg+xml'">
+        <t t-set="icon_name" t-value="'vector.svg'"/>
+      </t>
+      <t t-else="">
+        <t t-set="icon_name" t-value="'image.svg'"/>
+      </t>
+    </t>
+    <t t-elif="mt in ('application/vnd.ms-excel',
+                      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                      'application/vnd.oasis.opendocument.spreadsheet',
+                      'text/csv')">
+      <t t-set="icon_name" t-value="'spreadsheet.svg'"/>
+    </t>
+    <t t-elif="mt in ('application/vnd.ms-powerpoint',
+                      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                      'application/vnd.oasis.opendocument.presentation')">
+      <t t-set="icon_name" t-value="'presentation.svg'"/>
+    </t>
+    <t t-elif="mt in ('application/javascript','text/javascript')">
+      <t t-set="icon_name" t-value="'javascript.svg'"/>
+    </t>
+    <t t-elif="'corel' in mt or 'cdr' in mt">
+      <t t-set="icon_name" t-value="'vector.svg'"/>
+    </t>
+    <t t-elif="mt and (mt.startswith('text/') or 'word' in mt or 'officedocument.wordprocessingml' in mt or 'odt' in mt)">
+      <t t-set="icon_name" t-value="'text.svg'"/>
+    </t>
+
     <html>
       <head>
         <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <title><t t-esc="doc.name"/></title>
+
         <style>
-          body{font-family:Arial;margin:20px;}
-          .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
-          .box{border:1px solid #ddd;border-radius:10px;padding:12px;}
-          iframe{width:100%;height:80vh;border:1px solid #ddd;border-radius:10px;}
-          img{max-width:100%;border:1px solid #ddd;border-radius:10px;}
-          a.btn{display:inline-block;padding:8px 12px;border:1px solid #444;border-radius:8px;text-decoration:none;}
+          :root{
+            --bg:#f5f7fb;
+            --card:#ffffff;
+            --text:#111827;
+            --muted:#6b7280;
+            --line:#e5e7eb;
+            --brand:#2563eb;
+            --brand2:#1d4ed8;
+            --shadow: 0 10px 30px rgba(17,24,39,.08);
+            --radius: 16px;
+          }
+          *{box-sizing:border-box}
+          html,body{height:100%}
+          body{
+            margin:0;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+            color:var(--text);
+            background:var(--bg);
+          }
+          a{color:inherit}
+          .topbar{
+            position:sticky;top:0;z-index:10;
+            background:rgba(245,247,251,.88);
+            backdrop-filter:saturate(180%) blur(10px);
+            border-bottom:1px solid var(--line);
+          }
+          .topbar .inner{
+            max-width:1200px;margin:0 auto;
+            padding:14px 18px;
+            display:flex;align-items:center;justify-content:space-between;gap:14px;
+          }
+
+          .brand{
+            display:flex;align-items:center;gap:14px;min-width:0;
+          }
+          .brand-logo{
+            height:44px; width:auto; display:block;
+            border-radius:10px;
+          }
+          .brand-fallback{
+            height:44px; padding:0 14px;
+            border-radius:12px;
+            display:flex;align-items:center;justify-content:center;
+            font-weight:900;
+            background:#fff;
+            border:1px solid var(--line);
+          }
+
+          .title{
+            min-width:0;
+            display:flex;align-items:center;gap:12px;
+            padding-left:6px;
+            border-left:1px solid var(--line);
+          }
+          .filebadge{
+            width:38px;height:38px;border-radius:12px;
+            display:grid;place-items:center;
+            border:1px solid var(--line);
+            background:#fff;
+          }
+          .filebadge img{width:20px;height:20px;display:block}
+          .title h1{
+            font-size:16px;line-height:1.2;margin:0;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+            max-width:56vw;
+          }
+          .sub{
+            margin-top:2px;font-size:12px;color:var(--muted);
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+          }
+
+          .actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+          .pill{
+            display:inline-flex;align-items:center;
+            padding:6px 10px;border-radius:999px;
+            border:1px solid var(--line);
+            background:#fff;
+            font-size:12px;color:var(--muted);
+            gap:8px;
+          }
+          .btn{
+            display:inline-flex;align-items:center;gap:8px;
+            padding:10px 12px;border-radius:12px;
+            border:1px solid var(--line);
+            background:#fff;
+            text-decoration:none;
+            font-weight:800;font-size:13px;
+            transition:.15s ease;
+            white-space:nowrap;
+          }
+          .btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(17,24,39,.08)}
+          .btn.primary{
+            border-color:transparent;
+            background:linear-gradient(135deg,var(--brand),var(--brand2));
+            color:#fff;
+          }
+
+          .wrap{max-width:1200px;margin:0 auto;padding:18px;}
+          .card{
+            background:var(--card);
+            border:1px solid var(--line);
+            border-radius:var(--radius);
+            box-shadow:var(--shadow);
+            overflow:hidden;
+          }
+          .card-head{
+            padding:12px 14px;
+            border-bottom:1px solid var(--line);
+            display:flex;align-items:center;justify-content:space-between;gap:10px;
+          }
+          .meta{
+            font-size:12px;color:var(--muted);
+            display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+          }
+          iframe{
+            width:100%;
+            height:78vh;
+            border:0;
+            background:#fff;
+          }
+          .imgwrap{
+            padding:14px;
+            display:flex;justify-content:center;
+            background:#fff;
+          }
+          img.preview-img{
+            max-width:100%;
+            border-radius:14px;
+            border:1px solid var(--line);
+            box-shadow:0 8px 24px rgba(17,24,39,.08);
+          }
+          .placeholder{
+            padding:22px;
+            display:flex;align-items:center;justify-content:center;
+            flex-direction:column;
+            gap:12px;
+            background:#fff;
+            min-height:320px;
+            text-align:center;
+          }
+          .placeholder .bigicon{
+            width:56px;height:56px;border-radius:18px;
+            border:1px solid var(--line);
+            display:grid;place-items:center;
+            background:linear-gradient(180deg,#fff,#f8fafc);
+          }
+          .placeholder .bigicon img{width:26px;height:26px;display:block}
+          .placeholder p{margin:0;color:var(--muted);font-size:13px}
+          .footer{
+            padding:12px 16px 22px;
+            color:var(--muted);
+            font-size:12px;
+            text-align:center;
+          }
         </style>
       </head>
+
       <body>
-        <div class="top">
-          <h2 style="margin:0"><t t-esc="doc.name"/></h2>
-          <t t-if="share.allow_download">
-            <a class="btn" t-att-href="'/docs/s/%s/content?download=1' % share.token">Download</a>
-          </t>
+        <div class="topbar">
+          <div class="inner">
+            <div class="brand">
+              <t t-if="company and company.logo">
+                <img class="brand-logo" t-att-src="image_data_uri(company.logo)" alt="Company Logo"/>
+              </t>
+              <t t-else="">
+                <div class="brand-fallback">Somed</div>
+              </t>
+
+              <div class="title">
+                <div class="filebadge" aria-hidden="true">
+                  <img t-att-src="ICON_BASE + icon_name" alt="icon"/>
+                </div>
+                <div style="min-width:0">
+                  <h1><t t-esc="doc.name"/></h1>
+                  <div class="sub"><t t-esc="doc.mimetype or ''"/></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <span class="pill">
+                <span>🔗</span>
+                <t t-if="share.allow_download">Cho phép tải xuống</t>
+                <t t-else="">Chỉ xem</t>
+              </span>
+
+              <t t-if="share.allow_download">
+                <a class="btn primary" t-att-href="'/docs/s/%s/content?download=1' % share.token">⬇ Tải</a>
+              </t>
+            </div>
+          </div>
         </div>
 
-        <div class="box">
-          <t t-if="doc.attachment_id and doc.attachment_id.type == 'url'">
-            <a t-att-href="doc.attachment_id.url" target="_blank"><t t-esc="doc.attachment_id.url"/></a>
-          </t>
-          <t t-elif="doc.mimetype == 'application/pdf'">
-            <iframe t-att-src="'/docs/s/%s/content?download=0' % share.token"></iframe>
-          </t>
-          <t t-elif="doc.mimetype and doc.mimetype.startswith('image/')">
-            <img t-att-src="'/docs/s/%s/content?download=0' % share.token"/>
-          </t>
-          <t t-else="">
-            <p>Preview not available. Use Download.</p>
-          </t>
+        <div class="wrap">
+          <div class="card">
+            <div class="card-head">
+              <div style="font-weight:900">Xem trước</div>
+              <div class="meta">
+                <span><t t-esc="doc.mimetype or ''"/></span>
+              </div>
+            </div>
+
+            <div class="preview">
+              <t t-if="doc.attachment_id and doc.attachment_id.type == 'url'">
+                <div class="placeholder">
+                  <div class="bigicon"><img t-att-src="ICON_BASE + 'text.svg'" alt="link"/></div>
+                  <p>Đây là liên kết. Nhấn để mở trong tab mới.</p>
+                  <a class="btn primary" t-att-href="doc.attachment_id.url" target="_blank" rel="noopener">Mở liên kết</a>
+                  <p style="max-width:900px;word-break:break-word">
+                    <t t-esc="doc.attachment_id.url"/>
+                  </p>
+                </div>
+              </t>
+
+              <t t-elif="doc.mimetype == 'application/pdf'">
+                <iframe t-att-src="'/docs/s/%s/content?download=0' % share.token"></iframe>
+              </t>
+
+              <t t-elif="doc.mimetype and doc.mimetype.startswith('image/')">
+                <div class="imgwrap">
+                  <img class="preview-img" t-att-src="'/docs/s/%s/content?download=0' % share.token" alt="preview"/>
+                </div>
+              </t>
+
+              <t t-else="">
+                <div class="placeholder">
+                  <div class="bigicon"><img t-att-src="ICON_BASE + 'unknown.svg'" alt="file"/></div>
+                  <p>Định dạng này không hỗ trợ xem trước trực tiếp.</p>
+                  <t t-if="share.allow_download">
+                    <a class="btn primary" t-att-href="'/docs/s/%s/content?download=1' % share.token">⬇ Tải file</a>
+                  </t>
+                  <t t-else="">
+                    <p>File này đang ở chế độ “Chỉ xem”.</p>
+                  </t>
+                </div>
+              </t>
+            </div>
+          </div>
+
+          <div class="footer">
+            Shared via Somed Documents • Powered by Odoo
+          </div>
         </div>
       </body>
     </html>
   </template>
 
+
+  <!-- =========================================================
+       SHARE: FOLDER PAGE (list + preview inline)
+  ========================================================== -->
   <template id="share_folder_page">
+    <t t-set="company" t-value="request.env.company"/>
+    <t t-set="ICON_BASE" t-value="'/web/static/img/mimetypes/'"/>
+
     <html>
       <head>
         <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <title><t t-esc="folder.name"/></title>
+
         <style>
-          body{font-family:Arial;margin:20px;}
-          .item{display:flex;justify-content:space-between;gap:12px;padding:10px;border-bottom:1px solid #eee;}
-          .name{font-weight:600;}
-          a.btn{display:inline-block;padding:6px 10px;border:1px solid #444;border-radius:8px;text-decoration:none;}
+          :root{
+            --bg:#f5f7fb;
+            --card:#ffffff;
+            --text:#111827;
+            --muted:#6b7280;
+            --line:#e5e7eb;
+            --brand:#2563eb;
+            --brand2:#1d4ed8;
+            --shadow: 0 10px 30px rgba(17,24,39,.08);
+            --radius: 16px;
+          }
+          *{box-sizing:border-box}
+          html,body{height:100%}
+          body{
+            margin:0;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+            color:var(--text);
+            background:var(--bg);
+          }
+          a{color:inherit}
+
+          .topbar{
+            position:sticky;top:0;z-index:10;
+            background:rgba(245,247,251,.88);
+            backdrop-filter:saturate(180%) blur(10px);
+            border-bottom:1px solid var(--line);
+          }
+          .topbar .inner{
+            max-width:1200px;margin:0 auto;
+            padding:14px 18px;
+            display:flex;align-items:center;justify-content:space-between;gap:14px;
+          }
+
+          .brand{
+            display:flex;align-items:center;gap:14px;min-width:0;
+          }
+          .brand-logo{
+            height:44px; width:auto; display:block;
+            border-radius:10px;
+          }
+          .brand-fallback{
+            height:44px; padding:0 14px;
+            border-radius:12px;
+            display:flex;align-items:center;justify-content:center;
+            font-weight:900;
+            background:#fff;
+            border:1px solid var(--line);
+          }
+
+          .title{
+            min-width:0;
+            display:flex;align-items:center;gap:12px;
+            padding-left:6px;
+            border-left:1px solid var(--line);
+          }
+          .folderbadge{
+            width:38px;height:38px;border-radius:12px;
+            display:grid;place-items:center;
+            border:1px solid var(--line);
+            background:#fff;
+            font-size:18px;
+          }
+          .title h1{
+            font-size:16px;line-height:1.2;margin:0;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+            max-width:56vw;
+          }
+          .sub{
+            margin-top:2px;font-size:12px;color:var(--muted);
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+          }
+
+          .actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+          .pill{
+            display:inline-flex;align-items:center;
+            padding:6px 10px;border-radius:999px;
+            border:1px solid var(--line);
+            background:#fff;
+            font-size:12px;color:var(--muted);
+            gap:8px;
+          }
+
+          .wrap{max-width:1200px;margin:0 auto;padding:18px;}
+          .layout{
+            display:grid;
+            grid-template-columns: 1fr;
+            gap:14px;
+          }
+          @media (min-width: 992px){
+            .layout{grid-template-columns: 380px 1fr;}
+          }
+
+          .card{
+            background:var(--card);
+            border:1px solid var(--line);
+            border-radius:var(--radius);
+            box-shadow:var(--shadow);
+            overflow:hidden;
+            min-height: 520px;
+          }
+
+          .left-head{
+            padding:12px 14px;
+            border-bottom:1px solid var(--line);
+            display:flex;align-items:center;gap:10px;
+            justify-content:space-between;
+          }
+          .left-head .ttl{font-weight:900}
+          .search{
+            width:100%;
+            max-width:220px;
+            padding:9px 12px;
+            border-radius:12px;
+            border:1px solid var(--line);
+            outline:none;
+          }
+
+          .list{
+            max-height: calc(100vh - 170px);
+            overflow:auto;
+          }
+          .row{
+            display:flex;align-items:center;gap:12px;
+            padding:12px 14px;
+            border-top:1px solid var(--line);
+            cursor:pointer;
+            transition:.12s ease;
+          }
+          .row:hover{background:#f8fafc}
+          .row.active{
+            background:#eff6ff;
+            box-shadow: inset 3px 0 0 var(--brand);
+          }
+
+          .ico{
+            width:38px;height:38px;border-radius:12px;
+            border:1px solid var(--line);
+            background:linear-gradient(180deg,#fff,#f8fafc);
+            display:grid;place-items:center;
+            flex:0 0 auto;
+          }
+          .ico img{width:18px;height:18px;display:block}
+
+          .info{min-width:0;flex:1}
+          .name{
+            font-weight:900;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+          }
+          .meta{
+            font-size:12px;color:var(--muted);
+            margin-top:2px;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+          }
+
+          .right-head{
+            padding:12px 14px;
+            border-bottom:1px solid var(--line);
+            display:flex;align-items:center;justify-content:space-between;gap:10px;
+          }
+          .right-head .rname{
+            font-weight:900;
+            min-width:0;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+          }
+          .btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+          .btn{
+            display:inline-flex;align-items:center;gap:8px;
+            padding:10px 12px;border-radius:12px;
+            border:1px solid var(--line);
+            background:#fff;
+            text-decoration:none;
+            font-weight:900;font-size:13px;
+            transition:.15s ease;
+            white-space:nowrap;
+          }
+          .btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(17,24,39,.08)}
+          .btn.primary{
+            border-color:transparent;
+            background:linear-gradient(135deg,var(--brand),var(--brand2));
+            color:#fff;
+          }
+
+          .preview{
+            background:#fff;
+          }
+          iframe{
+            width:100%;
+            height: calc(100vh - 240px);
+            min-height: 520px;
+            border:0;
+            background:#fff;
+          }
+          .imgwrap{
+            padding:14px;
+            display:flex;justify-content:center;
+            background:#fff;
+          }
+          img.preview-img{
+            max-width:100%;
+            border-radius:14px;
+            border:1px solid var(--line);
+            box-shadow:0 8px 24px rgba(17,24,39,.08);
+          }
+          .placeholder{
+            padding:22px;
+            display:flex;align-items:center;justify-content:center;
+            flex-direction:column;
+            gap:12px;
+            background:#fff;
+            min-height: 520px;
+            text-align:center;
+          }
+          .placeholder .bigicon{
+            width:56px;height:56px;border-radius:18px;
+            border:1px solid var(--line);
+            display:grid;place-items:center;
+            background:linear-gradient(180deg,#fff,#f8fafc);
+          }
+          .placeholder .bigicon img{width:26px;height:26px;display:block}
+          .placeholder p{margin:0;color:var(--muted);font-size:13px}
+          .footer{
+            padding:12px 0 22px;
+            color:var(--muted);
+            font-size:12px;
+            text-align:center;
+          }
         </style>
       </head>
-      <body>
-        <h2 style="margin-top:0">Folder: <t t-esc="folder.name"/></h2>
 
-        <div>
-          <t t-foreach="docs" t-as="d" t-key="d.id">
-            <div class="item">
-              <div>
-                <div class="name"><t t-esc="d.name"/></div>
-                <div style="opacity:.7;font-size:12px;"><t t-esc="d.mimetype or ''"/></div>
+      <body>
+        <div class="topbar">
+          <div class="inner">
+            <div class="brand">
+              <t t-if="company and company.logo">
+                <img class="brand-logo" t-att-src="image_data_uri(company.logo)" alt="Company Logo"/>
+              </t>
+              <t t-else="">
+                <div class="brand-fallback">Somed</div>
+              </t>
+
+              <div class="title">
+                <div class="folderbadge" aria-hidden="true">📁</div>
+                <div style="min-width:0">
+                  <h1><t t-esc="folder.name"/></h1>
+                  <div class="sub"><t t-esc="len(docs)"/> items</div>
+                </div>
               </div>
-              <div>
-                <a class="btn" t-att-href="'/docs/s/%s/content?doc_id=%s&amp;download=0' % (share.token, d.id)" target="_blank">View</a>
-                <t t-if="share.allow_download">
-                  <a class="btn" t-att-href="'/docs/s/%s/content?doc_id=%s&amp;download=1' % (share.token, d.id)">Download</a>
+            </div>
+
+            <div class="actions">
+              <span class="pill">
+                <span>🔗</span>
+                <t t-if="share.allow_download">Cho phép tải xuống</t>
+                <t t-else="">Chỉ xem</t>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="wrap">
+          <div class="layout">
+
+            <!-- LEFT: list -->
+            <div class="card">
+              <div class="left-head">
+                <div class="ttl">Files</div>
+                <input class="search" id="jsSearch" placeholder="Search..."/>
+              </div>
+
+              <div class="list" id="jsList">
+                <t t-foreach="docs" t-as="d" t-key="d.id">
+                  <t t-set="mt" t-value="d.mimetype or ''"/>
+                  <t t-set="icon_name" t-value="'unknown.svg'"/>
+
+                  <t t-if="d.attachment_id and d.attachment_id.type == 'url'">
+                    <t t-set="icon_name" t-value="'text.svg'"/>
+                  </t>
+                  <t t-elif="mt == 'application/pdf'">
+                    <t t-set="icon_name" t-value="'pdf.svg'"/>
+                  </t>
+                  <t t-elif="mt and mt.startswith('image/')">
+                    <t t-if="mt == 'image/svg+xml'">
+                      <t t-set="icon_name" t-value="'vector.svg'"/>
+                    </t>
+                    <t t-else="">
+                      <t t-set="icon_name" t-value="'image.svg'"/>
+                    </t>
+                  </t>
+                  <t t-elif="mt in ('application/vnd.ms-excel',
+                                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                    'application/vnd.oasis.opendocument.spreadsheet',
+                                    'text/csv')">
+                    <t t-set="icon_name" t-value="'spreadsheet.svg'"/>
+                  </t>
+                  <t t-elif="mt in ('application/vnd.ms-powerpoint',
+                                    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                                    'application/vnd.oasis.opendocument.presentation')">
+                    <t t-set="icon_name" t-value="'presentation.svg'"/>
+                  </t>
+                  <t t-elif="mt in ('application/javascript','text/javascript')">
+                    <t t-set="icon_name" t-value="'javascript.svg'"/>
+                  </t>
+                  <t t-elif="'corel' in mt or 'cdr' in mt">
+                    <t t-set="icon_name" t-value="'vector.svg'"/>
+                  </t>
+                  <t t-elif="mt and (mt.startswith('text/') or 'word' in mt or 'officedocument.wordprocessingml' in mt or 'odt' in mt)">
+                    <t t-set="icon_name" t-value="'text.svg'"/>
+                  </t>
+
+                  <div class="row js-doc-row"
+                       t-att-data-id="d.id"
+                       t-att-data-name="d.name"
+                       t-att-data-mimetype="d.mimetype or ''"
+                       t-att-data-icon="ICON_BASE + icon_name"
+                       t-att-data-preview="'/docs/s/%s/content?doc_id=%s&amp;download=0' % (share.token, d.id)"
+                       t-att-data-download="'/docs/s/%s/content?doc_id=%s&amp;download=1' % (share.token, d.id)"
+                       t-att-data-url="(d.attachment_id.url if (d.attachment_id and d.attachment_id.type == 'url') else '')">
+
+                    <div class="ico" aria-hidden="true">
+                      <img t-att-src="ICON_BASE + icon_name" alt="icon"/>
+                    </div>
+
+                    <div class="info">
+                      <div class="name"><t t-esc="d.name"/></div>
+                      <div class="meta"><t t-esc="d.mimetype or ''"/></div>
+                    </div>
+                  </div>
                 </t>
               </div>
             </div>
-          </t>
+
+            <!-- RIGHT: preview -->
+            <div class="card">
+              <div class="right-head">
+                <div class="rname" id="jsPreviewName">Chọn file để xem</div>
+                <div class="btns">
+                  <a class="btn primary" id="jsOpen" href="#" target="_blank" rel="noopener">👁 Mở</a>
+
+                  <t t-if="share.allow_download">
+                    <a class="btn" id="jsDownload" href="#">⬇ Tải</a>
+                  </t>
+                </div>
+              </div>
+
+              <div class="preview">
+                <iframe id="jsFrame" src="about:blank" style="display:none"></iframe>
+
+                <div class="imgwrap" id="jsImgWrap" style="display:none">
+                  <img class="preview-img" id="jsImg" src="" alt="preview"/>
+                </div>
+
+                <div class="placeholder" id="jsPlaceholder">
+                  <div class="bigicon"><img id="jsBigIcon" t-att-src="ICON_BASE + 'unknown.svg'" alt="file"/></div>
+                  <p id="jsHint">Chọn một file ở danh sách bên trái để xem trước.</p>
+                  <a class="btn primary" id="jsOpenLink" href="#" target="_blank" rel="noopener" style="display:none">Mở liên kết</a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="footer">
+            Shared via Somed Co., Ltd
+          </div>
         </div>
+
+        <script>
+          (function () {
+            const rows = Array.from(document.querySelectorAll('.js-doc-row'));
+            const search = document.getElementById('jsSearch');
+
+            const elName = document.getElementById('jsPreviewName');
+            const elOpen = document.getElementById('jsOpen');
+            const elDownload = document.getElementById('jsDownload');
+
+            const frame = document.getElementById('jsFrame');
+            const imgWrap = document.getElementById('jsImgWrap');
+            const img = document.getElementById('jsImg');
+
+            const placeholder = document.getElementById('jsPlaceholder');
+            const bigIcon = document.getElementById('jsBigIcon');
+            const hint = document.getElementById('jsHint');
+            const openLink = document.getElementById('jsOpenLink');
+
+            function setActive(row) {
+              rows.forEach(r => r.classList.remove('active'));
+              row.classList.add('active');
+            }
+
+            function showPlaceholder(iconSrc, text, linkUrl) {
+              frame.style.display = 'none';
+              imgWrap.style.display = 'none';
+              placeholder.style.display = 'flex';
+
+              bigIcon.src = iconSrc || bigIcon.src;
+              hint.textContent = text || 'Không hỗ trợ xem trước trực tiếp.';
+
+              if (linkUrl) {
+                openLink.style.display = 'inline-flex';
+                openLink.href = linkUrl;
+              } else {
+                openLink.style.display = 'none';
+                openLink.href = '#';
+              }
+            }
+
+            function showPdf(previewUrl) {
+              imgWrap.style.display = 'none';
+              placeholder.style.display = 'none';
+              frame.style.display = 'block';
+              frame.src = previewUrl;
+            }
+
+            function showImage(previewUrl) {
+              frame.style.display = 'none';
+              placeholder.style.display = 'none';
+              imgWrap.style.display = 'flex';
+              img.src = previewUrl;
+            }
+
+            function render(row) {
+              const name = row.dataset.name || '';
+              const mimetype = row.dataset.mimetype || '';
+              const icon = row.dataset.icon || '';
+              const preview = row.dataset.preview || '';
+              const download = row.dataset.download || '';
+              const url = row.dataset.url || '';
+
+              elName.textContent = name;
+              bigIcon.src = icon || bigIcon.src;
+
+              // buttons
+              elOpen.href = preview || '#';
+              if (elDownload) elDownload.href = download || '#';
+
+              // preview logic
+              if (url) {
+                showPlaceholder(icon, 'Đây là liên kết. Nhấn “Mở liên kết” để mở trong tab mới.', url);
+                return;
+              }
+              if (mimetype === 'application/pdf') {
+                showPdf(preview);
+                return;
+              }
+              if (mimetype.startsWith('image/')) {
+                showImage(preview);
+                return;
+              }
+              showPlaceholder(icon, 'Định dạng này không hỗ trợ xem trước. Bạn có thể tải về để mở.');
+            }
+
+            // click rows
+            rows.forEach(row => {
+              row.addEventListener('click', function () {
+                setActive(row);
+                render(row);
+              });
+            });
+
+            // default: select first
+            if (rows.length) {
+              setActive(rows[0]);
+              render(rows[0]);
+            }
+
+            // search filter
+            if (search) {
+              search.addEventListener('input', function () {
+                const q = (search.value || '').toLowerCase().trim();
+                rows.forEach(r => {
+                  const name = (r.dataset.name || '').toLowerCase();
+                  const mt = (r.dataset.mimetype || '').toLowerCase();
+                  const ok = !q || name.includes(q) || mt.includes(q);
+                  r.style.display = ok ? '' : 'none';
+                });
+              });
+            }
+          })();
+        </script>
       </body>
     </html>
   </template>
+
 </odoo>

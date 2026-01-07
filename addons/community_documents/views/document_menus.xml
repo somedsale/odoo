@@ -27,7 +27,7 @@
     </record>
 
     <!-- MENUS (no groups for debug, rely on ACL) -->
-<menuitem id="menu_documents_root" name="Documents" sequence="30" action="action_documents_dashboard"/>
+<menuitem id="menu_documents_root" name="Documents" sequence="30" action="action_documents_dashboard"  web_icon="community_documents,static/src/img/icon.png"/>
 
     <!-- <menuitem id="menu_documents_documents" name="Documents" parent="menu_documents_root"
               action="action_document_documents" sequence="10"/>

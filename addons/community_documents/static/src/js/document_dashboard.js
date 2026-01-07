@@ -13,14 +13,8 @@ import { useService } from "@web/core/utils/hooks";
 
 export class DocumentDashboard extends Component {
   setup() {
-    const saved = parseInt(
-      localStorage.getItem("comm_docs_sidebar_width") || "280",
-      10
-    );
-    const sidebarWidth = Math.max(
-      220,
-      Math.min(520, Number.isFinite(saved) ? saved : 280)
-    );
+    const saved = parseInt(localStorage.getItem("comm_docs_sidebar_width") || "280", 10);
+    const sidebarWidth = Math.max(220, Math.min(520, Number.isFinite(saved) ? saved : 280));
 
     this.orm = useService("orm");
     this.action = useService("action");
@@ -43,11 +37,8 @@ export class DocumentDashboard extends Component {
       isDragging: false,
       isUploading: false,
       sidebarWidth,
-      isSidebarOpen: false,
-      renaming: false,
-      renameValue: "",
-      renameExt: "",
-      renameBusy: false,
+    isSidebarOpen: false,
+
     });
     this._dragDepth = 0;
     this._isFilesDrag = (ev) => {
@@ -214,11 +205,8 @@ export class DocumentDashboard extends Component {
   }
   async loadFolders() {
     const fields = ["name", "parent_id"];
-    const folders = await this.orm.searchRead("document.folder", [], fields, {
-      limit: 2000,
-    });
-
-    this.state.folders = folders;
+    const folders = await this.orm.call("document.folder", "rpc_list_accessible_folders", [], {});
+    this.state.folders = folders || [];
 
     // mở root mặc định
     if (
@@ -232,79 +220,175 @@ export class DocumentDashboard extends Component {
       this.state.expandedFolderIds = s;
     }
 
-    this.state.folderTree = this._buildFolderTree(
-      this.state.folders,
-      this.state.expandedFolderIds
-    );
+    this.state.folderRows = this._buildFolderRows(folders, this.state.expandedFolderIds);
   }
-  _buildFolderTree(folders, expandedSet) {
-    const byParent = new Map();
-    for (const f of folders) {
-      const pid = f.parent_id ? f.parent_id[0] : 0;
-      if (!byParent.has(pid)) byParent.set(pid, []);
-      byParent.get(pid).push(f);
-    }
-
-    for (const arr of byParent.values()) {
-      arr.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-    }
-
-    const out = [];
-    const walk = (parentId, level) => {
-      const children = byParent.get(parentId) || [];
-      for (const f of children) {
-        const hasChildren = (byParent.get(f.id) || []).length > 0;
-        const isExpanded = expandedSet?.has(f.id);
-
-        out.push({
-          id: f.id,
-          name: f.name,
-          level,
-          hasChildren,
-          isExpanded,
-        });
-
-        if (hasChildren && isExpanded) {
-          walk(f.id, level + 1);
-        }
-      }
+_buildFolderTree(folders, expandedIds) {
+    const normPid = (p) => {
+        // false/null/0
+        if (!p) return 0;
+        // searchRead Many2one: [id, name]
+        if (Array.isArray(p)) return p[0] || 0;
+        // rpc custom: number
+        if (typeof p === "number") return p;
+        // fallback
+        return 0;
     };
-    walk(0, 0);
-    return out;
-  }
-  onToggleFolder(ev) {
+
+    const byId = new Map();
+    const childrenByParent = new Map();
+
+    for (const f of (folders || [])) {
+        const pid = normPid(f.parent_id);
+
+        const node = {
+            ...f,
+            parent_id: pid,          // ✅ normalize về số
+            children: [],
+            level: 0,
+            isExpanded: expandedIds?.has?.(f.id) || false,
+        };
+        byId.set(f.id, node);
+
+        if (!childrenByParent.has(pid)) childrenByParent.set(pid, []);
+        childrenByParent.get(pid).push(f.id);
+    }
+
+    // attach children
+    for (const [pid, ids] of childrenByParent.entries()) {
+        if (!pid) continue;
+        const parent = byId.get(pid);
+        if (!parent) continue;
+        parent.children = ids.map((id) => byId.get(id)).filter(Boolean);
+    }
+
+    // roots: parent_id = 0 hoặc parent không tồn tại
+    const roots = [];
+    for (const node of byId.values()) {
+        if (!node.parent_id || !byId.has(node.parent_id)) roots.push(node);
+    }
+
+    // compute meta recursively
+    const setMeta = (node, level) => {
+        node.level = level;
+        node.isExpanded = expandedIds?.has?.(node.id) || false;
+        node.hasChildren = (node.children || []).length > 0;
+        for (const c of (node.children || [])) setMeta(c, level + 1);
+    };
+    for (const r of roots) setMeta(r, 0);
+
+    // sort
+    const sortRec = (arr) => {
+        arr.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        for (const n of arr) sortRec(n.children || []);
+    };
+    sortRec(roots);
+
+    return roots;
+}
+_buildFolderRows(folders, expandedIds) {
+    const normPid = (p) => {
+        if (!p) return 0;
+        if (Array.isArray(p)) return p[0] || 0;   // parent_id from searchRead
+        if (typeof p === "number") return p;      // parent_id from rpc
+        return 0;
+    };
+
+    const byId = new Map();
+    const childrenByParent = new Map();
+
+    for (const f of (folders || [])) {
+        const pid = normPid(f.parent_id);
+
+        const node = {
+            ...f,
+            parent_id: pid,
+            children: [],
+            level: 0,
+            hasChildren: false,
+            isExpanded: expandedIds?.has?.(f.id) || false,
+            isVisible: true,
+        };
+        byId.set(f.id, node);
+
+        if (!childrenByParent.has(pid)) childrenByParent.set(pid, []);
+        childrenByParent.get(pid).push(f.id);
+    }
+
+    // attach children
+    for (const [pid, ids] of childrenByParent.entries()) {
+        if (!pid) continue;
+        const p = byId.get(pid);
+        if (!p) continue;
+        p.children = ids.map((id) => byId.get(id)).filter(Boolean);
+    }
+
+    // roots
+    const roots = [];
+    for (const n of byId.values()) {
+        if (!n.parent_id || !byId.has(n.parent_id)) roots.push(n);
+    }
+
+    // sort children by name
+    const sortRec = (arr) => {
+        arr.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        for (const n of arr) sortRec(n.children || []);
+    };
+    sortRec(roots);
+
+    // DFS -> flat rows with visibility
+    const rows = [];
+    const visit = (node, level, visible) => {
+        node.level = level;
+        node.isExpanded = expandedIds?.has?.(node.id) || false;
+        node.hasChildren = (node.children || []).length > 0;
+        node.isVisible = visible;
+
+        rows.push(node);
+
+        const childVisible = visible && node.isExpanded;
+        for (const c of (node.children || [])) {
+            visit(c, level + 1, childVisible);
+        }
+    };
+
+    for (const r of roots) visit(r, 0, true);
+    return rows;
+}
+
+
+onToggleFolder(ev) {
     const id = parseInt(ev.currentTarget.dataset.id, 10);
     if (!id) return;
 
-    const s = new Set(this.state.expandedFolderIds || []);
-    if (s.has(id)) s.delete(id);
-    else s.add(id);
+    if (!this.state.expandedFolderIds) this.state.expandedFolderIds = new Set();
 
-    this.state.expandedFolderIds = s;
-    this.state.folderTree = this._buildFolderTree(this.state.folders, s);
-  }
+    if (this.state.expandedFolderIds.has(id)) this.state.expandedFolderIds.delete(id);
+    else this.state.expandedFolderIds.add(id);
 
-  buildDomain() {
+    this.state.folderRows = this._buildFolderRows(this.state.folders || [], this.state.expandedFolderIds);
+}
+
+
+
+
+buildDomain() {
     const domain = [];
 
-    // ✅ bắt buộc: lọc theo allowed folders
-    if (this.state.allowedFolderIds?.length) {
-      domain.push(["folder_id", "in", this.state.allowedFolderIds]);
+    // ✅ chỉ lấy docs thuộc folder user được xem
+    const allowedFolderIds = (this.state.folders || []).map(f => f.id);
+    if (allowedFolderIds.length) {
+        domain.push(["folder_id", "in", allowedFolderIds]);
     } else {
-      // nếu chưa có folder nào được phép -> không load gì
-      domain.push(["id", "=", 0]);
-      return domain;
+        domain.push(["id", "=", -1]); // không có quyền xem folder nào
     }
 
-    if (this.state.folderId)
-      domain.push(["folder_id", "=", this.state.folderId]);
-    if (this.state.tagIds.size)
-      domain.push(["tag_ids", "in", Array.from(this.state.tagIds)]);
-    if (this.state.search && this.state.search.trim())
-      domain.push(["name", "ilike", this.state.search.trim()]);
-
+    // lọc theo folder đang chọn
+    if (this.state.folderId) {
+        domain.push(["folder_id", "=", this.state.folderId]);
+    }
     return domain;
-  }
+}
+
 
   async loadDocs() {
     const fields = [
@@ -571,25 +655,24 @@ export class DocumentDashboard extends Component {
     }
   }
 
-  async onShareSelected() {
+async onShareSelected() {
     const docIds = this.state.selectedIds || [];
     const folderId = this.state.folderId; // folder đang chọn ở sidebar
 
     // 1) Có chọn file -> share file
     if (docIds.length) {
-      return this._openShareWizardForDocs(docIds);
+        return this._openShareWizardForDocs(docIds);
     }
 
     // 2) Không chọn file -> share folder hiện tại
     if (folderId) {
-      return this._openShareWizardForFolder(folderId);
+        return this._openShareWizardForFolder(folderId);
     }
 
     // 3) Không có gì -> cảnh báo
-    this.notification?.add?.("Chọn file hoặc chọn folder để chia sẻ.", {
-      type: "warning",
-    });
-  }
+    this.notification?.add?.("Chọn file hoặc chọn folder để chia sẻ.", { type: "warning" });
+}
+
 
   async onShareFolder(ev) {
     ev.stopPropagation();
@@ -900,102 +983,94 @@ export class DocumentDashboard extends Component {
     const maxW = 520;
 
     const onMove = (e) => {
-      const dx = e.clientX - startX;
-      let w = startW + dx;
-      w = Math.max(minW, Math.min(maxW, w));
-      this.state.sidebarWidth = w;
+        const dx = e.clientX - startX;
+        let w = startW + dx;
+        w = Math.max(minW, Math.min(maxW, w));
+        this.state.sidebarWidth = w;
     };
 
     const onUp = () => {
-      window.removeEventListener("mousemove", onMove, true);
-      window.removeEventListener("mouseup", onUp, true);
-      localStorage.setItem(
-        "comm_docs_sidebar_width",
-        String(this.state.sidebarWidth || startW)
-      );
-      document.body.classList.remove("o_comm_docs_resizing");
+        window.removeEventListener("mousemove", onMove, true);
+        window.removeEventListener("mouseup", onUp, true);
+        localStorage.setItem("comm_docs_sidebar_width", String(this.state.sidebarWidth || startW));
+        document.body.classList.remove("o_comm_docs_resizing");
     };
 
     document.body.classList.add("o_comm_docs_resizing");
     window.addEventListener("mousemove", onMove, true);
     window.addEventListener("mouseup", onUp, true);
-  }
-  toggleSidebar() {
+}
+toggleSidebar() {
     this.state.isSidebarOpen = !this.state.isSidebarOpen;
-  }
-  _openShareWizardForDocs(docIds) {
+}
+_openShareWizardForDocs(docIds) {
     // Nếu bạn đang dùng wizard share file
     return this.action.doAction({
-      type: "ir.actions.act_window",
-      name: "Share",
-      res_model: "document.share.wizard",
-      views: [[false, "form"]],
-      target: "new",
-      context: {
-        default_document_ids: docIds, // Many2many
-        default_share_type: "document", // optional
-      },
+        type: "ir.actions.act_window",
+        name: "Share",
+        res_model: "document.share.wizard",
+        views: [[false, "form"]],
+        target: "new",
+        context: {
+            default_document_ids: docIds,   // Many2many
+            default_share_type: "document", // optional
+        },
     });
-  }
+}
 
-  _openShareWizardForFolder(folderId) {
+_openShareWizardForFolder(folderId) {
     // Nếu bạn đang dùng wizard share folder (hoặc cùng wizard nhưng có folder_id)
     return this.action.doAction({
-      type: "ir.actions.act_window",
-      name: "Share",
-      res_model: "document.share.wizard",
-      views: [[false, "form"]],
-      target: "new",
-      context: {
-        default_folder_id: folderId, // Many2one
-        default_share_type: "folder", // optional
-      },
+        type: "ir.actions.act_window",
+        name: "Share",
+        res_model: "document.share.wizard",
+        views: [[false, "form"]],
+        target: "new",
+        context: {
+            default_folder_id: folderId,    // Many2one
+            default_share_type: "folder",   // optional
+        },
     });
-  }
-  _openMoveCopyWizard(operation) {
+}
+_openMoveCopyWizard(operation) {
     const ids = this.state.selectedIds || [];
     if (!ids.length) return;
 
-    this.action.doAction(
-      "community_documents.action_document_move_copy_wizard",
-      {
+    this.action.doAction("community_documents.action_document_move_copy_wizard", {
         additionalContext: {
-          default_operation: operation,
-          default_document_ids: ids,
-          default_folder_id: this.state.folderId || false, // optional
+            default_operation: operation,
+            default_document_ids: ids,
+            default_folder_id: this.state.folderId || false, // optional
         },
         onClose: async () => {
-          // clear selection sau thao tác
-          this.state.selected = null;
-          this.state.selectedId = null;
-          this.state.selectedIds = [];
-          this.state.allSelected = false;
+            // clear selection sau thao tác
+            this.state.selected = null;
+            this.state.selectedId = null;
+            this.state.selectedIds = [];
+            this.state.allSelected = false;
 
-          await this.loadFolders(); // optional
-          await this.loadDocs(); // ✅ bắt buộc để thấy file đã move/copy
+            await this.loadFolders(); // optional
+            await this.loadDocs();    // ✅ bắt buộc để thấy file đã move/copy
         },
-      }
-    );
-  }
+    });
+}
 
-  onCopySelected() {
+onCopySelected() {
     this._openMoveCopyWizard("copy");
-  }
+}
 
-  onMoveSelected() {
+onMoveSelected() {
     this._openMoveCopyWizard("move");
-  }
-  async onRenameSelected() {
+}
+async onRenameSelected() {
     const ids = this.state.selectedIds || [];
     if (ids.length !== 1) {
-      this.notification?.add?.("Chỉ đổi tên khi chọn đúng 1 file.", {
-        type: "warning",
-      });
-      return;
+        this.notification?.add?.("Chỉ đổi tên khi chọn đúng 1 file.", { type: "warning" });
+        return;
     }
 
     const docId = ids[0];
-    const doc = (this.state.docs || []).find((d) => d.id === docId);
+    const doc = (this.state.docs || []).find(d => d.id === docId);
     const currentName = doc?.name || "";
 
     const newName = window.prompt("Nhập tên mới:", currentName);
@@ -1003,36 +1078,18 @@ export class DocumentDashboard extends Component {
 
     const trimmed = (newName || "").trim();
     if (!trimmed) {
-      this.notification?.add?.("Tên không được để trống.", { type: "warning" });
-      return;
+        this.notification?.add?.("Tên không được để trống.", { type: "warning" });
+        return;
     }
 
-    await this.orm.call("document.document", "action_rename", [
-      [docId],
-      trimmed,
-    ]);
+    await this.orm.call("document.document", "action_rename", [[docId], trimmed]);
 
     // reload danh sách + refresh selection
     await this.loadDocs();
     this.state.selectedId = docId;
-    this.state.selected =
-      (this.state.docs || []).find((d) => d.id === docId) || null;
-  }
-  _splitFilename(filename) {
-    filename = (filename || "").trim();
-    if (!filename) return { base: "", ext: "" };
-    const idx = filename.lastIndexOf(".");
-    if (idx > 0 && idx < filename.length - 1) {
-      return { base: filename.slice(0, idx), ext: filename.slice(idx) }; // ext includes "."
-    }
-    return { base: filename, ext: "" };
-  }
+    this.state.selected = (this.state.docs || []).find(d => d.id === docId) || null;
+}
 
-  _docFilename(doc) {
-    // ưu tiên attachment filename nếu có
-    // searchRead thường trả attachment_id=[id,name] nên không có datas_fname; dùng doc.name là chính
-    return doc && doc.name ? doc.name : "";
-  }
 }
 
 DocumentDashboard.template = "community_documents.DocumentDashboard";
