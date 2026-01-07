@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import api, fields, models, _
-from odoo.exceptions import AccessError, UserError
+from odoo.exceptions import AccessError, UserError, ValidationError
 
 
 class DocumentFolder(models.Model):
@@ -13,6 +13,7 @@ class DocumentFolder(models.Model):
     child_ids = fields.One2many("document.folder", "parent_id", string="Subfolders")
 
     complete_name = fields.Char(compute="_compute_complete_name", store=True, index=True)
+    can_edit_access = fields.Boolean(compute="_compute_can_edit_access", store=False)
 
     @api.depends("name", "parent_id.complete_name")
     def _compute_complete_name(self):
@@ -36,12 +37,24 @@ class DocumentFolder(models.Model):
         "document.folder.member", "folder_id", string="Shared With"
     )
 
+    access_mode = fields.Selection(
+        [
+            ("private", "Chỉ mình tôi"),
+            ("restricted", "Chỉ định người truy cập (Nội bộ)"),
+        ],
+        required=True,
+        default="private",
+        index=True,
+    )
+
+    # ✅ chỉ cho chọn user nội bộ: share=False
     allowed_user_ids = fields.Many2many(
         "res.users",
         "document_folder_allowed_user_rel",
         "folder_id",
         "user_id",
-        string="Allowed Users",
+        string="Người được truy cập",
+        domain=[("share", "=", False)],
     )
     readable_user_ids = fields.Many2many(
         "res.users",
@@ -64,7 +77,11 @@ class DocumentFolder(models.Model):
 
     document_ids = fields.One2many("document.document", "folder_id")
     document_count = fields.Integer(compute="_compute_document_count")
-
+    @api.depends("owner_id")
+    def _compute_can_edit_access(self):
+        uid = self.env.user.id
+        for f in self:
+            f.can_edit_access = (f.owner_id.id == uid)
     def _compute_document_count(self):
         for rec in self:
             rec.document_count = len(rec.document_ids)
@@ -233,3 +250,65 @@ class DocumentFolder(models.Model):
                 raise
 
         return True
+    @api.constrains("access_mode", "allowed_user_ids")
+    def _check_access_mode_users(self):
+        for f in self:
+            if f.access_mode == "private" and f.allowed_user_ids:
+                raise ValidationError(_("Folder 'Chỉ mình tôi' không được có danh sách người truy cập."))
+            if f.access_mode == "restricted" and not f.allowed_user_ids:
+                raise ValidationError(_("Folder 'Chỉ định người truy cập' phải chọn ít nhất 1 người."))
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            vals.setdefault("owner_id", self.env.user.id)
+            if vals.get("access_mode") == "private":
+                vals["allowed_user_ids"] = [(6, 0, [])]
+        return super().create(vals_list)
+
+    def write(self, vals):
+        # ✅ chỉ owner mới được đổi access_mode và allowed_user_ids
+        protected = {"access_mode", "allowed_user_ids"}
+        if protected.intersection(vals.keys()):
+            for f in self:
+                if f.owner_id.id != self.env.user.id:
+                    raise AccessError(_("Chỉ người tạo folder mới được thay đổi Access Mode / danh sách người truy cập."))
+        return super().write(vals)
+
+    # ========= Access helpers (để dashboard dùng) =========
+    def _user_can_read(self, user=None):
+        user = user or self.env.user
+        self.ensure_one()
+        if self.owner_id.id == user.id:
+            return True
+        if self.access_mode == "restricted" and user in self.allowed_user_ids:
+            return True
+        return False
+
+    def _user_can_write(self, user=None):
+        user = user or self.env.user
+        self.ensure_one()
+        return self.owner_id.id == user.id
+
+    # RPC cho dashboard: chỉ trả folder mà user được thấy
+    @api.model
+    def rpc_list_accessible_folders(self):
+        user = self.env.user
+        Folder = self.sudo().with_context(active_test=False)
+
+        folders = Folder.search([
+            "|",
+            ("owner_id", "=", user.id),
+            "&",
+            ("access_mode", "=", "restricted"),
+            ("allowed_user_ids", "in", [user.id]),
+        ])
+
+        # trả luôn can_write để JS biết có hiện nút edit/delete không
+        return [{
+            "id": f.id,
+            "name": f.name,
+            "parent_id": f.parent_id.id if f.parent_id else False,
+            "owner_id": f.owner_id.id,
+            "can_write": (f.owner_id.id == user.id),
+        } for f in folders]
