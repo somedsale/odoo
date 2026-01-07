@@ -1,0 +1,5 @@
+.o_field_many2many_binary.o_drag_drop_active {
+  outline: 2px dashed var(--o-brand-odoo);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
