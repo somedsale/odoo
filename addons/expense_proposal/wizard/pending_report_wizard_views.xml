@@ -63,6 +63,6 @@
     </record>
 
     <!-- Menu (đổi parent theo menu của bạn) -->
-    <menuitem id="menu_pending_report_wizard" name="Dự kiến thanh toán" parent="menu_expense_proposal_root" action="action_pending_report_wizard" sequence="30"/>
+    <!-- <menuitem id="menu_pending_report_wizard" name="Dự kiến thanh toán" parent="menu_expense_proposal_root" action="action_pending_report_wizard" sequence="30"/> -->
 
 </odoo>
