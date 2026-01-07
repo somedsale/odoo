@@ -15,46 +15,45 @@ class SaleOrder(models.Model):
     contract_id = fields.Many2one('contract.management', string='Contract', readonly=True)
 
     def action_confirm(self):
-        res = super(SaleOrder, self).action_confirm()
+        res = super().action_confirm()
+        Attachment = self.env['ir.attachment'].sudo()
+
         for order in self:
-            if not order.contract_id:
-                # Render PDF...
-                pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
-                    'sale.report_saleorder', [order.id]
-                )
-                filename = f"Bao_gia_{order.name}.pdf"
-                att = self.env['ir.attachment'].sudo().create({
-                    'name': filename,
-                    'res_model': 'sale.order',
-                    'res_id': order.id,
-                    'type': 'binary',
-                    'datas': base64.b64encode(pdf_content),
-                    'mimetype': 'application/pdf',
-                })
+            if order.contract_id:
+                continue
 
-                # Lấy thuế từ các dòng SO (unique + đúng công ty)
-                taxes = order.order_line.mapped('tax_id')
-                taxes = taxes.filtered(lambda t: t.company_id == order.company_id)
-                tax_ids = taxes.ids
+            taxes = order.order_line.mapped('tax_id').filtered(lambda t: t.company_id == order.company_id)
 
-                # Tiền từ SO
-                amount_untaxed = order.amount_untaxed
+            # 1) Tạo Contract trước
+            contract_vals = {
+                'name': f'Hợp đồng cho đơn hàng {order.name}',
+                'sale_order_id': order.id,
+                'partner_id': order.partner_id.id,
+                'stage': 'negotiating',
+                'company_id': order.company_id.id,
+                'currency_id': order.currency_id.id,
+                'amount_untaxed': order.amount_untaxed,
+                'tax_id': [(6, 0, taxes.ids)],
+            }
+            contract = self.env['contract.management'].create(contract_vals)
+            order.contract_id = contract.id
 
-                contract_vals = {
-                    'name': f'Hợp đồng cho đơn hàng {order.name}',
-                    'sale_order_id': order.id,
-                    'partner_id': order.partner_id.id,
-                    'stage': 'negotiating',
-                    'company_id': order.company_id.id,
-                    'attachment_ids': [(6, 0, [att.id])],
-                    # Tiền tệ + số tiền
-                    'currency_id': order.currency_id.id,
-                    'amount_untaxed': amount_untaxed,
-                    'tax_id': [(6, 0, order.order_line.mapped('tax_id').filtered(
-                    lambda t: t.company_id == order.company_id).ids)],
-                }
-                contract = self.env['contract.management'].create(contract_vals)
-                order.contract_id = contract.id
+            # 2) Render PDF + tạo attachment trỏ về Contract
+            pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
+                'sale.report_saleorder', [order.id]
+            )
+            att = Attachment.create({
+                'name': f"Bao_gia_{order.name}.pdf",
+                'res_model': 'contract.management',
+                'res_id': contract.id,
+                'type': 'binary',
+                'datas': base64.b64encode(pdf_content),
+                'mimetype': 'application/pdf',
+                'company_id': order.company_id.id,
+            })
+
+            contract.sudo().write({'attachment_ids': [(4, att.id)]})
+
         return res
 
 

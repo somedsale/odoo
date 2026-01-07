@@ -162,8 +162,6 @@
             'form_view_initial_mode': 'readonly'
         }
         </field>
-        <field name="domain"> [('project_id','!=',False)]
-        </field>
     </record>
     <!-- Menu -->
     <menuitem id="menu_contract_management_root" name="Hợp đồng" sequence="10" parent="sale.sale_menu_root"/>
