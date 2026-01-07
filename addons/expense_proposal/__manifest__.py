@@ -4,7 +4,7 @@
     'summary': 'Module for managing expense proposals in accounting',
     'author': 'Your Name',
     'category': 'Accounting',
-    'depends': ['account', 'base', 'custom_account_payment_request', 'web'],  # Phụ thuộc vào module kế toán
+    'depends': ['account', 'base', 'custom_account_payment_request', 'web','report_daily_cash_flow','bank_balance'],  # Phụ thuộc vào module kế toán
     'data': [
         'security/ir.model.access.csv',
         'data/sequence_data.xml',
@@ -16,7 +16,9 @@
         'reports/paperformat_expense_proposal.xml',
         'reports/report_expense_proposal.xml',
         'reports/report_expense_proposal_template.xml',
+        'reports/pending_payment_wizard_report.xml',
         'wizard/view_wizard.xml',
+        'wizard/pending_report_wizard_views.xml',
     ],
     'assets': {
         'web.assets_backend': [

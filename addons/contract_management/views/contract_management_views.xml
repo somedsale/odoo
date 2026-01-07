@@ -169,4 +169,5 @@
     <menuitem id="menu_contract_management_root" name="Hợp đồng" sequence="10" parent="sale.sale_menu_root"/>
     <menuitem id="menu_contract_management" name="Hợp đồng" action="action_contract_management" parent="menu_contract_management_root" sequence="10"/>
     <menuitem id="menu_project_contract_readonly" name="Hợp đồng" parent="project.menu_main_pm" action="action_project_contract_readonly" sequence="60"/>
+    <menuitem id="menu_project_contract_readonly_user" name="Hợp đồng" parent="custom_project_role.menu_main_pm_user" action="action_project_contract_readonly" sequence="60"/>
 </odoo>

@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Paperformat -->
+    <record id="paperformat_a4_portrait_pending_payment_wizard" model="report.paperformat">
+        <field name="name">Pending Payment Wizard A4 Portrait</field>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">30</field>
+        <field name="margin_bottom">30</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_spacing">25</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- Layout -->
+    <template id="report_pending_payment_wizard_layout">
+        <t t-call="web.html_container">
+            <t t-raw="0"/>
+        </t>
+    </template>
+
+    <!-- Main report -->
+    <template id="report_pending_payment_wizard">
+        <t t-call="expense_proposal.report_pending_payment_wizard_layout">
+
+            <t t-foreach="payloads" t-as="p">
+                <t t-set="doc" t-value="p.get('wizard')"/>
+                <t t-set="currency" t-value="p.get('currency') or (doc.company_id.currency_id or env.company.currency_id)"/>
+                <t t-set="company" t-value="doc.company_id or env.company"/>
+
+                <!-- HEADER -->
+                <div class="header" style="display:flex;justify-content:space-between;font-family:Times New Roman;">
+                    <table style="width:100%;border-collapse:collapse;border:1px solid #fff;">
+                        <tr>
+                            <td style="text-align:left;vertical-align:middle;border:1px solid #fff;width:50%;">
+                                <img t-att-src="'/web/image/res.company/%s/logo' % company.id" alt="Company Logo" style="max-width:160px;"/>
+                            </td>
+                            <td style="text-align:right;vertical-align:middle;border:1px solid #fff;font-size:11px;width:50%;">
+                                <span t-esc="company.name" style="text-transform:uppercase;"/>
+                                <br/>
+MST: <span t-esc="company.partner_id.vat"/>
+                            <br/>
+Địa chỉ: <span t-esc="company.partner_id.street"/>
+                        <br/>
+SĐT: <span t-esc="company.phone"/>
+                    <br/>
+Email: <span t-esc="company.email"/>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- BODY -->
+    <div class="page" style="font-family:Times New Roman;font-size:12pt;color:#333;">
+        <style>
+                        .styled-table { border-collapse: collapse; width: 100%; border: 1px solid #000; }
+                        .styled-table thead tr { background-color: #C6E0B4; font-weight: bold; text-align: center; }
+                        .table-item { text-transform: uppercase; background-color: #E2EFDA; font-weight: bold; color: #FF0000; }
+                        .styled-table th, .styled-table td { padding: 8px 10px; border: 1px solid #000; vertical-align: middle; }
+                        .text-center { text-align: center; }
+                        .text-right { text-align: right; }
+                        .muted { color: #666; font-size: 10.5pt; }
+        </style>
+
+        <h2 style="text-align:center;margin:10px 0 16px 0;font-size:24pt;text-transform:uppercase;">
+                        DỰ KIẾN THANH TOÁN
+        </h2>
+
+        <div class="muted" style="margin-bottom:10px;">
+            <span t-if="doc.project_id">Dự án: <b t-esc="doc.project_id.display_name"/>
+            </span>
+            <t t-if="doc.project_id and (doc.date_from or doc.date_to)"> | </t>
+
+            <span t-if="doc.date_from">Từ ngày: <b t-esc="doc.date_from"/>
+            </span>
+            <t t-if="doc.date_from and doc.date_to"> → </t>
+            <span t-if="doc.date_to">Đến ngày: <b t-esc="doc.date_to"/>
+            </span>
+        </div>
+
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th style="width:5%;">STT</th>
+                    <th style="width:12%;">Phiếu</th>
+                    <th style="width:10%;">Ngày</th>
+                    <th style="width:18%;">Đối tượng/ NCC</th>
+                    <th style="width:25%;">Nội dung</th>
+                    <th style="width:13%;">Tổng giá trị</th>
+                    <th style="width:17%;">Dự án</th>
+                    <th style="width:10%;">Ghi chú</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <t t-if="not p.get('groups')">
+                    <tr>
+                        <td colspan="8" class="text-center">Không có dữ liệu (chưa tick chọn dòng nào).</td>
+                    </tr>
+                </t>
+
+                <t t-foreach="p.get('groups') or []" t-as="grp">
+                    <tr class="table-item">
+                        <td colspan="5" class="text-center">
+                            <t t-esc="grp.get('title')"/>
+                        </td>
+                        <td class="text-right">
+                            <t t-esc="(grp.get('total') or 0.0)" t-options="{'widget':'monetary','display_currency': currency}"/>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <t t-foreach="grp.get('lines') or []" t-as="line">
+                        <tr>
+                            <td class="text-center" t-esc="line.get('stt')"/>
+                            <td t-esc="line.get('proposal')"/>
+                            <td class="text-center" t-esc="line.get('date')"/>
+                            <td t-esc="line.get('object')"/>
+                            <td t-esc="line.get('name')"/>
+                            <td class="text-right">
+                                <t t-esc="(line.get('amount') or 0.0)" t-options="{'widget':'monetary','display_currency': currency}"/>
+                            </td>
+                            <td t-esc="line.get('project')"/>
+                            <td t-esc="line.get('note')"/>
+                        </tr>
+                    </t>
+                </t>
+
+                <tr>
+                    <td colspan="5" class="text-center" style="font-weight:bold;">TỔNG CỘNG</td>
+                    <td class="text-right" style="font-weight:bold;">
+                        <t t-esc="(p.get('total') or 0.0)" t-options="{'widget':'monetary','display_currency': currency}"/>
+                    </td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer" style="text-align:center;padding:5mm;font-size:10pt;">
+        <span class="page"/>
+    </div>
+
+    <div style="page-break-after: always;" t-if="p != payloads[-1]"/>
+</t>
+
+</t>
+</template>
+
+
+
+
+<!-- HTML -->
+<record id="action_pending_payment_wizard_report_html" model="ir.actions.report">
+<field name="name">Dự kiến thanh toán (HTML)</field>
+<field name="model">pending.report.wizard</field>
+<field name="report_type">qweb-html</field>
+<field name="report_name">expense_proposal.report_pending_payment_wizard</field>
+<field name="report_file">expense_proposal.report_pending_payment_wizard</field>
+<field name="print_report_name">'Du_kien_thanh_toan_%s' % (object.id)</field>
+</record>
+
+<!-- PDF -->
+<record id="action_pending_payment_wizard_report_pdf" model="ir.actions.report">
+<field name="name">Dự kiến thanh toán (PDF)</field>
+<field name="model">pending.report.wizard</field>
+<field name="report_type">qweb-pdf</field>
+<field name="report_name">expense_proposal.report_pending_payment_wizard</field>
+<field name="report_file">expense_proposal.report_pending_payment_wizard</field>
+<field name="print_report_name">'Du_kien_thanh_toan_%s' % (object.id)</field>
+<field name="paperformat_id" ref="expense_proposal.paperformat_a4_portrait_pending_payment_wizard"/>
+</record>
+
+</odoo>
