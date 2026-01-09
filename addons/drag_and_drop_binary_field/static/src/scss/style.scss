@@ -1,0 +1,42 @@
+/* 1) Khi đang kéo file: làm lộ tất cả ô attachment để user biết thả ở đâu */
+body.o_drag_files {
+  tr.o_data_row td[data-name="attachment_ids"] {
+    outline: 1px dashed var(--o-brand-primary);
+    outline-offset: -2px;
+    background: rgba(0, 0, 0, 0.02);
+    transition: background 120ms ease, outline-color 120ms ease;
+  }
+}
+
+/* 2) Ô/row đang hover: highlight mạnh + tooltip */
+.o_drag_drop_active {
+  position: relative;
+  outline: 2px dashed var(--o-brand-primary) !important;
+  outline-offset: -2px;
+  background: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Nếu class dính vào TR thì tô nhẹ toàn dòng */
+tr.o_data_row.o_drag_drop_active > td {
+  background: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Tooltip “Thả file …” */
+.o_drag_drop_active::after {
+  content: "Thả file để đính kèm";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+
+  pointer-events: none;
+  z-index: 10;
+}
