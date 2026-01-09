@@ -1,15 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Đăng ký report (cũ, vẫn giữ cho backward-compat) -->
-    <report
-        id="supplier_summary_report_action"
-        model="supplier.invoice.payment.summary"
-        string="Supplier Summary"
-        report_type="qweb-html"
-        name="vendor_debt_management.report_supplier_summary_view"
-        file="vendor_debt_management.report_supplier_summary_view"
-        print_report_name="'Supplier Summary Report'"
-    />
+    <report id="supplier_summary_report_action" model="supplier.invoice.payment.summary" string="Supplier Summary" report_type="qweb-html" name="vendor_debt_management.report_supplier_summary_view" file="vendor_debt_management.report_supplier_summary_view" print_report_name="'Supplier Summary Report'" />
 
     <!-- Paperformat -->
     <record id="custom_sale_report_a4_portrait" model="report.paperformat">
@@ -33,9 +25,7 @@
                     <tr>
                         <!-- Cột logo bên trái -->
                         <td style="text-align: left; vertical-align: middle; border-collapse: collapse; border: 1px solid #fff; width: 50%;">
-                            <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id"
-                                 alt="Company Logo"
-                                 style="max-width: 160px;"/>
+                            <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id" alt="Company Logo" style="max-width: 160px;"/>
                         </td>
 
                         <!-- Cột thông tin công ty bên phải -->
@@ -43,36 +33,36 @@
                             <span t-esc="res_company.name" style="text-transform: uppercase;"/>
                             <br/>
                             MST: <span t-esc="res_company.partner_id.vat"/>
-                            <br/>
+                        <br/>
                             Địa chỉ: <span t-esc="res_company.partner_id.street"/>
-                            <br/>
+                    <br/>
                             SĐT: <span t-esc="res_company.phone_accounting"/>
-                            <br/>
+                <br/>
                             Email: <span style="text-transform: lowercase;" t-esc="res_company.account_email"/>
-                        </td>
-                    </tr>
-                </table>
-            </div>
+            </td>
+        </tr>
+    </table>
+</div>
 
-            <div class="article" style="font-family: Times New Roman; font-size: 11pt; line-height: 1.5; padding-top: 15px;">
-                <t t-raw="0"/>
-                <!-- Nội dung chính của báo cáo -->
-            </div>
+<div class="article" style="font-family: Times New Roman; font-size: 11pt; line-height: 1.5; padding-top: 15px;">
+    <t t-raw="0"/>
+    <!-- Nội dung chính của báo cáo -->
+</div>
 
-            <div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt; font-family: Times New Roman;">
-                <p>
-                    <span class="page"/>
-                </p>
-            </div>
-        </t>
-    </template>
+<div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt; font-family: Times New Roman;">
+    <p>
+        <span class="page"/>
+    </p>
+</div>
+</t>
+</template>
 
-    <!-- Template chính -->
-    <template id="report_supplier_summary_view">
-        <t t-call="vendor_debt_management.report_supplier_summary_layout">
-            <div class="page">
+<!-- Template chính -->
+<template id="report_supplier_summary_view">
+<t t-call="vendor_debt_management.report_supplier_summary_layout">
+<div class="page">
 
-                <style>
+    <style>
                   .page { font-family: "Times New Roman"; font-size: 12pt; color: #000; }
 
                   .styled-table {
@@ -114,304 +104,284 @@
                   .text-right  { text-align: right; }
 
                   .num { white-space: nowrap; }
-                </style>
+    </style>
 
-                <h2 style="text-align:center; margin-bottom: 20px; font-size: 24px; text-transform: uppercase;">
+    <h2 style="text-align:center; margin-bottom: 20px; font-size: 24px; text-transform: uppercase;">
                     Tổng hợp công nợ phải trả nhà cung cấp thực tế
-                </h2>
+    </h2>
 
-                <table class="styled-table">
-                    <colgroup>
-                        <col style="width:4%"/>
-                        <!-- 1. STT -->
-                        <col style="width:15%"/>
-                        <!-- 2. Nhà cung cấp -->
-                        <col style="width:20%"/>
-                        <!-- 3. Diễn giải -->
-                        <col style="width:10%"/>
-                        <!-- 4. Số tiền hợp đồng -->
-                        <col style="width:10%"/>
-                        <!-- 5. Số tiền Hóa đơn -->
-                        <col style="width:8%"/>
-                        <!-- 6. Đã HĐ -->
-                        <col style="width:8%"/>
-                        <!-- 7. Chưa HĐ -->
-                        <col style="width:8%"/>
-                        <!-- 8. Còn nợ -->
-                        <col style="width:12%"/>
-                        <!-- 9. Hạn thanh toán -->
-                        <col style="width:5%"/>
-                        <!-- 10. Ghi chú -->
-                    </colgroup>
-                    <thead>
-                        <tr>
-                            <th rowspan="2">STT</th>
-                            <th rowspan="2">Nhà cung cấp</th>
-                            <th rowspan="2">Diễn giải</th>
-                            <th rowspan="2">Số tiền hợp đồng</th>
-                            <th rowspan="2">Số tiền Hóa đơn</th>
-                            <th colspan="2">Số tiền đã thanh toán</th>
-                            <th rowspan="2">Số tiền Còn nợ</th>
-                            <th rowspan="2">Hạn thanh toán</th>
-                            <th rowspan="2">Ghi chú</th>
-                        </tr>
-                        <tr>
-                            <th>Đã HĐ</th>
-                            <th>Chưa HĐ</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- ====== DÒNG TỔNG CỘNG ====== -->
-                        <t t-set="tot_contracts" t-value="0.0"/>
-                        <t t-set="tot_invoices" t-value="0.0"/>
-                        <t t-set="tot_paid_hd" t-value="0.0"/>
-                        <t t-set="tot_advance" t-value="0.0"/>
-                        <t t-set="tot_residual" t-value="0.0"/>
-                        <t t-set="currency" t-value="(docs and docs[0].currency_id) or res_company.currency_id"/>
+    <table class="styled-table">
+        <colgroup>
+            <col style="width:4%"/>
+            <!-- 1. STT -->
+            <col style="width:15%"/>
+            <!-- 2. Nhà cung cấp -->
+            <col style="width:20%"/>
+            <!-- 3. Diễn giải -->
+            <col style="width:10%"/>
+            <!-- 4. Số tiền hợp đồng -->
+            <col style="width:10%"/>
+            <!-- 5. Số tiền Hóa đơn -->
+            <col style="width:8%"/>
+            <!-- 6. Đã HĐ -->
+            <col style="width:8%"/>
+            <!-- 7. Chưa HĐ -->
+            <col style="width:8%"/>
+            <!-- 8. Còn nợ -->
+            <col style="width:12%"/>
+            <!-- 9. Hạn thanh toán -->
+            <col style="width:5%"/>
+            <!-- 10. Ghi chú -->
+        </colgroup>
+        <thead>
+            <tr>
+                <th rowspan="2">STT</th>
+                <th rowspan="2">Nhà cung cấp</th>
+                <th rowspan="2">Diễn giải</th>
+                <th rowspan="2">Số tiền hợp đồng</th>
+                <th rowspan="2">Số tiền Hóa đơn</th>
+                <th colspan="2">Số tiền đã thanh toán</th>
+                <th rowspan="2">Số tiền Còn nợ</th>
+                <th rowspan="2">Hạn thanh toán</th>
+                <th rowspan="2">Ghi chú</th>
+            </tr>
+            <tr>
+                <th>Đã HĐ</th>
+                <th>Chưa HĐ</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- ====== DÒNG TỔNG CỘNG ====== -->
+            <t t-set="tot_contracts" t-value="0.0"/>
+            <t t-set="tot_invoices" t-value="0.0"/>
+            <t t-set="tot_paid_hd" t-value="0.0"/>
+            <t t-set="tot_advance" t-value="0.0"/>
+            <t t-set="tot_residual" t-value="0.0"/>
+            <t t-set="currency" t-value="(docs and docs[0].currency_id) or res_company.currency_id"/>
 
-                        <t t-foreach="docs" t-as="d">
-                            <!-- Đã HĐ = total_payment_amount - advance_amount -->
-                            <t t-set="paid_hd_d"
-                               t-value="(d.total_payment_amount or 0.0) - (d.advance_amount or 0.0)"/>
+            <t t-foreach="docs" t-as="d">
+                <!-- Đã HĐ = total_payment_amount - advance_amount -->
+                <t t-set="paid_hd_d" t-value="(d.total_payment_amount or 0.0) - (d.advance_amount or 0.0)"/>
 
-                            <t t-set="tot_contracts"
-                               t-value="tot_contracts + (d.total_contract_amount or 0.0)"/>
-                            <t t-set="tot_invoices"
-                               t-value="tot_invoices + (d.total_invoice_amount or 0.0)"/>
-                            <t t-set="tot_paid_hd"
-                               t-value="tot_paid_hd + paid_hd_d"/>
-                            <t t-set="tot_advance"
-                               t-value="tot_advance + (d.advance_amount or 0.0)"/>
-                            <t t-set="tot_residual"
-                               t-value="tot_residual + (d.residual_amount or 0.0)"/>
-                        </t>
+                <t t-set="tot_contracts" t-value="tot_contracts + (d.total_contract_amount or 0.0)"/>
+                <t t-set="tot_invoices" t-value="tot_invoices + (d.total_invoice_amount or 0.0)"/>
+                <t t-set="tot_paid_hd" t-value="tot_paid_hd + paid_hd_d"/>
+                <t t-set="tot_advance" t-value="tot_advance + (d.advance_amount or 0.0)"/>
+                <t t-set="tot_residual" t-value="tot_residual + (d.residual_amount or 0.0)"/>
+            </t>
 
-                        <tr class="table-item">
-                            <td colspan="3" class="text-center">TỔNG CỘNG</td>
+            <tr class="table-item">
+                <td colspan="3" class="text-center">TỔNG CỘNG</td>
 
-                            <!-- 4. Số tiền hợp đồng -->
-                            <td class="text-right num">
-                                <t t-if="tot_contracts">
-                                    <span t-esc="tot_contracts"
-                                          t-options="{'widget': 'monetary', 'display_currency': currency}"/>
-                                </t>
-                            </td>
+                <!-- 4. Số tiền hợp đồng -->
+                <td class="text-right num">
+                    <t t-if="tot_contracts">
+                        <span t-esc="tot_contracts" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                    </t>
+                </td>
 
-                            <!-- 5. Số tiền Hóa đơn -->
-                            <td class="text-right num">
-                                <t t-if="tot_invoices">
-                                    <span t-esc="tot_invoices"
-                                          t-options="{'widget': 'monetary', 'display_currency': currency}"/>
-                                </t>
-                            </td>
+                <!-- 5. Số tiền Hóa đơn -->
+                <td class="text-right num">
+                    <t t-if="tot_invoices">
+                        <span t-esc="tot_invoices" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                    </t>
+                </td>
 
-                            <!-- 6. ĐÃ HĐ -->
-                            <td class="text-right num">
-                                <t t-if="tot_paid_hd">
-                                    <span t-esc="tot_paid_hd"
-                                          t-options="{'widget': 'monetary', 'display_currency': currency}"/>
-                                </t>
-                            </td>
+                <!-- 6. ĐÃ HĐ -->
+                <td class="text-right num">
+                    <t t-if="tot_paid_hd">
+                        <span t-esc="tot_paid_hd" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                    </t>
+                </td>
 
-                            <!-- 7. CHƯA HĐ -->
-                            <td class="text-right num">
-                                <t t-if="tot_advance">
-                                    <span t-esc="tot_advance"
-                                          t-options="{'widget': 'monetary', 'display_currency': currency}"/>
-                                </t>
-                            </td>
+                <!-- 7. CHƯA HĐ -->
+                <td class="text-right num">
+                    <t t-if="tot_advance">
+                        <span t-esc="tot_advance" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                    </t>
+                </td>
 
-                            <!-- 8. Còn nợ -->
-                            <td class="text-right num">
-                                <t t-if="tot_residual">
-                                    <span t-esc="tot_residual"
-                                          t-options="{'widget': 'monetary', 'display_currency': currency}"/>
-                                </t>
-                            </td>
+                <!-- 8. Còn nợ -->
+                <td class="text-right num">
+                    <t t-if="tot_residual">
+                        <span t-esc="tot_residual" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                    </t>
+                </td>
 
-                            <!-- 9-10. Không cộng -->
-                            <td class="text-center">-</td>
-                            <td class="text-center">-</td>
-                        </tr>
+                <!-- 9-10. Không cộng -->
+                <td class="text-center">-</td>
+                <td class="text-center">-</td>
+            </tr>
 
-                        <!-- ====== CÁC DÒNG CHI TIẾT ====== -->
-                        <t t-set="stt" t-value="0"/>
-                        <t t-foreach="docs" t-as="o">
-                            <tr>
-                                <td class="text-center">
-                                    <t t-set="stt" t-value="stt + 1"/>
-                                    <span t-esc="stt"/>
-                                </td>
-                                <td>
-                                    <span t-field="o.partner_id.name"/>
-                                </td>
-                                <td>
-                                    <span t-field="o.interpretation"/>
-                                </td>
+            <!-- ====== CÁC DÒNG CHI TIẾT ====== -->
+            <t t-set="stt" t-value="0"/>
+            <t t-foreach="docs" t-as="o">
+                <tr>
+                    <td class="text-center">
+                        <t t-set="stt" t-value="stt + 1"/>
+                        <span t-esc="stt"/>
+                    </td>
+                    <td>
+                        <span t-field="o.partner_id.name"/>
+                    </td>
+                    <td>
+                        <span t-field="o.interpretation"/>
+                    </td>
 
-                                <!-- 4. Số tiền hợp đồng -->
-                                <t t-if="o.total_contract_amount">
-                                    <td class="text-right num">
-                                        <span t-field="o.total_contract_amount"/>
-                                    </td>
-                                </t>
-                                <t t-else="">
-                                    <td class="text-center">-</td>
-                                </t>
+                    <!-- 4. Số tiền hợp đồng -->
+                    <t t-if="o.total_contract_amount">
+                        <td class="text-right num">
+                            <span t-field="o.total_contract_amount"/>
+                        </td>
+                    </t>
+                    <t t-else="">
+                        <td class="text-center">-</td>
+                    </t>
 
-                                <!-- 5. Số tiền Hóa đơn -->
-                                <t t-if="o.total_invoice_amount">
-                                    <td class="text-right num">
-                                        <span t-field="o.total_invoice_amount"/>
-                                    </td>
-                                </t>
-                                <t t-else="">
-                                    <td class="text-center">-</td>
-                                </t>
+                    <!-- 5. Số tiền Hóa đơn -->
+                    <t t-if="o.total_invoice_amount">
+                        <td class="text-right num">
+                            <span t-field="o.total_invoice_amount"/>
+                        </td>
+                    </t>
+                    <t t-else="">
+                        <td class="text-center">-</td>
+                    </t>
 
-                                <!-- 6 + 7. ĐÃ HĐ / CHƯA HĐ -->
-                                <t t-set="paid_hd"
-                                   t-value="(o.total_payment_amount or 0.0) - (o.advance_amount or 0.0)"/>
+                    <!-- 6 + 7. ĐÃ HĐ / CHƯA HĐ -->
+                    <t t-set="paid_hd" t-value="(o.total_payment_amount or 0.0) - (o.advance_amount or 0.0)"/>
 
-                                <!-- Đã HĐ -->
-                                <t t-if="o.total_invoice_amount and paid_hd">
-                                    <td class="text-right num">
-                                        <span t-esc="paid_hd"
-                                              t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
-                                    </td>
-                                </t>
-                                <t t-else="">
-                                    <td class="text-center">-</td>
-                                </t>
+                    <!-- Đã HĐ -->
+                    <t t-if="o.total_invoice_amount and paid_hd">
+                        <td class="text-right num">
+                            <span t-esc="paid_hd" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                        </td>
+                    </t>
+                    <t t-else="">
+                        <td class="text-center">-</td>
+                    </t>
 
-                                <!-- Chưa HĐ -->
-                                <t t-if="o.advance_amount">
-                                    <td class="text-right num">
-                                        <span t-field="o.advance_amount"/>
-                                    </td>
-                                </t>
-                                <t t-else="">
-                                    <td class="text-center">-</td>
-                                </t>
+                    <!-- Chưa HĐ -->
+                    <t t-if="o.advance_amount">
+                        <td class="text-right num">
+                            <span t-field="o.advance_amount"/>
+                        </td>
+                    </t>
+                    <t t-else="">
+                        <td class="text-center">-</td>
+                    </t>
 
-                                <!-- 8. Còn nợ -->
-                                <t t-if="o.residual_amount">
-                                    <td class="text-right num">
-                                        <span t-field="o.residual_amount"/>
-                                    </td>
-                                </t>
-                                <t t-else="">
-                                    <td class="text-center">-</td>
-                                </t>
+                    <!-- 8. Còn nợ -->
+                    <t t-if="o.residual_amount">
+                        <td class="text-right num">
+                            <span t-field="o.residual_amount"/>
+                        </td>
+                    </t>
+                    <t t-else="">
+                        <td class="text-center">-</td>
+                    </t>
 
-                                <!-- 9. Hạn thanh toán (text due_days) -->
-                                <td class="text-center">
-                                    <span t-if="o.due_days" t-field="o.due_days"/>
-                                </td>
+                    <!-- 9. Hạn thanh toán (text due_days) -->
+                    <td class="text-center">
+                        <span t-if="o.due_days" t-field="o.due_days"/>
+                    </td>
 
-                                <!-- 10. Ghi chú -->
-                                <td class="text-center">
-                                    <span t-if="o.note" t-field="o.note"/>
-                                </td>
-                            </tr>
-                        </t>
-                        <!-- ====== HẾT CÁC DÒNG CHI TIẾT ====== -->
-                    </tbody>
-                </table>
+                    <!-- 10. Ghi chú -->
+                    <td class="text-center">
+                        <span t-if="o.note" t-field="o.note"/>
+                    </td>
+                </tr>
+            </t>
+            <!-- ====== HẾT CÁC DÒNG CHI TIẾT ====== -->
+        </tbody>
+    </table>
 
-                <div style="page-break-inside: avoid; font-weight: bold">
-                    <div class="row">
-                        <div class="col-6" style="text-align:center;line-height:1.8">
-                            <div>
+    <div style="page-break-inside: avoid; font-weight: bold">
+        <div class="row">
+            <div class="col-6" style="text-align:center;line-height:1.8">
+                <div>
                                 TP Hồ Chí Minh ngày <span t-esc="datetime.datetime.today().day"/>
                                 tháng <span t-esc="datetime.datetime.today().month"/>
                                 năm <span t-esc="datetime.datetime.today().year"/>
-                            </div>
-                            <div>
-                                <span>Người lập biểu</span>
-                            </div>
-                            <div style="height:65px">
-                                <t t-if="user_id.digital_signature">
-                                    <img t-att-src="'data:image/png;base64,' + (user_id.digital_signature.decode() if isinstance(user_id.digital_signature, bytes) else user_id.digital_signature)"
-                                         style="max-height:65px; max-width:150px;"/>
-                                </t>
-                            </div>
-                            <div>
-                                <span t-field="user_id.name"/>
-                            </div>
-                        </div>
+        </div>
+        <div>
+            <span>Người lập biểu</span>
+        </div>
+        <div style="height:65px">
+            <t t-if="user_id.digital_signature">
+                <img t-att-src="'data:image/png;base64,' + (user_id.digital_signature.decode() if isinstance(user_id.digital_signature, bytes) else user_id.digital_signature)" style="max-height:65px; max-width:150px;"/>
+            </t>
+        </div>
+        <div>
+            <span t-field="user_id.name"/>
+        </div>
+    </div>
 
-                        <div class="col-6" style="text-align:center;line-height:1.8">
-                            <div>
+    <div class="col-6" style="text-align:center;line-height:1.8">
+        <div>
                                 TP Hồ Chí Minh ngày <span t-esc="datetime.datetime.today().day"/>
                                 tháng <span t-esc="datetime.datetime.today().month"/>
                                 năm <span t-esc="datetime.datetime.today().year"/>
-                            </div>
-                            <div>Giám Đốc</div>
-                            <div style="height:65px">
-                                <t t-set="director_group" t-value="env.ref('custom_director_role.group_director')"/>
-                                <t t-set="director" t-value="env['res.users'].search([('groups_id', 'in', director_group.id)], limit=1)"/>
-                                <t t-if="director and director.digital_signature">
-                                    <img t-att-src="'data:image/png;base64,' + (director.digital_signature.decode() if isinstance(director.digital_signature, bytes) else director.digital_signature)"
-                                         style="max-height:65px; max-width:150px;"/>
-                                </t>
-                            </div>
-                            <div>
-                                <span> Đỗ Minh Toàn </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+</div>
+<div>Giám Đốc</div>
+<div style="height:65px">
+    <t t-set="director_group" t-value="env.ref('custom_director_role.group_director')"/>
+    <t t-set="director" t-value="env['res.users'].search([('groups_id', 'in', director_group.id)], limit=1)"/>
+    <t t-if="director and director.digital_signature">
+        <img t-att-src="'data:image/png;base64,' + (director.digital_signature.decode() if isinstance(director.digital_signature, bytes) else director.digital_signature)" style="max-height:65px; max-width:150px;"/>
+    </t>
+</div>
+<div>
+    <span> Đỗ Minh Toàn </span>
+</div>
+</div>
+</div>
+</div>
 
-            </div>
-        </t>
-    </template>
+</div>
+</t>
+</template>
 
-    <!-- Hai action URL: HTML & PDF -->
-    <record id="action_supplier_summary_report_html_url" model="ir.actions.act_url">
-        <field name="name">Supplier Summary (HTML)</field>
-        <field name="type">ir.actions.act_url</field>
-        <!-- docids = 0 (bị bỏ qua), AbstractModel sẽ lấy search([]) -->
-        <field name="url">/report/html/vendor_debt_management.report_supplier_summary_view/0</field>
-        <field name="target">new</field>
-    </record>
+<!-- Hai action URL: HTML & PDF -->
+<record id="action_supplier_summary_report_html_url" model="ir.actions.act_url">
+<field name="name">Supplier Summary (HTML)</field>
+<field name="type">ir.actions.act_url</field>
+<!-- docids = 0 (bị bỏ qua), AbstractModel sẽ lấy search([]) -->
+<field name="url">/report/html/vendor_debt_management.report_supplier_summary_view/0</field>
+<field name="target">new</field>
+</record>
 
-    <record id="action_supplier_summary_report_pdf_url" model="ir.actions.act_url">
-        <field name="name">Supplier Summary (PDF)</field>
-        <field name="type">ir.actions.act_url</field>
-        <field name="url">/report/pdf/vendor_debt_management.report_supplier_summary_view/0</field>
-        <field name="target">new</field>
-    </record>
+<record id="action_supplier_summary_report_pdf_url" model="ir.actions.act_url">
+<field name="name">Supplier Summary (PDF)</field>
+<field name="type">ir.actions.act_url</field>
+<field name="url">/report/pdf/vendor_debt_management.report_supplier_summary_view/0</field>
+<field name="target">new</field>
+</record>
 
-    <!-- Action report HTML -->
-    <record id="action_supplier_summary_report" model="ir.actions.report">
-        <field name="name">Supplier Summary Report</field>
-        <field name="model">supplier.invoice.payment.summary</field>
-        <field name="report_type">qweb-html</field>
-        <field name="report_name">vendor_debt_management.report_supplier_summary_view</field>
-        <field name="report_file">vendor_debt_management.report_supplier_summary_view</field>
-        <field name="print_report_name">'Supplier Summary Report'</field>
-        <field name="paperformat_id" ref="custom_sale_report_a4_portrait"/>
-    </record>
+<!-- Action report HTML -->
+<record id="action_supplier_summary_report" model="ir.actions.report">
+<field name="name">Supplier Summary Report</field>
+<field name="model">supplier.invoice.payment.summary</field>
+<field name="report_type">qweb-html</field>
+<field name="report_name">vendor_debt_management.report_supplier_summary_view</field>
+<field name="report_file">vendor_debt_management.report_supplier_summary_view</field>
+<field name="print_report_name">'Supplier Summary Report'</field>
+<field name="paperformat_id" ref="custom_sale_report_a4_portrait"/>
+</record>
 
-    <!-- Action report PDF -->
-    <record id="action_supplier_summary_report_pdf" model="ir.actions.report">
-        <field name="name">Supplier Summary Report (PDF)</field>
-        <field name="model">supplier.invoice.payment.summary</field>
-        <field name="report_type">qweb-pdf</field>
-        <field name="report_name">vendor_debt_management.report_supplier_summary_view</field>
-        <field name="report_file">vendor_debt_management.report_supplier_summary_view</field>
-        <field name="print_report_name">'Supplier Summary Report'</field>
-        <field name="paperformat_id" ref="custom_sale_report_a4_portrait"/>
-    </record>
+<!-- Action report PDF -->
+<record id="action_supplier_summary_report_pdf" model="ir.actions.report">
+<field name="name">Supplier Summary Report (PDF)</field>
+<field name="model">supplier.invoice.payment.summary</field>
+<field name="report_type">qweb-pdf</field>
+<field name="report_name">vendor_debt_management.report_supplier_summary_view</field>
+<field name="report_file">vendor_debt_management.report_supplier_summary_view</field>
+<field name="print_report_name">'Supplier Summary Report'</field>
+<field name="paperformat_id" ref="custom_sale_report_a4_portrait"/>
+</record>
 
-    <!-- Menu -->
-    <menuitem id="menu_supplier_summary_root"
-              name="Tổng hợp nhà cung cấp"
-              parent="custom_account_menu.menu_accounting_reporting"/>
+<!-- Menu -->
+<menuitem id="menu_supplier_summary_root" name="Tổng hợp nhà cung cấp" parent="custom_account_menu.menu_accounting_reporting" sequence="3"/>
 
-    <menuitem id="menu_supplier_summary_report"
-              name="Báo cáo Công nợ NCC"
-              parent="menu_supplier_summary_root"
-              action="vendor_debt_management.action_supplier_summary_report"/>
+<!-- <menuitem id="menu_supplier_summary_report" name="Báo cáo Công nợ NCC" parent="menu_supplier_summary_root" action="vendor_debt_management.action_supplier_summary_report"/> -->
 </odoo>

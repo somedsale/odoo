@@ -10,5 +10,5 @@
     </record>
 
     <menuitem id="menu_project_profit_root" name="Công Trình" parent="custom_account_menu.menu_accounting_reporting"/>
-    <menuitem id="menu_report_project_profit" name="Lãi lỗ công trình" parent="menu_project_profit_root" action="action_report_project_profit" sequence="1" />
+    <!-- <menuitem id="menu_report_project_profit" name="Lãi lỗ công trình" parent="menu_project_profit_root" action="action_report_project_profit" sequence="1" /> -->
 </odoo>
