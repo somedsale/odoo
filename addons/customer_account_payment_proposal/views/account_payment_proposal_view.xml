@@ -88,7 +88,7 @@
                             <field name="unit_price" string="Đơn giá" options="{'currency_field': 'currency_id'}"/>
                             <field name="amount" string="Thành tiền" width="130" options="{'currency_field': 'currency_id'}" sum="1"/>
                             <field name="project_id" string="Dự án" width="200" optional="hide"/>
-                            <field name="attachment_ids" widget="many2many_binary" options="{'no_create': True}" width="160"/>
+                            <field name="attachment_ids" widget="many2many_binary" width="160"/>
                             <field name="note" string="Ghi chú" width="120"/>
                             <field name="currency_id" optional="hide"/>
                         </tree>
