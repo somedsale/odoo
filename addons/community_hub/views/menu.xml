@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+  <record id="action_community_hub" model="ir.actions.client">
+    <field name="name">Community Hub</field>
+    <field name="tag">community_hub.client_action</field>
+  </record>
+
+  <menuitem id="menu_community_hub_root" name="Community Hub" sequence="10"/>
+  <menuitem id="menu_community_hub_dashboard" name="Dashboard" parent="menu_community_hub_root"
+            action="action_community_hub" sequence="10"/>
+  <menuitem id="menu_community_hub_manage" name="Manage (Backend)" parent="menu_community_hub_root" sequence="20"/>
+
+  <menuitem id="menu_community_hub_communities" name="Communities" parent="menu_community_hub_manage"
+            action="community_hub_action_community" sequence="10"/>
+  <menuitem id="menu_community_hub_channels" name="Channels" parent="menu_community_hub_manage"
+            action="community_hub_action_channel" sequence="20"/>
+
+</odoo>
