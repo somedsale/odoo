@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="One2ManySearchTemplate" t-inherit="web.X2ManyField" t-inherit-mode="primary" owl="1">
+        <xpath expr="//t[@t-if='displayControlPanelButtons']" position="before">
+            <div t-if="props.viewMode === 'list'" class="o_o2m_searchbar" t-att-style="state.showSearchBar ? '' : 'display:none;'">
+                <input t-ref="o2m_search_input" type="text" class="oe_search_value searchInput pl-3" placeholder="Search..." t-on-keyup="onInputKeyUp" style="margin-bottom:10px;height:30px;"/>
+            </div>
+        </xpath>
+    </t>
+</templates>

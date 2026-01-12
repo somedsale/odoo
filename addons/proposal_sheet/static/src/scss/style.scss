@@ -1,0 +1,20 @@
+@include media-breakpoint-down(md) {
+  .o_form_view .o_field_one2many[name="expense_noproject_line_ids"] {
+    .o_list_table {
+      width: max-content !important;
+      min-width: 100% !important;
+      // max-width: 95vw; // ✅ giới hạn
+    }
+
+    th,
+    td {
+      white-space: nowrap;
+    }
+
+    .o_field_widget,
+    .o_field_widget input,
+    .o_input {
+      min-width: 0 !important;
+    }
+  }
+}

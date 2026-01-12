@@ -1,4 +1,4 @@
-<odoo>
+<odoo noupdate="1">
     <record id="seq_proposal_sheet" model="ir.sequence">
         <field name="name">Mã Phiếu Đề Xuất</field>
         <field name="code">proposal.sheet</field>

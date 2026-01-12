@@ -1,5 +1,6 @@
 from odoo import api, models, fields
 
+
 class ReportPendingApproval(models.AbstractModel):
     _name = 'report.expense_proposal.report_pending_approval'
     _description = 'QWeb Report: Pending Approval Expense Proposals'
@@ -7,79 +8,85 @@ class ReportPendingApproval(models.AbstractModel):
     @api.model
     def _get_report_values(self, docids, data=None):
 
-        # Lấy toàn bộ Phiếu Đề Xuất loại 'other' đã duyệt
         sheets = self.env['proposal.sheet'].search([
-            ('type', '=', 'other'),
-            ('state', '=', 'approved')
+            ('type', 'in', ['other', 'expense']),
+            ('state', '=', 'approved'),
         ])
 
         today = fields.Date.context_today(self)
 
-        # === DANH SÁCH NHÓM ===
-        group_employee = []
-        group_office = []
-        group_project = []
-        group_estimated = []
-        group_fixed = []
-        group_irregular = []
-
-        totals = {
-            'employee': 0.0,
-            'office': 0.0,
-            'project': 0.0,
-            'estimated_cost': 0.0,
-            'fixed_cost': 0.0,
-            'irregular_expenses': 0.0,
+        groups = {
+            'employee': [],
+            'office': [],
+            'project': [],
+            'estimated_cost': [],
+            'fixed_cost': [],
+            'irregular_expenses': [],
         }
+        totals = {k: 0.0 for k in groups.keys()}
+        idx = {k: 0 for k in groups.keys()}
 
-        def _payload(l, idx):
+        def _get_amount(line):
+            if hasattr(line, 'amount'):
+                return line.amount or 0.0
+            if hasattr(line, 'price_total'):
+                return line.price_total or 0.0
+            return 0.0
+
+        def _payload(line, stt):
+            # Đối tượng / NCC
+            obj = ''
+            if getattr(line, 'object', False):
+                obj = line.object.name or ''
+            elif getattr(line, 'vendor_id', False):
+                obj = line.vendor_id.display_name or ''
+            elif getattr(line, 'partner_id', False):
+                obj = line.partner_id.display_name or ''
+
+            # Nội dung
+            name = ''
+            if getattr(line, 'content', False):
+                name = line.content or ''
+            elif getattr(line, 'expense_id', False):
+                name = line.expense_id.display_name or ''
+            elif getattr(line, 'name', False):
+                name = line.name or ''
+
+            sheet = getattr(line, 'sheet_id', False)
+            project = sheet.project_id.display_name if sheet and sheet.project_id else ''
+
+            note = getattr(line, 'note', '') or ''
+            date = getattr(line, 'date', False) or (sheet.date_proposal if sheet else False) or (sheet.create_date.date() if sheet and sheet.create_date else False)
+
             return {
-                'stt': idx,
-                'object': l.object.name if l.object else '',
-                'name': l.content or '',
-                'amount': l.amount or 0.0,
-                'project': l.sheet_id.project_id.display_name if l.sheet_id.project_id else '',
-                'note': l.note or '',
-                'date': l.date,
+                'stt': stt,
+                'object': obj,
+                'name': name,
+                'amount': _get_amount(line),
+                'project': project,
+                'note': note,
+                'date': date,
             }
 
-        # Gom tất cả dòng chi phí ngoài công trình
-        all_lines = sheets.mapped('expense_noproject_line_ids')
-
-        # Bộ đếm STT
-        idx = {
-            'employee': 0,
-            'office': 0,
-            'project': 0,
-            'estimated_cost': 0,
-            'fixed_cost': 0,
-            'irregular_expenses': 0,
-        }
-
-        # Phân loại dòng
-        for l in all_lines:
-            cls = l.cost_classification  # key: employee / office / project / estimated_cost ...
+        def _add(cls, line):
             if cls not in totals:
-                continue
-
+                return
             idx[cls] += 1
-            line = _payload(l, idx[cls])
-            totals[cls] += l.amount
+            data = _payload(line, idx[cls])
+            totals[cls] += data['amount']
+            groups[cls].append(data)
 
-            if cls == 'employee':
-                group_employee.append(line)
-            elif cls == 'office':
-                group_office.append(line)
-            elif cls == 'project':
-                group_project.append(line)
-            elif cls == 'estimated_cost':
-                group_estimated.append(line)
-            elif cls == 'fixed_cost':
-                group_fixed.append(line)
-            elif cls == 'irregular_expenses':
-                group_irregular.append(line)
+        # ====== LOOP THẲNG (KHÔNG KIND) ======
+        for s in sheets:
+            # 1) Dòng OTHER: phân loại theo cost_classification
+            for l in s.expense_noproject_line_ids:
+                cls = l.cost_classification or ''
+                _add(cls, l)
 
-        # TRẢ RA ĐÚNG KEY THEO XML
+            # 2) Dòng EXPENSE: cho vào nhóm PROJECT (như bạn đang muốn)
+            for l in s.expense_line_ids:
+                _add('project', l)
+
         lists = [{
             'total_employee': totals['employee'],
             'total_office': totals['office'],
@@ -88,12 +95,12 @@ class ReportPendingApproval(models.AbstractModel):
             'total_fixed': totals['fixed_cost'],
             'total_irregular': totals['irregular_expenses'],
 
-            'line_employee': group_employee,
-            'line_office': group_office,
-            'line_project': group_project,
-            'line_estimated': group_estimated,
-            'line_fixed': group_fixed,
-            'line_irregular': group_irregular,
+            'line_employee': groups['employee'],
+            'line_office': groups['office'],
+            'line_project': groups['project'],
+            'line_estimated': groups['estimated_cost'],
+            'line_fixed': groups['fixed_cost'],
+            'line_irregular': groups['irregular_expenses'],
         }]
 
         total = sum(totals.values())

@@ -25,8 +25,8 @@ class ProposalOtherExpenseLine(models.Model):
     quantity =fields.Float(string='Số lượng', default=1.0, digits=(16, 1))
 
     # Nội dung chi / thông tin chính
-    content = fields.Char(string='Nội dung chi', required=True, tracking=True)
-    amount = fields.Float(string='Số tiền', required=True, tracking=True,compute ='_compute_amount', store=True)
+    content = fields.Text(string='Nội dung chi', required=True, tracking=True)
+    amount = fields.Float(string='Số tiền',tracking=True,compute ='_compute_amount', store=True)
     date = fields.Date(string='Ngày dự chi', default=fields.Date.today, tracking=True)
     object = fields.Many2one('res.partner', string='Đối tượng/NCC')
     note = fields.Text(string='Ghi chú')
@@ -72,6 +72,14 @@ class ProposalOtherExpenseLine(models.Model):
                 raise ValidationError(_("Chỉ được thêm dòng 'Chi phí ngoài công trình' vào phiếu loại 'Khác'."))
         else:
             raise ValidationError(_("Thiếu thông tin Phiếu đề xuất (sheet_id)."))
+        if not vals.get("sequence"):
+            last = self.search(
+                [("sheet_id", "=", vals["sheet_id"])],
+                order="sequence desc, id desc",
+                limit=1,
+            )
+            # +10 để sau này dễ chèn giữa khi kéo thả (handle)
+            vals["sequence"] = (last.sequence or 0) + 1
 
         return super().create(vals)
 
