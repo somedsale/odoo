@@ -112,17 +112,17 @@
                         </page>
                         <page string="Chi phí khác" invisible="type != 'other'">
                             <field name="expense_noproject_line_ids" context="{'default_type': 'other'}" readonly="state !='draft'">
-                                <tree editable="bottom">
-                                    <field name="sequence" widget="handle"/>
-                                    <field name="date"/>
-                                    <field name="content" string="Nội dung đề xuất"/>
-                                    <field name="unit"/>
-                                    <field name="quantity"/>
-                                    <field name="price_unit" string="Đơn giá" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                                    <field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
-                                    <field name="object"/>
-                                    <field name="cost_classification"/>
-                                    <field name="note"/>
+                                <tree editable="bottom" default_order="sequence,id">
+                                    <field name="sequence" widget="handle" width="30"/>
+                                    <field name="date" width="95"/>
+                                    <field name="content" string="Nội dung" width="260"/>
+                                    <field name="unit" string="DVT" width="110"/>
+                                    <field name="quantity" string="SL" width="80"/>
+                                    <field name="price_unit" string="Đơn giá" width="120" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="amount" string="Thành tiền" width="120" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
+                                    <field name="object" string="Đối tượng" width="160"/>
+                                    <field name="cost_classification" string="Phân loại" width="180"/>
+                                    <field name="note" string="Ghi chú" width="100"/>
                                     <field name="currency_id" optional="hide"/>
                                 </tree>
                             </field>

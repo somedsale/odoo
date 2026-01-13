@@ -4,14 +4,21 @@
 */
 
 .o_form_view {
-    .o_form_sheet_bg {
-        max-width: none;
+  .o_form_sheet_bg {
+    max-width: none;
+  }
+  .o_form_sheet {
+    max-width: $o-form-view-sheet-max-width;
+    width: 100%;
+    @include media-breakpoint-up(md) {
+      margin: $o-sheet-vpadding * 0.2 auto;
     }
+  }
+  @include media-breakpoint-down(md) {
     .o_form_sheet {
-        max-width: $o-form-view-sheet-max-width;
-        width: 100%;
-        @include media-breakpoint-up(md) {
-            margin: $o-sheet-vpadding * 0.2 auto;
-        }
+      width: auto;
+      max-width: 100%;
+      margin: 0;
     }
+  }
 }

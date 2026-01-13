@@ -72,6 +72,14 @@ class ProposalOtherExpenseLine(models.Model):
                 raise ValidationError(_("Chỉ được thêm dòng 'Chi phí ngoài công trình' vào phiếu loại 'Khác'."))
         else:
             raise ValidationError(_("Thiếu thông tin Phiếu đề xuất (sheet_id)."))
+        if not vals.get("sequence"):
+            last = self.search(
+                [("sheet_id", "=", vals["sheet_id"])],
+                order="sequence desc, id desc",
+                limit=1,
+            )
+            # +10 để sau này dễ chèn giữa khi kéo thả (handle)
+            vals["sequence"] = (last.sequence or 0) + 1
 
         return super().create(vals)
 
