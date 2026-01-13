@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- # -*- coding: utf-8 -*-
+# See LICENSE file for full licensing details.
+# See COPYRIGHT file for full copyright details.
+# Developed by Bizmate - Unbox Solutions Co., Ltd. -->
+
+<odoo>
+    <record id="bm_sequence_view" model="ir.ui.view">
+        <field name="name">bm.sequence.view</field>
+        <field name="model">ir.sequence</field>
+        <field name="inherit_id" ref="base.sequence_view" />
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='use_date_range']" position="after">
+                <field name="date_range_mode" invisible="not use_date_range"/>
+            </xpath>
+
+            <xpath expr="//field[@name='date_range_ids']" position="attributes">
+                <attribute name="readonly">date_range_mode != 'custom'</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

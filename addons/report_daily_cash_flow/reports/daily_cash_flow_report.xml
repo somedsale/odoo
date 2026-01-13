@@ -1,13 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-
-    <record id="daily_cash_flow_report" model="ir.actions.report">
-        <field name="name">Báo cáo thu chi</field>
-        <field name="model">daily.cash.flow.wizard</field>
-        <field name="report_type">qweb-html</field>
-        <field name="report_name">report_daily_cash_flow.daily_cash_flow_report_template</field>
-        <field name="print_report_name">'Báo cáo thu chi'</field>
-    </record>
     <record id="custom_sale_report_a4_portrait" model="report.paperformat">
         <field name="name">Custom Sale Report A4 Portrait</field>
         <field name="format">A4</field>
@@ -17,7 +9,16 @@
         <field name="margin_left">10</field>        <!-- Tăng từ 7mm lên 10mm -->
         <field name="margin_right">10</field>        <!-- Tăng từ 7mm lên 10mm -->
         <field name="header_spacing">25</field>        <!-- Giảm từ 35mm xuống 25mm -->
-        <field name="dpi">90</field>
+        <field name="dpi">120</field>
+    </record>
+
+    <record id="daily_cash_flow_report" model="ir.actions.report">
+        <field name="name">Báo cáo thu chi</field>
+        <field name="model">daily.cash.flow.wizard</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">report_daily_cash_flow.daily_cash_flow_report_template</field>
+        <field name="print_report_name">'Báo cáo thu chi'</field>
+        <field name="paperformat_id" ref="custom_sale_report_a4_portrait"/>
     </record>
     <template id="daily_cash_flow_report_layout">
         <t t-call="web.html_container">

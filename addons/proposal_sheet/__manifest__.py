@@ -17,6 +17,12 @@
         'views/task_inherit_view.xml',
         'views/project_task_form_inherit_show_team_lead.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'proposal_sheet/static/src/**/*',
+        ],
+    },
+
     'installable': True,
     'application': True,
 }
