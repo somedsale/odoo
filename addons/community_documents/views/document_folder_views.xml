@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
+
+    <!-- TREE -->
     <record id="view_document_folder_tree" model="ir.ui.view">
         <field name="name">document.folder.tree</field>
         <field name="model">document.folder</field>
@@ -7,30 +9,38 @@
             <tree string="Folders">
                 <field name="name"/>
                 <field name="parent_id"/>
-                <field name="access_level"/>
+                <field name="access_mode"/>
                 <field name="owner_id"/>
                 <field name="document_count" widget="statinfo"/>
             </tree>
         </field>
     </record>
 
+    <!-- FORM -->
     <record id="view_document_folder_form" model="ir.ui.view">
         <field name="name">document.folder.form</field>
         <field name="model">document.folder</field>
         <field name="arch" type="xml">
             <form string="Folder">
                 <sheet>
+
                     <group>
                         <field name="name"/>
-                        <field name="parent_id"/>
+                        <field name="parent_id" readonly="can_edit_access == False"/>
                         <field name="owner_id" groups="community_documents.group_documents_manager"/>
-                        <field name="access_level"/>
+                        <field name="can_edit_access" invisible="1"/>
+                        <field name="access_mode" widget="radio" readonly="can_edit_access == False"/>
                     </group>
-                    <group string="USERS" col="2" invisible="access_level != 'shared'">
-    <field name="writable_user_ids" widget="many2many_tags" domain="[('share','=',False)]"/>
-    <field name="readable_user_ids" widget="many2many_tags" domain="[('share','=',False)]"/>
-    <field name="own_document_only_user_ids" widget="many2many_tags" domain="[('share','=',False)]"/>
-</group>
+
+
+                    <!-- ✅ Chỉ hiện khi access_mode = restricted -->
+                    <group string="USERS" invisible="access_mode == 'private'">
+                    
+                            <field name="allowed_user_ids"
+           widget="many2many_tags"
+           domain="[('share','=',False)]"
+           options="{'no_create': True, 'no_create_edit': True}"/>
+                    </group>
 
                     <notebook>
                         <page string="Documents">
@@ -41,13 +51,16 @@
                                     <field name="name"/>
                                     <field name="owner_id"/>
                                     <field name="tag_ids" widget="many2many_tags"/>
-                                    <field name="attachment_id"/>
+                                    <!-- bỏ attachment_id nếu bạn không muốn hiện -->
+                                    <!-- <field name="attachment_id"/> -->
                                 </tree>
                             </field>
                         </page>
                     </notebook>
+
                 </sheet>
             </form>
         </field>
     </record>
+
 </odoo>

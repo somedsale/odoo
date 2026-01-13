@@ -17,7 +17,5 @@ access_document_team_manager,document.team manager,model_document_team,,1,1,1,1
 access_document_create_folder_wizard_user,document.create folder wizard user,model_document_create_folder_wizard,,1,1,1,1
 access_document_folder_member_user,document.folder.member user,model_document_folder_member,,1,1,1,1
 access_document_folder_member_manager,document.folder.member manager,model_document_folder_member,,1,1,1,1
-access_doc_create_folder_wiz_readable_user,doc.create.folder.wiz.readable user,model_doc_create_folder_wiz_readable,,1,1,1,1
-access_doc_create_folder_wiz_writable_user,doc.create.folder.wiz.writable user,model_doc_create_folder_wiz_writable,,1,1,1,1
-access_doc_create_folder_wiz_ownonly_user,doc.create.folder.wiz.ownonly user,model_doc_create_folder_wiz_ownonly,,1,1,1,1
+
 access_document_move_copy_wizard,document.move.copy.wizard,model_document_move_copy_wizard,base.group_user,1,1,1,1
