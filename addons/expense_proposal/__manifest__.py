@@ -17,6 +17,7 @@
         'reports/report_expense_proposal.xml',
         'reports/report_expense_proposal_template.xml',
         'reports/pending_payment_wizard_report.xml',
+        'reports/report_planned_payment.xml',
         'wizard/view_wizard.xml',
         'wizard/pending_report_wizard_views.xml',
     ],

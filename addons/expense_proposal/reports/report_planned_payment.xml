@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="paperformat_planned_payment_a4_portrait" model="report.paperformat">
+        <field name="name">Planned Payment A4 Portrait</field>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">30</field>
+        <field name="margin_bottom">30</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_spacing">25</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- Layout -->
+    <template id="report_planned_payment_layout">
+        <t t-call="web.html_container">
+            <t t-set="res_company" t-value="company"/>
+
+            <div class="header" style="display:flex;justify-content:space-between;font-family:Times New Roman;">
+                <table style="width:100%; border-collapse:collapse; border:1px solid #fff;">
+                    <tr>
+                        <td style="text-align:left; vertical-align:middle; border:1px solid #fff; width:50%;">
+                            <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id" alt="Company Logo" style="max-width:160px;"/>
+                        </td>
+                        <td style="text-align:right; vertical-align:middle; border:1px solid #fff; font-size:11px; width:50%;">
+                            <span t-esc="res_company.name" style="text-transform:uppercase;"/>
+                            <br/>
+                            MST: <span t-esc="res_company.partner_id.vat"/>
+                        <br/>
+                            Địa chỉ: <span t-esc="res_company.partner_id.street"/>
+                    <br/>
+                            SĐT: <span t-esc="res_company.phone_accounting"/>
+                <br/>
+                            Email: <span style="text-transform:lowercase;" t-esc="res_company.account_email"/>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div class="article" style="font-family:Times New Roman; font-size:11pt; line-height:1.5;">
+    <t t-raw="0"/>
+</div>
+
+<div class="footer" style="text-align:center; padding:5mm; font-size:10pt;">
+    <p>
+        <span class="page"/>
+    </p>
+</div>
+</t>
+</template>
+
+<!-- Report body -->
+<template id="report_planned_payment">
+<t t-call="expense_proposal.report_planned_payment_layout">
+
+<style>
+                .page { font-family:"Times New Roman"; font-size:12pt; color:#333; }
+                .styled-table { border-collapse:collapse; width:100%; border:1px solid #000; }
+                .styled-table thead tr { background-color:#C6E0B4; font-weight:bold; text-align:center; }
+                .styled-table th, .styled-table td { padding:8px 10px; border:1px solid #000; vertical-align:middle; }
+                .row-total { background-color:#C6E0B4; font-weight:bold; color:#FF0000; }
+                .sec-row { background-color:#E2EFDA; font-weight:bold; color:#FF0000; text-transform:uppercase; }
+                .vendor-row { background-color:#F2F2F2; font-weight:bold; }
+                .text-center { text-align:center; }
+                .text-right { text-align:right; }
+</style>
+
+<div class="page">
+    <h2 style="text-align:center; margin-bottom:8px; font-size:22pt; text-transform:uppercase;">
+                    BÁO CÁO CÁC KHOẢN DỰ CHI<br/>
+                    (CUNG ỨNG VẬT TƯ/CHI PHÍ CÔNG TRÌNH)
+    </h2>
+
+    <div style="text-align:center; margin-bottom:14px; font-size:14pt; font-weight:bold;">
+                    DỰ KIẾN THANH TOÁN
+    </div>
+
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th style="width:6%;">STT</th>
+                <th style="width:22%;">ĐỐI TƯỢNG CHI</th>
+                <th style="width:44%;">NỘI DUNG VẬT TƯ/CHI PHÍ</th>
+                <th style="width:16%;">TỔNG GIÁ TRỊ</th>
+                <th style="width:12%;">GHI CHÚ</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <!-- TỔNG CỘNG -->
+            <tr class="row-total">
+                <td class="text-center"></td>
+                <td colspan="2" class="text-center">TỔNG CỘNG:</td>
+                <td class="text-right">
+                    <t t-esc="total" t-options="{'widget':'monetary','display_currency': res_company.currency_id}"/>
+                </td>
+                <td></td>
+            </tr>
+
+
+            <!-- DỰ ÁN -->
+            <t t-foreach="sections" t-as="sec">
+                <t t-set="i" t-value="pi or 0"/>
+
+                <!-- DÒNG TỔNG DỰ ÁN -->
+                <tr class="sec-row">
+                    <td class="text-center">
+                        <t t-esc="sec.get('roman')"/>
+                    </td>
+                    <td colspan="2">
+                        <t t-esc="sec['project']"/>
+                    </td>
+                    <td class="text-right">
+                        <t t-esc="sec['total']" t-options="{'widget':'monetary','display_currency': res_company.currency_id}"/>
+                    </td>
+                    <td></td>
+                </tr>
+
+                <!-- NCC -->
+                <t t-foreach="sec.get('vendor_groups', [])" t-as="vg">
+
+                    <!-- DÒNG NCC: chỉ hiện NCC + tổng -->
+                    <tr class="vendor-row">
+                        <td class="text-center"></td>
+                        <td>
+                            <t t-esc="vg['vendor']"/>
+                        </td>
+                        <td></td>
+                        <td class="text-right">
+                            <t t-esc="vg['total']" t-options="{'widget':'monetary','display_currency': res_company.currency_id}"/>
+                        </td>
+                        <td></td>
+                    </tr>
+
+                    <!-- DÒNG CHI TIẾT: KHÔNG HIỆN NCC -->
+                    <t t-foreach="vg['lines']" t-as="line">
+                        <tr>
+                            <td class="text-center">
+                                <t t-esc="line['stt']"/>
+                            </td>
+                            <td></td>
+                            <td>
+                                <t t-esc="line['name']"/>
+                            </td>
+                            <td class="text-right">
+                                <t t-esc="line['amount']" t-options="{'widget':'monetary','display_currency': res_company.currency_id}"/>
+                            </td>
+                            <td>
+                                <t t-esc="line['note']"/>
+                            </td>
+                        </tr>
+                    </t>
+
+                </t>
+            </t>
+
+        </tbody>
+    </table>
+</div>
+</t>
+</template>
+
+<!-- Actions URL -->
+<record id="action_report_planned_payment_html_url" model="ir.actions.act_url">
+<field name="name">Dự kiến thanh toán (HTML)</field>
+<field name="type">ir.actions.act_url</field>
+<field name="url">/report/html/expense_proposal.report_planned_payment/0</field>
+<field name="target">new</field>
+</record>
+
+<record id="action_report_planned_payment_pdf_url" model="ir.actions.act_url">
+<field name="name">Dự kiến thanh toán (PDF)</field>
+<field name="type">ir.actions.act_url</field>
+<field name="url">/report/pdf/expense_proposal.report_planned_payment/0</field>
+<field name="target">new</field>
+</record>
+
+<!-- ir.actions.report -->
+<record id="action_report_planned_payment_pdf" model="ir.actions.report">
+<field name="name">Dự kiến thanh toán (PDF)</field>
+<field name="model">proposal.sheet</field>
+<field name="report_type">qweb-pdf</field>
+<field name="report_name">expense_proposal.report_planned_payment</field>
+<field name="report_file">expense_proposal.report_planned_payment</field>
+<field name="print_report_name">'Du_kien_thanh_toan'</field>
+<field name="paperformat_id" ref="expense_proposal.paperformat_planned_payment_a4_portrait"/>
+</record>
+<record id="action_report_planned_payment_html" model="ir.actions.report">
+<field name="name">Dự kiến thanh toán (html)</field>
+<field name="model">proposal.sheet</field>
+<field name="report_type">qweb-html</field>
+<field name="report_name">expense_proposal.report_planned_payment</field>
+<field name="report_file">expense_proposal.report_planned_payment</field>
+<field name="print_report_name">'Du_kien_thanh_toan'</field>
+<field name="paperformat_id" ref="expense_proposal.paperformat_planned_payment_a4_portrait"/>
+</record>
+
+<!-- Menu -->
+<menuitem id="menu_report_planned_payment_root" name="Dự kiến thanh toán" parent="expense_proposal.menu_expense_proposal_root" action="expense_proposal.action_report_planned_payment_html" sequence="2"/>
+</odoo>
