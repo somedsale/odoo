@@ -220,7 +220,7 @@
                                         <t t-esc="'VAT %s' % item[0]"/>
                                     </td>
                                     <td style="white-space:nowrap; text-align:right;">
-                                        <t t-esc="'%s đ' % '{:,.0f}'.format(item[1]['amount'])"/>
+                                        <t t-esc="'%s đ' % '{:,.0f}'.format(item[1]['amount']).replace(',', '.')"/>
                                     </td>
                                     <td style="white-space:nowrap;"></td>
                                 </tr>

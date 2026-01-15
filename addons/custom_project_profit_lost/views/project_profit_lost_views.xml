@@ -8,19 +8,19 @@
                     <button name="load_all_projects" type="object" string="Đồng bộ dữ liệu" class="oe_highlight"/>
                     <button name="action_highlight" type="object" string="Highlight"/>
                 </header>
-                <field name="project_id"/>
-                <field name="num_contract"/>
-                <field name="contract_value" sum="1"/>
-                <field name="settlement_value" sum="1"/>
-                <field name="invoice_amount" sum="1"/>
-                <field name="revenue" sum="1"/>
-                <field name="material_cost" sum="1"/>
-                <field name="labor_cost" sum="1"/>
-                <field name="other_cost" sum="1"/>
-                <field name="expense" sum="1"/>
-                <field name="profit" sum="1"/>
-                <field name ="currency_id" optional="hide"/>
-                <field name="is_highlighted" invisible="1" nolabel="1"/>
+                <field name="project_id" options="{'header_group': 'Hehe'}"/>
+                <field name="num_contract" options="{'header_group': 'Thông tin'}"/>
+                <field name="contract_value" sum="1" options="{'header_group': 'Hợp đồng'}"/>
+                <field name="settlement_value" sum="1" options="{'header_group': 'Hợp đồng'}"/>
+                <field name="invoice_amount" sum="1" options="{'header_group': 'Doanh thu'}"/>
+                <field name="revenue" sum="1" options="{'header_group': 'Doanh thu'}"/>
+                <field name="material_cost" sum="1" options="{'header_group': 'Chi phí'}"/>
+                <field name="labor_cost" sum="1" options="{'header_group': 'Chi phí'}"/>
+                <field name="other_cost" sum="1" options="{'header_group': 'Chi phí'}"/>
+                <field name="expense" sum="1" options="{'header_group': 'Chi phí'}"/>
+                <field name="profit" sum="1" options="{'header_group': 'Kết quả'}"/>
+                <field name="currency_id" optional="hide"/>
+                <field name="is_highlighted" column_invisible="1"/>
             </tree>
         </field>
     </record>

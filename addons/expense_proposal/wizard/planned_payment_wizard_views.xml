@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_planned_payment_wizard_form" model="ir.ui.view">
+        <field name="name">planned.payment.wizard.form</field>
+        <field name="model">planned.payment.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Dự kiến thanh toán">
+                <group>
+                    <group>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                    <group>
+                        <field name="include_expense"/>
+                        <field name="state_filter_ids" widget="many2many_tags" options="{'no_create': True, 'no_open': True}" placeholder="Để trống = lấy tất cả (trừ nháp)"/>
+                        <field name="include_po"/>
+                    </group>
+                </group>
+
+                <footer>
+                    <button string="Nạp lại dữ liệu" type="object" name="action_reload" class="btn-secondary"/>
+                    <button string="In HTML" type="object" name="action_print_html" class="btn-secondary"/>
+                    <button string="In PDF" type="object" name="action_print_pdf" class="btn-primary"/>
+                    <button string="Đóng" special="cancel" class="btn-secondary"/>
+                </footer>
+
+                <separator string="Danh sách dòng (tick dòng muốn đưa vào báo cáo)"/>
+
+                <field name="line_ids" nolabel="1">
+                    <tree editable="bottom">
+                        <field name="include" widget="boolean_toggle"/>
+                        <field name="project_id"/>
+                        <field name="vendor_name" string="Đối tượng chi"/>
+                        <field name="category"/>
+                        <field name="name" string="Nội dung" width="60"/>
+                        <field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}" sum="1"/>
+                        <field name="note"/>
+                        <field name="document_ref" string="Tài liệu tham chiếu"/>
+                        <field name="currency_id" string="Tiền tệ" optional="hide"/>
+                    </tree>
+                </field>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_planned_payment_wizard" model="ir.actions.act_window">
+        <field name="name">Dự kiến thanh toán</field>
+        <field name="res_model">planned.payment.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Menu mở wizard -->
+    <menuitem id="menu_planned_payment_wizard" name="Dự kiến thanh toán" parent="expense_proposal.menu_expense_proposal_root" action="action_planned_payment_wizard" sequence="4"/>
+</odoo>

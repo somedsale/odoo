@@ -8,9 +8,11 @@
     'data': [
         'security/ir.model.access.csv',
         'data/sequence_data.xml',
+        'data/proposal_sheet_state_option.xml',
         'views/expense_proposal_line_form.xml',
         'views/expense_proposal_views.xml',
         'views/account_payment_request_views.xml',
+        'wizard/planned_payment_wizard_views.xml',
         'reports/report_pending_approval.xml',
         'reports/report_approved_unpaid_template.xml',
         'reports/paperformat_expense_proposal.xml',
