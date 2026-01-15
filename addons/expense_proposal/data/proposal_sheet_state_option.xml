@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="ps_state_reviewed_manager" model="proposal.sheet.state.option">
+        <field name="key">reviewed_manager</field>
+        <field name="name">QL Đang trình</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <record id="ps_state_reviewed_accounting" model="proposal.sheet.state.option">
+        <field name="key">reviewed_accounting</field>
+        <field name="name">KTTH Đang kiểm tra</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="ps_state_approved" model="proposal.sheet.state.option">
+        <field name="key">approved</field>
+        <field name="name">Sếp Đang duyệt</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="ps_state_waiting_accounting_paid" model="proposal.sheet.state.option">
+        <field name="key">waiting_accounting_paid</field>
+        <field name="name">Chờ KT xử lý</field>
+        <field name="sequence">40</field>
+    </record>
+
+    <record id="ps_state_done" model="proposal.sheet.state.option">
+        <field name="key">done</field>
+        <field name="name">Hoàn tất</field>
+        <field name="sequence">50</field>
+    </record>
+
+    <record id="ps_state_rejected" model="proposal.sheet.state.option">
+        <field name="key">rejected</field>
+        <field name="name">Bị từ chối</field>
+        <field name="sequence">60</field>
+    </record>
+
+    <record id="ps_state_canceled" model="proposal.sheet.state.option">
+        <field name="key">canceled</field>
+        <field name="name">Đã hủy</field>
+        <field name="sequence">70</field>
+    </record>
+
+</odoo>

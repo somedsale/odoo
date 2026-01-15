@@ -5,22 +5,101 @@
  * License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl). */
 
 .o_mobile_sticky {
-    transition: top 0.5s;
+  transition: top 0.5s;
 }
 
 // Sticky Header & Footer in List View
 .o_list_view {
-    .o_list_table {
-        thead {
-            box-shadow: 0 1px 0 0 var(--ListRenderer-thead-border-end-color);
-        }
-
-        .o_list_footer {
-            position: sticky;
-            bottom: 0;
-            z-index: 2;
-            background-color: var(--ListRenderer-thead-bg-color);
-            box-shadow: 0 -1px 0 -1px var(--ListRenderer-thead-border-end-color);
-        }
+  .o_list_table {
+    thead {
+      box-shadow: 0 1px 0 0 var(--ListRenderer-thead-border-end-color);
     }
+
+    .o_list_footer {
+      position: sticky;
+      bottom: 0;
+      z-index: 2;
+      background-color: var(--ListRenderer-thead-bg-color);
+      box-shadow: 0 -1px 0 -1px var(--ListRenderer-thead-border-end-color);
+    }
+  }
+}
+.o_form_view {
+  .o_field_x2many {
+    // 1) scroll container (giữ cho mọi màn)
+    .o_list_renderer,
+    .o_list_view {
+      max-height: 60vh; // desktop
+      overflow: auto;
+      position: relative;
+      -webkit-overflow-scrolling: touch; // iOS
+      overscroll-behavior: contain;
+    }
+
+    table.o_list_table {
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+  }
+}
+
+/* =========================
+   >= md: sticky header/footer
+   md breakpoint ~ 768px
+   ========================= */
+@media (min-width: 768px) {
+  .o_form_view .o_field_x2many {
+    table.o_list_table {
+      thead th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: var(--ListRenderer-thead-bg-color);
+        box-shadow: 0 1px 0 0 var(--ListRenderer-thead-border-end-color);
+      }
+
+      tfoot td {
+        position: sticky;
+        bottom: 0;
+        z-index: 9;
+        background-color: var(--ListRenderer-thead-bg-color);
+        box-shadow: 0 -1px 0 -1px var(--ListRenderer-thead-border-end-color);
+      }
+    }
+
+    .o_list_footer {
+      position: sticky;
+      bottom: 0;
+      z-index: 9;
+      background-color: var(--ListRenderer-thead-bg-color);
+      box-shadow: 0 -1px 0 -1px var(--ListRenderer-thead-border-end-color);
+    }
+  }
+}
+
+/* =========================
+   < md: tắt sticky hoàn toàn
+   ========================= */
+@media (max-width: 767.98px) {
+  .o_form_view .o_field_x2many {
+    table.o_list_table {
+      thead th,
+      tfoot td {
+        position: static !important;
+        top: auto !important;
+        bottom: auto !important;
+      }
+    }
+
+    .o_list_footer {
+      position: static !important;
+      bottom: auto !important;
+    }
+
+    // optional: mobile thường cần thấp hơn để đỡ dài
+    .o_list_renderer,
+    .o_list_view {
+      max-height: 45vh;
+    }
+  }
 }

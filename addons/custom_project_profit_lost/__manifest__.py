@@ -10,7 +10,7 @@
     ],
     "assets": {
         "web.assets_backend": [
-            "custom_project_profit_lost/static/src/js/custom_render_tree.esm.js",
+            # "custom_project_profit_lost/static/src/js/pl_2header_abc.js",
         ]
     },
     'installable': True,

@@ -4,3 +4,6 @@ access_expense_proposal_line,expense.proposal.line,expense_proposal.model_expens
 access_expense_proposal_reject_wizard,expense.proposal.reject.wizard,expense_proposal.model_expense_proposal_reject_wizard,,1,1,1,1
 access_pending_report_wizard,pending.report.wizard,expense_proposal.model_pending_report_wizard,,1,1,1,1
 access_pending_report_wizard_line,pending.report.wizard.line,expense_proposal.model_pending_report_wizard_line,,1,1,1,1
+access_planned_payment_wizard,planned.payment.wizard,expense_proposal.model_planned_payment_wizard,,1,1,1,1
+access_planned_payment_wizard_line,planned.payment.wizard.line,expense_proposal.model_planned_payment_wizard_line,,1,1,1,1
+access_proposal_sheet_state_option_user,proposal.sheet.state.option,expense_proposal.model_proposal_sheet_state_option,,1,1,1,1

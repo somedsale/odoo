@@ -1,13 +1,41 @@
-.oe_search_value {
+/* wrapper */
+.o_o2m_searchbar {
+  padding: 0 10px;
+  margin-bottom: 10px;
+}
+
+/* input */
+.o_o2m_searchbar .oe_search_value {
   border-radius: 25px;
   border: 2px solid #eceff2;
-  padding: 10px;
-  margin-top: 20px;
-  margin-left: 10px;
-  width: 600px;
-  height: 20px;
+  padding: 10px 14px;
   color: #495057;
+
+  height: 30px;
+  box-sizing: border-box;
+
+  /* ✅ dài hơn ở desktop, tự co ở màn nhỏ */
+  width: min(100%, clamp(320px, 70vw, 900px));
 }
+
+/* <= md: bỏ padding để ô full */
+@media (max-width: 991.98px) {
+  .o_o2m_searchbar {
+    padding: 0;
+  }
+  .o_o2m_searchbar .oe_search_value {
+    width: 100%;
+  }
+}
+
+/* <= xs */
+@media (max-width: 575.98px) {
+  .o_o2m_searchbar .oe_search_value {
+    padding: 8px 12px;
+  }
+}
+
+/* hide rows by search */
 .o_hidden_by_o2m_search {
   display: none !important;
 }
