@@ -97,6 +97,28 @@ class AccountingPaymentRequest(models.Model):
         for rec in self:
             if rec.state == 'cancelled':
                 rec.state = 'draft'
+                rec._cleanup_after_confirm()
+    def _cleanup_after_confirm(self):
+        """Xóa/undo những thứ đã tạo khi xác nhận/hoàn tất chi."""
+        for rec in self:
+            # 1) Xóa dòng cash flow đã tạo (nếu có)
+            cash_flows = self.env['project.cash.flow'].search([('account_payment_id', '=', rec.id)])
+            if cash_flows:
+                cash_flows.unlink()
+
+            # 2) Reset các field đánh dấu đã chi
+            rec.write({
+                'status_expense': 'not yet',
+                'is_confirmed': False,
+                'payment_person': False,
+                'date_payment': False,
+            })
+
+            # 3) (tuỳ chọn) cập nhật lại dashboard nếu bạn muốn
+            if rec.project_id:
+                dashboard = self.env['project.expense.dashboard'].search([('project_id', '=', rec.project_id.id)])
+                if dashboard:
+                    dashboard._compute_total_actual()
         
     def action_payment_request(self):
         for rec in self:

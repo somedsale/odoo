@@ -196,7 +196,25 @@
 <field name="print_report_name">'Du_kien_thanh_toan'</field>
 <field name="paperformat_id" ref="expense_proposal.paperformat_planned_payment_a4_portrait"/>
 </record>
+<record id="action_report_planned_payment_wiz_pdf" model="ir.actions.report">
+<field name="name">Dự kiến thanh toán</field>
+<field name="model">planned.payment.wizard</field>
+<field name="report_type">qweb-pdf</field>
+<field name="report_name">expense_proposal.report_planned_payment</field>
+<field name="report_file">expense_proposal.report_planned_payment</field>
+<field name="print_report_name">'Du_kien_thanh_toan'</field>
+<field name="paperformat_id" ref="expense_proposal.paperformat_planned_payment_a4_portrait"/>
+</record>
+
+<record id="action_report_planned_payment_wiz_html" model="ir.actions.report">
+<field name="name">Dự kiến thanh toán</field>
+<field name="model">planned.payment.wizard</field>
+<field name="report_type">qweb-html</field>
+<field name="report_name">expense_proposal.report_planned_payment</field>
+<field name="report_file">expense_proposal.report_planned_payment</field>
+<field name="print_report_name">'Du_kien_thanh_toan'</field>
+<field name="paperformat_id" ref="expense_proposal.paperformat_planned_payment_a4_portrait"/>
+</record>
 
 <!-- Menu -->
-<menuitem id="menu_report_planned_payment_root" name="Dự kiến thanh toán" parent="expense_proposal.menu_expense_proposal_root" action="expense_proposal.action_report_planned_payment_html" sequence="2"/>
 </odoo>
