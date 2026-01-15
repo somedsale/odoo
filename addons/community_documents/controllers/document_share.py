@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import base64
 from odoo import http
-from odoo.http import request
+from odoo.http import request, content_disposition
 
 
 class DocumentShareController(http.Controller):
@@ -64,9 +64,15 @@ class DocumentShareController(http.Controller):
             return request.redirect(att.url)
 
         data = base64.b64decode(att.datas or b"")
+        mimetype = doc.mimetype or 'application/octet-stream'
+        filename = doc.name or 'file'
+
+        dispo = content_disposition(filename)  # trả về attachment; filename*=UTF-8''...
+        if not int(download or 0):
+            dispo = dispo.replace('attachment', 'inline', 1)
+
         headers = [
-            ("Content-Type", att.mimetype or "application/octet-stream"),
+            ('Content-Type', mimetype),
+            ('Content-Disposition', dispo),
         ]
-        if str(download) == "1":
-            headers.append(("Content-Disposition", f'attachment; filename="{att.name or doc.name}"'))
         return request.make_response(data, headers=headers)

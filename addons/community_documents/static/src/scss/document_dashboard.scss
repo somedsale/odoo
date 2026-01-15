@@ -764,3 +764,17 @@ body.o_comm_docs_resizing *{
   .o_comm_docs_grid{ grid-template-columns: 1fr; }
   .o_comm_docs_shell{ grid-template-rows: minmax(0,1fr) 45vh; } /* preview cao hơn trên mobile */
 }
+.o_comm_docs_nav_row{
+  display: grid;
+  grid-template-columns: 18px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 6px;
+}
+
+.o_comm_docs_nav_itemwrap{
+  min-width: 0;
+}
+
+.o_comm_docs_nav_caret.o_empty{
+  visibility: hidden;
+}

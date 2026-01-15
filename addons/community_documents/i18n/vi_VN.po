@@ -1,0 +1,986 @@
+#. module: community_documents
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_document_kanban
+msgid "<span class=\"text-muted\">Owner:</span>"
+msgstr "<span class=\"text-muted\">Chủ sở hữu:</span>"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_folder__access_level
+msgid "Access Level"
+msgstr "Mức truy cập"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_create_folder_wizard__access_mode
+#: model:ir.model.fields,field_description:community_documents.field_document_folder__access_mode
+msgid "Access Mode"
+msgstr "Chế độ truy cập"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__message_needaction
+msgid "Action Needed"
+msgstr "Cần xử lý"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__active
+#: model:ir.model.fields,field_description:community_documents.field_document_share__active
+msgid "Active"
+msgstr "Hiệu lực"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__activity_ids
+msgid "Activities"
+msgstr "Hoạt động"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr "Trang trí ngoại lệ hoạt động"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__activity_state
+msgid "Activity State"
+msgstr "Trạng thái hoạt động"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__activity_type_icon
+msgid "Activity Type Icon"
+msgstr "Biểu tượng loại hoạt động"
+
+#. module: community_documents
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_add_link_wizard_form
+msgid "Add A Link"
+msgstr "Thêm liên kết"
+
+#. module: community_documents
+#: model:ir.actions.act_window,name:community_documents.action_document_add_link_wizard
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_add_link_wizard_form
+msgid "Add a Link"
+msgstr "Thêm liên kết"
+
+#. module: community_documents
+#: model:ir.model,name:community_documents.model_document_add_link_wizard
+msgid "Add a Link to Documents"
+msgstr "Thêm liên kết vào Tài liệu"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "Add link"
+msgstr "Thêm liên kết"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "All"
+msgstr "Tất cả"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_share__allow_download
+#: model:ir.model.fields,field_description:community_documents.field_document_share_wizard__allow_download
+msgid "Allow Download"
+msgstr "Cho phép tải xuống"
+
+#. module: community_documents
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_move_copy_wizard_form
+msgid "Apply"
+msgstr "Áp dụng"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__attachment_id
+msgid "Attachment"
+msgstr "Tệp đính kèm"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__message_attachment_count
+msgid "Attachment Count"
+msgstr "Số lượng tệp đính kèm"
+
+#. module: community_documents
+#. odoo-python
+#: code:addons/community_documents/wizards/document_move_copy_wizard.py:0
+#, python-format
+msgid "Bạn chưa chọn file nào."
+msgstr "Bạn chưa chọn file nào."
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_folder__can_edit_access
+msgid "Can Edit Access"
+msgstr "Có thể chỉnh sửa quyền truy cập"
+
+#. module: community_documents
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_add_link_wizard_form
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_create_folder_wizard_form
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_move_copy_wizard_form
+msgid "Cancel"
+msgstr "Hủy"
+
+#. module: community_documents
+#: model:ir.model.fields.selection,name:community_documents.selection__document_create_folder_wizard__access_mode__private
+#: model:ir.model.fields.selection,name:community_documents.selection__document_folder__access_mode__private
+msgid "Chỉ mình tôi"
+msgstr "Chỉ mình tôi"
+
+#. module: community_documents
+#: model:ir.model.fields.selection,name:community_documents.selection__document_create_folder_wizard__access_mode__restricted
+#: model:ir.model.fields.selection,name:community_documents.selection__document_folder__access_mode__restricted
+msgid "Chỉ định người truy cập (Nội bộ)"
+msgstr "Chỉ định người truy cập (Nội bộ)"
+
+#. module: community_documents
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_share_wizard_form
+msgid "Click Generate to get link"
+msgstr "Nhấn Tạo để lấy liên kết"
+
+#. module: community_documents
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_share_wizard_form
+msgid "Close"
+msgstr "Đóng"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_tag__color
+msgid "Color"
+msgstr "Màu sắc"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_folder__complete_name
+msgid "Complete Name"
+msgstr "Tên đầy đủ"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#: model:ir.model.fields.selection,name:community_documents.selection__document_move_copy_wizard__operation__copy
+#, python-format
+msgid "Copy"
+msgstr "Sao chép"
+
+#. module: community_documents
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_create_folder_wizard_form
+msgid "Create"
+msgstr "Tạo"
+
+#. module: community_documents
+#: model:ir.actions.act_window,name:community_documents.action_document_create_folder_wizard
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_create_folder_wizard_form
+msgid "Create Folder"
+msgstr "Tạo thư mục"
+
+#. module: community_documents
+#: model:ir.model,name:community_documents.model_document_create_folder_wizard
+msgid "Create Folder Wizard"
+msgstr "Trình hướng dẫn tạo thư mục"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "Create folder"
+msgstr "Tạo thư mục"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_add_link_wizard__create_uid
+#: model:ir.model.fields,field_description:community_documents.field_document_create_folder_wizard__create_uid
+#: model:ir.model.fields,field_description:community_documents.field_document_document__create_uid
+#: model:ir.model.fields,field_description:community_documents.field_document_folder__create_uid
+#: model:ir.model.fields,field_description:community_documents.field_document_folder_member__create_uid
+#: model:ir.model.fields,field_description:community_documents.field_document_move_copy_wizard__create_uid
+#: model:ir.model.fields,field_description:community_documents.field_document_share__create_uid
+#: model:ir.model.fields,field_description:community_documents.field_document_share_wizard__create_uid
+#: model:ir.model.fields,field_description:community_documents.field_document_tag__create_uid
+#: model:ir.model.fields,field_description:community_documents.field_document_team__create_uid
+msgid "Created by"
+msgstr "Tạo bởi"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_add_link_wizard__create_date
+#: model:ir.model.fields,field_description:community_documents.field_document_create_folder_wizard__create_date
+#: model:ir.model.fields,field_description:community_documents.field_document_document__create_date
+#: model:ir.model.fields,field_description:community_documents.field_document_folder__create_date
+#: model:ir.model.fields,field_description:community_documents.field_document_folder_member__create_date
+#: model:ir.model.fields,field_description:community_documents.field_document_move_copy_wizard__create_date
+#: model:ir.model.fields,field_description:community_documents.field_document_share__create_date
+#: model:ir.model.fields,field_description:community_documents.field_document_share_wizard__create_date
+#: model:ir.model.fields,field_description:community_documents.field_document_tag__create_date
+#: model:ir.model.fields,field_description:community_documents.field_document_team__create_date
+msgid "Created on"
+msgstr "Tạo vào"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "Delete"
+msgstr "Xóa"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_team__description
+msgid "Description"
+msgstr "Mô tả"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "Details"
+msgstr "Chi tiết"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_add_link_wizard__display_name
+#: model:ir.model.fields,field_description:community_documents.field_document_create_folder_wizard__display_name
+#: model:ir.model.fields,field_description:community_documents.field_document_document__display_name
+#: model:ir.model.fields,field_description:community_documents.field_document_folder__display_name
+#: model:ir.model.fields,field_description:community_documents.field_document_folder_member__display_name
+#: model:ir.model.fields,field_description:community_documents.field_document_move_copy_wizard__display_name
+#: model:ir.model.fields,field_description:community_documents.field_document_share__display_name
+#: model:ir.model.fields,field_description:community_documents.field_document_share_wizard__display_name
+#: model:ir.model.fields,field_description:community_documents.field_document_tag__display_name
+#: model:ir.model.fields,field_description:community_documents.field_document_team__display_name
+msgid "Display Name"
+msgstr "Tên hiển thị"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_folder__document_count
+msgid "Document Count"
+msgstr "Số lượng tài liệu"
+
+#. module: community_documents
+#: model:ir.model,name:community_documents.model_document_folder
+msgid "Document Folder"
+msgstr "Thư mục tài liệu"
+
+#. module: community_documents
+#: model:ir.model,name:community_documents.model_document_share
+msgid "Document Share Link"
+msgstr "Liên kết chia sẻ tài liệu"
+
+#. module: community_documents
+#: model:ir.model,name:community_documents.model_document_tag
+msgid "Document Tag"
+msgstr "Thẻ tài liệu"
+
+#. module: community_documents
+#: model:ir.model,name:community_documents.model_document_team
+msgid "Document Team"
+msgstr "Nhóm tài liệu"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#: model_terms:ir.ui.view,arch_db:community_documents.share_document_page
+#: model_terms:ir.ui.view,arch_db:community_documents.share_folder_page
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_document_kanban
+#, python-format
+msgid "Download"
+msgstr "Tải xuống"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__download_url
+msgid "Download Url"
+msgstr "URL tải xuống"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "Edit"
+msgstr "Chỉnh sửa"
+
+#. module: community_documents
+#: model:ir.model.fields.selection,name:community_documents.selection__document_folder_member__role__editor
+msgid "Editor"
+msgstr "Biên tập"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_share__expiration_date
+#: model:ir.model.fields,field_description:community_documents.field_document_share_wizard__expiration_date
+msgid "Expiration Date"
+msgstr "Ngày hết hạn"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__datas
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_document_form
+msgid "File"
+msgstr "Tệp"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__file_size
+msgid "File Size"
+msgstr "Kích thước tệp"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__datas_filename
+msgid "Filename"
+msgstr "Tên tệp"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_add_link_wizard__folder_id
+#: model:ir.model.fields,field_description:community_documents.field_document_document__folder_id
+#: model:ir.model.fields,field_description:community_documents.field_document_folder_member__folder_id
+#: model:ir.model.fields,field_description:community_documents.field_document_share__folder_id
+#: model:ir.model.fields,field_description:community_documents.field_document_share_wizard__folder_id
+#: model:ir.model.fields.selection,name:community_documents.selection__document_share__share_type__folder
+#: model:ir.model.fields.selection,name:community_documents.selection__document_share_wizard__share_type__folder
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_folder_form
+msgid "Folder"
+msgstr "Thư mục"
+
+#. module: community_documents
+#. odoo-python
+#: code:addons/community_documents/models/document_folder.py:0
+#, python-format
+msgid "Folder 'Chỉ mình tôi' không được có danh sách người truy cập."
+msgstr "Folder 'Chỉ mình tôi' không được có danh sách người truy cập."
+
+#. module: community_documents
+#. odoo-python
+#: code:addons/community_documents/models/document_folder.py:0
+#, python-format
+msgid "Folder 'Chỉ định người truy cập' phải chọn ít nhất 1 người."
+msgstr "Folder 'Chỉ định người truy cập' phải chọn ít nhất 1 người."
+
+#. module: community_documents
+#: model:ir.model,name:community_documents.model_document_folder_member
+msgid "Folder Member"
+msgstr "Thành viên thư mục"
+
+#. module: community_documents
+#: model_terms:ir.ui.view,arch_db:community_documents.share_folder_page
+msgid "Folder:"
+msgstr "Thư mục:"
+
+#. module: community_documents
+#: model:ir.actions.act_window,name:community_documents.action_document_folders
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_folder_tree
+msgid "Folders"
+msgstr "Thư mục"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__message_follower_ids
+msgid "Followers"
+msgstr "Người theo dõi"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__message_partner_ids
+msgid "Followers (Partners)"
+msgstr "Người theo dõi (Đối tác)"
+
+#. module: community_documents
+#: model:ir.model.fields,help:community_documents.field_document_document__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr "Biểu tượng Font Awesome, ví dụ: fa-tasks"
+
+#. module: community_documents
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_share_wizard_form
+msgid "Generate"
+msgstr "Tạo"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__has_message
+msgid "Has Message"
+msgstr "Có tin nhắn"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_add_link_wizard__id
+#: model:ir.model.fields,field_description:community_documents.field_document_create_folder_wizard__id
+#: model:ir.model.fields,field_description:community_documents.field_document_document__id
+#: model:ir.model.fields,field_description:community_documents.field_document_folder__id
+#: model:ir.model.fields,field_description:community_documents.field_document_folder_member__id
+#: model:ir.model.fields,field_description:community_documents.field_document_move_copy_wizard__id
+#: model:ir.model.fields,field_description:community_documents.field_document_share__id
+#: model:ir.model.fields,field_description:community_documents.field_document_share_wizard__id
+#: model:ir.model.fields,field_description:community_documents.field_document_tag__id
+#: model:ir.model.fields,field_description:community_documents.field_document_team__id
+msgid "ID"
+msgstr "ID"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__activity_exception_icon
+msgid "Icon"
+msgstr "Biểu tượng"
+
+#. module: community_documents
+#: model:ir.model.fields,help:community_documents.field_document_document__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr "Biểu tượng để biểu thị hoạt động ngoại lệ."
+
+#. module: community_documents
+#: model:ir.model.fields,help:community_documents.field_document_document__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr "Nếu chọn, các tin nhắn mới sẽ yêu cầu bạn chú ý."
+
+#. module: community_documents
+#: model:ir.model.fields,help:community_documents.field_document_document__message_has_error
+#: model:ir.model.fields,help:community_documents.field_document_document__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr "Nếu chọn, một số tin nhắn bị lỗi gửi."
+
+#. module: community_documents
+#: model:ir.model.fields.selection,name:community_documents.selection__document_folder__access_level__internal
+msgid "Internal"
+msgstr "Nội bộ"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__message_is_follower
+msgid "Is Follower"
+msgstr "Là người theo dõi"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__is_link
+msgid "Is a Link"
+msgstr "Là liên kết"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "Không hỗ trợ preview. Vui lòng tải xuống để xem."
+msgstr "Không hỗ trợ xem trước. Vui lòng tải xuống để xem."
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "Kéo để đổi chiều rộng"
+msgstr "Kéo để đổi chiều rộng"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_add_link_wizard__write_uid
+#: model:ir.model.fields,field_description:community_documents.field_document_create_folder_wizard__write_uid
+#: model:ir.model.fields,field_description:community_documents.field_document_document__write_uid
+#: model:ir.model.fields,field_description:community_documents.field_document_folder__write_uid
+#: model:ir.model.fields,field_description:community_documents.field_document_folder_member__write_uid
+#: model:ir.model.fields,field_description:community_documents.field_document_move_copy_wizard__write_uid
+#: model:ir.model.fields,field_description:community_documents.field_document_share__write_uid
+#: model:ir.model.fields,field_description:community_documents.field_document_share_wizard__write_uid
+#: model:ir.model.fields,field_description:community_documents.field_document_tag__write_uid
+#: model:ir.model.fields,field_description:community_documents.field_document_team__write_uid
+msgid "Last Updated by"
+msgstr "Cập nhật lần cuối bởi"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_add_link_wizard__write_date
+#: model:ir.model.fields,field_description:community_documents.field_document_create_folder_wizard__write_date
+#: model:ir.model.fields,field_description:community_documents.field_document_document__write_date
+#: model:ir.model.fields,field_description:community_documents.field_document_folder__write_date
+#: model:ir.model.fields,field_description:community_documents.field_document_folder_member__write_date
+#: model:ir.model.fields,field_description:community_documents.field_document_move_copy_wizard__write_date
+#: model:ir.model.fields,field_description:community_documents.field_document_share__write_date
+#: model:ir.model.fields,field_description:community_documents.field_document_share_wizard__write_date
+#: model:ir.model.fields,field_description:community_documents.field_document_tag__write_date
+#: model:ir.model.fields,field_description:community_documents.field_document_team__write_date
+msgid "Last Updated on"
+msgstr "Cập nhật lần cuối vào"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_team__leader_id
+msgid "Leader"
+msgstr "Trưởng nhóm"
+
+#. module: community_documents
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_share_wizard_form
+msgid "Link"
+msgstr "Liên kết"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "MIME"
+msgstr "MIME"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_team__member_ids
+msgid "Members"
+msgstr "Thành viên"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "Menu"
+msgstr "Menu"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "Select all"
+msgstr "Chọn tất cả"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "Unselect all"
+msgstr "Bỏ chọn tất cả"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__message_has_error
+msgid "Message Delivery error"
+msgstr "Lỗi gửi tin nhắn"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__message_ids
+msgid "Messages"
+msgstr "Tin nhắn"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__mimetype
+msgid "Mime Type"
+msgstr "Loại MIME"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#: model:ir.model.fields.selection,name:community_documents.selection__document_move_copy_wizard__operation__move
+#, python-format
+msgid "Move"
+msgstr "Di chuyển"
+
+#. module: community_documents
+#: model:ir.actions.act_window,name:community_documents.action_document_move_copy_wizard
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_move_copy_wizard_form
+msgid "Move/Copy"
+msgstr "Di chuyển/Sao chép"
+
+#. module: community_documents
+#: model:ir.model,name:community_documents.model_document_move_copy_wizard
+msgid "Move/Copy Documents Wizard"
+msgstr "Trình hướng dẫn di chuyển/sao chép tài liệu"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr "Hạn hoạt động của tôi"
+
+#. module: community_documents
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_document_search
+msgid "My Documents"
+msgstr "Tài liệu của tôi"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#: model:ir.model.fields,field_description:community_documents.field_document_add_link_wizard__name
+#: model:ir.model.fields,field_description:community_documents.field_document_create_folder_wizard__name
+#: model:ir.model.fields,field_description:community_documents.field_document_document__name
+#: model:ir.model.fields,field_description:community_documents.field_document_folder__name
+#: model:ir.model.fields,field_description:community_documents.field_document_share__name
+#: model:ir.model.fields,field_description:community_documents.field_document_tag__name
+#: model:ir.model.fields,field_description:community_documents.field_document_team__name
+#, python-format
+msgid "Name"
+msgstr "Tên"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
+msgstr "Sự kiện lịch của hoạt động tiếp theo"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr "Hạn hoạt động tiếp theo"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__activity_summary
+msgid "Next Activity Summary"
+msgstr "Tóm tắt hoạt động tiếp theo"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__activity_type_id
+msgid "Next Activity Type"
+msgstr "Loại hoạt động tiếp theo"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_create_folder_wizard__allowed_user_ids
+#: model:ir.model.fields,field_description:community_documents.field_document_folder__allowed_user_ids
+msgid "Người được truy cập"
+msgstr "Người được truy cập"
+
+#. module: community_documents
+#. odoo-python
+#: code:addons/community_documents/models/document_document.py:0
+#, python-format
+msgid "No default folder found. Please create a folder first."
+msgstr "Không tìm thấy thư mục mặc định. Vui lòng tạo thư mục trước."
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "No documents found."
+msgstr "Không tìm thấy tài liệu nào."
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__note
+msgid "Note"
+msgstr "Ghi chú"
+
+#. module: community_documents
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_document_form
+msgid "Notes"
+msgstr "Ghi chú"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__message_needaction_counter
+msgid "Number of Actions"
+msgstr "Số hành động"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__message_has_error_counter
+msgid "Number of errors"
+msgstr "Số lỗi"
+
+#. module: community_documents
+#: model:ir.model.fields,help:community_documents.field_document_document__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr "Số tin nhắn yêu cầu xử lý"
+
+#. module: community_documents
+#: model:ir.model.fields,help:community_documents.field_document_document__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr "Số tin nhắn bị lỗi gửi"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_move_copy_wizard__operation
+msgid "Operation"
+msgstr "Thao tác"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_folder_member__own_only
+msgid "Own Documents Only"
+msgstr "Chỉ tài liệu của mình"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#: model:ir.model.fields,field_description:community_documents.field_document_document__owner_id
+#: model:ir.model.fields,field_description:community_documents.field_document_folder__owner_id
+#: model:ir.model.fields,field_description:community_documents.field_document_share__owner_id
+#, python-format
+msgid "Owner"
+msgstr "Chủ sở hữu"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_create_folder_wizard__parent_id
+msgid "Parent"
+msgstr "Thư mục cha"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_folder__parent_id
+msgid "Parent Folder"
+msgstr "Thư mục cha"
+
+#. module: community_documents
+#. odoo-python
+#: code:addons/community_documents/models/document_add_link_wizard.py:0
+#, python-format
+msgid "Please enter a URL."
+msgstr "Vui lòng nhập URL."
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "Preview"
+msgstr "Xem trước"
+
+#. module: community_documents
+#: model_terms:ir.ui.view,arch_db:community_documents.share_document_page
+msgid "Preview not available. Use Download."
+msgstr "Không thể xem trước. Hãy dùng Tải xuống."
+
+#. module: community_documents
+#: model:ir.model.fields.selection,name:community_documents.selection__document_folder__access_level__private
+msgid "Private"
+msgstr "Riêng tư"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__rating_ids
+msgid "Ratings"
+msgstr "Đánh giá"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_folder__readable_user_ids
+msgid "Readable Users"
+msgstr "Người dùng có quyền đọc"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__partner_id
+msgid "Related Contact"
+msgstr "Liên hệ liên quan"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "Rename"
+msgstr "Đổi tên"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__activity_user_id
+msgid "Responsible User"
+msgstr "Người phụ trách"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_folder_member__role
+msgid "Role"
+msgstr "Vai trò"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr "Lỗi gửi SMS"
+
+#. module: community_documents
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_document_search
+msgid "Search Documents"
+msgstr "Tìm kiếm tài liệu"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "Search files..."
+msgstr "Tìm kiếm tệp..."
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "Select a document to see details."
+msgstr "Chọn một tài liệu để xem chi tiết."
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "Selected"
+msgstr "Đã chọn"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "Selection"
+msgstr "Lựa chọn"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#: model:ir.actions.act_window,name:community_documents.action_document_share_wizard
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_share_wizard_form
+#, python-format
+msgid "Share"
+msgstr "Chia sẻ"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_share__share_type
+#: model:ir.model.fields,field_description:community_documents.field_document_share_wizard__share_type
+msgid "Share Type"
+msgstr "Loại chia sẻ"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_share_wizard__share_url
+msgid "Share Url"
+msgstr "URL chia sẻ"
+
+#. module: community_documents
+#: model:ir.model,name:community_documents.model_document_share_wizard
+msgid "Share Wizard"
+msgstr "Trình hướng dẫn chia sẻ"
+
+#. module: community_documents
+#: model:ir.model.constraint,message:community_documents.constraint_document_share_uniq_token
+msgid "Share token must be unique."
+msgstr "Mã chia sẻ phải là duy nhất."
+
+#. module: community_documents
+#: model:ir.model.fields.selection,name:community_documents.selection__document_folder__access_level__shared
+msgid "Shared"
+msgstr "Chia sẻ"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_folder__member_ids
+msgid "Shared With"
+msgstr "Chia sẻ với"
+
+#. module: community_documents
+#: model:ir.actions.act_window,name:community_documents.action_document_shares
+msgid "Shares"
+msgstr "Chia sẻ"
+
+#. module: community_documents
+#: model:ir.model.fields,help:community_documents.field_document_document__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+"Trạng thái dựa trên hoạt động\n"
+"Quá hạn: Đã quá ngày đến hạn\n"
+"Hôm nay: Ngày hoạt động là hôm nay\n"
+"Dự kiến: Hoạt động trong tương lai."
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_folder__child_ids
+msgid "Subfolders"
+msgstr "Thư mục con"
+
+#. module: community_documents
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_tag_form
+msgid "Tag"
+msgstr "Thẻ"
+
+#. module: community_documents
+#: model:ir.actions.act_window,name:community_documents.action_document_tags
+#: model:ir.model.fields,field_description:community_documents.field_document_document__tag_ids
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_tag_tree
+msgid "Tags"
+msgstr "Thẻ"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_move_copy_wizard__folder_id
+msgid "Target Folder"
+msgstr "Thư mục đích"
+
+#. module: community_documents
+#. odoo-python
+#: code:addons/community_documents/models/document_share.py:0
+#, python-format
+msgid "This share link has expired."
+msgstr "Liên kết chia sẻ đã hết hạn."
+
+#. module: community_documents
+#. odoo-python
+#: code:addons/community_documents/models/document_share.py:0
+#, python-format
+msgid "This share link is disabled."
+msgstr "Liên kết chia sẻ đã bị vô hiệu hóa."
+
+#. module: community_documents
+#: model:ir.model.constraint,message:community_documents.constraint_document_folder_member_uniq_folder_user
+msgid "This user is already shared in this folder."
+msgstr "Người dùng này đã được chia sẻ trong thư mục này."
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_share__token
+msgid "Token"
+msgstr "Mã (token)"
+
+#. module: community_documents
+#: model:ir.model.fields,help:community_documents.field_document_document__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr "Loại hoạt động ngoại lệ trên bản ghi."
+
+#. module: community_documents
+#. odoo-python
+#: code:addons/community_documents/models/document_document.py:0
+#, python-format
+msgid "Tên file không được để trống."
+msgstr "Tên file không được để trống."
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_add_link_wizard__url
+#: model:ir.model.fields,field_description:community_documents.field_document_document__url
+msgid "URL"
+msgstr "URL"
+
+#. module: community_documents
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_folder_form
+msgid "USERS"
+msgstr "NGƯỜI DÙNG"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "Upload"
+msgstr "Tải lên"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "Upload into current folder"
+msgstr "Tải lên vào thư mục hiện tại"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_folder_member__user_id
+msgid "User"
+msgstr "Người dùng"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_folder__own_document_only_user_ids
+msgid "Users Own Document Only"
+msgstr "Người dùng chỉ xem tài liệu của mình"
+
+#. module: community_documents
+#: model_terms:ir.ui.view,arch_db:community_documents.share_folder_page
+msgid "View"
+msgstr "Xem"
+
+#. module: community_documents
+#: model:ir.model.fields.selection,name:community_documents.selection__document_folder_member__role__viewer
+msgid "Viewer"
+msgstr "Người xem"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_document__website_message_ids
+msgid "Website Messages"
+msgstr "Tin nhắn website"
+
+#. module: community_documents
+#: model:ir.model.fields,help:community_documents.field_document_document__website_message_ids
+msgid "Website communication history"
+msgstr "Lịch sử trao đổi trên website"
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "Workspace"
+msgstr "Không gian làm việc"
+
+#. module: community_documents
+#: model:ir.model.fields,field_description:community_documents.field_document_folder__writable_user_ids
+msgid "Writable Users"
+msgstr "Người dùng có quyền ghi"
+
+#. module: community_documents
+#. odoo-python
+#: code:addons/community_documents/models/document_folder.py:0
+#, python-format
+msgid "You are not allowed to change folder permissions."
+msgstr "Bạn không được phép thay đổi quyền của thư mục."
+
+#. module: community_documents
+#. odoo-python
+#: code:addons/community_documents/models/document_document.py:0
+#: code:addons/community_documents/models/document_document.py:0
+#, python-format
+msgid "You don't have access to this folder."
+msgstr "Bạn không có quyền truy cập thư mục này."
+
+#. module: community_documents
+#. odoo-javascript
+#: code:addons/community_documents/static/src/xml/document_dashboard.xml:0
+#, python-format
+msgid "documents"
+msgstr "tài liệu"
+
+#. module: community_documents
+#: model_terms:ir.ui.view,arch_db:community_documents.view_document_add_link_wizard_form
+msgid "https://"
+msgstr "https://"
