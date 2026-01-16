@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <!-- COMMUNITY: user được thấy/tạo/sửa nếu:
+       - public/open
+       - hoặc owner_id = user
+       - hoặc là member (joined/invited)
+       (kicked không nằm trong joined/invited nên sẽ không match phần member)
+  -->
+  <record id="rule_community_hub_access" model="ir.rule">
+    <field name="name">Community access</field>
+    <field name="model_id" ref="model_community_hub"/>
+    <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    <field name="perm_read" eval="1"/>
+    <field name="perm_write" eval="1"/>
+    <field name="perm_create" eval="1"/>
+    <field name="perm_unlink" eval="0"/>
+    <field name="domain_force">
+      [
+        '|','|','|',
+          ('is_public','=',True),
+          ('join_policy','=','open'),
+          ('owner_id','=',user.id),
+          '&amp;',
+            ('member_ids.user_id','=',user.id),
+            ('member_ids.state','in',['joined','invited'])
+      ]
+    </field>
+  </record>
+</odoo>

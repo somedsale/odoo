@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+  <record id="community_hub_view_community_tree" model="ir.ui.view">
+    <field name="name">community.hub.tree</field>
+    <field name="model">community.hub</field>
+    <field name="arch" type="xml">
+      <tree>
+        <field name="name"/>
+        <field name="owner_id"/>
+        <field name="is_public"/>
+        <field name="join_policy"/>
+      </tree>
+    </field>
+  </record>
+
+  <record id="community_hub_view_community_form" model="ir.ui.view">
+    <field name="name">community.hub.form</field>
+    <field name="model">community.hub</field>
+    <field name="arch" type="xml">
+      <form string="Community">
+        <sheet>
+          <group>
+            <field name="name"/>
+            <field name="owner_id"/>
+            <field name="is_public"/>
+            <field name="join_policy"/>
+          </group>
+
+          <notebook>
+            <page string="Description">
+              <field name="description_html" widget="html"/>
+            </page>
+
+            <page string="Channels">
+              <field name="channel_ids">
+                <tree editable="bottom">
+                  <field name="sequence"/>
+                  <field name="name"/>
+                </tree>
+              </field>
+            </page>
+
+            <page string="Members">
+              <field name="member_ids">
+                <tree editable="bottom">
+                  <field name="user_id"/>
+                  <field name="role"/>
+                  <field name="state"/>
+                  <field name="invited_by"/>
+                </tree>
+              </field>
+            </page>
+          </notebook>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="community_hub_action_community" model="ir.actions.act_window">
+    <field name="name">Communities</field>
+    <field name="res_model">community.hub</field>
+    <field name="view_mode">tree,form</field>
+  </record>
+
+  <record id="community_hub_view_channel_tree" model="ir.ui.view">
+    <field name="name">community.hub.channel.tree</field>
+    <field name="model">community.hub.channel</field>
+    <field name="arch" type="xml">
+      <tree>
+        <field name="community_id"/>
+        <field name="sequence"/>
+        <field name="name"/>
+      </tree>
+    </field>
+  </record>
+
+  <record id="community_hub_view_channel_form" model="ir.ui.view">
+    <field name="name">community.hub.channel.form</field>
+    <field name="model">community.hub.channel</field>
+    <field name="arch" type="xml">
+      <form string="Channel">
+        <sheet>
+          <group>
+            <field name="community_id"/>
+            <field name="sequence"/>
+            <field name="name"/>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="community_hub_action_channel" model="ir.actions.act_window">
+    <field name="name">Channels</field>
+    <field name="res_model">community.hub.channel</field>
+    <field name="view_mode">tree,form</field>
+  </record>
+
+</odoo>

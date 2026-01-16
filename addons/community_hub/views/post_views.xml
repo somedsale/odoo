@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_post_tree" model="ir.ui.view">
+        <field name="name">community.post.tree</field>
+        <field name="model">community.post</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="community_id"/>
+                <field name="channel_id"/>
+                <field name="author_id"/>
+                <field name="title"/>
+                <field name="create_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_post_form" model="ir.ui.view">
+        <field name="name">community.post.form</field>
+        <field name="model">community.post</field>
+        <field name="arch" type="xml">
+            <form string="Post">
+                <sheet>
+                    <group>
+                        <field name="channel_id" required="1"/>
+                        <field name="title"/>
+                    </group>
+                    <group>
+                        <field name="body_html" widget="html"/>
+                    </group>
+                    <group string="Attachments">
+                        <field name="attachment_ids" widget="many2many_binary"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_post_manage" model="ir.actions.act_window">
+        <field name="name">Posts</field>
+        <field name="res_model">community.post</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

@@ -9,10 +9,12 @@
       <form string="Create Folder">
         <group>
           <field name="name"/>
-          <field name="parent_id"/>
+          <field name="parent_id" domain="['|', ('owner_id','=', uid),
+                  '&amp;', ('access_mode','=','restricted'),
+                    ('allowed_user_ids','in', uid)
+               ]"/>
           <field name="access_mode" widget="radio"/>
-          <field name="allowed_user_ids" widget="many2many_tags"
-                 invisible="access_mode == 'private'"/>
+          <field name="allowed_user_ids" widget="many2many_tags" invisible="access_mode == 'private'"/>
         </group>
         <footer>
           <button string="Create" type="object" name="action_create" class="btn-primary"/>

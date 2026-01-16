@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <template id="assets_backend" inherit_id="web.assets_backend" name="community_hub assets">
+    <xpath expr="." position="inside">
+      <!-- loaded via manifest assets already; keeping this file for clarity -->
+    </xpath>
+  </template>
+</odoo>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_channel_tree" model="ir.ui.view">
+        <field name="name">community.channel.tree</field>
+        <field name="model">community.channel</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="community_id"/>
+                <field name="sequence"/>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_channel_form" model="ir.ui.view">
+        <field name="name">community.channel.form</field>
+        <field name="model">community.channel</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="community_id"/>
+                        <field name="sequence"/>
+                        <field name="name"/>
+                        <field name="description"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_channel_manage" model="ir.actions.act_window">
+        <field name="name">Channels</field>
+        <field name="res_model">community.channel</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>
