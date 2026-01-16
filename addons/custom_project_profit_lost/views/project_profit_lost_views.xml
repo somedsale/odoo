@@ -8,7 +8,7 @@
                     <button name="load_all_projects" type="object" string="Đồng bộ dữ liệu" class="oe_highlight"/>
                     <button name="action_highlight" type="object" string="Highlight"/>
                 </header>
-                <field name="project_id" options="{'header_group': 'Hehe'}"/>
+                <field name="project_id"/>
                 <field name="num_contract" options="{'header_group': 'Thông tin'}"/>
                 <field name="contract_value" sum="1" options="{'header_group': 'Hợp đồng'}"/>
                 <field name="settlement_value" sum="1" options="{'header_group': 'Hợp đồng'}"/>
@@ -56,10 +56,10 @@
                             <field name="detail_ids" readonly="1">
                                 <tree >
                                     <field name="date"/>
-                                    <field name="material_amount" sum="1"/>
-                                    <field name="labor_amount" sum="1"/>
-                                    <field name="other_amount" sum="1"/>
-                                    <field name ="total_amount" sum="1"/>
+                                    <field name="material_amount" options="{'header_group': 'Chi phí'}" sum="1"/>
+                                    <field name="labor_amount" options="{'header_group': 'Chi phí'}" sum="1"/>
+                                    <field name="other_amount" options="{'header_group': 'Chi phí'}" sum="1"/>
+                                    <field name ="total_amount" options="{'header_group': 'Chi phí'}" sum="1"/>
                                     <field name="description" readonly="0"/>
                                     <field name="currency_id" nolabel="1" invisible="1"/>
                                 </tree>
