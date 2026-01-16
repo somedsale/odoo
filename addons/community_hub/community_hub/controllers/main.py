@@ -2,9 +2,10 @@
 from odoo import _, http
 from odoo.exceptions import AccessError, ValidationError
 from odoo.http import request
-import json
+from odoo.tools import html_sanitize
+
 import base64
-from markupsafe import Markup, escape
+import json
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -13,9 +14,7 @@ _logger = logging.getLogger(__name__)
 # BUS HELPERS (chịu nhiều signature _sendone khác nhau)
 # =========================================================
 def _bus_send(channel_name: str, channel_id: int, payload: dict):
-    """
-    Send payload to bus channel used by bus_service.addChannel(name, id).
-    """
+    """Send payload to bus channel used by bus_service.addChannel(name, id)."""
     bus = request.env["bus.bus"].sudo()
     dbname = request.env.cr.dbname
     channel_id = int(channel_id)
@@ -25,22 +24,19 @@ def _bus_send(channel_name: str, channel_id: int, payload: dict):
     short = (channel_name, channel_id)
 
     for args in (
-        (full, channel_name, payload),   # Odoo 17 hay dùng
-        (short, channel_name, payload),  # fallback
-        (full, payload),                 # signature cũ
+        (full, payload),              # Odoo 17 style often works
+        (dbname, short, payload),
+        (dbname, full, payload),
         (short, payload),
     ):
         try:
             bus._sendone(*args)
-            return True
+            return
         except TypeError:
             continue
         except Exception:
             _logger.exception("bus _sendone failed args=%s", args)
-            return False
-
-    _logger.warning("bus _sendone: no compatible signature found")
-    return False
+            return
 
 
 def _notify_community(community_id: int, payload: dict):
@@ -52,33 +48,102 @@ def _notify_user(user_id: int, payload: dict):
 
 
 # =========================================================
-# SMALL UTILS
+# DISCUSS INBOX NOTIFY (REALTIMES DISCUSS - NO RELOAD)
 # =========================================================
-def _to_int_list(v):
-    """Accept [1,2], ('1','2'), '1,2' ..."""
-    if not v:
-        return []
-    if isinstance(v, (list, tuple)):
-        out = []
-        for x in v:
-            try:
-                out.append(int(x))
-            except Exception:
-                pass
-        return out
-    if isinstance(v, str):
-        parts = [p.strip() for p in v.split(",")]
-        out = []
-        for p in parts:
-            try:
-                out.append(int(p))
-            except Exception:
-                pass
-        return out
-    try:
-        return [int(v)]
-    except Exception:
-        return []
+def _hub_dashboard_url(community_id=None, channel_id=None, post_id=None):
+    """Return /web#action=...&menu_id=...&community_id=... (link vào dashboard, không vào model)."""
+    action = request.env.ref("community_hub.action_community_hub_client", raise_if_not_found=False)
+    menu = request.env.ref("community_hub.menu_community_hub_root", raise_if_not_found=False)
+
+    parts = []
+    if action:
+        parts.append(f"action={action.id}")
+    if menu:
+        parts.append(f"menu_id={menu.id}")
+
+    if community_id:
+        parts.append(f"community_id={int(community_id)}")
+    if channel_id:
+        parts.append(f"channel_id={int(channel_id)}")
+    if post_id:
+        parts.append(f"post_id={int(post_id)}")
+
+    return "/web#" + "&".join(parts) if parts else "/web"
+
+
+def _notify_discuss_inbox_users(user_ids, *, subject, body_html, community_id=None, channel_id=None, post_id=None):
+    """
+    Tạo notification vào Inbox/chuông Discuss realtime bằng mail.message + mail.notification(inbox).
+    Link trong body sẽ trỏ vào dashboard Community Hub.
+    """
+    user_ids = [int(u) for u in (user_ids or []) if u]
+    if not user_ids:
+        return
+
+    Users = request.env["res.users"].sudo().browse(list(set(user_ids)))
+    partner_ids = Users.mapped("partner_id").ids
+    if not partner_ids:
+        return
+
+    url = _hub_dashboard_url(community_id=community_id, channel_id=channel_id, post_id=post_id)
+    body = (body_html or "").strip()
+    if url:
+        body = f"""{body}
+<p style="margin-top:8px">
+  <a href="{url}" style="text-decoration:none;">➡️ Mở Community Hub</a>
+</p>"""
+
+    subtype = request.env.ref("mail.mt_note", raise_if_not_found=False)
+    subtype_id = subtype.id if subtype else False
+    author_pid = request.env.user.partner_id.id if request.env.user.partner_id else False
+
+    notification_ids = [
+        (0, 0, {"res_partner_id": pid, "notification_type": "inbox"})
+        for pid in partner_ids
+    ]
+
+    request.env["mail.message"].sudo().create({
+        "author_id": author_pid,
+        "message_type": "notification",
+        "subtype_id": subtype_id,
+        "subject": subject or False,
+        "body": body or "",
+        "partner_ids": [(6, 0, partner_ids)],
+        "notification_ids": notification_ids,
+
+        # Không gắn model/res_id để khỏi click bị ép vào record model
+        "model": False,
+        "res_id": 0,
+    })
+
+
+def _notify_members(community_id: int, payload: dict, exclude_user_id: int = None,
+                    inbox_subject: str = None, inbox_body_html: str = None,
+                    inbox_channel_id: int = None, inbox_post_id: int = None):
+    """Notify all joined/invited members: (1) bus per-user + (2) Discuss inbox realtime."""
+    Member = request.env["community.hub.member"].sudo()
+    members = Member.search([
+        ("community_id", "=", int(community_id)),
+        ("state", "in", ["joined", "invited"]),
+    ])
+    uids = set(members.mapped("user_id").ids)
+    if exclude_user_id:
+        uids.discard(int(exclude_user_id))
+
+    # 1) bus per-user (toast + badge trong app)
+    for uid in uids:
+        _notify_user(uid, payload)
+
+    # 2) Discuss inbox realtime
+    if inbox_subject and inbox_body_html and uids:
+        _notify_discuss_inbox_users(
+            list(uids),
+            subject=inbox_subject,
+            body_html=inbox_body_html,
+            community_id=community_id,
+            channel_id=inbox_channel_id,
+            post_id=inbox_post_id,
+        )
 
 
 # =========================================================
@@ -86,13 +151,14 @@ def _to_int_list(v):
 # =========================================================
 def _get_member(community_id: int, user_id: int):
     Member = request.env["community.hub.member"].sudo()
-    return Member.search(
-        [("community_id", "=", int(community_id)), ("user_id", "=", int(user_id))],
-        limit=1
-    )
+    return Member.search([("community_id", "=", int(community_id)), ("user_id", "=", int(user_id))], limit=1)
 
 
 def _ensure_access_community(community_id: int):
+    """
+    User phải có member record (joined/invited) thì mới access được community.
+    Nếu bị kick => record bị xoá => coi như không có quyền.
+    """
     community_id = int(community_id)
     community = request.env["community.hub"].sudo().browse(community_id)
     if not community.exists():
@@ -127,166 +193,6 @@ def _ensure_owner(community_id: int):
 
 
 # =========================================================
-# ATTACHMENTS
-# =========================================================
-def _serialize_attachment(a):
-    return {
-        "id": a.id,
-        "name": a.name,
-        "mimetype": a.mimetype,
-        "size": a.file_size or 0,
-        "url": f"/web/content/{a.id}?download=true",
-        "view_url": f"/web/content/{a.id}?download=false",
-        "download_url": f"/web/content/{a.id}?download=true",
-    }
-
-
-def _attachments_for(res_model, res_id):
-    # không sudo để respect rule; nếu bạn bị rule chặn, đổi sang sudo nhưng cần tự bảo vệ
-    Att = request.env["ir.attachment"]
-    atts = Att.search(
-        [("res_model", "=", res_model), ("res_id", "=", int(res_id))],
-        order="id asc",
-    )
-    return [_serialize_attachment(a) for a in atts]
-
-
-def _relocate_attachments(attachment_ids, res_model, res_id):
-    """
-    Move only current user's draft attachments onto the record.
-    Draft attachments đang gắn tạm vào res.users (res_model='res.users', res_id=user.id)
-    """
-    ids = _to_int_list(attachment_ids)
-    if not ids:
-        return []
-
-    uid = request.env.user.id
-    Att = request.env["ir.attachment"].sudo()
-    atts = Att.browse(ids).exists()
-
-    # Chỉ cho relocate các attachment do chính user tạo
-    atts = atts.filtered(lambda a: a.create_uid.id == uid)
-
-    if not atts:
-        return []
-
-    atts.write({
-        "res_model": res_model,
-        "res_id": int(res_id),
-    })
-    return atts.ids
-
-
-def _delete_attachment(attachment_id: int):
-    """
-    Xoá attachment an toàn: chỉ cho xoá nếu create_uid là current user.
-    """
-    aid = int(attachment_id or 0)
-    if not aid:
-        return False
-    Att = request.env["ir.attachment"].sudo().browse(aid).exists()
-    if not Att:
-        return False
-    if Att.create_uid.id != request.env.user.id:
-        raise AccessError(_("You cannot delete this attachment."))
-    Att.unlink()
-    return True
-
-
-# =========================================================
-# DISCUSS INBOX NOTIFY (optional)
-# =========================================================
-def _hub_dashboard_url(community_id=None, channel_id=None, post_id=None):
-    action = request.env.ref("community_hub.action_community_hub_client", raise_if_not_found=False)
-    menu = request.env.ref("community_hub.menu_community_hub_root", raise_if_not_found=False)
-
-    parts = []
-    if action:
-        parts.append(f"action={action.id}")
-    if menu:
-        parts.append(f"menu_id={menu.id}")
-
-    if community_id:
-        parts.append(f"community_id={int(community_id)}")
-    if channel_id:
-        parts.append(f"channel_id={int(channel_id)}")
-    if post_id:
-        parts.append(f"post_id={int(post_id)}")
-
-    return "/web#" + "&".join(parts) if parts else "/web"
-
-
-def _notify_discuss_inbox_users(user_ids, *, subject, body_html, community_id=None, channel_id=None, post_id=None):
-    user_ids = [int(u) for u in (user_ids or []) if u]
-    if not user_ids:
-        return
-
-    Users = request.env["res.users"].sudo().browse(list(set(user_ids)))
-    partner_ids = Users.mapped("partner_id").ids
-    if not partner_ids:
-        return
-
-    url = _hub_dashboard_url(community_id=community_id, channel_id=channel_id, post_id=post_id)
-    body = (body_html or "").strip()
-    if url:
-        body = Markup("""
-        <p style="margin:0 0 8px 0"><a href="{url}" style="text-decoration:none;">➡️ Mở Community Hub</a></p>
-        """).format(url=escape(url or "/web")) + Markup(body)
-
-    author_pid = request.env.user.partner_id.id
-
-    request.env["mail.thread"].sudo().message_notify(
-        partner_ids=partner_ids,
-        subject=subject or False,
-        body=body or "",
-        author_id=author_pid,
-        model=False,
-        res_id=False,
-        email_layout_xmlid="mail.mail_notification_layout",
-        mail_auto_delete=False,
-    )
-
-
-def _notify_members(
-    community_id: int,
-    payload: dict,
-    exclude_user_id: int = None,
-    inbox_subject: str = None,
-    inbox_body_html: str = None,
-    inbox_channel_id: int = None,
-    inbox_post_id: int = None
-):
-    """
-    ✅ FIX: exclude_user_id sẽ loại khỏi cả BUS notify lẫn Inbox notify (tránh tự notify).
-    """
-    Member = request.env["community.hub.member"].sudo()
-    members = Member.search([
-        ("community_id", "=", int(community_id)),
-        ("state", "in", ["joined", "invited"]),
-    ])
-    uids_all = set(members.mapped("user_id").ids)
-
-    for uid in uids_all:
-        if exclude_user_id and int(uid) == int(exclude_user_id):
-            continue
-        _notify_user(uid, payload)
-
-    uids_inbox = set(uids_all)
-    if exclude_user_id:
-        uids_inbox.discard(int(exclude_user_id))
-
-    if inbox_subject and inbox_body_html and uids_inbox:
-        _notify_discuss_inbox_users(
-            list(uids_inbox),
-            subject=inbox_subject,
-            body_html=inbox_body_html,
-            community_id=community_id,
-            channel_id=inbox_channel_id,
-            post_id=inbox_post_id,
-        )
-
-
-# =========================================================
 # SERIALIZERS
 # =========================================================
 def _community_to_dict(c, my_member=None):
@@ -304,6 +210,15 @@ def _community_to_dict(c, my_member=None):
 
 def _channel_to_dict(ch):
     return {"id": ch.id, "name": ch.name, "community_id": ch.community_id.id, "sequence": ch.sequence}
+
+
+def _attachment_to_dict(a):
+    return {
+        "id": a.id,
+        "name": a.name,
+        "mimetype": a.mimetype,
+        "url": f"/web/content/{a.id}?download=true",
+    }
 
 
 def _reaction_summary(post_id=None, comment_id=None):
@@ -337,18 +252,15 @@ def _reaction_summary(post_id=None, comment_id=None):
 
 
 def _post_to_dict(p):
+    atts = []
     if "attachment_ids" in p._fields:
-        atts = [_serialize_attachment(a) for a in p.attachment_ids]
-    else:
-        atts = _attachments_for("community.hub.post", p.id)
-
+        atts = [_attachment_to_dict(a) for a in p.attachment_ids]
     return {
         "id": p.id,
         "community_id": p.community_id.id,
         "channel_id": p.channel_id.id,
         "author_id": p.author_id.id if p.author_id else False,
         "author_name": p.author_id.name if p.author_id else "",
-        "create_uid": p.create_uid.id if getattr(p, "create_uid", False) else False,   # ✅ add
         "body_html": p.body_html or "",
         "create_date": p.create_date,
         "attachments": atts,
@@ -357,69 +269,77 @@ def _post_to_dict(p):
 
 
 def _comment_to_dict(c):
+    atts = []
     if "attachment_ids" in c._fields:
-        atts = [_serialize_attachment(a) for a in c.attachment_ids]
-    else:
-        atts = _attachments_for("community.hub.comment", c.id)
-
-    community_id = c.community_id.id if "community_id" in c._fields else c.post_id.community_id.id
-
+        atts = [_attachment_to_dict(a) for a in c.attachment_ids]
     return {
         "id": c.id,
         "post_id": c.post_id.id,
-        "community_id": community_id,
-        "author_id": c.author_id.id if getattr(c, "author_id", False) else False,
-        "author_name": c.author_id.name if getattr(c, "author_id", False) else "",
-        "create_uid": c.create_uid.id if getattr(c, "create_uid", False) else False,  # ✅ add
+        "community_id": c.community_id.id if "community_id" in c._fields else c.post_id.community_id.id,
+        "author_id": c.author_id.id if c.author_id else False,
+        "author_name": c.author_id.name if c.author_id else "",
         "body_html": c.body_html or "",
         "create_date": c.create_date,
         "attachments": atts,
         "reactions": _reaction_summary(comment_id=c.id),
     }
 
-
-def _comment_to_dict(c):
-    if "attachment_ids" in c._fields:
-        atts = [_serialize_attachment(a) for a in c.attachment_ids]
-    else:
-        atts = _attachments_for("community.hub.comment", c.id)
-
-    community_id = c.community_id.id if "community_id" in c._fields else c.post_id.community_id.id
-
-    return {
-        "id": c.id,
-        "post_id": c.post_id.id,
-        "community_id": community_id,
-        "author_id": c.author_id.id if getattr(c, "author_id", False) else False,
-        "author_name": c.author_id.name if getattr(c, "author_id", False) else "",
-        "create_uid": c.create_uid.id if getattr(c, "create_uid", False) else False,  # ✅ add
-        "body_html": c.body_html or "",
-        "create_date": c.create_date,
-        "attachments": atts,
-        "reactions": _reaction_summary(comment_id=c.id),
-    }
-
-def _can_edit_delete_only_creator(record_create_uid: int = None):
-    """Chỉ cho người tạo record (create_uid) được sửa/xoá."""
-    uid = request.env.user.id
-    return bool(record_create_uid) and int(record_create_uid) == int(uid)
-
-
-
-def _cleanup_attachments(res_model: str, res_id: int):
-    # xoá attachment gắn với record (dùng sudo vì record đã sắp unlink)
-    Att = request.env["ir.attachment"].sudo()
-    atts = Att.search([("res_model", "=", res_model), ("res_id", "=", int(res_id))])
-    # chỉ xoá file do user hiện tại tạo (an toàn)
-    uid = request.env.user.id
-    atts = atts.filtered(lambda a: a.create_uid.id == uid)
-    if atts:
-        atts.unlink()
 
 # =========================================================
 # CONTROLLER
 # =========================================================
 class CommunityHubController(http.Controller):
+
+    # ---------------- ATTACHMENTS (UPLOAD) ----------------
+    @http.route(
+        "/community_hub/api/attachment/upload",
+        type="http",
+        auth="user",
+        methods=["POST"],
+        csrf=False,
+    )
+    def upload_attachment(self, **kw):
+        """Upload files and return ir.attachment ids.
+
+        Frontend should POST multipart/form-data with one or many fields named:
+        - files (recommended)
+        - ufile (fallback)
+        """
+        files = []
+        try:
+            files = request.httprequest.files.getlist("files")
+        except Exception:
+            files = []
+        if not files:
+            try:
+                files = request.httprequest.files.getlist("ufile")
+            except Exception:
+                files = []
+
+        items = []
+        for f in files or []:
+            if not f:
+                continue
+            content = f.read() if hasattr(f, "read") else b""
+            if not content:
+                continue
+            att = request.env["ir.attachment"].sudo().create({
+                "name": getattr(f, "filename", "upload"),
+                "datas": base64.b64encode(content),
+                "mimetype": getattr(f, "mimetype", "application/octet-stream"),
+                # link to a record later on submitPost/submitComment
+                "res_model": False,
+                "res_id": 0,
+            })
+            items.append({
+                "id": att.id,
+                "name": att.name,
+                "mimetype": att.mimetype,
+                "url": f"/web/content/{att.id}?download=true",
+            })
+
+        body = json.dumps({"items": items})
+        return request.make_response(body, headers=[("Content-Type", "application/json")])
 
     # ---------------- BOOTSTRAP ----------------
     @http.route("/community_hub/api/bootstrap", type="json", auth="user")
@@ -436,7 +356,7 @@ class CommunityHubController(http.Controller):
         selected = communities[:1]
         selected = selected[0] if selected else None
 
-        sel_member = my_members.filtered(lambda m: m.community_id.id == selected.id)[:1] if selected else Member.browse([])
+        sel_member = my_members.filtered(lambda m: m.community_id.id == selected.id)[:1] if selected else request.env["community.hub.member"].sudo().browse([])
 
         channels = request.env["community.hub.channel"].sudo().search(
             [("community_id", "=", selected.id)] if (selected and sel_member and sel_member.state == "joined") else [],
@@ -669,7 +589,7 @@ class CommunityHubController(http.Controller):
             data = channelId
             channelId = data.get("channelId") or data.get("channel_id")
             bodyHtml = data.get("bodyHtml") or data.get("body_html") or bodyHtml
-            attachmentIds = data.get("attachmentIds") or data.get("attachment_ids") or attachmentIds
+            attachmentIds = data.get("attachmentIds") or attachmentIds
 
         channelId = int(channelId or 0)
         if not channelId:
@@ -682,34 +602,46 @@ class CommunityHubController(http.Controller):
         _ensure_joined(ch.community_id.id)
 
         bodyHtml = (bodyHtml or "").strip()
-        if not bodyHtml and not _to_int_list(attachmentIds):
+        if not bodyHtml:
             raise ValidationError(_("Post content is required."))
 
-        Post = request.env["community.hub.post"].sudo()
+        # sanitize HTML to avoid XSS while still allowing basic formatting
+        bodyHtml = html_sanitize(bodyHtml)
 
         vals = {
             "community_id": ch.community_id.id,
             "channel_id": ch.id,
             "author_id": request.env.user.id,
-            "body_html": bodyHtml or "<p></p>",
+            "body_html": bodyHtml,
         }
-        post = Post.create(vals)
+        att_ids = [int(x) for x in (attachmentIds or []) if x]
+        if att_ids and "attachment_ids" in request.env["community.hub.post"]._fields:
+            vals["attachment_ids"] = [(6, 0, att_ids)]
 
-        moved_ids = _relocate_attachments(attachmentIds, "community.hub.post", post.id)
-        if moved_ids and "attachment_ids" in Post._fields:
-            post.write({"attachment_ids": [(6, 0, moved_ids)]})
+        post = request.env["community.hub.post"].sudo().create(vals)
 
+        # Attach uploaded files to this post so /web/content works with ACLs
+        if att_ids:
+            atts = request.env["ir.attachment"].sudo().browse(att_ids).exists()
+            # only allow linking attachments uploaded by current user
+            atts = atts.filtered(lambda a: a.create_uid.id == request.env.user.id)
+            if atts:
+                atts.write({"res_model": "community.hub.post", "res_id": post.id})
+
+        # realtime nội bộ community
         _notify_community(ch.community_id.id, {
             "type": "post_created",
             "community_id": ch.community_id.id,
             "channel_id": ch.id,
-            "post_id": post.id,
+            "post_id": post.id
         })
 
+        # NEW: notify members -> bus + Discuss Inbox realtime
         actor = request.env.user
         subject = f"[Community Hub] Bài viết mới • {ch.community_id.name}"
-        body = f"""<p><b>{actor.name}</b> vừa đăng bài mới trong <b>{ch.community_id.name}</b> • kênh <b>{ch.name}</b>.</p>"""
-
+        body = f"""
+<p><b>{actor.name}</b> vừa đăng bài mới trong <b>{ch.community_id.name}</b> • kênh <b>{ch.name}</b>.</p>
+"""
         _notify_members(
             ch.community_id.id,
             payload={
@@ -731,9 +663,9 @@ class CommunityHubController(http.Controller):
 
         return {"post": _post_to_dict(post)}
 
-    # ---------------- COMMENTS LIST ----------------
+    # ---------------- COMMENTS ----------------
     @http.route("/community_hub/api/post/<int:post_id>/comments", type="json", auth="user")
-    def comments(self, post_id, limit=50, offset=0, **kw):
+    def comments(self, post_id, limit=50, offset=0):
         post_id = int(post_id)
         post = request.env["community.hub.post"].sudo().browse(post_id)
         if not post.exists():
@@ -752,193 +684,82 @@ class CommunityHubController(http.Controller):
 
         return {"items": [_comment_to_dict(c) for c in items], "has_more": has_more}
 
-    # =========================================================
-    # UPLOAD ATTACHMENTS (multipart) - match api.js
-    #   POST /community_hub/api/attachment/upload   (csrf=False)
-    # =========================================================
-    @http.route("/community_hub/api/attachment/upload", type="http", auth="user", methods=["POST"], csrf=False)
-    def api_upload_attachments(self, **kw):
-        """
-        Params form:
-          - community_id (required)
-          - channel_id (optional)  -> upload cho POST
-          - post_id (optional)     -> upload cho COMMENT (gắn theo post)
-          - files (multiple)
-        Return: {"items":[{id,name,mimetype,size,ext,open_url,download_url,thumb_url}]}
-        """
-        community_id = int(request.params.get("community_id") or request.params.get("communityId") or 0)
-        channel_id = int(request.params.get("channel_id") or request.params.get("channelId") or 0)
-        post_id = int(request.params.get("post_id") or request.params.get("postId") or 0)
+    @http.route("/community_hub/api/comment/create", type="json", auth="user")
+    def create_comment(self, postId=None, bodyHtml=None, attachmentIds=None, **kw):
+        if isinstance(postId, dict):
+            data = postId
+            postId = data.get("postId") or data.get("post_id")
+            bodyHtml = data.get("bodyHtml") or data.get("body_html") or bodyHtml
+            attachmentIds = data.get("attachmentIds") or attachmentIds
 
-        if not community_id:
-            return request.make_response(
-                json.dumps({"error": "Missing community_id"}),
-                headers=[("Content-Type", "application/json")],
-                status=400,
-            )
+        postId = int(postId or 0)
+        if not postId:
+            raise ValidationError(_("postId is required."))
 
-        # check joined
-        Member = request.env["community.hub.member"].sudo()
-        me_member = Member.search([
-            ("community_id", "=", community_id),
-            ("user_id", "=", request.env.user.id),
-            ("state", "=", "joined"),
-        ], limit=1)
-        if not me_member:
-            return request.make_response(
-                json.dumps({"error": "Not a joined member"}),
-                headers=[("Content-Type", "application/json")],
-                status=403,
-            )
-
-        if channel_id:
-            ch = request.env["community.hub.channel"].sudo().browse(channel_id).exists()
-            if not ch or ch.community_id.id != community_id:
-                return request.make_response(
-                    json.dumps({"error": "Invalid channel_id"}),
-                    headers=[("Content-Type", "application/json")],
-                    status=400,
-                )
-
-        if post_id:
-            post = request.env["community.hub.post"].sudo().browse(post_id).exists()
-            if not post or post.community_id.id != community_id:
-                return request.make_response(
-                    json.dumps({"error": "Invalid post_id"}),
-                    headers=[("Content-Type", "application/json")],
-                    status=400,
-                )
-
-        files = request.httprequest.files.getlist("files") or request.httprequest.files.getlist("ufile")
-        if not files:
-            return request.make_response(
-                json.dumps({"items": []}),
-                headers=[("Content-Type", "application/json")],
-                status=200,
-            )
-
-        # ✅ FIX: KHÔNG sudo() để create_uid là user thật (phục vụ delete/relocate an toàn)
-        Attachment = request.env["ir.attachment"]
-        items = []
-        user = request.env.user
-
-        for f in files:
-            raw = f.read() or b""
-            datas = base64.b64encode(raw)
-
-            att = Attachment.create({
-                "name": f.filename,
-                "datas": datas,
-                "mimetype": f.mimetype or "application/octet-stream",
-                # draft: gắn tạm vào user
-                "res_model": "res.users",
-                "res_id": user.id,
-            })
-
-            open_url = f"/web/content/{att.id}?download=false"
-            download_url = f"/web/content/{att.id}?download=true"
-            ext = (f.filename.split(".")[-1].lower() if "." in f.filename else "")
-
-            items.append({
-                "id": att.id,
-                "name": f.filename,
-                "mimetype": att.mimetype,
-                "size": len(raw),
-                "ext": ext,
-                "open_url": open_url,
-                "download_url": download_url,
-                "thumb_url": open_url if (att.mimetype or "").startswith("image/") else "",
-            })
-
-        return request.make_response(
-            json.dumps({"items": items}),
-            headers=[("Content-Type", "application/json")],
-            status=200,
-        )
-
-    # giữ route cũ để backward compatible (nếu chỗ nào còn gọi)
-    @http.route("/community_hub/upload_attachments", type="http", auth="user", methods=["POST"], csrf=False)
-    def upload_attachments_compat(self, **kw):
-        return self.api_upload_attachments(**kw)
-
-    # =========================================================
-    # DELETE ATTACHMENT (match api.js)
-    # =========================================================
-    @http.route("/community_hub/api/attachment/delete", type="json", auth="user", methods=["POST"])
-    def api_delete_attachment(self, attachmentId=None, attachment_id=None, **kw):
-        aid = attachmentId or attachment_id or (kw.get("attachmentId") or kw.get("attachment_id"))
-        _delete_attachment(aid)
-        return {"ok": True}
-
-    # =========================================================
-    # CREATE COMMENT (FIXED)
-    # =========================================================
-    @http.route("/community_hub/api/comment/create", type="json", auth="user", methods=["POST"])
-    def create_comment(self, **kw):
-        post_id = int(kw.get("postId") or kw.get("post_id") or 0)
-        body_html = (kw.get("bodyHtml") or kw.get("body_html") or "").strip()
-        attachment_ids = kw.get("attachmentIds") or kw.get("attachment_ids") or []
-
-        if not post_id:
-            raise ValidationError(_("Missing postId"))
-
-        post = request.env["community.hub.post"].sudo().browse(post_id).exists()
-        if not post:
+        post = request.env["community.hub.post"].sudo().browse(postId)
+        if not post.exists():
             raise ValidationError(_("Post not found."))
 
         _ensure_joined(post.community_id.id)
 
-        if not body_html and not _to_int_list(attachment_ids):
-            raise ValidationError(_("Empty comment"))
+        bodyHtml = (bodyHtml or "").strip()
+        if not bodyHtml:
+            raise ValidationError(_("Comment content is required."))
 
-        Comment = request.env["community.hub.comment"].sudo()
+        bodyHtml = html_sanitize(bodyHtml)
 
-        vals = {"post_id": post.id, "body_html": body_html or "<p></p>"}
-        # ✅ set thêm nếu model có field (tránh crash nếu thiếu)
-        if "author_id" in Comment._fields:
-            vals["author_id"] = request.env.user.id
-        if "community_id" in Comment._fields:
-            vals["community_id"] = post.community_id.id
-        if "channel_id" in Comment._fields:
-            vals["channel_id"] = post.channel_id.id
-
-        comment = Comment.create(vals)
-
-        moved_ids = _relocate_attachments(attachment_ids, "community.hub.comment", comment.id)
-        if moved_ids and "attachment_ids" in Comment._fields:
-            comment.write({"attachment_ids": [(6, 0, moved_ids)]})
-
-        # realtime
-        _notify_community(post.community_id.id, {
-            "type": "comment_created",
+        vals = {
             "community_id": post.community_id.id,
-            "channel_id": post.channel_id.id,
             "post_id": post.id,
-            "comment_id": comment.id,
+            "author_id": request.env.user.id,
+            "body_html": bodyHtml,
+        }
+        att_ids = [int(x) for x in (attachmentIds or []) if x]
+        if att_ids and "attachment_ids" in request.env["community.hub.comment"]._fields:
+            vals["attachment_ids"] = [(6, 0, att_ids)]
+
+        c = request.env["community.hub.comment"].sudo().create(vals)
+
+        if att_ids:
+            atts = request.env["ir.attachment"].sudo().browse(att_ids).exists()
+            atts = atts.filtered(lambda a: a.create_uid.id == request.env.user.id)
+            if atts:
+                atts.write({"res_model": "community.hub.comment", "res_id": c.id})
+        user = request.env.user
+        cid = post.community_id.id
+
+        _notify_community(cid, {
+            "type": "comment_created",
+            "community_id": cid,
+            "post_id": post.id,
+            "comment_id": c.id,
+            "actor_id": user.id,
+            "actor_name": user.name,
         })
 
-        actor = request.env.user
+        # NEW: members notify -> bus + Discuss Inbox realtime
+        subject = f"[Community Hub] Bình luận mới • {post.community_id.name}"
+        body = f"""
+<p><b>{user.name}</b> vừa bình luận trong <b>{post.community_id.name}</b>.</p>
+"""
         _notify_members(
-            post.community_id.id,
+            cid,
             payload={
                 "type": "notify_comment",
-                "community_id": post.community_id.id,
+                "community_id": cid,
                 "community_name": post.community_id.name,
-                "channel_id": post.channel_id.id,
-                "channel_name": post.channel_id.name,
                 "post_id": post.id,
-                "comment_id": comment.id,
-                "actor_id": actor.id,
-                "actor_name": actor.name,
+                "comment_id": c.id,
+                "actor_id": user.id,
+                "actor_name": user.name,
             },
-            exclude_user_id=actor.id,
-            inbox_subject=f"[Community Hub] Bình luận mới • {post.community_id.name}",
-            inbox_body_html=f"<p><b>{actor.name}</b> vừa bình luận trong <b>{post.community_id.name}</b>.</p>",
-            inbox_channel_id=post.channel_id.id,
+            exclude_user_id=user.id,
+            inbox_subject=subject,
+            inbox_body_html=body,
+            inbox_channel_id=post.channel_id.id if post.channel_id else None,
             inbox_post_id=post.id,
         )
-
-        return {"ok": True, "id": comment.id}
+        return {"comment": _comment_to_dict(c)}
 
     # ---------------- REACTIONS ----------------
     @http.route("/community_hub/api/reaction/toggle", type="json", auth="user")
@@ -1058,6 +879,7 @@ class CommunityHubController(http.Controller):
                     "invited_by": request.env.user.id,
                 })
 
+            # 1) bus per-user (toast trong app)
             _notify_user(uid, {
                 "type": "invited",
                 "community_id": community_id,
@@ -1066,9 +888,17 @@ class CommunityHubController(http.Controller):
                 "invited_by_name": request.env.user.name,
             })
 
+            # 2) Discuss Inbox realtime + link dashboard
             subject = f"[Community Hub] Bạn được mời vào: {community_name}"
-            body = f"<p>Bạn được <b>{request.env.user.name}</b> mời vào community <b>{community_name}</b>.</p>"
-            _notify_discuss_inbox_users([uid], subject=subject, body_html=body, community_id=community_id)
+            body = f"""
+<p>Bạn được <b>{request.env.user.name}</b> mời vào community <b>{community_name}</b>.</p>
+"""
+            _notify_discuss_inbox_users(
+                [uid],
+                subject=subject,
+                body_html=body,
+                community_id=community_id,
+            )
 
         _notify_community(community_id, {"type": "members_changed", "community_id": community_id})
         return {"ok": True}
@@ -1111,160 +941,10 @@ class CommunityHubController(http.Controller):
             raise AccessError(_("User is not a joined member."))
 
         if m.role == "owner" and role != "owner":
-            owners = Member.search_count([
-                ("community_id", "=", community_id),
-                ("role", "=", "owner"),
-                ("state", "=", "joined")
-            ])
+            owners = Member.search_count([("community_id", "=", community_id), ("role", "=", "owner"), ("state", "=", "joined")])
             if owners <= 1:
                 raise AccessError(_("You must keep at least one owner."))
 
         m.write({"role": role})
         _notify_community(community_id, {"type": "members_changed", "community_id": community_id})
-        return {"ok": True}
-    # ---------------- POSTS: UPDATE / DELETE ----------------
-    @http.route("/community_hub/api/post/update", type="json", auth="user", methods=["POST"])
-    def update_post(self, postId=None, bodyHtml=None, attachmentIds=None, **kw):
-        if isinstance(postId, dict):
-            data = postId
-            postId = data.get("postId") or data.get("post_id")
-            bodyHtml = data.get("bodyHtml") or data.get("body_html") or bodyHtml
-            attachmentIds = data.get("attachmentIds") or data.get("attachment_ids") or attachmentIds
-
-        postId = int(postId or 0)
-        if not postId:
-            raise ValidationError(_("postId is required."))
-
-        Post = request.env["community.hub.post"].sudo()
-        post = Post.browse(postId).exists()
-        if not post:
-            raise ValidationError(_("Post not found."))
-
-        community_id = post.community_id.id
-        _ensure_joined(community_id)
-
-        if not _can_edit_delete_only_creator(getattr(post, "create_uid", False) and post.create_uid.id):
-            raise AccessError(_("You cannot edit this post."))
-
-
-        bodyHtml = (bodyHtml or "").strip()
-        moved_ids = _relocate_attachments(attachmentIds, "community.hub.post", post.id)
-
-        # nếu post rỗng và cũng không add attachment => chặn
-        has_old_atts = bool(_attachments_for("community.hub.post", post.id))
-        if not bodyHtml and not moved_ids and not has_old_atts:
-            raise ValidationError(_("Post content is required."))
-
-        post.write({"body_html": bodyHtml or "<p></p>"})
-        if moved_ids and "attachment_ids" in Post._fields:
-            post.write({"attachment_ids": [(6, 0, list(set(post.attachment_ids.ids + moved_ids)))]})
-
-        # ❌ bỏ realtime: không notify community
-        return {"ok": True, "post": _post_to_dict(post)}
-
-
-    @http.route("/community_hub/api/post/delete", type="json", auth="user", methods=["POST"])
-    def delete_post(self, postId=None, **kw):
-        if isinstance(postId, dict):
-            data = postId
-            postId = data.get("postId") or data.get("post_id")
-
-        postId = int(postId or 0)
-        if not postId:
-            return {"ok": True}
-
-        Post = request.env["community.hub.post"].sudo()
-        post = Post.browse(postId).exists()
-        if not post:
-            return {"ok": True}
-
-        community_id = post.community_id.id
-        _ensure_joined(community_id)
-
-        if not _can_edit_delete_only_creator(getattr(post, "create_uid", False) and post.create_uid.id):
-            raise AccessError(_("You cannot edit this post."))
-        # cleanup children: comments + reactions
-        request.env["community.hub.comment"].sudo().search([("post_id", "=", post.id)]).unlink()
-        request.env["community.hub.reaction"].sudo().search([("post_id", "=", post.id)]).unlink()
-
-        # cleanup attachments (safe)
-        _cleanup_attachments("community.hub.post", post.id)
-
-        post.unlink()
-
-        # ❌ bỏ realtime: không notify community
-        return {"ok": True}
-
-
-    # ---------------- COMMENTS: UPDATE / DELETE ----------------
-    @http.route("/community_hub/api/comment/update", type="json", auth="user", methods=["POST"])
-    def update_comment(self, commentId=None, bodyHtml=None, attachmentIds=None, **kw):
-        if isinstance(commentId, dict):
-            data = commentId
-            commentId = data.get("commentId") or data.get("comment_id")
-            bodyHtml = data.get("bodyHtml") or data.get("body_html") or bodyHtml
-            attachmentIds = data.get("attachmentIds") or data.get("attachment_ids") or attachmentIds
-
-        commentId = int(commentId or 0)
-        if not commentId:
-            raise ValidationError(_("commentId is required."))
-
-        Comment = request.env["community.hub.comment"].sudo()
-        c = Comment.browse(commentId).exists()
-        if not c:
-            raise ValidationError(_("Comment not found."))
-
-        community_id = c.community_id.id if "community_id" in c._fields else c.post_id.community_id.id
-        _ensure_joined(community_id)
-
-        author_uid = getattr(c, "author_id", False) and c.author_id.id or False
-        create_uid = getattr(c, "create_uid", False) and c.create_uid.id
-        if not _can_edit_delete_only_creator(create_uid):
-            raise AccessError(_("You cannot edit this comment."))
-
-
-        bodyHtml = (bodyHtml or "").strip()
-        moved_ids = _relocate_attachments(attachmentIds, "community.hub.comment", c.id)
-
-        has_old_atts = bool(_attachments_for("community.hub.comment", c.id))
-        if not bodyHtml and not moved_ids and not has_old_atts:
-            raise ValidationError(_("Empty comment"))
-
-        c.write({"body_html": bodyHtml or "<p></p>"})
-        if moved_ids and "attachment_ids" in Comment._fields:
-            c.write({"attachment_ids": [(6, 0, list(set(c.attachment_ids.ids + moved_ids)))]})
-
-        # ❌ bỏ realtime
-        return {"ok": True, "comment": _comment_to_dict(c)}
-
-
-    @http.route("/community_hub/api/comment/delete", type="json", auth="user", methods=["POST"])
-    def delete_comment(self, commentId=None, **kw):
-        if isinstance(commentId, dict):
-            data = commentId
-            commentId = data.get("commentId") or data.get("comment_id")
-
-        commentId = int(commentId or 0)
-        if not commentId:
-            return {"ok": True}
-
-        Comment = request.env["community.hub.comment"].sudo()
-        c = Comment.browse(commentId).exists()
-        if not c:
-            return {"ok": True}
-
-        community_id = c.community_id.id if "community_id" in c._fields else c.post_id.community_id.id
-        _ensure_joined(community_id)
-
-        author_uid = getattr(c, "author_id", False) and c.author_id.id or False
-        create_uid = getattr(c, "create_uid", False) and c.create_uid.id
-        if not _can_edit_delete_only_creator(create_uid):
-            raise AccessError(_("You cannot delete this comment."))
-
-
-        request.env["community.hub.reaction"].sudo().search([("comment_id", "=", c.id)]).unlink()
-        _cleanup_attachments("community.hub.comment", c.id)
-        c.unlink()
-
-        # ❌ bỏ realtime
         return {"ok": True}
