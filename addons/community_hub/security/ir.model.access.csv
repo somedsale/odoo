@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_community_hub_user,community.hub user,model_community_hub,base.group_user,1,1,1,0
+access_community_hub_channel_user,community.hub.channel user,model_community_hub_channel,base.group_user,1,1,1,0
+access_community_hub_member_user,community.hub.member user,model_community_hub_member,base.group_user,1,1,0,0
+access_community_hub_post_user,community.hub.post user,model_community_hub_post,base.group_user,1,1,1,0
+access_community_hub_comment_user,community.hub.comment user,model_community_hub_comment,base.group_user,1,1,1,0

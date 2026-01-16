@@ -1,0 +1,946 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+  <t t-name="community_hub.ClientAction" owl="1">
+    <div class="o_community_hub ch-app">
+      <div class="ch-layout">
+
+        <!-- =========================
+             LEFT SIDEBAR
+        ========================== -->
+        <aside class="ch-sidebar">
+          <!-- Communities -->
+          <div class="ch-side-block">
+            <div class="ch-side-title">
+              <span>COMMUNITIES</span>
+              <button class="ch-icon-btn" t-on-click="toggleNewCommunity" title="New community">+</button>
+            </div>
+
+            <div class="ch-side-list">
+              <t t-if="state.communities &amp;&amp; state.communities.length">
+                <t t-foreach="state.communities" t-as="c" t-key="c.id">
+                  <div t-att-class="(state.selectedCommunity &amp;&amp; state.selectedCommunity.id === c.id) ? 'ch-comm-row is-active' : 'ch-comm-row'">
+                    <button type="button"
+                            class="btn btn-light w-100 text-start ch-comm-btn"
+                            t-att-data-community-id="c.id"
+                            t-on-click="selectCommunity">
+                      <span class="ch-comm-name" t-esc="c.name"/>
+                      <span class="ch-mini-tag" t-if="c.my_state"> • <t t-esc="c.my_state"/></span>
+
+                      <t t-if="state.ui.badges &amp;&amp; state.ui.badges[c.id]">
+                        <span class="ch-badge-count" t-esc="state.ui.badges[c.id]"/>
+                      </t>
+                    </button>
+
+                    <t t-if="c.my_state === 'invited'">
+                      <button class="btn btn-primary btn-sm"
+                              t-att-data-community-id="c.id"
+                              t-on-click="joinCommunity">
+                        Tham gia
+                      </button>
+                    </t>
+                  </div>
+                </t>
+              </t>
+              <t t-else="">
+                <div class="ch-empty">Bạn chưa có community nào</div>
+              </t>
+            </div>
+          </div>
+
+          <!-- Channels -->
+          <div class="ch-side-block">
+            <div class="ch-side-title">
+              <span>KÊNH</span>
+              <button class="ch-icon-btn"
+                      t-on-click="toggleNewChannel"
+                      t-att-disabled="!canManage || !state.selectedCommunity || state.selectedCommunity.my_state !== 'joined'"
+                      title="New channel">+</button>
+            </div>
+
+            <div class="ch-side-list">
+              <t t-if="!state.selectedCommunity">
+                <div class="ch-empty">Chọn community để xem kênh</div>
+              </t>
+
+              <t t-elif="state.selectedCommunity.my_state !== 'joined'">
+                <div class="ch-empty">
+                  Bạn đang ở trạng thái <b t-esc="state.selectedCommunity.my_state"/>. Bấm <b>Tham gia</b> để xem kênh &amp; bài viết.
+                </div>
+              </t>
+
+              <t t-elif="state.channels &amp;&amp; state.channels.length">
+                <t t-foreach="state.channels" t-as="ch" t-key="ch.id">
+                  <button type="button"
+                          class="btn btn-light w-100 text-start ch-channel-btn"
+                          t-att-class="(state.selectedChannelId === ch.id) ? 'btn btn-light w-100 text-start ch-channel-btn is-active' : 'btn btn-light w-100 text-start ch-channel-btn'"
+                          t-att-data-channel-id="ch.id"
+                          t-on-click="selectChannel">
+                    <span class="ch-channel-name" t-esc="ch.name"/>
+                  </button>
+                </t>
+              </t>
+
+              <t t-else="">
+                <div class="ch-empty">Chưa có kênh</div>
+              </t>
+            </div>
+          </div>
+
+          <!-- ========= New community modal ========= -->
+          <t t-if="state.ui.showNewCommunity">
+            <div class="ch-modal-backdrop" t-on-click="toggleNewCommunity"/>
+            <div class="ch-modal">
+              <div class="ch-modal-title">Create community</div>
+
+              <div class="ch-form">
+                <label class="ch-label">Tên community</label>
+                <input class="ch-input"
+                       placeholder="Community name"
+                       t-model="state.ui.newCommunityName"
+                       t-on-keydown="onNewCommunityKeydown"/>
+
+                <div class="ch-row">
+                  <label class="ch-check">
+                    <input type="checkbox" t-model="state.ui.newCommunityPublic"/>
+                    <span>Public</span>
+                  </label>
+
+                  <div class="ch-field">
+                    <label class="ch-label">Join policy</label>
+                    <select class="ch-input" t-model="state.ui.newCommunityPolicy">
+                      <option value="invite">invite</option>
+                      <option value="open">open</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ch-modal-actions">
+                <button class="btn btn-secondary" t-on-click="toggleNewCommunity">Cancel</button>
+                <button class="btn btn-primary" t-on-click="submitNewCommunity">Create</button>
+              </div>
+            </div>
+          </t>
+
+          <!-- ========= New channel modal ========= -->
+          <t t-if="state.ui.showNewChannel">
+            <div class="ch-modal-backdrop" t-on-click="toggleNewChannel"/>
+            <div class="ch-modal">
+              <div class="ch-modal-title">Create channel</div>
+
+              <div class="ch-form">
+                <label class="ch-label">Tên kênh</label>
+                <input class="ch-input"
+                       placeholder="Channel name"
+                       t-model="state.ui.newChannelName"
+                       t-on-keydown="onNewChannelKeydown"/>
+              </div>
+
+              <div class="ch-modal-actions">
+                <button class="btn btn-secondary" t-on-click="toggleNewChannel">Cancel</button>
+                <button class="btn btn-primary"
+                        t-att-disabled="!canManage || !state.selectedCommunity || state.selectedCommunity.my_state !== 'joined'"
+                        t-on-click="submitNewChannel">Create</button>
+              </div>
+            </div>
+          </t>
+
+        </aside>
+
+        <!-- =========================
+             MAIN
+        ========================== -->
+        <main class="ch-main">
+
+          <!-- Header -->
+          <header class="ch-team-header">
+            <div class="ch-team-title">
+              <div class="ch-team-name" t-out="(state.selectedCommunity &amp;&amp; state.selectedCommunity.name) || 'Community Hub'"/>
+              <div class="ch-team-sub">
+                <t t-if="selectedChannel">
+                  Channel: <span class="ch-pill" t-out="selectedChannel.name"/>
+                </t>
+                <t t-else="">
+                  <span class="text-muted">No channel</span>
+                </t>
+              </div>
+            </div>
+
+            <nav class="ch-tabs">
+              <button class="ch-tab"
+                      data-tab="posts"
+                      t-att-class="state.ui.activeTab==='posts' ? 'ch-tab is-active' : 'ch-tab'"
+                      t-on-click="onTabClick">Posts</button>
+
+              <button class="ch-tab"
+                      data-tab="files"
+                      t-att-class="state.ui.activeTab==='files' ? 'ch-tab is-active' : 'ch-tab'"
+                      t-on-click="onTabClick">Tập tin</button>
+
+              <button class="ch-tab"
+                      data-tab="photos"
+                      t-att-class="state.ui.activeTab==='photos' ? 'ch-tab is-active' : 'ch-tab'"
+                      t-on-click="onTabClick">Photos</button>
+            </nav>
+
+            <div class="ch-header-actions">
+              <button class="btn btn-secondary"
+                      t-on-click="toggleSettings"
+                      t-att-disabled="!state.selectedCommunity || state.selectedCommunity.my_state !== 'joined'">
+                Manage
+              </button>
+            </div>
+          </header>
+
+          <!-- =========================
+               POSTS TAB
+          ========================== -->
+          <t t-if="state.ui.activeTab==='posts'">
+
+            <!-- Composer -->
+            <div class="ch-compose"
+                 t-if="state.selectedCommunity &amp;&amp; state.selectedCommunity.my_state === 'joined'">
+              <div class="ch-compose-card">
+                <div class="ch-compose-top">
+                  <div class="ch-compose-label">Đăng bài</div>
+
+                  <div class="ch-compose-mode">
+                    <button class="ch-pill-btn"
+                            t-att-class="state.ui.composerMode === 'post' ? 'ch-pill-btn is-active' : 'ch-pill-btn'"
+                            data-mode="post"
+                            t-on-click="onComposerModeClick">Bài viết</button>
+                    <button class="ch-pill-btn"
+                            t-att-class="state.ui.composerMode === 'announcement' ? 'ch-pill-btn is-active' : 'ch-pill-btn'"
+                            data-mode="announcement"
+                            t-on-click="onComposerModeClick">Thông báo</button>
+                  </div>
+                </div>
+
+                <input t-if="state.ui.composerMode === 'announcement'"
+                       class="ch-input ch-announce-title"
+                       t-model="state.ui.announcementTitle"
+                       placeholder="Tiêu đề thông báo (tuỳ chọn)"/>
+
+                <div t-ref="post_editor"
+                     class="ch-editor ch-editor--post"
+                     contenteditable="true"
+                     data-placeholder="Viết bài..."
+                     t-on-input="onPostEditorInput"
+                     t-on-paste="onPostPaste">
+                </div>
+
+                <div class="ch-compose-actions">
+                  <div class="ch-toolbar">
+                    <button class="ch-icon-btn" title="Bold" data-cmd="bold" t-on-click="onPostCmdClick"><b>B</b></button>
+                    <button class="ch-icon-btn" title="Italic" data-cmd="italic" t-on-click="onPostCmdClick"><i>I</i></button>
+                    <button class="ch-icon-btn" title="Underline" data-cmd="underline" t-on-click="onPostCmdClick"><u>U</u></button>
+                    <button class="ch-icon-btn" title="Bullets" data-cmd="insertUnorderedList" t-on-click="onPostCmdClick">•</button>
+                    <button class="ch-icon-btn" title="Numbered" data-cmd="insertOrderedList" t-on-click="onPostCmdClick">1.</button>
+                    <button class="ch-icon-btn" title="Link" data-cmd="createLink" t-on-click="onPostCmdClick">🔗</button>
+
+                    <button class="ch-icon-btn" title="Emoji" t-on-click="togglePostEmoji">😊</button>
+
+                    <button class="ch-icon-btn" title="Đính kèm file" t-on-click="onPostAttachClick">📎</button>
+                    <input t-ref="post_files" type="file" multiple="multiple" style="display:none" t-on-change="onPostFilesChanged"/>
+                  </div>
+
+                  <div class="ch-compose-right">
+                    <span class="ch-hint" t-if="state.ui.postUploading">Đang upload...</span>
+                    <button class="btn btn-primary"
+                            t-att-disabled="!canSubmitPost || state.ui.postUploading"
+                            t-on-click="submitPost">
+                      Post
+                    </button>
+                  </div>
+                </div>
+
+                <div t-if="state.ui.postEmojiOpen" class="ch-emoji-pop">
+                  <t t-foreach="emojis" t-as="e" t-key="e">
+                    <button class="ch-emoji-btn" t-att-data-emoji="e" t-on-click="onInsertPostEmoji">
+                      <t t-esc="e"/>
+                    </button>
+                  </t>
+                </div>
+
+                <!-- Pending post attachments -->
+                <t t-set="pAtts" t-value="state.ui.postAttachments || []"/>
+                <t t-if="pAtts.length">
+                  <div class="ch-att-box">
+                    <div class="ch-att-images" t-if="pAtts.some(a => a.kind === 'image')">
+                      <t t-foreach="pAtts" t-as="a" t-key="a.id">
+                        <t t-if="a.kind === 'image'">
+                          <div class="ch-att-thumbwrap">
+                            <div class="ch-att-thumb"
+                                 t-att-data-url="a.open_url"
+                                 t-on-click="onOpenAttachmentClick">
+                              <img t-att-src="a.thumb_url" alt=""/>
+                            </div>
+                            <button type="button"
+                                    class="ch-att-thumb-x"
+                                    title="Remove"
+                                    t-att-data-attach-id="a.id"
+                                    t-on-click.stop="onRemovePostAttachment">×</button>
+                          </div>
+                        </t>
+                      </t>
+                    </div>
+
+                    <div class="ch-att-files" t-if="pAtts.some(a => a.kind !== 'image')">
+                      <t t-foreach="pAtts" t-as="a" t-key="a.id">
+                        <t t-if="a.kind !== 'image'">
+                          <div class="ch-att-file">
+                            <div class="ch-att-ico"><t t-esc="a.iconText"/></div>
+
+                            <div class="ch-att-meta">
+                              <div class="ch-att-name" t-esc="a.name"/>
+                              <div class="ch-att-sub">
+                                <span class="ch-att-type" t-esc="a.extText"/>
+                                <span class="ch-dot">•</span>
+                                <span class="ch-att-size" t-esc="a.sizeText"/>
+                              </div>
+                            </div>
+
+                            <div class="ch-att-actions">
+                              <a class="ch-att-btn" t-att-href="a.download_url" target="_blank" title="Download">⬇</a>
+                              <button class="ch-att-x"
+                                      t-att-data-attach-id="a.id"
+                                      t-on-click="onRemovePostAttachment"
+                                      title="Remove">×</button>
+                            </div>
+                          </div>
+                        </t>
+                      </t>
+                    </div>
+                  </div>
+                </t>
+
+              </div>
+            </div>
+
+            <!-- FEED -->
+            <section class="ch-feed">
+              <t t-if="!state.feed.length">
+                <div class="ch-empty">Chưa có bài viết</div>
+              </t>
+
+              <t t-foreach="state.feed" t-as="p" t-key="p.id">
+                <article class="ch-post">
+                  <div class="ch-post-avatar" t-out="p.avatarText"/>
+                  <div class="ch-post-body">
+
+                    <div class="ch-post-head">
+                      <div class="ch-post-author">
+                        <span class="ch-post-name" t-out="p.author_name"/>
+                        <t t-if="p.is_owner">
+                          <span class="ch-badge">Chủ sở hữu</span>
+                        </t>
+                        <span class="ch-post-date" t-out="p.dateText"/>
+                      </div>
+
+                      <div class="ch-post-actions">
+                        <!-- Reactions -->
+                        <button class="ch-react-btn" t-att-data-post-id="p.id" data-emoji="👍" t-on-click="onReactClick">👍</button>
+                        <button class="ch-react-btn" t-att-data-post-id="p.id" data-emoji="❤️" t-on-click="onReactClick">❤️</button>
+                        <button class="ch-react-btn" t-att-data-post-id="p.id" data-emoji="😂" t-on-click="onReactClick">😂</button>
+                        <button class="ch-react-btn" t-att-data-post-id="p.id" data-emoji="😮" t-on-click="onReactClick">😮</button>
+
+                        <!-- Edit/Delete (no realtime) -->
+                        <t t-if="_canEditPost(p)">
+                          <div class="ch-edit-actions">
+                            <button class="ch-mini-action"
+                                    title="Edit"
+                                    t-att-data-post-id="p.id"
+                                    t-on-click.stop="openEditPost">✏️</button>
+                            <button class="ch-mini-action ch-mini-action--danger"
+                                    title="Delete"
+                                    t-att-data-post-id="p.id"
+                                    t-on-click.stop="deletePost">🗑</button>
+                          </div>
+                        </t>
+                      </div>
+                    </div>
+
+                    <div class="ch-post-content">
+                      <div t-out="p.body"/>
+                    </div>
+
+                    <!-- Post attachments -->
+                    <t t-set="att" t-value="p.attachments || []"/>
+                    <t t-if="att.length">
+                      <div class="ch-att-box ch-att-box--post">
+                        <div class="ch-att-images" t-if="att.some(a => a.kind === 'image')">
+                          <t t-foreach="att" t-as="a" t-key="a.id">
+                            <t t-if="a.kind === 'image'">
+                              <div class="ch-att-thumb"
+                                   t-att-data-url="a.open_url"
+                                   t-on-click="onOpenAttachmentClick">
+                                <img t-att-src="a.thumb_url" alt=""/>
+                              </div>
+                            </t>
+                          </t>
+                        </div>
+
+                        <div class="ch-att-files" t-if="att.some(a => a.kind !== 'image')">
+                          <t t-foreach="att" t-as="a" t-key="a.id">
+                            <t t-if="a.kind !== 'image'">
+                              <div class="ch-att-file ch-att-file--click"
+                                   t-att-data-url="a.open_url"
+                                   t-on-click="onOpenAttachmentClick">
+
+                                <div class="ch-att-ico"><t t-esc="a.iconText"/></div>
+
+                                <div class="ch-att-meta">
+                                  <div class="ch-att-name" t-esc="a.name"/>
+                                  <div class="ch-att-sub">
+                                    <span class="ch-att-type" t-esc="a.extText"/>
+                                    <span class="ch-dot">•</span>
+                                    <span class="ch-att-size" t-esc="a.sizeText"/>
+                                  </div>
+                                </div>
+
+                                <div class="ch-att-actions" t-on-click.stop="">
+                                  <a class="ch-att-btn" t-att-href="a.download_url" target="_blank" title="Download">⬇</a>
+                                </div>
+                              </div>
+                            </t>
+                          </t>
+                        </div>
+                      </div>
+                    </t>
+
+                    <div class="ch-post-footer">
+                      <button class="ch-link" t-att-data-post-id="p.id" t-on-click="onToggleCommentsClick">
+                        <span class="fa fa-comment-o me-1"/> View conversation
+                      </button>
+                    </div>
+
+                    <!-- COMMENTS THREAD -->
+                    <t t-set="thread" t-value="(state.openComments &amp;&amp; state.openComments[p.id]) || null"/>
+                    <t t-if="thread">
+                      <div class="ch-thread">
+                        <div class="ch-hint" t-if="!thread.loaded">Đang tải bình luận...</div>
+
+                        <t t-if="thread.loaded">
+                          <t t-foreach="(thread.items || [])" t-as="c" t-key="c.id">
+                            <div class="ch-comment">
+                              <div class="ch-comment-avatar" t-out="c.avatarText"/>
+                              <div class="ch-comment-body">
+                                <div class="ch-comment-meta">
+                                  <span class="ch-comment-name" t-out="c.author_name"/>
+                                  <span class="ch-comment-date" t-out="c.dateText"/>
+
+                                  <!-- Edit/Delete comment -->
+                                  <t t-if="_canEditComment(c)">
+                                    <div class="ch-edit-actions ch-edit-actions--comment">
+                                      <button class="ch-mini-action"
+                                              title="Edit"
+                                              t-att-data-comment-id="c.id"
+                                              t-on-click.stop="openEditComment">✏️</button>
+                                      <button class="ch-mini-action ch-mini-action--danger"
+                                              title="Delete"
+                                              t-att-data-comment-id="c.id"
+                                              t-on-click.stop="deleteComment">🗑</button>
+                                    </div>
+                                  </t>
+                                </div>
+
+                                <div class="ch-comment-content">
+                                  <div t-out="c.body"/>
+                                </div>
+
+                                <t t-if="c.attachments &amp;&amp; c.attachments.length">
+                                  <div class="ch-att-box ch-att-box--comment">
+                                    <div class="ch-att-images" t-if="c.attachments.some(a => a.kind === 'image')">
+                                      <t t-foreach="c.attachments" t-as="a" t-key="a.id">
+                                        <t t-if="a.kind === 'image'">
+                                          <div class="ch-att-thumb"
+                                               t-att-data-url="a.open_url"
+                                               t-on-click="onOpenAttachmentClick">
+                                            <img t-att-src="a.thumb_url" alt=""/>
+                                          </div>
+                                        </t>
+                                      </t>
+                                    </div>
+
+                                    <div class="ch-att-files" t-if="c.attachments.some(a => a.kind !== 'image')">
+                                      <t t-foreach="c.attachments" t-as="a" t-key="a.id">
+                                        <t t-if="a.kind !== 'image'">
+                                          <div class="ch-att-file ch-att-file--click"
+                                               t-att-data-url="a.open_url"
+                                               t-on-click="onOpenAttachmentClick">
+                                            <div class="ch-att-ico"><t t-esc="a.iconText"/></div>
+                                            <div class="ch-att-meta">
+                                              <div class="ch-att-name" t-esc="a.name"/>
+                                              <div class="ch-att-sub">
+                                                <span t-esc="a.extText"/>
+                                                <span class="ch-dot">•</span>
+                                                <span t-esc="a.sizeText"/>
+                                              </div>
+                                            </div>
+                                            <div class="ch-att-actions" t-on-click.stop="">
+                                              <a class="ch-att-btn" t-att-href="a.download_url" target="_blank">⬇</a>
+                                            </div>
+                                          </div>
+                                        </t>
+                                      </t>
+                                    </div>
+                                  </div>
+                                </t>
+                              </div>
+                            </div>
+                          </t>
+
+                          <!-- Reply box -->
+                          <div class="ch-reply">
+                            <div class="ch-editor ch-editor--comment"
+                                 t-att-data-post-id="p.id"
+                                 contenteditable="true"
+                                 data-placeholder="Viết bình luận..."
+                                 t-on-input="onCommentEditorInput"
+                                 t-on-paste="onCommentPaste">
+                            </div>
+
+                            <!-- Pending comment attachments -->
+                            <t t-set="cAtts" t-value="(state.ui.commentAttachments &amp;&amp; state.ui.commentAttachments[p.id]) || []"/>
+                            <t t-if="cAtts.length">
+                              <div class="ch-att-box">
+                                <div class="ch-att-images" t-if="cAtts.some(a => a.kind === 'image')">
+                                  <t t-foreach="cAtts" t-as="a" t-key="a.id">
+                                    <t t-if="a.kind === 'image'">
+                                      <div class="ch-att-thumbwrap">
+                                        <div class="ch-att-thumb"
+                                             t-att-data-url="a.open_url"
+                                             t-on-click="onOpenAttachmentClick">
+                                          <img t-att-src="a.thumb_url" alt=""/>
+                                        </div>
+                                        <button type="button"
+                                                class="ch-att-thumb-x"
+                                                title="Remove"
+                                                t-att-data-post-id="p.id"
+                                                t-att-data-attach-id="a.id"
+                                                t-on-click.stop="onRemoveCommentAttachment">×</button>
+                                      </div>
+                                    </t>
+                                  </t>
+                                </div>
+
+                                <div class="ch-att-files" t-if="cAtts.some(a => a.kind !== 'image')">
+                                  <t t-foreach="cAtts" t-as="a" t-key="a.id">
+                                    <t t-if="a.kind !== 'image'">
+                                      <div class="ch-att-file">
+                                        <div class="ch-att-ico"><t t-esc="a.iconText"/></div>
+                                        <div class="ch-att-meta">
+                                          <div class="ch-att-name" t-esc="a.name"/>
+                                          <div class="ch-att-sub">
+                                            <span t-esc="a.extText"/>
+                                            <span class="ch-dot">•</span>
+                                            <span t-esc="a.sizeText"/>
+                                          </div>
+                                        </div>
+                                        <div class="ch-att-actions">
+                                          <a class="ch-att-btn" t-att-href="a.download_url" target="_blank" title="Download">⬇</a>
+                                          <button class="ch-att-x"
+                                                  t-att-data-post-id="p.id"
+                                                  t-att-data-attach-id="a.id"
+                                                  t-on-click="onRemoveCommentAttachment"
+                                                  title="Remove">×</button>
+                                        </div>
+                                      </div>
+                                    </t>
+                                  </t>
+                                </div>
+                              </div>
+                            </t>
+
+                            <div class="ch-reply-actions">
+                              <div class="ch-toolbar">
+                                <button class="ch-icon-btn" title="Bold" data-cmd="bold" t-att-data-post-id="p.id" t-on-click="onCommentCmdClick"><b>B</b></button>
+                                <button class="ch-icon-btn" title="Italic" data-cmd="italic" t-att-data-post-id="p.id" t-on-click="onCommentCmdClick"><i>I</i></button>
+                                <button class="ch-icon-btn" title="Underline" data-cmd="underline" t-att-data-post-id="p.id" t-on-click="onCommentCmdClick"><u>U</u></button>
+                                <button class="ch-icon-btn" title="Bullets" data-cmd="insertUnorderedList" t-att-data-post-id="p.id" t-on-click="onCommentCmdClick">•</button>
+                                <button class="ch-icon-btn" title="Numbered" data-cmd="insertOrderedList" t-att-data-post-id="p.id" t-on-click="onCommentCmdClick">1.</button>
+                                <button class="ch-icon-btn" title="Link" data-cmd="createLink" t-att-data-post-id="p.id" t-on-click="onCommentCmdClick">🔗</button>
+
+                                <button class="ch-icon-btn" title="Emoji" t-att-data-post-id="p.id" t-on-click="toggleCommentEmoji">😊</button>
+
+                                <button class="ch-icon-btn" title="Đính kèm"
+                                        t-att-data-post-id="p.id"
+                                        t-on-click="onCommentAttachClick">📎</button>
+                                <span class="ch-hint" t-if="state.ui.commentUploading">Đang upload...</span>
+                              </div>
+
+                              <button class="btn btn-sm btn-primary"
+                                      t-att-data-post-id="p.id"
+                                      t-on-click="onSubmitCommentClick">Gửi</button>
+                            </div>
+
+                            <t t-if="state.ui.commentEmojiOpen &amp;&amp; state.ui.commentEmojiTarget == p.id">
+                              <div class="ch-emoji-pop ch-emoji-pop--comment">
+                                <t t-foreach="emojis" t-as="e" t-key="e">
+                                  <button class="ch-emoji-btn"
+                                          t-att-data-post-id="p.id"
+                                          t-att-data-emoji="e"
+                                          t-on-click="onInsertCommentEmoji">
+                                    <t t-esc="e"/>
+                                  </button>
+                                </t>
+                              </div>
+                            </t>
+                          </div>
+                        </t>
+                      </div>
+                    </t>
+
+                  </div>
+                </article>
+              </t>
+
+              <t t-if="state.feedHasMore">
+                <div class="ch-loadmore">
+                  <button class="btn btn-secondary" t-on-click="loadMore">Load more</button>
+                </div>
+              </t>
+            </section>
+
+            <!-- ONE hidden input for all comments -->
+            <input t-ref="comment_files" type="file" multiple="multiple" style="display:none" t-on-change="onCommentFilesChanged"/>
+
+            <!-- ========= Edit Post modal ========= -->
+            <t t-if="state.ui.editPostId">
+              <div class="ch-modal-backdrop" t-on-click="closeEditPost"/>
+              <div class="ch-modal ch-modal--editor" t-on-click.stop="">
+                <div class="ch-modal-title">Edit post</div>
+
+                <div t-ref="edit_post_editor"
+                     class="ch-editor ch-editor--modal"
+                     contenteditable="true"
+                     data-placeholder="Sửa nội dung...">
+                </div>
+
+                <div class="ch-modal-actions">
+                  <button class="btn btn-secondary" t-on-click="closeEditPost">Cancel</button>
+                  <button class="btn btn-primary" t-on-click="saveEditPost">Save</button>
+                </div>
+              </div>
+            </t>
+
+            <!-- ========= Edit Comment modal ========= -->
+            <t t-if="state.ui.editCommentId">
+              <div class="ch-modal-backdrop" t-on-click="closeEditComment"/>
+              <div class="ch-modal ch-modal--editor" t-on-click.stop="">
+                <div class="ch-modal-title">Edit comment</div>
+
+                <div t-ref="edit_comment_editor"
+                     class="ch-editor ch-editor--modal"
+                     contenteditable="true"
+                     data-placeholder="Sửa bình luận...">
+                </div>
+
+                <div class="ch-modal-actions">
+                  <button class="btn btn-secondary" t-on-click="closeEditComment">Cancel</button>
+                  <button class="btn btn-primary" t-on-click="saveEditComment">Save</button>
+                </div>
+              </div>
+            </t>
+
+          </t>
+
+          <!-- =========================
+               FILES TAB
+          ========================== -->
+          <t t-elif="state.ui.activeTab==='files'">
+            <section class="ch-files">
+              <t t-if="!flattenFiles.length">
+                <div class="ch-empty">Chưa có file</div>
+              </t>
+
+              <t t-else="">
+                <div class="ch-file-list">
+                  <t t-foreach="flattenFiles" t-as="f" t-key="f.key">
+                    <a class="ch-file-row" t-att-href="f.url" target="_blank" rel="noreferrer">
+                      <div class="ch-file-name" t-out="f.name"/>
+                      <div class="ch-file-meta" t-out="f.from"/>
+                    </a>
+                  </t>
+                </div>
+              </t>
+            </section>
+          </t>
+
+          <!-- =========================
+               PHOTOS TAB
+          ========================== -->
+          <t t-else="">
+            <section class="ch-photos">
+              <t t-if="!flattenPhotos.length">
+                <div class="ch-empty">Chưa có ảnh</div>
+              </t>
+
+              <t t-else="">
+                <div class="ch-photo-grid">
+                  <t t-foreach="flattenPhotos" t-as="ph" t-key="ph.key">
+                    <a class="ch-photo" t-att-href="ph.url" target="_blank" rel="noreferrer">
+                      <img t-att-src="ph.url" alt=""/>
+                    </a>
+                  </t>
+                </div>
+              </t>
+            </section>
+          </t>
+
+          <!-- =========================
+               SETTINGS DRAWER (FULL)
+          ========================== -->
+          <t t-if="state.ui.settingsOpen">
+            <div class="ch-drawer-backdrop" t-on-click="toggleSettings"/>
+
+            <div class="ch-drawer">
+              <div class="ch-drawer-header">
+                <div class="ch-drawer-title">
+                  <div class="ch-drawer-title-main">Manage</div>
+                  <div class="ch-drawer-title-sub">
+                    <t t-if="state.selectedCommunity">
+                      <span class="ch-pill" t-esc="state.selectedCommunity.name"/>
+                      <t t-if="selectedChannel">
+                        <span class="ch-pill ch-pill--muted" t-esc="selectedChannel.name"/>
+                      </t>
+                    </t>
+                  </div>
+                </div>
+
+                <button class="ch-icon-btn" title="Close" t-on-click="toggleSettings">✕</button>
+              </div>
+
+              <div class="ch-drawer-tabs">
+                <button class="ch-drawer-tab"
+                        data-tab="members"
+                        t-att-class="state.ui.settingsTab==='members' ? 'ch-drawer-tab is-active' : 'ch-drawer-tab'"
+                        t-on-click="onSettingsTabClick">
+                  Members
+                </button>
+
+                <button class="ch-drawer-tab"
+                        data-tab="community"
+                        t-att-class="state.ui.settingsTab==='community' ? 'ch-drawer-tab is-active' : 'ch-drawer-tab'"
+                        t-on-click="onSettingsTabClick">
+                  Community
+                </button>
+
+                <button class="ch-drawer-tab"
+                        data-tab="channel"
+                        t-att-class="state.ui.settingsTab==='channel' ? 'ch-drawer-tab is-active' : 'ch-drawer-tab'"
+                        t-on-click="onSettingsTabClick">
+                  Channel
+                </button>
+              </div>
+
+              <div class="ch-drawer-body">
+                <!-- ===== Members tab ===== -->
+                <t t-if="state.ui.settingsTab==='members'">
+                  <div class="ch-section">
+                    <div class="ch-section-title">Mời thành viên</div>
+
+                    <div class="ch-row">
+                      <input class="ch-input"
+                             placeholder="Tìm user theo name / login..."
+                             t-on-input="onMemberSearchInput"
+                             t-att-disabled="!canManage"/>
+                    </div>
+
+                    <t t-if="!canManage">
+                      <div class="ch-note">
+                        Bạn không có quyền mời thành viên. (role: <b t-esc="state.ui.myRole || 'member'"/>)
+                      </div>
+                    </t>
+
+                    <t t-if="canManage &amp;&amp; state.ui.memberResults &amp;&amp; state.ui.memberResults.length">
+                      <div class="ch-result-list">
+                        <t t-foreach="state.ui.memberResults" t-as="u" t-key="u.id">
+                          <div class="ch-result-row">
+                            <div class="ch-result-main">
+                              <div class="ch-result-name" t-esc="u.name"/>
+                              <div class="ch-result-sub" t-esc="u.login"/>
+                            </div>
+
+                            <button class="btn btn-sm btn-primary"
+                                    t-att-data-user-id="u.id"
+                                    t-on-click="onInviteClick">
+                              Invite
+                            </button>
+                          </div>
+                        </t>
+                      </div>
+                    </t>
+
+                    <t t-if="canManage &amp;&amp; state.ui.memberQuery &amp;&amp; (!state.ui.memberResults || !state.ui.memberResults.length)">
+                      <div class="ch-empty ch-empty--small">Không có kết quả</div>
+                    </t>
+                  </div>
+
+                  <div class="ch-section">
+                    <div class="ch-section-title">Danh sách thành viên</div>
+
+                    <t t-if="state.ui.members &amp;&amp; state.ui.members.length">
+                      <div class="ch-member-list">
+                        <t t-foreach="state.ui.members" t-as="m" t-key="m.id">
+                          <div class="ch-member-row">
+                            <div class="ch-member-left">
+                              <div class="ch-member-avatar" t-out="_avatarText(m.name)"/>
+                              <div class="ch-member-info">
+                                <div class="ch-member-name" t-esc="m.name"/>
+                                <div class="ch-member-sub">
+                                  <span class="ch-pill ch-pill--muted" t-esc="m.login"/>
+                                  <span class="ch-pill" t-esc="m.role"/>
+                                  <span class="ch-pill ch-pill--muted" t-esc="m.state"/>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div class="ch-member-actions">
+                              <!-- Role change: chỉ owner mới nên cho chỉnh (backend đang enforce owner) -->
+                              <select class="ch-input ch-input--sm"
+                                      t-att-data-user-id="m.user_id"
+                                      t-on-change="onRoleChange"
+                                      t-att-disabled="!(state.ui.myRole === 'owner') || (m.role === 'owner' &amp;&amp; state.ui.myRole !== 'owner')">
+                                <option value="owner" t-att-selected="m.role==='owner'">owner</option>
+                                <option value="admin" t-att-selected="m.role==='admin'">admin</option>
+                                <option value="member" t-att-selected="m.role==='member'">member</option>
+                              </select>
+
+                              <button class="btn btn-sm btn-outline-danger"
+                                      t-att-data-user-id="m.user_id"
+                                      t-att-disabled="!canManage || m.role==='owner'"
+                                      t-on-click="onKickClick">
+                                Kick
+                              </button>
+                            </div>
+                          </div>
+                        </t>
+                      </div>
+                    </t>
+                    <t t-else="">
+                      <div class="ch-empty ch-empty--small">Chưa có thành viên</div>
+                    </t>
+                  </div>
+                </t>
+
+                <!-- ===== Community tab ===== -->
+                <t t-elif="state.ui.settingsTab==='community'">
+                  <div class="ch-section">
+                    <div class="ch-section-title">Cài đặt Community</div>
+
+                    <t t-if="!canManage">
+                      <div class="ch-note">
+                        Bạn không có quyền chỉnh sửa Community. (role: <b t-esc="state.ui.myRole || 'member'"/>)
+                      </div>
+                    </t>
+
+                    <div class="ch-form">
+                      <div class="ch-field">
+                        <label class="ch-label">Tên</label>
+                        <input class="ch-input" t-model="state.ui.communityForm.name" t-att-disabled="!canManage"/>
+                      </div>
+
+                      <div class="ch-row">
+                        <div class="ch-field">
+                          <label class="ch-label">Join policy</label>
+                          <select class="ch-input" t-model="state.ui.communityForm.join_policy" t-att-disabled="!canManage">
+                            <option value="invite">invite</option>
+                            <option value="open">open</option>
+                          </select>
+                        </div>
+
+                        <div class="ch-field ch-field--check">
+                          <label class="ch-label">Public</label>
+                          <label class="ch-check">
+                            <input type="checkbox" t-model="state.ui.communityForm.is_public" t-att-disabled="!canManage"/>
+                            <span>Allow everyone see community</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div class="ch-field">
+                        <label class="ch-label">Description (HTML)</label>
+                        <textarea class="ch-textarea"
+                                  rows="6"
+                                  t-model="state.ui.communityForm.description_html"
+                                  t-att-disabled="!canManage"/>
+                        <div class="ch-help">Tip: bạn có thể paste nội dung HTML (p, ul, b, a...).</div>
+                      </div>
+
+                      <div class="ch-actions">
+                        <button class="btn btn-primary"
+                                t-att-disabled="!canManage"
+                                t-on-click="saveCommunitySettings">
+                          Save community
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </t>
+
+                <!-- ===== Channel tab ===== -->
+                <t t-else="">
+                  <div class="ch-section">
+                    <div class="ch-section-title">Cài đặt Channel</div>
+
+                    <t t-if="!selectedChannel">
+                      <div class="ch-empty ch-empty--small">Chưa chọn kênh</div>
+                    </t>
+
+                    <t t-else="">
+                      <t t-if="!canManage">
+                        <div class="ch-note">
+                          Bạn không có quyền chỉnh sửa Channel. (role: <b t-esc="state.ui.myRole || 'member'"/>)
+                        </div>
+                      </t>
+
+                      <div class="ch-form">
+                        <div class="ch-field">
+                          <label class="ch-label">Tên kênh</label>
+                          <input class="ch-input"
+                                 t-model="state.ui.channelForm.name"
+                                 t-att-disabled="!canManage"/>
+                        </div>
+
+                        <div class="ch-field">
+                          <label class="ch-label">Sequence</label>
+                          <input class="ch-input"
+                                 type="number"
+                                 t-model="state.ui.channelForm.sequence"
+                                 t-att-disabled="!canManage"/>
+                        </div>
+
+                        <div class="ch-actions ch-actions--split">
+                          <button class="btn btn-primary"
+                                  t-att-disabled="!canManage"
+                                  t-on-click="saveChannelSettings">
+                            Save channel
+                          </button>
+
+                          <button class="btn btn-outline-danger"
+                                  t-att-disabled="!canManage"
+                                  t-on-click="deleteSelectedChannel">
+                            Delete channel
+                          </button>
+                        </div>
+
+                        <div class="ch-help">
+                          Xoá channel sẽ xoá kênh (và tuỳ model của bạn, có thể ảnh hưởng đến posts nếu bạn set ondelete).
+                        </div>
+                      </div>
+                    </t>
+                  </div>
+                </t>
+
+              </div>
+            </div>
+          </t>
+
+        </main>
+      </div>
+    </div>
+  </t>
+
+</templates>

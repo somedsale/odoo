@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <!-- Community: user can read if public OR is member(joined/invited) -->
+  <record id="rule_community_read" model="ir.rule">
+    <field name="name">Community read</field>
+    <field name="model_id" ref="model_community_hub"/>
+    <field name="domain_force">
+      ['|',
+        ('is_public','=',True),
+        ('member_ids.user_id','=',user.id)
+      ]
+    </field>
+    <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+  </record>
+
+  <!-- Channel: can read if community is public OR user is member -->
+  <record id="rule_channel_read" model="ir.rule">
+    <field name="name">Channel read</field>
+    <field name="model_id" ref="model_community_hub_channel"/>
+    <field name="domain_force">
+      ['|',
+        ('community_id.is_public','=',True),
+        ('community_id.member_ids.user_id','=',user.id)
+      ]
+    </field>
+    <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+  </record>
+
+  <!-- Post: can read if member(joined) OR community public -->
+  <record id="rule_post_read" model="ir.rule">
+    <field name="name">Post read</field>
+    <field name="model_id" ref="model_community_hub_post"/>
+    <field name="domain_force">
+      ['|',
+        ('community_id.is_public','=',True),
+        ('community_id.member_ids.user_id','=',user.id)
+      ]
+    </field>
+    <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+  </record>
+
+  <record id="rule_comment_read" model="ir.rule">
+    <field name="name">Comment read</field>
+    <field name="model_id" ref="model_community_hub_comment"/>
+    <field name="domain_force">
+      ['|',
+        ('community_id.is_public','=',True),
+        ('community_id.member_ids.user_id','=',user.id)
+      ]
+    </field>
+    <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+  </record>
+
+  <record id="rule_reaction_read" model="ir.rule">
+    <field name="name">Reaction read</field>
+    <field name="model_id" ref="model_community_hub_reaction"/>
+    <field name="domain_force">
+      ['|',
+        ('community_id.is_public','=',True),
+        ('community_id.member_ids.user_id','=',user.id)
+      ]
+    </field>
+    <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+  </record>
+
+</odoo>

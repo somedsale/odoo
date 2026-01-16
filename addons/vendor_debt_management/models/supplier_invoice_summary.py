@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api, tools
 from datetime import date
-from collections import OrderedDict
 
 
 class SupplierInvoicePaymentSummary(models.Model):
@@ -21,7 +20,6 @@ class SupplierInvoicePaymentSummary(models.Model):
         string="Tiền tệ",
     )
 
-    # Danh sách hóa đơn & phiếu chi của NCC này (theo currency)
     invoice_ids = fields.One2many(
         "supplier.invoice",
         compute="_compute_invoice_ids",
@@ -35,7 +33,6 @@ class SupplierInvoicePaymentSummary(models.Model):
         string="Phiếu chi",
     )
 
-    # 🔹 Danh sách HỢP ĐỒNG NCC (theo NCC + tiền tệ)
     contract_ids = fields.One2many(
         "supplier.contract",
         compute="_compute_contract_ids",
@@ -43,68 +40,22 @@ class SupplierInvoicePaymentSummary(models.Model):
         string="Hợp đồng NCC",
     )
 
-    # Ngày đến hạn gần nhất trong các hóa đơn
-    due_date = fields.Date(
-        "Ngày đến hạn",
-        compute="_compute_due_date",
-    )
-    due_days = fields.Char(
-        "Số ngày đến hạn",
-        compute="_compute_due_date",
-    )
-    due_days_html = fields.Html(
-        "Số ngày đến hạn (màu)",
-        compute="_compute_due_days_html",
-        sanitize=False,
-    )
+    due_date = fields.Date("Ngày đến hạn", compute="_compute_due_date")
+    due_days = fields.Char("Số ngày đến hạn", compute="_compute_due_date")
+    due_days_html = fields.Html("Số ngày đến hạn (màu)", compute="_compute_due_days_html", sanitize=False)
 
-    # Tổng giá trị hợp đồng & quyết toán
-    total_contract_amount = fields.Monetary(
-        "Tổng giá trị hợp đồng",
-        compute="_compute_total_contract_amount",
-        currency_field="currency_id",
-    )
-    total_settlements_amount = fields.Monetary(
-        "Tổng giá trị hồ sơ quyết toán",
-        compute="_compute_total_settlements_amount",
-        currency_field="currency_id",
-    )
+    total_contract_amount = fields.Monetary("Tổng giá trị hợp đồng", compute="_compute_total_contract_amount", currency_field="currency_id")
+    total_settlements_amount = fields.Monetary("Tổng giá trị hồ sơ quyết toán", compute="_compute_total_settlements_amount", currency_field="currency_id")
 
-    # ========== TỔNG HỢP SỐ TIỀN ==========
-    total_invoice_amount = fields.Monetary(
-        "Tổng giá trị hóa đơn",
-        compute="_compute_total_invoice_amount",
-        currency_field="currency_id",
-    )
-    total_payment_amount = fields.Monetary(
-        "Tổng giá trị phiếu chi",
-        compute="_compute_total_payment_amount",
-        currency_field="currency_id",
-    )
-    residual_amount = fields.Monetary(
-        "Còn nợ",
-        compute="_compute_residual_and_advance",
-        currency_field="currency_id",
-    )
-    advance_amount = fields.Monetary(
-        "Tạm ứng / Chi chưa hóa đơn",
-        compute="_compute_residual_and_advance",
-        currency_field="currency_id",
-    )
+    total_invoice_amount = fields.Monetary("Tổng giá trị hóa đơn", compute="_compute_total_invoice_amount", currency_field="currency_id")
+    total_payment_amount = fields.Monetary("Tổng giá trị phiếu chi", compute="_compute_total_payment_amount", currency_field="currency_id")
 
-    # ========== GHI CHÚ / DIỄN GIẢI / CÔNG NỢ CŨ / ĐỐI CHIẾU ==========
-    note = fields.Text(
-        "Ghi chú",
-        compute="_compute_note",
-        inverse="_inverse_note",
-        store=False,
-    )
-    interpretation = fields.Char(
-        "Diễn giải",
-        compute="_compute_interpretation",
-        inverse="_inverse_interpretation",
-        store=False,
-    )
+    residual_amount = fields.Monetary("Còn nợ", compute="_compute_residual_and_advance", currency_field="currency_id")
+    advance_amount = fields.Monetary("Tạm ứng / Chi chưa hóa đơn", compute="_compute_residual_and_advance", currency_field="currency_id")
+
+    note = fields.Text("Ghi chú", compute="_compute_note", inverse="_inverse_note", store=False)
+    interpretation = fields.Char("Diễn giải", compute="_compute_interpretation", inverse="_inverse_interpretation", store=False)
+
     old_debt = fields.Monetary(
         string="Công nợ cũ",
         currency_field="currency_id",
@@ -113,7 +64,6 @@ class SupplierInvoicePaymentSummary(models.Model):
         store=False,
         help="Số tiền còn nợ trước đây (ghi trong note + old_debt từng hợp đồng).",
     )
-    # 🔹 Checkbox đối chiếu công nợ
     reconciled = fields.Boolean(
         string="Đã đối chiếu công nợ",
         compute="_compute_reconciled",
@@ -141,7 +91,7 @@ class SupplierInvoicePaymentSummary(models.Model):
         compute="_compute_supplier_domestic_type",
         inverse="_inverse_supplier_domestic_type",
         store=False,
-    )   
+    )
     supply_category = fields.Many2one(
         "supplier.supply.category",
         string="Hạng mục cung cấp",
@@ -149,10 +99,90 @@ class SupplierInvoicePaymentSummary(models.Model):
         inverse="_inverse_supply_category",
         store=False,
     )
+    def action_open_invoices(self):
+        self.ensure_one()
+        ctx = dict(self.env.context or {})
+        ctx.update({
+            "default_partner_id": self.partner_id.id,
+            "default_currency_id": self.currency_id.id,
+            # optional: mở list có sẵn filter NCC
+            "search_default_partner_id": self.partner_id.id,
+            "search_default_currency_id": self.currency_id.id,
+        })
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Hóa đơn nhà cung cấp",
+            "res_model": "supplier.invoice",
+            "view_mode": "tree,form",
+            "domain": [
+                ("partner_id", "=", self.partner_id.id),
+                ("currency_id", "=", self.currency_id.id),
+            ],
+            "context": ctx,
+        }
+
+
+    def action_open_contracts(self):
+        self.ensure_one()
+        ctx = dict(self.env.context or {})
+        ctx.update({
+            "default_partner_id": self.partner_id.id,
+            "default_currency_id": self.currency_id.id,
+            "search_default_partner_id": self.partner_id.id,
+            "search_default_currency_id": self.currency_id.id,
+        })
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Hợp đồng nhà cung cấp",
+            "res_model": "supplier.contract",
+            "view_mode": "tree,form",
+            "domain": [
+                ("partner_id", "=", self.partner_id.id),
+                ("currency_id", "=", self.currency_id.id),
+            ],
+            "context": ctx,
+        }
+
+
+    def action_open_payments(self):
+        self.ensure_one()
+        ctx = dict(self.env.context or {})
+        ctx.update({
+            "default_receive_type": "supplier",
+            "default_supplier_id": self.partner_id.id,
+            "default_currency_id": self.currency_id.id,
+            # optional: mở list có sẵn filter NCC
+            "search_default_supplier_id": self.partner_id.id,
+        })
+        domain = [
+            ("receive_type", "=", "supplier"),
+            ("supplier_id", "=", self.partner_id.id),
+        ]
+        # nếu muốn lọc theo tiền tệ (khi model có currency_id)
+        if "currency_id" in self.env["account.payment.request"]._fields and self.currency_id:
+            domain.append(("currency_id", "=", self.currency_id.id))
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Phiếu chi nhà cung cấp",
+            "res_model": "account.payment.request",
+            "view_mode": "tree,form",
+            "domain": domain,
+            "context": ctx,
+        }
+
     # =====================================================
     # SQL VIEW
     # =====================================================
     def init(self):
+        """
+        FIX: account_payment_request của bạn KHÔNG có company_id,
+        nên không join apr.company_id nữa.
+
+        - Nếu apr.currency_id có => dùng luôn
+        - Nếu apr.currency_id NULL => fallback currency công ty id=1 (giống bản cũ của bạn)
+          (trong hệ single-company của bạn là OK)
+        """
         tools.drop_view_if_exists(self.env.cr, self._table)
         self.env.cr.execute(
             """
@@ -167,6 +197,8 @@ class SupplierInvoicePaymentSummary(models.Model):
                         si.partner_id AS partner_id,
                         si.currency_id AS currency_id
                     FROM supplier_invoice si
+                    WHERE si.partner_id IS NOT NULL
+                      AND si.currency_id IS NOT NULL
 
                     UNION
 
@@ -178,8 +210,8 @@ class SupplierInvoicePaymentSummary(models.Model):
                     JOIN res_company c ON c.id = 1
                     JOIN res_currency rc ON rc.id = c.currency_id
                     WHERE apr.receive_type = 'supplier'
+                      AND apr.supplier_id IS NOT NULL
                 ) AS sub
-                WHERE sub.partner_id IS NOT NULL
             )
             """ % self._table
         )
@@ -187,8 +219,6 @@ class SupplierInvoicePaymentSummary(models.Model):
     # =====================================================
     # COMPUTE
     # =====================================================
-
-    # ----- 1) Lấy danh sách hóa đơn theo NCC + tiền tệ -----
     @api.depends("partner_id", "currency_id")
     def _compute_invoice_ids(self):
         Invoice = self.env["supplier.invoice"]
@@ -201,7 +231,6 @@ class SupplierInvoicePaymentSummary(models.Model):
             else:
                 rec.invoice_ids = False
 
-    # ----- 2) Lấy danh sách phiếu chi theo NCC + tiền tệ -----
     @api.depends("partner_id", "currency_id")
     def _compute_payment_request_ids(self):
         Payment = self.env["account.payment.request"]
@@ -220,7 +249,6 @@ class SupplierInvoicePaymentSummary(models.Model):
 
             rec.payment_request_ids = Payment.search(domain)
 
-    # ----- 3) Danh sách HỢP ĐỒNG NCC -----
     @api.depends("partner_id", "currency_id")
     def _compute_contract_ids(self):
         Contract = self.env["supplier.contract"]
@@ -231,28 +259,39 @@ class SupplierInvoicePaymentSummary(models.Model):
                     ("currency_id", "=", rec.currency_id.id),
                 ])
             elif rec.partner_id:
-                rec.contract_ids = Contract.search([
-                    ("partner_id", "=", rec.partner_id.id),
-                ])
+                rec.contract_ids = Contract.search([("partner_id", "=", rec.partner_id.id)])
             else:
                 rec.contract_ids = False
 
     def _inverse_contract_ids(self):
         for rec in self:
             for contract in rec.contract_ids:
-                contract.partner_id = rec.partner_id
+                if rec.partner_id and "partner_id" in contract._fields:
+                    contract.partner_id = rec.partner_id
+                if rec.currency_id and "currency_id" in contract._fields:
+                    contract.currency_id = rec.currency_id
+
 
     def _inverse_invoice_ids(self):
         for rec in self:
             for invoice in rec.invoice_ids:
-                invoice.partner_id = rec.partner_id
+                if rec.partner_id and "partner_id" in invoice._fields:
+                    invoice.partner_id = rec.partner_id
+                if rec.currency_id and "currency_id" in invoice._fields:
+                    invoice.currency_id = rec.currency_id
+
 
     def _inverse_payment_request_ids(self):
         for rec in self:
             for payment in rec.payment_request_ids:
-                payment.supplier_id = rec.partner_id
+                if rec.partner_id and "supplier_id" in payment._fields:
+                    payment.supplier_id = rec.partner_id
+                if "receive_type" in payment._fields:
+                    payment.receive_type = "supplier"
+                if rec.currency_id and "currency_id" in payment._fields:
+                    payment.currency_id = rec.currency_id
 
-    # ----- 4) Tổng giá trị HỢP ĐỒNG -----
+
     @api.depends("partner_id", "currency_id")
     def _compute_total_contract_amount(self):
         Contract = self.env["supplier.contract"]
@@ -260,15 +299,12 @@ class SupplierInvoicePaymentSummary(models.Model):
             if not rec.partner_id:
                 rec.total_contract_amount = 0.0
                 continue
-
             domain = [("partner_id", "=", rec.partner_id.id)]
             if rec.currency_id:
                 domain.append(("currency_id", "=", rec.currency_id.id))
-
             contracts = Contract.search(domain)
             rec.total_contract_amount = sum(contracts.mapped("amount")) if contracts else 0.0
 
-    # ----- 5) Tổng giá trị HỒ SƠ QUYẾT TOÁN -----
     @api.depends("partner_id", "currency_id")
     def _compute_total_settlements_amount(self):
         Settlement = self.env["supplier.settlement"]
@@ -282,7 +318,6 @@ class SupplierInvoicePaymentSummary(models.Model):
             else:
                 rec.total_settlements_amount = 0.0
 
-    # ----- 6) Tổng giá trị HÓA ĐƠN -----
     @api.depends("partner_id", "currency_id")
     def _compute_total_invoice_amount(self):
         Invoice = self.env["supplier.invoice"]
@@ -296,7 +331,6 @@ class SupplierInvoicePaymentSummary(models.Model):
             else:
                 rec.total_invoice_amount = 0.0
 
-    # ----- 7) Tổng giá trị PHIẾU CHI -----
     @api.depends("partner_id", "currency_id")
     def _compute_total_payment_amount(self):
         Payment = self.env["account.payment.request"]
@@ -326,35 +360,32 @@ class SupplierInvoicePaymentSummary(models.Model):
             payments = Payment.search(pay_domain)
             rec.total_payment_amount = sum(payments.mapped(amount_field)) if payments else 0.0
 
-    # ----- 8) Còn nợ & Tạm ứng (tính cả công nợ cũ) -----
     @api.depends("total_invoice_amount", "total_payment_amount", "old_debt")
     def _compute_residual_and_advance(self):
-        """
-        Nghĩa vụ phải trả = Hóa đơn + Công nợ cũ
-        So với Tổng phiếu chi:
-          - Nếu phiếu chi < nghĩa vụ  => Còn nợ
-          - Nếu phiếu chi > nghĩa vụ  => Tạm ứng
-        """
         for rec in self:
             invoice_total = rec.total_invoice_amount or 0.0
             payment_total = rec.total_payment_amount or 0.0
             old = rec.old_debt or 0.0
 
-            base = invoice_total + old  # tổng nghĩa vụ phải trả
-
+            base = invoice_total + old
             residual = base - payment_total
             rec.residual_amount = residual if residual > 0 else 0.0
 
             advance = payment_total - base
             rec.advance_amount = advance if advance > 0 else 0.0
 
-    # ----- 9) Ngày đến hạn gần nhất & số ngày đến hạn -----
-    @api.depends("partner_id", "currency_id")
+    @api.depends("partner_id", "currency_id", "residual_amount")
     def _compute_due_date(self):
         Invoice = self.env["supplier.invoice"]
         today = date.today()
 
         for rec in self:
+            # ✅ nếu không còn nợ => xóa ngày đến hạn
+            if (rec.residual_amount or 0.0) <= 0.0:
+                rec.due_date = False
+                rec.due_days = ""
+                continue
+
             if rec.partner_id and rec.currency_id:
                 invoices = Invoice.search([
                     ("partner_id", "=", rec.partner_id.id),
@@ -374,15 +405,21 @@ class SupplierInvoicePaymentSummary(models.Model):
                         rec.due_days = f"Quá hạn {abs(delta)} ngày - Tính từ {nearest_due.strftime('%d/%m/%Y')}"
                 else:
                     rec.due_date = False
-                    rec.due_days = "-"
+                    rec.due_days = ""
             else:
                 rec.due_date = False
-                rec.due_days = "-"
+                rec.due_days = ""
 
-    @api.depends("due_date")
+
+    @api.depends("due_date", "residual_amount")
     def _compute_due_days_html(self):
         today = date.today()
         for rec in self:
+            # ✅ nếu không còn nợ => không hiển thị due html
+            if (rec.residual_amount or 0.0) <= 0.0:
+                rec.due_days_html = ""
+                continue
+
             if rec.due_date:
                 delta = (rec.due_date - today).days
                 date_str = rec.due_date.strftime("%d/%m/%Y")
@@ -411,9 +448,9 @@ class SupplierInvoicePaymentSummary(models.Model):
                         f"</span>"
                     )
             else:
-                rec.due_days_html = "-"
+                rec.due_days_html = ""
 
-    # ----- 10) Ghi chú / Diễn giải / Công nợ cũ -----
+
     @api.depends("partner_id", "currency_id")
     def _compute_note(self):
         Note = self.env["supplier.invoice.payment.summary.note"]
@@ -454,7 +491,7 @@ class SupplierInvoicePaymentSummary(models.Model):
                     ("partner_id", "=", rec.partner_id.id),
                     ("currency_id", "=", rec.currency_id.id),
                 ], limit=1)
-                rec.interpretation = n.interpretation or False if n else False
+                rec.interpretation = (n.interpretation or False) if n else False
             else:
                 rec.interpretation = False
 
@@ -478,9 +515,6 @@ class SupplierInvoicePaymentSummary(models.Model):
 
     @api.depends("partner_id", "currency_id")
     def _compute_old_debt(self):
-        """
-        Công nợ cũ = old_debt trong note + tổng old_debt của các hợp đồng NCC đó.
-        """
         Note = self.env["supplier.invoice.payment.summary.note"]
         Contract = self.env["supplier.contract"]
 
@@ -503,11 +537,6 @@ class SupplierInvoicePaymentSummary(models.Model):
                 rec.old_debt = 0.0
 
     def _inverse_old_debt(self):
-        """
-        Khi sửa trực tiếp old_debt trên view tổng hợp:
-        lưu lại vào note (phần công nợ cũ chung),
-        còn old_debt từng hợp đồng giữ nguyên.
-        """
         Note = self.env["supplier.invoice.payment.summary.note"]
         for rec in self:
             if not (rec.partner_id and rec.currency_id):
@@ -525,7 +554,6 @@ class SupplierInvoicePaymentSummary(models.Model):
                     "old_debt": rec.old_debt or 0.0,
                 })
 
-    # ----- 11) Đối chiếu công nợ (checkbox) -----
     @api.depends("partner_id", "currency_id")
     def _compute_reconciled(self):
         Note = self.env["supplier.invoice.payment.summary.note"]
@@ -557,6 +585,8 @@ class SupplierInvoicePaymentSummary(models.Model):
                     "currency_id": rec.currency_id.id,
                 })
                 Note.create(vals)
+
+    # ✅ FIX: không có NOTE thì luôn domestic (không trả False)
     @api.depends("partner_id", "currency_id")
     def _compute_supplier_category(self):
         Note = self.env["supplier.invoice.payment.summary.note"]
@@ -566,9 +596,10 @@ class SupplierInvoicePaymentSummary(models.Model):
                     ("partner_id", "=", rec.partner_id.id),
                     ("currency_id", "=", rec.currency_id.id),
                 ], limit=1)
-                rec.supplier_category = n.supplier_category or False if n else False
+                rec.supplier_category = (n.supplier_category or "domestic") if n else "domestic"
             else:
-                rec.supplier_category = False
+                rec.supplier_category = "domestic"
+
     def _inverse_supplier_category(self):
         Note = self.env["supplier.invoice.payment.summary.note"]
         for rec in self:
@@ -579,13 +610,14 @@ class SupplierInvoicePaymentSummary(models.Model):
                 ("currency_id", "=", rec.currency_id.id),
             ], limit=1)
             if n:
-                n.supplier_category = rec.supplier_category or False
+                n.supplier_category = rec.supplier_category or "domestic"
             else:
                 Note.create({
                     "partner_id": rec.partner_id.id,
                     "currency_id": rec.currency_id.id,
-                    "supplier_category": rec.supplier_category or False,
+                    "supplier_category": rec.supplier_category or "domestic",
                 })
+
     @api.depends("partner_id", "currency_id")
     def _compute_supplier_domestic_type(self):
         Note = self.env["supplier.invoice.payment.summary.note"]
@@ -595,9 +627,10 @@ class SupplierInvoicePaymentSummary(models.Model):
                     ("partner_id", "=", rec.partner_id.id),
                     ("currency_id", "=", rec.currency_id.id),
                 ], limit=1)
-                rec.supplier_domestic_type = n.supplier_domestic_type or False if n else False
+                rec.supplier_domestic_type = (n.supplier_domestic_type or False) if n else False
             else:
                 rec.supplier_domestic_type = False
+
     def _inverse_supplier_domestic_type(self):
         Note = self.env["supplier.invoice.payment.summary.note"]
         for rec in self:
@@ -615,6 +648,7 @@ class SupplierInvoicePaymentSummary(models.Model):
                     "currency_id": rec.currency_id.id,
                     "supplier_domestic_type": rec.supplier_domestic_type or False,
                 })
+
     @api.depends("partner_id", "currency_id")
     def _compute_supply_category(self):
         Note = self.env["supplier.invoice.payment.summary.note"]
@@ -624,9 +658,10 @@ class SupplierInvoicePaymentSummary(models.Model):
                     ("partner_id", "=", rec.partner_id.id),
                     ("currency_id", "=", rec.currency_id.id),
                 ], limit=1)
-                rec.supply_category = n.supply_category.id if n and n.supply_category else False
+                rec.supply_category = n.supply_category if (n and n.supply_category) else False
             else:
                 rec.supply_category = False
+
     def _inverse_supply_category(self):
         Note = self.env["supplier.invoice.payment.summary.note"]
         for rec in self:
@@ -637,14 +672,14 @@ class SupplierInvoicePaymentSummary(models.Model):
                 ("currency_id", "=", rec.currency_id.id),
             ], limit=1)
             if n:
-                n.supply_category = rec.supply_category.id if rec.supply_category else False
+                n.supply_category = rec.supply_category or False
             else:
                 Note.create({
                     "partner_id": rec.partner_id.id,
                     "currency_id": rec.currency_id.id,
                     "supply_category": rec.supply_category.id if rec.supply_category else False,
                 })
-    
+
 
 class SupplierInvoicePaymentSummaryNote(models.Model):
     _name = "supplier.invoice.payment.summary.note"
@@ -666,82 +701,54 @@ class SupplierInvoicePaymentSummaryNote(models.Model):
         default=lambda self: self.env.company.currency_id,
     )
 
-    old_debt = fields.Monetary(
-        string="Công nợ cũ",
-        currency_field="currency_id",
-        help="Số tiền còn nợ trước đây, dùng riêng cho tổng hợp HĐ & phiếu chi.",
-    )
+    old_debt = fields.Monetary(string="Công nợ cũ", currency_field="currency_id",
+                               help="Số tiền còn nợ trước đây, dùng riêng cho tổng hợp HĐ & phiếu chi.")
     supplier_category = fields.Selection(
-        [
-            ("domestic", "NCC trong nước"),
-            ("foreign", "NCC nước ngoài"),
-        ],
+        [("domestic", "NCC trong nước"), ("foreign", "NCC nước ngoài")],
         default="domestic",
         string="Loại nhà cung cấp",
         help="Phân loại nhà cung cấp: trong nước hoặc nước ngoài.",
     )
-
     supplier_domestic_type = fields.Selection(
-        [
-            ("labor", "NCC Nhân công"),
-            ("material_service", "NCC Vật tư, dịch vụ"),
-        ],
+        [("labor", "NCC Nhân công"), ("material_service", "NCC Vật tư, dịch vụ")],
         string="Nhóm NCC trong nước",
         help="Áp dụng khi Loại NCC là 'NCC trong nước'.",
     )
-    supply_category= fields.Many2one(
-        "supplier.supply.category",
-        string="Hạng mục cung cấp",
-        help="Hạng mục cung cấp của nhà cung cấp.",
-    )
+    supply_category = fields.Many2one("supplier.supply.category", string="Hạng mục cung cấp")
     reconciled = fields.Boolean("Đã đối chiếu công nợ")
     note = fields.Text("Ghi chú")
     interpretation = fields.Char("Diễn giải")
-    # 🔹 Checkbox lưu trạng thái đối chiếu
-    
+
     _sql_constraints = [
-        (
-            "partner_currency_unique",
-            "unique(partner_id, currency_id)",
-            "Mỗi nhà cung cấp và tiền tệ chỉ có một ghi chú/công nợ cũ (HĐ & phiếu chi).",
-        ),
+        ("partner_currency_unique", "unique(partner_id, currency_id)",
+         "Mỗi nhà cung cấp và tiền tệ chỉ có một ghi chú/công nợ cũ (HĐ & phiếu chi)."),
     ]
 
 
+# -*- coding: utf-8 -*-
+from odoo import models, api
+from datetime import date
+
 
 class SupplierDebtRealReport(models.AbstractModel):
-    _name = 'report.vendor_debt_management.report_supplier_debt_real_view'
-    _description = "Báo cáo Tổng hợp Công nợ NCC thực tế (theo hóa đơn)"
+    _name = "report.vendor_debt_management.report_supplier_debt_real_view"
+    _description = "Báo cáo Tổng hợp Công nợ NCC thực tế (theo hóa đơn) - gộp 1 NCC / 1 dòng"
 
     @api.model
     def _get_report_values(self, docids, data=None):
-        Invoice = self.env['supplier.invoice']
-        Payment = self.env['account.payment.request']
+        Invoice = self.env["supplier.invoice"]
+        Payment = self.env["account.payment.request"]
+        Note = self.env["supplier.invoice.payment.summary.note"]
+        Summary = self.env["supplier.invoice.payment.summary"]
         Company = self.env.company
 
         # ==============================
-        # 1. LẤY DANH SÁCH HÓA ĐƠN
+        # 1) LẤY HÓA ĐƠN
         # ==============================
-        # Nếu in từ tree hóa đơn có chọn dòng -> dùng docids
-        # Nếu in từ menu (docids=[0] hoặc rỗng) -> lấy tất cả hóa đơn
-        if docids and docids != [0]:
-            invoices = Invoice.browse(docids)
-        else:
-            invoices = Invoice.search([])
-
-        if not invoices:
-            # Không có dữ liệu => trả về context rỗng
-            return {
-                'done_domestic_labor': [],
-                'done_domestic_material': [],
-                'done_foreign': [],
-                'pending_domestic_labor': [],
-                'pending_domestic_material': [],
-                'pending_foreign': [],
-            }
+        invoices = Invoice.browse(docids) if (docids and docids != [0]) else Invoice.search([])
 
         # ==============================
-        # 2. XÁC ĐỊNH FIELD SỐ TIỀN TRÊN PHIẾU CHI
+        # 2) FIELD SỐ TIỀN TRÊN PHIẾU CHI
         # ==============================
         amount_field = None
         for candidate in ["total", "amount", "requested_amount", "amount_total", "paid_amount"]:
@@ -749,278 +756,229 @@ class SupplierDebtRealReport(models.AbstractModel):
                 amount_field = candidate
                 break
 
-        # Nếu không tìm được field tiền -> coi như không có phiếu chi
-        payments = Payment.browse()
-        if amount_field:
-            # Chỉ lấy phiếu chi loại nhà cung cấp, đã hạch toán / thanh toán
-            payments = Payment.search([
-                ("receive_type", "=", "supplier"),
-                ("state", "in", ("posted", "done", "paid")),
-            ])
-
-        # ==============================
-        # 3. XÂY DỰNG NHÓM (group) THEO NCC
-        #    key = (partner_id, currency_id, supplier_category, supplier_domestic_type, reconciled)
-        # ==============================
-        groups = {}
         today = date.today()
         company_currency = Company.currency_id
 
         def _get_currency(rec):
             return rec.currency_id or company_currency
 
-        # --- 3.1. Gom hóa đơn ---
+        # Nếu in theo selection => chỉ lấy phiếu chi của NCC trong selection
+        supplier_ids_in_scope = invoices.mapped("partner_id").ids if invoices else []
+
+        payments = Payment.browse()
+        if amount_field:
+            pay_domain = [
+                ("receive_type", "=", "supplier"),
+                ("state", "in", ("posted", "done", "paid")),
+            ]
+            if docids and docids != [0] and supplier_ids_in_scope:
+                pay_domain.append(("supplier_id", "in", supplier_ids_in_scope))
+            payments = Payment.search(pay_domain)
+
+        # ==============================
+        # 3) GROUP (partner_id, currency_id)
+        # ==============================
+        groups = {}
+        sc_names_by_key = {}
+
+        def _ensure_group(partner, currency):
+            key = (partner.id, currency.id)
+            if key not in groups:
+                groups[key] = {
+                    "partner": partner,
+                    "partner_name": partner.name or "",
+                    "currency": currency,
+
+                    "supplier_category": "domestic",
+                    "supplier_domestic_type": False,
+                    "supply_category_name": "",
+                    "reconciled": False,
+
+                    # ✅ sẽ lấy từ Summary.total_contract_amount
+                    "contract_amount": 0.0,
+
+                    "invoice_amount": 0.0,
+                    "paid_hd": 0.0,
+                    "advance_amount": 0.0,
+                    "total_payment": 0.0,
+                    "residual_amount": 0.0,
+
+                    "due_date": None,
+                    "due_days": "",
+                }
+                sc_names_by_key[key] = set()
+            return key, groups[key]
+
+        # --- 3.1) Gom hóa đơn ---
         for inv in invoices:
             if not inv.partner_id:
                 continue
-
             partner = inv.partner_id
             currency = _get_currency(inv)
+            key, g = _ensure_group(partner, currency)
 
-            supplier_category = inv.supplier_category or "domestic"  # mặc định trong nước
-            supplier_domestic_type = inv.supplier_domestic_type or False
-            supply_category = inv.supply_category
-            reconciled = bool(inv.reconciled)
-
-            key = (
-                partner.id,
-                currency.id,
-                supplier_category,
-                supplier_domestic_type,
-                reconciled,
-            )
-
-            if key not in groups:
-                groups[key] = {
-                    "partner": partner,
-                    "partner_name": partner.name or "",
-                    "currency": currency,
-                    "supplier_category": supplier_category,
-                    "supplier_domestic_type": supplier_domestic_type,
-                    "supply_category": supply_category,
-                    "supply_category_name": supply_category.name if supply_category else "",
-                    "reconciled": reconciled,
-
-                    "contract_amount": 0.0,
-                    "invoice_amount": 0.0,
-
-                    "paid_hd": 0.0,
-                    "advance_amount": 0.0,
-                    "total_payment": 0.0,
-
-                    "residual_amount": 0.0,
-                    "temp_surplus": 0.0,
-
-                    "due_date": None,
-                    "due_days": "",
-                    "note": "",  # nếu cần sau này có thể lấy note riêng
-                }
-
-            g = groups[key]
-
-            # Tổng giá trị HĐ: cộng theo hóa đơn (có thể double nếu 1 HĐ nhiều HĐ mua)
-            if inv.contract_id and inv.contract_id.amount:
-                g["contract_amount"] += inv.contract_id.amount
-
-            # Tổng giá trị hóa đơn
             g["invoice_amount"] += inv.amount or 0.0
 
-            # Ngày đến hạn gần nhất
-            inv_due = inv.due_date or inv.date
-            if inv_due:
-                if not g["due_date"] or inv_due < g["due_date"]:
-                    g["due_date"] = inv_due
+            sc = getattr(inv, "supply_category", False)
+            if sc and sc.name:
+                sc_names_by_key[key].add(sc.name)
 
-        # Chuẩn bị map invoice_id -> list key group chứa invoice đó
-        invoice_ids = invoices.ids
-        invoice_id_to_groups = {}
-        for key, g in groups.items():
-            partner = g["partner"]
-            currency = g["currency"]
-            supplier_category = g["supplier_category"]
-            supplier_domestic_type = g["supplier_domestic_type"]
-            reconciled = g["reconciled"]
-
-            invs = invoices.filtered(
-                lambda inv: inv.partner_id == partner
-                            and _get_currency(inv) == currency
-                            and (inv.supplier_category or "domestic") == supplier_category
-                            and (inv.supplier_domestic_type or False) == supplier_domestic_type
-                            and bool(inv.reconciled) == reconciled
-            )
-            for inv in invs:
-                invoice_id_to_groups.setdefault(inv.id, set()).add(key)
-
-        # --- 3.2. Gắn phiếu chi vào groups ---
+        # --- 3.2) Gom phiếu chi ---
         for pay in payments:
             if not pay.supplier_id:
                 continue
-
             partner = pay.supplier_id
             currency = _get_currency(pay)
+            key, g = _ensure_group(partner, currency)
+
             amt = getattr(pay, amount_field) or 0.0
-
-            # Lấy thông tin phân loại từ payment, nếu không có thì fallback từ invoice
-            inv = pay.invoice_id if "invoice_id" in Payment._fields else False
-
-            supplier_category = (
-                getattr(pay, "supplier_category", False)
-                or (inv.supplier_category if inv else False)
-                or "domestic"
-            )
-            supplier_domestic_type = (
-                getattr(pay, "supplier_domestic_type", False)
-                or (inv.supplier_domestic_type if inv else False)
-                or False
-            )
-            supply_category = (
-                getattr(pay, "supply_category", False)
-                or (inv.supply_category if inv else False)
-                or False
-            )
-
-            if inv and inv.id in invoice_id_to_groups:
-                # Phiếu chi đã gắn HĐ => dùng reconciled của HĐ để phân loại Đã/Chờ đối chiếu
-                rec_flag = bool(inv.reconciled)
-            else:
-                # Phiếu chi chưa gắn HĐ => luôn xem là CHỜ ĐỐI CHIẾU
-                rec_flag = False
-
-            key = (
-                partner.id,
-                currency.id,
-                supplier_category,
-                supplier_domestic_type,
-                rec_flag,
-            )
-
-            if key not in groups:
-                # nhóm chỉ có phiếu chi (chưa có hóa đơn nhưng vẫn phải thể hiện NCC)
-                groups[key] = {
-                    "partner": partner,
-                    "partner_name": partner.name or "",
-                    "currency": currency,
-                    "supplier_category": supplier_category,
-                    "supplier_domestic_type": supplier_domestic_type,
-                    "supply_category": supply_category,
-                    "supply_category_name": supply_category.name if supply_category else "",
-                    "reconciled": rec_flag,
-
-                    "contract_amount": 0.0,
-                    "invoice_amount": 0.0,
-
-                    "paid_hd": 0.0,
-                    "advance_amount": 0.0,
-                    "total_payment": 0.0,
-
-                    "residual_amount": 0.0,
-                    "temp_surplus": 0.0,
-
-                    "due_date": None,
-                    "due_days": "",
-                    "note": "",
-                }
-
-            g = groups[key]
-
-            # supply_category: ưu tiên lấy cái có giá trị
-            if supply_category and not g["supply_category"]:
-                g["supply_category"] = supply_category
-                g["supply_category_name"] = supply_category.name
-
-            # Tổng chi
             g["total_payment"] += amt
 
-            # Đã HĐ hay Chưa HĐ
-            if inv and inv.id in invoice_id_to_groups:
+            inv = pay.invoice_id if "invoice_id" in Payment._fields else False
+            if inv:
                 g["paid_hd"] += amt
             else:
-                # phiếu chi chưa có hóa đơn => chi chưa HĐ / tạm ứng
                 g["advance_amount"] += amt
 
+            sc = getattr(pay, "supply_category", False)
+            if sc and sc.name:
+                sc_names_by_key[key].add(sc.name)
+
+        if not groups:
+            return {
+                "done_domestic_labor": [],
+                "done_domestic_material": [],
+                "done_foreign": [],
+                "pending_domestic_labor": [],
+                "pending_domestic_material": [],
+                "pending_foreign": [],
+            }
+
+        partner_ids = list({k[0] for k in groups.keys()})
+        currency_ids = list({k[1] for k in groups.keys()})
+
         # ==============================
-        # 4. TÍNH CÒN NỢ / TẠM ỨNG & HẠN THANH TOÁN
+        # 4) NOTE + SUMMARY MAP
+        # ==============================
+        notes = Note.search([
+            ("partner_id", "in", partner_ids),
+            ("currency_id", "in", currency_ids),
+        ])
+        note_map = {(n.partner_id.id, n.currency_id.id): n for n in notes}
+
+        summaries = Summary.search([
+            ("partner_id", "in", partner_ids),
+            ("currency_id", "in", currency_ids),
+        ])
+        summary_map = {(s.partner_id.id, s.currency_id.id): s for s in summaries}
+
+        # ==============================
+        # 5) LẤY TỔNG HĐ TỪ SUMMARY.total_contract_amount
         # ==============================
         for key, g in groups.items():
-            invoice_total = g["invoice_amount"] or 0.0
-            total_payment = (g["total_payment"] or 0.0)
+            s = summary_map.get(key)
 
-            # Còn nợ / Tạm ứng (không dùng công nợ cũ ở report này)
-            residual = invoice_total - total_payment
-            temp_surplus = total_payment - invoice_total
+            # fallback: nếu summary_map không có (do SQL view chưa sinh dòng đúng key)
+            if not s:
+                s = Summary.search([
+                    ("partner_id", "=", key[0]),
+                    ("currency_id", "=", key[1]),
+                ], limit=1)
 
+            g["contract_amount"] = (s.total_contract_amount or 0.0) if s else 0.0
+
+            # (optional) cập nhật summary_map để dùng lại bên dưới
+            if s and key not in summary_map:
+                summary_map[key] = s
+
+        # ==============================
+        # 6) TÍNH CÒN NỢ + HẠN (theo SUMMARY) + PHÂN LOẠI
+        # ==============================
+        for key, g in groups.items():
+            # residual = invoice - total_payment (âm thì 0)
+            residual = (g["invoice_amount"] or 0.0) - (g["total_payment"] or 0.0)
             g["residual_amount"] = residual if residual > 0 else 0.0
-            g["temp_surplus"] = temp_surplus if temp_surplus > 0 else 0.0
 
-            # Hạn thanh toán dưới dạng text
-            due = g["due_date"]
-            if due:
-                delta = (due - today).days
-                if delta > 0:
-                    g["due_days"] = f"Còn {delta} ngày từ {due.strftime('%d/%m/%Y')}"
-                elif delta == 0:
-                    g["due_days"] = f"Đến hạn hôm nay - {due.strftime('%d/%m/%Y')}"
-                else:
-                    g["due_days"] = f"Quá hạn {abs(delta)} ngày từ {due.strftime('%d/%m/%Y')}"
-            else:
+            s = summary_map.get(key)
+
+            # hạn thanh toán lấy theo SUMMARY; nợ=0 => xoá hạn
+            if (g["residual_amount"] or 0.0) <= 0.0:
+                g["due_date"] = None
                 g["due_days"] = ""
+            else:
+                g["due_date"] = s.due_date if s else None
+                due = g["due_date"]
+                if due:
+                    delta = (due - today).days
+                    if delta > 0:
+                        g["due_days"] = f"Còn {delta} ngày từ {due.strftime('%d/%m/%Y')}"
+                    elif delta == 0:
+                        g["due_days"] = f"Đến hạn hôm nay - {due.strftime('%d/%m/%Y')}"
+                    else:
+                        g["due_days"] = f"Quá hạn {abs(delta)} ngày từ {due.strftime('%d/%m/%Y')}"
+                else:
+                    g["due_days"] = ""
+
+            # --- phân loại ưu tiên NOTE ---
+            n = note_map.get(key)
+            if n:
+                g["supplier_category"] = n.supplier_category or "domestic"
+                g["supplier_domestic_type"] = n.supplier_domestic_type or False
+                g["reconciled"] = bool(n.reconciled)
+
+                if n.supply_category and n.supply_category.name:
+                    g["supply_category_name"] = n.supply_category.name
+                else:
+                    names = sorted(sc_names_by_key.get(key) or [])
+                    g["supply_category_name"] = ", ".join(names) if names else ""
+            else:
+                # fallback theo SUMMARY
+                if s:
+                    g["reconciled"] = bool(getattr(s, "reconciled", False))
+                    g["supplier_category"] = (getattr(s, "supplier_category", False) or "domestic")
+                    g["supplier_domestic_type"] = (getattr(s, "supplier_domestic_type", False) or False)
+
+                    if getattr(s, "supply_category", False) and s.supply_category.name:
+                        g["supply_category_name"] = s.supply_category.name
+                    else:
+                        names = sorted(sc_names_by_key.get(key) or [])
+                        g["supply_category_name"] = ", ".join(names) if names else ""
+                else:
+                    g["reconciled"] = False
+                    g["supplier_category"] = "domestic"
+                    g["supplier_domestic_type"] = False
+                    names = sorted(sc_names_by_key.get(key) or [])
+                    g["supply_category_name"] = ", ".join(names) if names else ""
 
         # ==============================
-        # 5. LỌC BỎ DÒNG residual = 0 & temp_surplus = 0
+        # 7) LỌC BỎ DÒNG 0 (không nợ, không tạm ứng)
         # ==============================
-        def _filter_zero(lst):
-            res = []
-            for l in lst:
-                if (l.get("residual_amount") or 0.0) != 0.0 or (l.get("temp_surplus") or 0.0) != 0.0:
-                    res.append(l)
-            return res
+        def _keep(g):
+            return (g.get("residual_amount") or 0.0) != 0.0 or (g.get("advance_amount") or 0.0) != 0.0
+
+        rows = [g for g in groups.values() if _keep(g)]
 
         # ==============================
-        # 6. CHIA 6 NHÓM THEO YÊU CẦU
+        # 8) CHIA 6 NHÓM
         # ==============================
-        done_domestic_labor = []
-        done_domestic_material = []
-        done_foreign = []
+        done_domestic_labor, done_domestic_material, done_foreign = [], [], []
+        pending_domestic_labor, pending_domestic_material, pending_foreign = [], [], []
 
-        pending_domestic_labor = []
-        pending_domestic_material = []
-        pending_foreign = []
-
-        for key, g in groups.items():
-            supplier_category = g["supplier_category"]        # 'domestic' / 'foreign'
-            domestic_type = g["supplier_domestic_type"]       # 'labor' / 'material_service' / False
-            is_reconciled = g["reconciled"]                   # True / False
+        for g in rows:
+            supplier_category = g["supplier_category"] or "domestic"
+            domestic_type = g["supplier_domestic_type"] or False
+            is_reconciled = bool(g["reconciled"])
 
             if supplier_category == "foreign":
-                if is_reconciled:
-                    done_foreign.append(g)
-                else:
-                    pending_foreign.append(g)
-            else:  # domestic
-                # nếu không set, coi là vật tư, dịch vụ
+                (done_foreign if is_reconciled else pending_foreign).append(g)
+            else:
                 if domestic_type == "labor":
-                    if is_reconciled:
-                        done_domestic_labor.append(g)
-                    else:
-                        pending_domestic_labor.append(g)
+                    (done_domestic_labor if is_reconciled else pending_domestic_labor).append(g)
                 else:
-                    if is_reconciled:
-                        done_domestic_material.append(g)
-                    else:
-                        pending_domestic_material.append(g)
+                    (done_domestic_material if is_reconciled else pending_domestic_material).append(g)
 
-        # Lọc bỏ dòng 0/0
-        done_domestic_labor = _filter_zero(done_domestic_labor)
-        done_domestic_material = _filter_zero(done_domestic_material)
-        done_foreign = _filter_zero(done_foreign)
-
-        pending_domestic_labor = _filter_zero(pending_domestic_labor)
-        pending_domestic_material = _filter_zero(pending_domestic_material)
-        pending_foreign = _filter_zero(pending_foreign)
-
-        # Sắp xếp danh sách theo tên NCC
+        # sort theo tên NCC
         key_name = lambda l: (l.get("partner_name") or "").lower()
-
         done_domestic_labor = sorted(done_domestic_labor, key=key_name)
         done_domestic_material = sorted(done_domestic_material, key=key_name)
         done_foreign = sorted(done_foreign, key=key_name)
@@ -1029,26 +987,23 @@ class SupplierDebtRealReport(models.AbstractModel):
         pending_domestic_material = sorted(pending_domestic_material, key=key_name)
         pending_foreign = sorted(pending_foreign, key=key_name)
 
-        # ==============================
-        # 7. TRẢ VỀ CHO TEMPLATE QWEB
-        # ==============================
         return {
             "done_domestic_labor": done_domestic_labor,
             "done_domestic_material": done_domestic_material,
             "done_foreign": done_foreign,
-
             "pending_domestic_labor": pending_domestic_labor,
             "pending_domestic_material": pending_domestic_material,
             "pending_foreign": pending_foreign,
         }
+
+
+
 class SupplierInvoiceListReport(models.AbstractModel):
     _name = "report.vendor_debt_management.report_supplier_invoice_list"
     _description = "Báo cáo danh sách hóa đơn NCC"
 
     def _get_report_values(self, docids, data=None):
         data = data or {}
-
-        # Hóa đơn nhận từ wizard qua docids
         invoices = self.env["supplier.invoice"].browse(docids)
 
         total_untaxed = sum(invoices.mapped("amount_untaxed"))
@@ -1059,7 +1014,6 @@ class SupplierInvoiceListReport(models.AbstractModel):
             "doc_ids": invoices.ids,
             "doc_model": "supplier.invoice",
             "docs": invoices,
-
             "filter_type": data.get("filter_type"),
             "date_from": data.get("date_from"),
             "date_to": data.get("date_to"),
@@ -1067,7 +1021,6 @@ class SupplierInvoiceListReport(models.AbstractModel):
             "month": data.get("month"),
             "quarter": data.get("quarter"),
             "group_by": data.get("group_by"),
-
             "total_untaxed": total_untaxed,
             "total_tax": total_tax,
             "total_amount": total_amount,

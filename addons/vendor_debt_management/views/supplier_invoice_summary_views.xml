@@ -1,25 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-
-    <!-- ========== TREE VIEW ========== -->
+    <!-- ========== TREE VIEW (FULL) ========== -->
     <record id="view_supplier_invoice_payment_summary_tree" model="ir.ui.view">
         <field name="name">supplier.invoice.payment.summary.tree</field>
         <field name="model">supplier.invoice.payment.summary</field>
         <field name="arch" type="xml">
-            <tree create="false" edit="false">
-                <field name="partner_id"/>
-                <field name="currency_id"/>
-                <field name="due_days_html" widget="html" string="Ngày đến hạn"/>
-                <field name="total_invoice_amount"/>
-                <field name="total_payment_amount"/>
-                <field name="residual_amount"/>
-                <field name="advance_amount"/>
-                <field name="old_debt"/>
-                <field name="interpretation"/>
+            <tree create="false" edit="false" delete="false"
+                  default_order="residual_amount desc"
+                  decoration-danger="residual_amount &gt; 0">
+
+                <!-- NCC / Phân loại -->
+                <field name="partner_id" string="Nhà cung cấp"/>
+                <field name="supplier_category" optional="hide"/>
+                <field name="supplier_domestic_type" optional="hide"/>
+                <field name="supply_category" optional="hide"/>
+
+                <!-- Tiền tệ (để hiển thị monetary đúng) -->
+                <field name="currency_id" string="Tiền tệ" optional="hide" invisible="1"/>
+
+                <!-- Đến hạn -->
+                <field name="due_days_html" widget="html" string="Ngày đến hạn" optional="show"/>
+
+                <!-- Tổng hợp -->
+                <field name="total_contract_amount" string="Tổng HĐ" optional="hide"/>
+                <field name="total_settlements_amount" string="Tổng QT" optional="hide"/>
+
+                <field name="total_invoice_amount" string="Tổng hóa đơn" optional="show"/>
+                <field name="total_payment_amount" string="Tổng phiếu chi" optional="show"/>
+
+                <field name="old_debt" string="Công nợ cũ" optional="hide"/>
+                <field name="residual_amount" string="Còn nợ" optional="show"/>
+                <field name="advance_amount" string="Tạm ứng/Chi chưa HĐ" optional="show"/>
+
+                <!-- Ghi chú -->
+                <field name="reconciled" string="Đã đối chiếu" optional="show"/>
+                <field name="interpretation" string="Diễn giải" optional="show"/>
+
             </tree>
         </field>
     </record>
-
     <!-- ========== FORM VIEW ========== -->
     <record id="view_supplier_invoice_payment_summary_form" model="ir.ui.view">
         <field name="name">supplier.invoice.payment.summary.form</field>
@@ -27,6 +46,7 @@
         <field name="arch" type="xml">
             <form string="Tổng hợp công nợ NCC (HĐ &amp; Phiếu chi)" create="false">
                 <sheet>
+
                     <group>
                         <group>
                             <field name="partner_id"/>
@@ -44,24 +64,33 @@
                             <field name="old_debt" readonly="1"/>
                         </group>
                     </group>
+
                     <group>
                         <group string="Loại nhà cung cấp">
                             <field name="supplier_category"/>
-                            <field name="supplier_domestic_type"
-                                invisible="supplier_category != 'domestic'"/>
+                            <field name="supplier_domestic_type" invisible="supplier_category != 'domestic'"/>
                             <field name="supply_category"/>
                         </group>
                         <group string="Ghi chú &amp; Diễn giải">
                             <field name="interpretation" placeholder="Diễn giải ngắn gọn..."/>
                             <field name="note" placeholder="Ghi chú thêm về công nợ NCC..."/>
                         </group>
-                        
                     </group>
 
                     <notebook>
+
+                        <!-- ================== TAB 1: HỢP ĐỒNG ================== -->
                         <page string="Danh sách hợp đồng">
-                            <field name="contract_ids">
-                                <tree>
+                            <div class="oe_button_box" name="button_box">
+                                <button name="action_open_contracts"
+                                        type="object"
+                                        string="Mở danh sách hợp đồng"
+                                        class="oe_stat_button"
+                                        icon="fa-external-link"/>
+                            </div>
+
+                            <field name="contract_ids" readonly="1">
+                                <tree create="false" edit="false" delete="false">
                                     <field name="name" string="Mã HĐ"/>
                                     <field name="number_contract" string="Số HĐ"/>
                                     <field name="project_id"/>
@@ -71,29 +100,46 @@
                                     <field name="paid_amount"/>
                                     <field name="residual_amount"/>
                                     <field name="due_date"/>
-                                    <field name="currency_id" invisible="1"/>
+                                    <field name="currency_id" column_invisible="1"/>
                                 </tree>
                             </field>
                         </page>
 
+                        <!-- ================== TAB 2: HÓA ĐƠN ================== -->
                         <page string="Danh sách hóa đơn">
-                            <field name="invoice_ids">
-                                <tree>
+                            <div class="oe_button_box" name="button_box">
+                                <button name="action_open_invoices"
+                                        type="object"
+                                        string="Mở danh sách hóa đơn"
+                                        class="oe_stat_button"
+                                        icon="fa-external-link"/>
+                            </div>
+
+                            <field name="invoice_ids" readonly="1">
+                                <tree create="false" edit="false" delete="false">
                                     <field name="name" string="Mã nội bộ"/>
                                     <field name="invoice_number" string="Số HĐ NCC"/>
                                     <field name="date"/>
                                     <field name="due_date"/>
                                     <field name="project_id"/>
                                     <field name="amount"/>
-                                    <field name="currency_id" invisible="1"/>
-
+                                    <field name="currency_id" column_invisible="1"/>
                                 </tree>
                             </field>
                         </page>
 
+                        <!-- ================== TAB 3: PHIẾU CHI ================== -->
                         <page string="Danh sách phiếu chi">
-                            <field name="payment_request_ids">
-                                <tree>
+                            <div class="oe_button_box" name="button_box">
+                                <button name="action_open_payments"
+                                        type="object"
+                                        string="Mở danh sách phiếu chi"
+                                        class="oe_stat_button"
+                                        icon="fa-external-link"/>
+                            </div>
+
+                            <field name="payment_request_ids" readonly="1">
+                                <tree create="false" edit="false" delete="false">
                                     <field name="name"/>
                                     <field name="date"/>
                                     <field name="project_id"/>
@@ -101,11 +147,11 @@
                                     <field name="invoice_id"/>
                                     <field name="state"/>
                                     <field name="total"/>
-                                    <field name="currency_id" invisible="1"/>
-
+                                    <field name="currency_id" column_invisible="1"/>
                                 </tree>
                             </field>
                         </page>
+
                     </notebook>
 
                 </sheet>
