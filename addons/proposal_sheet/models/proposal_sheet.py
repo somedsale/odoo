@@ -100,13 +100,28 @@ class ProposalSheet(models.Model):
                 sheet.amount_total = sum(line.amount for line in sheet.expense_noproject_line_ids)
             else:
                 sheet.amount_total = 0.0
-    @api.depends('type', 'material_line_ids.price_total_taxed')
+    @api.depends(
+    'type',
+    'material_line_ids.price_total_taxed',
+    'expense_noproject_line_ids.amount_tax',
+)
+    @api.depends(
+    'type',
+    'material_line_ids.price_total_taxed',
+    'expense_noproject_line_ids.amount_tax',
+    # nếu bên line tax phụ thuộc tax_id/price_unit/qty thì Odoo tự chain qua amount_tax rồi
+)
     def _compute_amount_total_taxes(self):
         for sheet in self:
             if sheet.type == 'material':
-                sheet.amount_total_taxes = sum(line.price_total_taxed for line in sheet.material_line_ids)
+                sheet.amount_total_taxes = sum(sheet.material_line_ids.mapped('price_total_taxed'))
+
+            elif sheet.type == 'other':
+                # ✅ cộng tất cả tiền thuế (dòng không thuế thì amount_tax = 0)
+                sheet.amount_total_taxes = sum(sheet.expense_noproject_line_ids.mapped('amount_total'))
+
             else:
-                sheet.amount_total_taxes = 0.0
+                sheet.amount_total_taxes = sheet.amount_total or 0.0               
     show_button_submit = fields.Boolean(compute='_compute_show_buttons')
     show_button_manager_approve = fields.Boolean(compute='_compute_show_buttons')
     show_button_accounting_approve = fields.Boolean(compute='_compute_show_buttons')

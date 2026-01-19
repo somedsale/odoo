@@ -4,3 +4,4 @@ from . import account_payment_request
 from . import proposal_sheet
 from . import project_project
 from . import estimate_item_other
+from . import proposal_material_line_inherit
