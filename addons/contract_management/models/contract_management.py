@@ -12,7 +12,7 @@ _logger = logging.getLogger(__name__)
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
-    contract_id = fields.Many2one('contract.management', string='Contract', readonly=True)
+    contract_id = fields.Many2one('contract.management', string='Contract', readonly=True,copy=False)
 
     def action_confirm(self):
         res = super().action_confirm()
