@@ -20,6 +20,11 @@ class ProposalOtherExpenseLine(models.Model):
         required=True,
         ondelete='cascade',
     )
+    company_id = fields.Many2one(
+        'res.company',
+        default=lambda self: self.env.company,
+        readonly=True,
+    )
     unit=fields.Many2one('uom.uom', string='Đơn vị tính')
     price_unit=fields.Float(string='Đơn giá', digits=(16, 4))
     quantity =fields.Float(string='Số lượng', default=1.0, digits=(16, 1))
@@ -27,6 +32,8 @@ class ProposalOtherExpenseLine(models.Model):
     # Nội dung chi / thông tin chính
     content = fields.Char(string='Nội dung chi', required=True, tracking=True)
     amount = fields.Float(string='Số tiền',tracking=True,compute ='_compute_amount', store=True)
+    amount_tax = fields.Float(string='Tiền thuế', tracking=True, compute='_compute_amount_tax', store=True)
+    amount_total = fields.Float(string='Số tiền (sau thuế)', tracking=True, compute='_compute_amount_tax', store=True)
     date = fields.Date(string='Ngày dự chi', default=fields.Date.today, tracking=True)
     object = fields.Many2one('res.partner', string='Đối tượng/NCC')
     note = fields.Text(string='Ghi chú')
@@ -44,6 +51,12 @@ class ProposalOtherExpenseLine(models.Model):
         string='Tiền tệ',
         default=lambda self: self.env.company.currency_id.id,
     )
+    tax_id = fields.Many2one(
+        'account.tax',
+        string='Thuế',
+        domain="[('type_tax_use','=','purchase'), ('company_id','=', company_id)]",
+        tracking=True,
+    )
 
     sequence = fields.Integer(string="", default=10)
 
@@ -52,6 +65,31 @@ class ProposalOtherExpenseLine(models.Model):
     def _compute_amount(self):
         for line in self:
             line.amount = line.price_unit * line.quantity
+    @api.depends('amount', 'tax_id', 'currency_id', 'quantity', 'price_unit')
+    def _compute_amount_tax(self):
+        for line in self:
+            base = (line.price_unit or 0.0) * (line.quantity or 0.0)
+
+            if not line.tax_id:
+                line.amount_tax = 0.0
+                line.amount_total = base
+                continue
+
+            currency = line.currency_id or line.env.company.currency_id
+            partner = line.object
+
+            res = line.tax_id.compute_all(
+                price_unit=(line.price_unit or 0.0),
+                currency=currency,
+                quantity=(line.quantity or 0.0),
+                product=False,
+                partner=partner,
+            )
+            total_excluded = res.get('total_excluded', base)
+            total_included = res.get('total_included', base)
+
+            line.amount_tax = total_included - total_excluded
+            line.amount_total = total_included
 
     @api.constrains('amount')
     def _check_amount(self):

@@ -2,17 +2,12 @@
     'name': 'Project Profit Lost',
     'version': '1.0',
     'summary': 'Phân tích lời lỗ công trình',
-    'depends': ['base','project','contract_management','custom_account_payment_request','custom_accounting_receipt','customer_debt'],  # thêm module bạn cần
+    'depends': ['base','project','contract_management','custom_account_payment_request','custom_accounting_receipt','customer_debt'],
     'data': [
         'security/ir.model.access.csv',
         'views/project_profit_lost_views.xml',
         'views/project_project_views.xml',
     ],
-    "assets": {
-        "web.assets_backend": [
-            # "custom_project_profit_lost/static/src/js/pl_2header_abc.js",
-        ]
-    },
     'installable': True,
     'application': False,
 }

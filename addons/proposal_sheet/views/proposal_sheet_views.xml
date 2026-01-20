@@ -48,6 +48,7 @@
                     <group>
                         <group>
                             <field name="project_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft' " force_save="context.get('from_task', False)"/>
+                            <field name="contract_num" string="Số hợp đồng" invisible="not project_id"/>
                             <field name="cost_additional_expense_line_id" string="Hạng mục dự toán chi phí gián tiếp" domain="[('project_id', '=', project_id)]"/>
                             <field name="task_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft'" force_save="context.get('from_task', False)" domain="[('project_id', '=', project_id)]" invisible="type=='expense'"/>
                             <field name="requested_by" widget="many2one_avatar_user" readonly="1" options="{'no_open':True}"/>
@@ -89,6 +90,7 @@
                                     <field name="price_unit_taxed" string="Giá đề xuất (sau thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" optional="show" />
                                     <field name="price_total_taxed" string="Thành tiền (sau thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" optional="show" sum="Tổng"/>
                                     <field name="vendor_id" placeholder="Nhà cung cấp đề xuất" required="1"/>
+                                    <field name="other_estimate_item" string="Hạng mục"/>
                                     <field name="description"/>
                                     <field name="currency_id" invisible="1" optional="hide"/>
                                 </tree>
@@ -114,12 +116,16 @@
                             <field name="expense_noproject_line_ids" context="{'default_type': 'other'}" readonly="state !='draft'">
                                 <tree editable="bottom" default_order="sequence,id">
                                     <field name="sequence" widget="handle" width="30"/>
-                                    <field name="date" width="95"/>
+                                    <field name="company_id" column_invisible="1"/>
+                                    <!-- <field name="date" width="95"/> -->
                                     <field name="content" string="Nội dung" width="260"/>
                                     <field name="unit" string="DVT" width="110"/>
                                     <field name="quantity" string="SL" width="80"/>
                                     <field name="price_unit" string="Đơn giá" width="120" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="tax_id" string="Thuế" width="120"/>
                                     <field name="amount" string="Thành tiền" width="120" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
+                                    <field name="amount_tax" string="Tiền thuế" width="120" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
+                                    <field name="amount_total" string="Thành tiền (sau thuế)" width="120" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
                                     <field name="object" string="Đối tượng" width="160"/>
                                     <field name="cost_classification" string="Phân loại" width="180"/>
                                     <field name="note" string="Ghi chú" width="100"/>
@@ -152,6 +158,7 @@
                 <field name="type"/>
                 <field name="amount_total" optional="show" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
                 <field name="amount_total_taxes" string="Tổng (sau thuế)" optional="show" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
+                <field name ="take_note"/>
                 <field name="treasurer_confirmed" string="Thủ quỹ duyệt" readonly="1" groups="account.group_account_manager"/>
                 <field name="state" widget="badge" decoration-muted="state == 'draft'" decoration-info="state in ['reviewed_manager', 'reviewed_accounting']" decoration-warning="state == 'waiting_accounting_paid'" decoration-primary="state == 'approved'" decoration-success="state == 'done'" decoration-danger="state in ['rejected', 'canceled']"/>
                 <field name="currency_id" string="Tiền tệ" optional="hide"/>
