@@ -19,6 +19,8 @@ class SaleOrder(models.Model):
         Attachment = self.env['ir.attachment'].sudo()
 
         for order in self:
+            if order.contract_id and order.contract_id.sale_order_id != order:
+                order.contract_id = False
             if order.contract_id:
                 continue
 
