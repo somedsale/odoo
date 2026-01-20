@@ -76,6 +76,12 @@ class ProposalSheet(models.Model):
     default=False,
     help="Dòng mới dùng product_id. Các dòng cũ (tạo trước khi nâng cấp) sẽ không được tick và vẫn hiển thị material_id."
 )
+    contract_num = fields.Char(
+    string="Số hợp đồng",
+    related="project_id.num_contract",
+    store=True,
+    readonly=True,
+)
     @api.depends('treasurer_confirmed')
     def _compute_treasurer_confirmed_note(self):
         for r in self:
