@@ -113,6 +113,10 @@ class ProposalMaterialLine(models.Model):
         compute="_compute_stock_qty",
         store=False,
     )
+    other_estimate_item = fields.Many2one(
+        'estimate.item.other',
+        string='Hạng mục khác',
+    )
     # ========== COMPUTE ==========
     @api.depends('product_id')
     def _compute_stock_qty(self):
