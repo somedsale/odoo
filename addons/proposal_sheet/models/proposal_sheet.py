@@ -109,13 +109,8 @@ class ProposalSheet(models.Model):
     @api.depends(
     'type',
     'material_line_ids.price_total_taxed',
+    'expense_line_ids.price_unit',
     'expense_noproject_line_ids.amount_tax',
-)
-    @api.depends(
-    'type',
-    'material_line_ids.price_total_taxed',
-    'expense_noproject_line_ids.amount_tax',
-    # nếu bên line tax phụ thuộc tax_id/price_unit/qty thì Odoo tự chain qua amount_tax rồi
 )
     def _compute_amount_total_taxes(self):
         for sheet in self:
