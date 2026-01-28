@@ -98,6 +98,7 @@
 
                         <!-- RIGHT -->
                         <group>
+                            <field name="total_investment_capital" widget="monetary"/>
                             <field name="expected_value" widget="monetary"/>
                             <field name="probability" widget="percentage" readonly="1"/>
                             <field name="expected_bid_date"/>
