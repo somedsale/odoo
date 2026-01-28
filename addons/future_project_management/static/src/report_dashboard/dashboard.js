@@ -14,12 +14,14 @@ export class FutureProjectDashboard extends Component {
 
         const today = new Date();
         const month = String(today.getMonth() + 1);
+
         const now = new Date();
         const currentYear = now.getFullYear();
         const fromYear = currentYear - 5;
         const toYear = currentYear + 10;
         const yearOptions = [];
         for (let y = toYear; y >= fromYear; y--) yearOptions.push(y);
+
         this.state = useState({
             loading: true,
             data: {
@@ -43,7 +45,7 @@ export class FutureProjectDashboard extends Component {
                 period_type: "all",
                 year: today.getFullYear(),
                 month,
-                quarter: String(Math.floor((today.getMonth()) / 3) + 1),
+                quarter: String(Math.floor(today.getMonth() / 3) + 1),
                 location_id: "",
             },
             // ✅ FILTER RIÊNG CHO LIST
@@ -67,6 +69,7 @@ export class FutureProjectDashboard extends Component {
 
     formatMoney(amount) {
         const v = Number(amount || 0);
+        // vi-VN: 1.234.567
         return v.toLocaleString("vi-VN");
     }
 
@@ -124,7 +127,7 @@ export class FutureProjectDashboard extends Component {
         await this.loadData();
     }
 
-    // ✅ click chip stage (Cách A)
+    // ✅ click chip stage
     async onPickStageClick(ev) {
         const stageId = ev.currentTarget.dataset.stageId || "";
         this.state.listFilters.stage_id = stageId;
@@ -133,17 +136,15 @@ export class FutureProjectDashboard extends Component {
 
     // ✅ mở danh sách theo FILTER GÓC (không theo chip stage)
     async onOpenListAll() {
-    const domain = this._buildDomainBase();   // domain theo filter góc (tháng/quý/năm/khu vực)
-    await this._openFutureProjectKanban(domain);
+        const domain = this._buildDomainBase(); // domain theo filter góc (tháng/quý/năm/khu vực)
+        await this._openFutureProjectKanban(domain);
     }
-
 
     // ✅ mở danh sách theo FILTER GÓC + CHIP STAGE (đúng với bảng list đang xem)
     async onOpenListFromList() {
-    const domain = this._buildDomainForList(); // domain chỉ cho list (active=True, không khả thi, + chip stage)
-    await this._openFutureProjectKanban(domain);
+        const domain = this._buildDomainForList(); // domain chỉ cho list (active=True, không khả thi, + chip stage)
+        await this._openFutureProjectKanban(domain);
     }
-
 
     async onOpenForm(ev) {
         const id = parseInt(ev.currentTarget.dataset.projectId || "0", 10);
@@ -157,28 +158,29 @@ export class FutureProjectDashboard extends Component {
             context: { active_test: false },
         });
     }
+
     async _openFutureProjectKanban(domain, extraContext = {}) {
-    const action = {
-        type: "ir.actions.act_window",
-        name: "Dự án tiềm năng",
-        res_model: "future.project",
-        view_mode: "kanban,tree,form",
-        views: [
-        [false, "kanban"],
-        [false, "tree"],
-        [false, "form"],
-        ],
-        target: "current",
-        domain: domain || [],
-        context: {
-        ...this.env.searchModel?.context, // nếu có
-        ...extraContext,
-        // ✅ mở kanban theo pipeline stage
-        search_default_group_by_stage_id: 1,
-        default_group_by: "stage_id",
-        },
-    };
-    await this.env.services.action.doAction(action);
+        const action = {
+            type: "ir.actions.act_window",
+            name: "Dự án tiềm năng",
+            res_model: "future.project",
+            view_mode: "kanban,tree,form",
+            views: [
+                [false, "kanban"],
+                [false, "tree"],
+                [false, "form"],
+            ],
+            target: "current",
+            domain: domain || [],
+            context: {
+                ...this.env.searchModel?.context, // nếu có
+                ...extraContext,
+                // ✅ mở kanban theo pipeline stage
+                search_default_group_by_stage_id: 1,
+                default_group_by: "stage_id",
+            },
+        };
+        await this.env.services.action.doAction(action);
     }
 
     // click row trong stage_summary (theo filters góc)
@@ -200,12 +202,11 @@ export class FutureProjectDashboard extends Component {
 
     // click row trong location_summary (theo filters góc)
     async onOpenListByLocation(ev) {
-    const locationId = parseInt(ev.currentTarget.dataset.locationId, 10);
-    const domain = this._buildDomainBase();
-    if (locationId) domain.push(["location_id", "=", locationId]);
-    await this._openFutureProjectKanban(domain);
+        const locationId = parseInt(ev.currentTarget.dataset.locationId, 10);
+        const domain = this._buildDomainBase();
+        if (locationId) domain.push(["location_id", "=", locationId]);
+        await this._openFutureProjectKanban(domain);
     }
-
 
     _buildDomainBase() {
         const meta = this.state.data?.meta || {};
@@ -222,23 +223,23 @@ export class FutureProjectDashboard extends Component {
     }
 
     _buildDomainForList() {
-    const domain = this._buildDomainBase();
+        const domain = this._buildDomainBase();
 
-    // ✅ chỉ lấy dự án đang theo dõi
-    domain.push(["active", "=", true]);
+        // ✅ chỉ lấy dự án đang theo dõi
+        domain.push(["active", "=", true]);
 
-    // ✅ loại "không khả thi" nếu có stage đó
-    const lostStages = (this.state.stageOptions || [])
-        .filter(s => (s.name || "").toLowerCase().trim() === "không khả thi");
-    if (lostStages.length) {
-        domain.push(["stage_id", "not in", lostStages.map(s => s.id)]);
-    }
+        // ✅ loại "không khả thi" nếu có stage đó
+        const lostStages = (this.state.stageOptions || [])
+            .filter((s) => (s.name || "").toLowerCase().trim() === "không khả thi");
+        if (lostStages.length) {
+            domain.push(["stage_id", "not in", lostStages.map((s) => s.id)]);
+        }
 
-    // ✅ chip stage
-    if (this.state.listFilters.stage_id) {
-        domain.push(["stage_id", "=", parseInt(this.state.listFilters.stage_id, 10)]);
-    }
-    return domain;
+        // ✅ chip stage
+        if (this.state.listFilters.stage_id) {
+            domain.push(["stage_id", "=", parseInt(this.state.listFilters.stage_id, 10)]);
+        }
+        return domain;
     }
 }
 

@@ -59,6 +59,8 @@ class FutureProject(models.Model):
     expected_end_date = fields.Date("Thời gian dự kiến kết thúc")
 
     expected_value = fields.Monetary("Giá trị dự kiến")
+
+    total_investment_capital = fields.Monetary("Tổng vốn đầu tư")
     currency_id = fields.Many2one(
         "res.currency",
         default=lambda self: self.env.company.currency_id,
@@ -267,6 +269,7 @@ class FutureProject(models.Model):
         name = (p.stage_id.name or "").strip().lower()
         return name in ["không khả thi", "lost", "fail", "failed"]
 
+
     @api.model
     def get_dashboard_data(self, filters=None):
         """
@@ -298,11 +301,20 @@ class FutureProject(models.Model):
         won_projects = projects_all.filtered(lambda p: self._is_won(p))
         lost_projects = projects_all.filtered(lambda p: self._is_lost(p))
 
+        # ===== expected_value (đang có) =====
         total_value = sum(projects_all.mapped("expected_value") or [0.0])
         won_value = sum(won_projects.mapped("expected_value") or [0.0])
         lost_value = sum(lost_projects.mapped("expected_value") or [0.0])
-        win_rate = round((len(won_projects) / len(projects_all) * 100), 2) if projects_all else 0.0
         total_value_non_lost = total_value - lost_value
+
+        # ===== total_investment_capital (NEW - logic y như expected_value) =====
+        total_investment = sum(projects_all.mapped("total_investment_capital") or [0.0])
+        won_investment = sum(won_projects.mapped("total_investment_capital") or [0.0])
+        lost_investment = sum(lost_projects.mapped("total_investment_capital") or [0.0])
+        total_investment_non_lost = total_investment - lost_investment
+
+        win_rate = round((len(won_projects) / len(projects_all) * 100), 2) if projects_all else 0.0
+
         # ---- stage_summary theo projects_all
         stage_map = {}
         for p in projects_all:
@@ -312,11 +324,13 @@ class FutureProject(models.Model):
                     "id": sid,
                     "name": p.stage_id.name if p.stage_id else "Chưa có trạng thái",
                     "count": 0,
-                    "value": 0.0,
+                    "value": 0.0,                 # expected_value sum
+                    "investment_capital": 0.0,     # ✅ NEW: total_investment_capital sum
                     "is_won": self._is_won(p),
                 }
             stage_map[sid]["count"] += 1
             stage_map[sid]["value"] += (p.expected_value or 0.0)
+            stage_map[sid]["investment_capital"] += (p.total_investment_capital or 0.0)
 
         stage_summary = sorted(stage_map.values(), key=lambda x: (not x["is_won"], x["name"]))
 
@@ -330,16 +344,17 @@ class FutureProject(models.Model):
                     "name": p.location_id.name if p.location_id else "Chưa có khu vực",
                     "count": 0,
                     "won_count": 0,
-                    "value": 0.0,
+                    "value": 0.0,                 # expected_value sum
+                    "investment_capital": 0.0,     # ✅ NEW: total_investment_capital sum
                 }
             loc_map[lid]["count"] += 1
             loc_map[lid]["value"] += (p.expected_value or 0.0)
+            loc_map[lid]["investment_capital"] += (p.total_investment_capital or 0.0)
             if self._is_won(p):
                 loc_map[lid]["won_count"] += 1
 
         location_summary = sorted(loc_map.values(), key=lambda x: (-x["count"], x["name"]))
 
-        # ✅ FILTER RIÊNG CHO LIST (chip stage)
         # ✅ FILTER RIÊNG CHO LIST (CHỈ dự án đang theo dõi, KHÔNG lấy không khả thi)
         list_domain = list(base_domain)
         domain_non_lost = list(base_domain)
@@ -361,8 +376,7 @@ class FutureProject(models.Model):
         if filters.get("list_stage_id"):
             list_domain.append(("stage_id", "=", int(filters["list_stage_id"])))
 
-        projects_list = self.search(list_domain)  # active_test=True mặc định là OK vì ta đã lọc active=True
-
+        projects_list = self.search(list_domain)
 
         def _sort_key(p):
             return ((p.expected_bid_date or date.max), p.id)
@@ -379,6 +393,7 @@ class FutureProject(models.Model):
             "stage": p.stage_id.name or "",
             "expected_bid_date": p.expected_bid_date,
             "expected_value": p.expected_value or 0.0,
+            "total_investment_capital": p.total_investment_capital or 0.0,  # ✅ NEW
             "currency_id": (p.currency_id.id or self.env.company.currency_id.id),
             "active": bool(p.active),
         } for p in projects_show]
@@ -393,8 +408,7 @@ class FutureProject(models.Model):
         for s in stages:
             # ✅ ẨN stage "Không khả thi" khỏi stageOptions (chip filter)
             name_low = (s.name or "").strip().lower()
-            is_lost = bool(getattr(s, "is_lost", False))  # nếu chưa có field thì sẽ False
-
+            is_lost = bool(getattr(s, "is_lost", False))
             if is_lost or name_low == "không khả thi":
                 continue
 
@@ -402,7 +416,6 @@ class FutureProject(models.Model):
                 "id": s.id,
                 "name": s.name,
                 "is_won": bool(getattr(s, "is_won", False)),
-                # optional: để debug
                 "is_lost": is_lost,
             })
 
@@ -417,13 +430,20 @@ class FutureProject(models.Model):
                 "won_projects": len(won_projects),
                 "lost_projects": len(lost_projects),
                 "win_rate": win_rate,
+
+                # expected_value (đang có)
                 "total_value": total_value_non_lost,
                 "won_value": won_value,
+
+                # ✅ NEW: total_investment_capital (logic y như total_value)
+                "total_investment_capital": total_investment_non_lost,
+                "won_investment_capital": won_investment,
+
                 "currency_id": self.env.company.currency_id.id,
             },
             "stage_summary": stage_summary,
             "location_summary": location_summary,
-            "projects": projects_rows,          # ✅ list theo list_domain
+            "projects": projects_rows,
             "location_options": location_options,
-            "stage_options": stage_options,     # ✅ chip dùng options này
+            "stage_options": stage_options,
         }
