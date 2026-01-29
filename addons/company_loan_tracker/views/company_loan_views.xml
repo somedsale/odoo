@@ -17,7 +17,7 @@
                     <field name="balance" sum="Còn nợ" widget="monetary"/>
                     <field name="interest_note"/>
                     <field name="currency_id" optional='hide' string="Tiền tệ"/>
-                    <field name="state" widget="badge"/>
+                    <field name="state" widget="badge" decoration-muted="state == 'ongoing'" decoration-success="state == 'done'" decoration-danger="state == 'cancel'"/>
                 </tree>
             </field>
         </record>
@@ -29,6 +29,9 @@
             <field name="arch" type="xml">
                 <form string="Khoản vay của công ty">
                     <header>
+                        <button name="action_done" type="object" string="Hoàn thành" class="btn-success" invisible="state != 'ongoing'"/>
+                        <button name="action_set_ongoing" type="object" string="Mở lại" class="btn-primary" invisible="state != 'done'"/>
+                        <button name="action_cancel" type="object" string="Hủy" class="btn-danger" invisible="state == 'cancel'"/>
                         <field name="state" widget="statusbar"/>
                     </header>
                     <sheet>
@@ -89,7 +92,7 @@
                                         <field name="interest_expected" sum="1"/>
                                         <field name="interest_shortfall" sum="1"/>
                                         <field name="currency_id" string="Tiền tệ" optional="hide"/>
-                                        <field name="state" widget="badge" string="Trạng thai"/>
+                                        <field name="state" widget="badge" string="Trạng thái"/>
                                     </tree>
                                 </field>
                             </page>

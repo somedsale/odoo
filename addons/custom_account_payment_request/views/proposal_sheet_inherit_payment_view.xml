@@ -10,38 +10,14 @@
                     <field name="payment_ids" context="{'default_total': amount_total, 'default_currency_id': currency_id, 'default_proposal_sheet_id': active_id}">
                         <tree>
                             <field name="name" />
-                            <field name="date" string="Ngày tạo chi" />
+                            <field name="create_date" string="Ngày tạo chi"/>
+                            <field name="date_payment" string="Ngày chi"/>
                             <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
                             <field name="currency_id" optional="hide"/>
+                            <field name="note"/>
                             <field name="state" string="Trạng thái" widget="badge" decoration-muted="state == 'draft'" decoration-primary="state == 'confirmed'" decoration-success="state == 'done'"/>
                         </tree>
-                        <form>
-                            <header>
-                                <button name="action_confirm" string="Xác nhận" type="object" class="btn-primary" invisible="state != &apos;draft&apos;"/>
-                                <!-- <button name="action_post" string="Vào sổ bút toán" type="object" class="btn-success" invisible="state != &apos;confirmed&apos;"/> -->
-                                <button name="action_payment_request" string="Ghi nhận thanh toán" type="object" class="btn-success" invisible="state != &apos;confirmed&apos;"/>
-                                <!-- <button name="action_cancel" string="Hủy" type="object" class="btn-danger" invisible="state != &apos;draft&apos;"/> -->
-                                <field name="state" widget="statusbar" statusbar_visible="confirmed,done"/>
-                            </header>
-                            <sheet >
-                                <group col = '2'>
-                                    <group>
-                                        <field name="name"/>
-                                        <field name="date" readonly="state =='confirmed' or state =='done'"/>
-                                        <field name="currency_id" invisible="1"/>
-                                        <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="state =='confirmed' or state =='done'"/>
-                                        <field name="payment_person" widget="many2one_avatar_user" readonly="state =='confirmed' or state =='done'"/>
-                                    </group>
-                                    <group>
-                                        <field name ="project_id" context="{'default_project_id': project_id}"/>
-                                        <field name="proposal_sheet_id" readonly="state =='confirmed' or state =='done'"/>
-                                        <field name="proposal_person_id" widget="many2one_avatar_user" readonly="state =='confirmed' or state =='done'"/>
-                                        <field name="note"/>
-                                        <field name="expense_type" widget="select"/>
-                                    </group>
-                                </group>
-                            </sheet>
-                        </form>
+
                     </field>
                 </page>
             </xpath>

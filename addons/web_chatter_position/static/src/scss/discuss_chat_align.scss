@@ -1,0 +1,130 @@
+.o-mail-Discuss-content .o-mail-Message.o-selfAuthored {
+  margin-left: auto;
+  max-width: 82%;
+  padding-right: 6px !important;
+  overflow-x: clip; /* fallback: hidden */
+}
+
+.o-mail-Discuss-content .o-mail-Message.o-selfAuthored .o-mail-Message-core {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Avatar qua phải */
+.o-mail-Discuss-content .o-mail-Message.o-selfAuthored .o-mail-Message-sidebar {
+  order: 2;
+}
+
+/* Cột nội dung bám phải */
+.o-mail-Discuss-content .o-mail-Message.o-selfAuthored .w-100.o-min-width-0 {
+  order: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: auto !important;
+  max-width: calc(100% - 48px);
+}
+
+/* Header bám phải */
+.o-mail-Discuss-content .o-mail-Message.o-selfAuthored .o-mail-Message-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 6px;
+  width: auto;
+  white-space: nowrap;
+}
+.o-mail-Discuss-content
+  .o-mail-Message.o-selfAuthored
+  .o-mail-Message-header
+  > * {
+  margin: 0 !important;
+  flex: 0 0 auto !important;
+}
+.o-mail-Discuss-content .o-mail-Message.o-selfAuthored .o-mail-Message-author {
+  order: 1;
+}
+.o-mail-Discuss-content .o-mail-Message.o-selfAuthored .o-mail-Message-date {
+  order: 2;
+  white-space: nowrap;
+}
+.o-mail-Discuss-content
+  .o-mail-Message.o-selfAuthored
+  .o-mail-MessageSeenIndicator {
+  order: 3;
+}
+
+/* Content/bubble bám phải */
+.o-mail-Discuss-content
+  .o-mail-Message.o-selfAuthored
+  .position-relative.d-flex {
+  justify-content: flex-end !important;
+}
+
+.o-mail-Discuss-content .o-mail-Message.o-selfAuthored .o-mail-Message-content {
+  width: auto !important;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* textContent + actions absolute để bubble sát phải, không chiếm chỗ */
+.o-mail-Discuss-content
+  .o-mail-Message.o-selfAuthored
+  .o-mail-Message-textContent {
+  width: auto !important;
+  max-width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  position: relative;
+}
+
+.o-mail-Discuss-content
+  .o-mail-Message.o-selfAuthored
+  .o-mail-Message-textContent
+  > .position-relative.overflow-x-auto.d-inline-block {
+  margin-left: auto;
+  max-width: 100%;
+  overflow-x: visible !important; /* tránh scroll ngang */
+}
+
+/* Actions */
+.o-mail-Discuss-content .o-mail-Message.o-selfAuthored .o-mail-Message-actions {
+  position: absolute !important;
+  right: -6px !important;
+  top: 0 !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+/* Attachment bám phải */
+.o-mail-Discuss-content .o-mail-Message.o-selfAuthored .o-mail-AttachmentList {
+  width: auto !important;
+  max-width: 100%;
+  align-items: flex-end;
+}
+.o-mail-Discuss-content
+  .o-mail-Message.o-selfAuthored
+  .o-mail-AttachmentList
+  > .d-flex {
+  justify-content: flex-end;
+}
+
+/* Optional: che "- " đầu date */
+.o-mail-Discuss-content .o-mail-Message.o-selfAuthored .o-mail-Message-date {
+  position: relative;
+  padding-left: 0.65rem;
+}
+.o-mail-Discuss-content
+  .o-mail-Message.o-selfAuthored
+  .o-mail-Message-date::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0.65rem;
+  background: var(--o-view-background-color, var(--body-bg, #fff));
+}

@@ -5,7 +5,7 @@
     'summary': 'Quản lý và theo dõi các khoản vay của công ty',
     'category': 'Accounting/Finance',
     'author': 'SOMED',
-    'depends': ['base', 'contacts', 'custom_account_menu','mail','custom_account_payment_request','custom_accounting_receipt'],
+    'depends': ['base', 'contacts', 'custom_account_menu','mail','custom_account_payment_request','custom_accounting_receipt','customer_account_payment_proposal','employee_advance_tracking','customer_debt'],
     'data': [
         'security/ir.model.access.csv',
         'views/company_loan_views.xml',

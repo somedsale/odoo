@@ -5,8 +5,11 @@ class AccountReceipt(models.Model):
     _order = "name desc"
 
     employee_advance_id = fields.Many2one("account.employee.advance", string="Theo dõi tạm ứng")
-    payment_id = fields.Many2one("account.payment.request",string="Phiếu chi tạm ứng (CT)",domain ="[('is_advance','=',True)]")
-
+    payment_id = fields.Many2one(
+        "account.payment.request",
+        string="Phiếu chi tạm ứng (CT)",
+        domain="[('is_advance','=',True),('employee_id','=',employee_id)]",
+    )
     @api.onchange("employee_id")
     def _onchange_employee_id(self):
         for rec in self:
@@ -15,7 +18,11 @@ class AccountReceipt(models.Model):
                     [("employee_id", "=", rec.employee_id.id)], limit=1
                 )
                 rec.employee_advance_id = advance.id if advance else False
-
+    @api.onchange("payment_id")
+    def _onchange_payment_id(self):
+        for rec in self:
+            if rec.payment_id and rec.payment_id.total:
+                rec.amount = rec.payment_id.total
     @api.model
     def create(self, vals):
         rec = super().create(vals)

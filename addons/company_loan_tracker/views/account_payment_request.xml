@@ -8,7 +8,7 @@
             <xpath expr="//field[@name='receive_person']" position="after">
                 <field name="is_office_loan_allowed" readonly="1" invisible="1"/>
                 <field name="loan_id" domain="[('lender_id', '=', receive_person)]" options="{'no_create': True}" invisible="not (cost_classification == 'loan_interest' or is_office_loan_allowed)"/>
-                <field name="loan_payment_kind" widget="selection" readonly="state != 'draft'" invisible="not (cost_classification == 'loan_interest' or is_office_loan_allowed)"/>
+                <field name="loan_payment_kind" widget="selection" readonly="state != 'draft'" invisible="not (cost_classification == 'loan_interest' or is_office_loan_allowed)" required="(cost_classification == 'loan_interest' and loan_id)"/>
                 <field name="date_from" readonly="state != 'draft'" invisible="not (loan_payment_kind == 'interest' and (cost_classification == 'loan_interest' or is_office_loan_allowed))"/>
                 <field name="date_to" readonly="state != 'draft'" invisible="not (loan_payment_kind == 'interest' and (cost_classification == 'loan_interest' or is_office_loan_allowed))"/>
                 <field name="interest_days" readonly="1" invisible="not (loan_payment_kind == 'interest' and (cost_classification == 'loan_interest' or is_office_loan_allowed))"/>
