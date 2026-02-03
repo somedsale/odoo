@@ -91,6 +91,24 @@
         sản phẩm, vật tư theo yêu cầu từ Quý khách hàng, cụ thể như sau:</p>
                 </div>
                 <div style="page-break-inside: auto;">
+                    <style>
+                        .num { 
+                            white-space: nowrap !important;
+                        }
+                        .table tr {
+                            page-break-inside: avoid !important;  /* không tách row */
+                            break-inside: avoid-page !important;  /* fallback cho engine mới */
+                        }
+                        .table td, table th {
+                            page-break-inside: avoid !important;
+                            vertical-align: top;
+                        }
+                        .table td {
+                            overflow-wrap: anywhere;           /* text “Thông số” dài không phá layout */
+                            word-break: break-word;
+                            white-space: normal;
+                        }
+                    </style>
                     <table class="table" style="font-family: &apos;Times New Roman&apos;, Times, serif !important; color:#000 !important;border-dark border-2;">
                         <tbody>
                             <tr class="table-bordered border-dark border-2" style="height:auto; ">
@@ -109,8 +127,8 @@
                                 <t t-if="doc.is_show_chi_phi_nhan_cong">
                                     <th style="width:100px !important;border-right: 1px solid black;">Chi phí nhân công</th>
                                 </t>
-                                <th style="min-width:100px !important;border-right: 1px solid black;">Đơn giá</th>
-                                <th style="min-width:100px !important;border-right: 1px solid black;">Thành tiền</th>
+                                <th class="num" style="min-width:110px !important;border-right: 1px solid black; white-space: nowrap;">Đơn giá</th>
+                                <th class="num" style="min-width:110px !important;border-right: 1px solid black;white-space: nowrap;">Thành tiền</th>
                                 <th style="min-width:80px !important;border-right: 1px solid black;">Ghi chú</th>
                             </tr>
                             <t t-set="stt" t-value="0"/>
@@ -159,10 +177,10 @@
                                                 <span t-field="line.x_chi_phi_nhan_cong" t-field-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;currency_field&quot;: &quot;currency_id&quot;}"/>
                                             </td>
                                         </t>
-                                        <td style="text-align: right !important;">
+                                        <td class="num" style="text-align: right !important;">
                                             <span t-field="line.formatted_price"/>
                                         </td>
-                                        <td style="text-align: right !important;">
+                                        <td class="num" style="text-align: right !important;">
                                             <span t-field="line.price_subtotal"/>
                                         </td>
                                         <td style="border-center: 2px solid black;">

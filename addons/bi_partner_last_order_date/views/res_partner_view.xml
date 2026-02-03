@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_inherit_last_date" model="ir.ui.view">
+        <field name="name">view.partner.form.inherit.last.date</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='sale']" position="inside">
+                <field name="last_sale_order_date" string="Lần gần nhất bán"/>
+                <!-- <field name="last_purchase_order_date"/> -->
+            </xpath>
+            <xpath expr="//group[@name='purchase']" position="inside">
+                <!-- <field name="last_sale_order_date"/> -->
+                <field name="last_purchase_order_date" string="Lần gần nhất mua"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
