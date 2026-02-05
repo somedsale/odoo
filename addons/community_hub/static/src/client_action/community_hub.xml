@@ -3,6 +3,8 @@
 
   <t t-name="community_hub.ClientAction" owl="1">
     <div class="o_community_hub ch-app">
+      <span t-ref="emoji_anchor" class="ch-emoji-anchor"></span>
+
       <div class="ch-layout">
 
         <!-- =========================
@@ -85,22 +87,22 @@
             </t>
 
             <t t-else="">
-              <t t-set="chList" t-value="filteredChannels"/>
+              <t t-foreach="filteredChannels" t-as="ch" t-key="ch.id">
+  <button class="ch-channel-item d-flex align-items-center w-100"
+          t-att-class="{'is-active': ch.id === state.selectedChannelId}"
+          t-att-data-channel-id="ch.id"
+          t-on-click="selectChannel">
 
-              <t t-if="chList.length">
-                <t t-foreach="chList" t-as="ch" t-key="ch.id">
-                  <button type="button" class="btn btn-light w-100 text-start ch-channel-btn" t-att-class="(state.selectedChannelId === ch.id) ? 'btn btn-light w-100 text-start ch-channel-btn is-active' : 'btn btn-light w-100 text-start ch-channel-btn'" t-att-data-channel-id="ch.id" t-on-click="selectChannel">
-                    <span class="ch-channel-name" t-esc="ch.name"/>
-                  </button>
-                </t>
-              </t>
+    <span class="me-auto ch-channel-name"><t t-esc="ch.name"/></span>
 
-              <t t-else="">
-                <div class="ch-empty">
-                  <t t-if="state.channels &amp;&amp; state.channels.length">Không có kênh phù hợp</t>
-                  <t t-else="">Chưa có kênh</t>
-                </div>
-              </t>
+    <t t-set="u" t-value="getChannelUnread(ch.id)"/>
+    <span t-if="u &gt; 0" class="ch-unread-badge badge bg-danger">
+      <t t-esc="formatUnread(u)"/>
+    </span>
+
+  </button>
+</t>
+
             </t>
           </div>
         </div>
@@ -222,29 +224,123 @@
 
                 <input t-if="state.ui.composerMode === 'announcement'" class="ch-input ch-announce-title" t-model="state.ui.announcementTitle" placeholder="Tiêu đề thông báo (tuỳ chọn)"/>
 
-                <div t-ref="post_editor" class="ch-editor ch-editor--post" contenteditable="true" data-placeholder="Viết bài..." t-on-input="onPostEditorInput" t-on-paste="onPostPaste">
-                </div>
+                <div t-ref="post_editor"
+                  class="ch-editor ch-editor--post"
+                  contenteditable="true"
+                  data-placeholder="Viết bài..."
+                  t-on-input="onPostEditorInput"
+                  t-on-paste="onPostPaste"
+                  t-on-keyup="onPostSelChange"
+                  t-on-mouseup="onPostSelChange"
+                  t-on-focus="onPostSelChange">
+              </div>
+
 
                 <div class="ch-compose-actions">
-                  <div class="ch-toolbar">
-                    <button class="ch-icon-btn" title="Bold" data-cmd="bold" t-on-click="onPostCmdClick">
-                      <b>B</b>
-                    </button>
-                    <button class="ch-icon-btn" title="Italic" data-cmd="italic" t-on-click="onPostCmdClick">
-                      <i>I</i>
-                    </button>
-                    <button class="ch-icon-btn" title="Underline" data-cmd="underline" t-on-click="onPostCmdClick">
-                      <u>U</u>
-                    </button>
-                    <button class="ch-icon-btn" title="Bullets" data-cmd="insertUnorderedList" t-on-click="onPostCmdClick">•</button>
-                    <button class="ch-icon-btn" title="Numbered" data-cmd="insertOrderedList" t-on-click="onPostCmdClick">1.</button>
-                    <button class="ch-icon-btn" title="Link" data-cmd="createLink" t-on-click="onPostCmdClick">🔗</button>
+<div class="ch-toolbar ch-toolbar--rich">
 
-                    <button class="ch-icon-btn" title="Emoji" t-on-click="togglePostEmoji">😊</button>
+  <!-- Format block: Bình thường / Heading / Quote / Code -->
+  <select class="ch-dd"
+          title="Định dạng"
+          t-on-mousedown="capturePostRange"
+          t-on-change="onPostBlockChange">
+    <option value="P">Bình thường</option>
+    <option value="H1">Heading 1</option>
+    <option value="H2">Heading 2</option>
+    <option value="H3">Heading 3</option>
+    <option value="BLOCKQUOTE">Quote</option>
+    <option value="PRE">Code</option>
+  </select>
 
-                    <button class="ch-icon-btn" title="Đính kèm file" t-on-click="onPostAttachClick">📎</button>
-                    <input t-ref="post_files" type="file" multiple="multiple" style="display:none" t-on-change="onPostFilesChanged"/>
-                  </div>
+  <span class="ch-sep"></span>
+
+  <!-- B I U S -->
+  <button class="ch-tb" title="Bold" data-cmd="bold"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick"><b>B</b></button>
+  <button class="ch-tb" title="Italic" data-cmd="italic"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick"><i>I</i></button>
+  <button class="ch-tb" title="Underline" data-cmd="underline"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick"><u>U</u></button>
+  <button class="ch-tb" title="Strike" data-cmd="strikeThrough"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick"><s>S</s></button>
+
+  <span class="ch-sep"></span>
+
+  <!-- Text color -->
+  <button class="ch-tb ch-tb--color" title="Màu chữ"
+          t-on-mousedown="capturePostRange">
+    <span class="ch-color-swatch" t-att-style="'background:' + (state.ui.postTextColor || '#111111')"></span>
+    <span class="ch-tb-label">A</span>
+    <input type="color" class="ch-color-input"
+           t-att-value="state.ui.postTextColor || '#111111'"
+           t-on-input="onPostColorChange"/>
+  </button>
+
+  <!-- Highlight -->
+  <button class="ch-tb ch-tb--color" title="Tô nền"
+          t-on-mousedown="capturePostRange">
+    <span class="ch-color-swatch" t-att-style="'background:' + (state.ui.postBgColor || '#fff3a0')"></span>
+    <span class="ch-tb-label">🖌</span>
+    <input type="color" class="ch-color-input"
+           t-att-value="state.ui.postBgColor || '#fff3a0'"
+           t-on-input="onPostHighlightChange"/>
+  </button>
+
+  <!-- Font size -->
+  <select class="ch-dd ch-dd--sm"
+          title="Cỡ chữ"
+          t-on-mousedown="capturePostRange"
+          t-on-change="onPostSizeChange">
+    <option value="12">12</option>
+    <option value="14" selected="selected">14</option>
+    <option value="16">16</option>
+    <option value="18">18</option>
+    <option value="20">20</option>
+    <option value="24">24</option>
+    <option value="28">28</option>
+    <option value="32">32</option>
+  </select>
+
+  <span class="ch-sep"></span>
+
+  <!-- Lists -->
+  <button class="ch-tb" title="Bullets" data-cmd="insertUnorderedList"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick">•</button>
+  <button class="ch-tb" title="Numbered" data-cmd="insertOrderedList"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick">1.</button>
+
+  <!-- Checklist (custom) -->
+  <button class="ch-tb" title="Checklist"
+          t-on-mousedown="capturePostRange" t-on-click="insertPostChecklist">☑</button>
+
+  <span class="ch-sep"></span>
+
+  <!-- Align -->
+  <button class="ch-tb" title="Align left" data-cmd="justifyLeft"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick">≡</button>
+  <button class="ch-tb" title="Align center" data-cmd="justifyCenter"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick">≣</button>
+  <button class="ch-tb" title="Align right" data-cmd="justifyRight"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick">≡</button>
+
+  <span class="ch-sep"></span>
+
+  <!-- Link / Clear -->
+  <button class="ch-tb" title="Link" data-cmd="createLink"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick">🔗</button>
+  <button class="ch-tb" title="Unlink" data-cmd="unlink"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick">⛓</button>
+  <button class="ch-tb" title="Clear format" data-cmd="removeFormat"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick">Tx</button>
+
+  <span class="ch-sep"></span>
+
+  <!-- Attach -->
+  <button class="ch-tb" title="Đính kèm file" t-on-mousedown="capturePostRange" t-on-click="onPostAttachClick">📎</button>
+  <input t-ref="post_files" type="file" multiple="multiple" style="display:none" t-on-change="onPostFilesChanged"/>
+
+</div>
+
 
                   <div class="ch-compose-right">
                     <span class="ch-hint" t-if="state.ui.postUploading">Đang upload...</span>
@@ -270,7 +366,8 @@
                       <t t-foreach="pAtts" t-as="a" t-key="a.id">
                         <t t-if="a.kind === 'image'">
                           <div class="ch-att-thumbwrap">
-                            <div class="ch-att-thumb" t-att-data-url="a.open_url" t-on-click="onOpenAttachmentClick">
+                            <div class="ch-att-thumb" t-on-click.stop="() => this.openPreview(a)">
+
                               <img t-att-src="a.thumb_url" alt=""/>
                             </div>
                             <button type="button" class="ch-att-thumb-x" title="Remove" t-att-data-attach-id="a.id" t-on-click.stop="onRemovePostAttachment">×</button>
@@ -339,10 +436,29 @@
 
                       <div class="ch-post-actions">
                         <!-- Reactions -->
-                        <button class="ch-react-btn" t-att-data-post-id="p.id" data-emoji="👍" t-on-click="onReactClick">👍</button>
-                        <button class="ch-react-btn" t-att-data-post-id="p.id" data-emoji="❤️" t-on-click="onReactClick">❤️</button>
-                        <button class="ch-react-btn" t-att-data-post-id="p.id" data-emoji="😂" t-on-click="onReactClick">😂</button>
-                        <button class="ch-react-btn" t-att-data-post-id="p.id" data-emoji="😮" t-on-click="onReactClick">😮</button>
+                        <!-- Reactions (count + tooltip names) -->
+                        <t t-set="rThumb" t-value="(p.reactions || []).find(r => r.emoji === '👍')"/>
+                        <t t-set="rHeart" t-value="(p.reactions || []).find(r => r.emoji === '❤️')"/>
+                        <t t-set="rLaugh" t-value="(p.reactions || []).find(r => r.emoji === '😂')"/>
+                        <t t-set="rWow" t-value="(p.reactions || []).find(r => r.emoji === '😮')"/>
+
+                        <button t-att-data-post-id="p.id" data-emoji="👍" t-att-class="(rThumb &amp;&amp; rThumb.me) ? 'ch-react-btn is-me' : 'ch-react-btn'" t-att-title="(rThumb &amp;&amp; rThumb.users) ? (rThumb.users.map(u => u.name).join(', ') + (rThumb.more ? (' +' + rThumb.more) : '')) : ''" t-on-click.stop="onReactClick">
+  👍                          <span t-if="rThumb &amp;&amp; rThumb.count" t-esc="rThumb.count"/>
+                        </button>
+
+                        <button t-att-data-post-id="p.id" data-emoji="❤️" t-att-class="(rHeart &amp;&amp; rHeart.me) ? 'ch-react-btn is-me' : 'ch-react-btn'" t-att-title="(rHeart &amp;&amp; rHeart.users) ? (rHeart.users.map(u => u.name).join(', ') + (rHeart.more ? (' +' + rHeart.more) : '')) : ''" t-on-click.stop="onReactClick">
+  ❤️                          <span t-if="rHeart &amp;&amp; rHeart.count" t-esc="rHeart.count"/>
+                        </button>
+
+                        <button t-att-data-post-id="p.id" data-emoji="😂" t-att-class="(rLaugh &amp;&amp; rLaugh.me) ? 'ch-react-btn is-me' : 'ch-react-btn'" t-att-title="(rLaugh &amp;&amp; rLaugh.users) ? (rLaugh.users.map(u => u.name).join(', ') + (rLaugh.more ? (' +' + rLaugh.more) : '')) : ''" t-on-click.stop="onReactClick">
+  😂                          <span t-if="rLaugh &amp;&amp; rLaugh.count" t-esc="rLaugh.count"/>
+                        </button>
+
+                        <button t-att-data-post-id="p.id" data-emoji="😮" t-att-class="(rWow &amp;&amp; rWow.me) ? 'ch-react-btn is-me' : 'ch-react-btn'" t-att-title="(rWow &amp;&amp; rWow.users) ? (rWow.users.map(u => u.name).join(', ') + (rWow.more ? (' +' + rWow.more) : '')) : ''" t-on-click.stop="onReactClick">
+  😮                          <span t-if="rWow &amp;&amp; rWow.count" t-esc="rWow.count"/>
+                        </button>
+
+
 
                         <!-- Edit/Delete -->
                         <t t-if="_canEditPost(p)">
@@ -365,7 +481,8 @@
                         <div class="ch-att-images" t-if="att.some(a => a.kind === 'image')">
                           <t t-foreach="att" t-as="a" t-key="a.id">
                             <t t-if="a.kind === 'image'">
-                              <div class="ch-att-thumb" t-att-data-url="a.open_url" t-on-click="onOpenAttachmentClick">
+                              <div class="ch-att-thumb" t-on-click.stop="() => this.openPreview(a)">
+
                                 <img t-att-src="a.thumb_url" alt=""/>
                               </div>
                             </t>
@@ -375,7 +492,8 @@
                         <div class="ch-att-files" t-if="att.some(a => a.kind !== 'image')">
                           <t t-foreach="att" t-as="a" t-key="a.id">
                             <t t-if="a.kind !== 'image'">
-                              <div class="ch-att-file ch-att-file--click" t-att-data-url="a.open_url" t-on-click="onOpenAttachmentClick">
+                              <div class="ch-att-file ch-att-file--click" t-on-click.stop="() => this.openPreview(a)">
+
 
                                 <div class="ch-att-ico">
                                   <t t-esc="a.iconText"/>
@@ -402,9 +520,11 @@
 
                     <div class="ch-post-footer">
                       <button class="ch-link" t-att-data-post-id="p.id" t-on-click="onToggleCommentsClick">
-                        <span class="fa fa-comment-o me-1"/>
- View conversation
-                      </button>
+  <span class="fa fa-comment-o me-1"/>
+  <t t-set="cc" t-value="commentCount(p)"/>
+  View conversation<t t-if="cc &gt; 0">(<t t-esc="cc"/>)</t>
+</button>
+
                     </div>
 
                     <!-- COMMENTS THREAD -->
@@ -449,7 +569,8 @@
                                     <div class="ch-att-images" t-if="c.attachments.some(a => a.kind === 'image')">
                                       <t t-foreach="c.attachments" t-as="a" t-key="a.id">
                                         <t t-if="a.kind === 'image'">
-                                          <div class="ch-att-thumb" t-att-data-url="a.open_url" t-on-click="onOpenAttachmentClick">
+                                          <div class="ch-att-thumb" t-on-click.stop="() => this.openPreview(a)">
+
                                             <img t-att-src="a.thumb_url" alt=""/>
                                           </div>
                                         </t>
@@ -459,7 +580,8 @@
                                     <div class="ch-att-files" t-if="c.attachments.some(a => a.kind !== 'image')">
                                       <t t-foreach="c.attachments" t-as="a" t-key="a.id">
                                         <t t-if="a.kind !== 'image'">
-                                          <div class="ch-att-file ch-att-file--click" t-att-data-url="a.open_url" t-on-click="onOpenAttachmentClick">
+                                          <div class="ch-att-file ch-att-file--click" t-on-click.stop="() => this.openPreview(a)">
+
                                             <div class="ch-att-ico">
                                               <t t-esc="a.iconText"/>
                                             </div>
@@ -497,7 +619,8 @@
                                   <t t-foreach="cAtts" t-as="a" t-key="a.id">
                                     <t t-if="a.kind === 'image'">
                                       <div class="ch-att-thumbwrap">
-                                        <div class="ch-att-thumb" t-att-data-url="a.open_url" t-on-click="onOpenAttachmentClick">
+                                        <div class="ch-att-thumb" t-on-click.stop="() => this.openPreview(a)">
+
                                           <img t-att-src="a.thumb_url" alt=""/>
                                         </div>
                                         <button type="button" class="ch-att-thumb-x" title="Remove" t-att-data-post-id="p.id" t-att-data-attach-id="a.id" t-on-click.stop="onRemoveCommentAttachment">×</button>
@@ -533,25 +656,110 @@
                             </t>
 
                             <div class="ch-reply-actions">
-                              <div class="ch-toolbar">
-                                <button class="ch-icon-btn" title="Bold" data-cmd="bold" t-att-data-post-id="p.id" t-on-click="onCommentCmdClick">
-                                  <b>B</b>
-                                </button>
-                                <button class="ch-icon-btn" title="Italic" data-cmd="italic" t-att-data-post-id="p.id" t-on-click="onCommentCmdClick">
-                                  <i>I</i>
-                                </button>
-                                <button class="ch-icon-btn" title="Underline" data-cmd="underline" t-att-data-post-id="p.id" t-on-click="onCommentCmdClick">
-                                  <u>U</u>
-                                </button>
-                                <button class="ch-icon-btn" title="Bullets" data-cmd="insertUnorderedList" t-att-data-post-id="p.id" t-on-click="onCommentCmdClick">•</button>
-                                <button class="ch-icon-btn" title="Numbered" data-cmd="insertOrderedList" t-att-data-post-id="p.id" t-on-click="onCommentCmdClick">1.</button>
-                                <button class="ch-icon-btn" title="Link" data-cmd="createLink" t-att-data-post-id="p.id" t-on-click="onCommentCmdClick">🔗</button>
+                              <div class="ch-toolbar ch-toolbar--rich">
 
-                                <button class="ch-icon-btn" title="Emoji" t-att-data-post-id="p.id" t-on-click="toggleCommentEmoji">😊</button>
+  <!-- Format block: Bình thường / Heading / Quote / Code -->
+  <select class="ch-dd"
+          title="Định dạng"
+          t-on-mousedown="capturePostRange"
+          t-on-change="onPostBlockChange">
+    <option value="P">Bình thường</option>
+    <option value="H1">Heading 1</option>
+    <option value="H2">Heading 2</option>
+    <option value="H3">Heading 3</option>
+    <option value="BLOCKQUOTE">Quote</option>
+    <option value="PRE">Code</option>
+  </select>
 
-                                <button class="ch-icon-btn" title="Đính kèm" t-att-data-post-id="p.id" t-on-click="onCommentAttachClick">📎</button>
-                                <span class="ch-hint" t-if="state.ui.commentUploading">Đang upload...</span>
-                              </div>
+  <span class="ch-sep"></span>
+
+  <!-- B I U S -->
+  <button class="ch-tb" title="Bold" data-cmd="bold"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick"><b>B</b></button>
+  <button class="ch-tb" title="Italic" data-cmd="italic"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick"><i>I</i></button>
+  <button class="ch-tb" title="Underline" data-cmd="underline"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick"><u>U</u></button>
+  <button class="ch-tb" title="Strike" data-cmd="strikeThrough"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick"><s>S</s></button>
+
+  <span class="ch-sep"></span>
+
+  <!-- Text color -->
+  <button class="ch-tb ch-tb--color" title="Màu chữ"
+          t-on-mousedown="capturePostRange">
+    <span class="ch-color-swatch" t-att-style="'background:' + (state.ui.postTextColor || '#111111')"></span>
+    <span class="ch-tb-label">A</span>
+    <input type="color" class="ch-color-input"
+           t-att-value="state.ui.postTextColor || '#111111'"
+           t-on-input="onPostColorChange"/>
+  </button>
+
+  <!-- Highlight -->
+  <button class="ch-tb ch-tb--color" title="Tô nền"
+          t-on-mousedown="capturePostRange">
+    <span class="ch-color-swatch" t-att-style="'background:' + (state.ui.postBgColor || '#fff3a0')"></span>
+    <span class="ch-tb-label">🖌</span>
+    <input type="color" class="ch-color-input"
+           t-att-value="state.ui.postBgColor || '#fff3a0'"
+           t-on-input="onPostHighlightChange"/>
+  </button>
+
+  <!-- Font size -->
+  <select class="ch-dd ch-dd--sm"
+          title="Cỡ chữ"
+          t-on-mousedown="capturePostRange"
+          t-on-change="onPostSizeChange">
+    <option value="12">12</option>
+    <option value="14" selected="selected">14</option>
+    <option value="16">16</option>
+    <option value="18">18</option>
+    <option value="20">20</option>
+    <option value="24">24</option>
+    <option value="28">28</option>
+    <option value="32">32</option>
+  </select>
+
+  <span class="ch-sep"></span>
+
+  <!-- Lists -->
+  <button class="ch-tb" title="Bullets" data-cmd="insertUnorderedList"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick">•</button>
+  <button class="ch-tb" title="Numbered" data-cmd="insertOrderedList"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick">1.</button>
+
+  <!-- Checklist (custom) -->
+  <button class="ch-tb" title="Checklist"
+          t-on-mousedown="capturePostRange" t-on-click="insertPostChecklist">☑</button>
+
+  <span class="ch-sep"></span>
+
+  <!-- Align -->
+  <button class="ch-tb" title="Align left" data-cmd="justifyLeft"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick">≡</button>
+  <button class="ch-tb" title="Align center" data-cmd="justifyCenter"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick">≣</button>
+  <button class="ch-tb" title="Align right" data-cmd="justifyRight"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick">≡</button>
+
+  <span class="ch-sep"></span>
+
+  <!-- Link / Clear -->
+  <button class="ch-tb" title="Link" data-cmd="createLink"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick">🔗</button>
+  <button class="ch-tb" title="Unlink" data-cmd="unlink"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick">⛓</button>
+  <button class="ch-tb" title="Clear format" data-cmd="removeFormat"
+          t-on-mousedown="capturePostRange" t-on-click="onPostCmdClick">Tx</button>
+
+  <span class="ch-sep"></span>
+
+  <!-- Attach -->
+  <button class="ch-tb" title="Đính kèm file" t-on-mousedown="capturePostRange" t-on-click="onPostAttachClick">📎</button>
+  <input t-ref="post_files" type="file" multiple="multiple" style="display:none" t-on-change="onPostFilesChanged"/>
+
+</div>
+
 
                               <button class="btn btn-sm btn-primary" t-att-data-post-id="p.id" t-on-click="onSubmitCommentClick">Gửi</button>
                             </div>
@@ -641,10 +849,11 @@
                       <div class="ch-time-title" t-out="g.title"/>
                       <div class="ch-file-list">
                         <t t-foreach="g.items" t-as="f" t-key="f.key || f.id">
-                          <a class="ch-file-row" t-att-href="f.url" target="_blank" rel="noreferrer">
+                          <button type="button" class="ch-file-row" t-on-click="() => this.openPreview(f)">
                             <div class="ch-file-name" t-out="f.name"/>
                             <div class="ch-file-meta" t-out="f.from"/>
-                          </a>
+                          </button>
+
                         </t>
                       </div>
                     </div>
@@ -677,9 +886,10 @@
                       <div class="ch-time-title" t-out="g.title"/>
                       <div class="ch-photo-grid ch-photo-grid--timeline">
                         <t t-foreach="g.items" t-as="ph" t-key="ph.key || ph.id">
-                          <a class="ch-photo" t-att-href="ph.url" target="_blank" rel="noreferrer">
-                            <img t-att-src="ph.url" alt=""/>
-                          </a>
+                          <button type="button" class="ch-photo ch-photo--btn" t-on-click.stop="() => this.openPreview(ph.att || ph)">
+                            <img t-att-src="ph.thumb_url || ph.url" alt=""/>
+                          </button>
+
                         </t>
                       </div>
                     </div>
@@ -886,6 +1096,55 @@
               </t>
 
             </div>
+          </div>
+        </t>
+        <!-- =========================
+     PREVIEW MODAL ========================== -->
+        <t t-if="state.preview.open">
+          <div class="ch-modal-backdrop" t-on-click="closePreview"/>
+          <div class="ch-modal ch-modal--preview" t-on-click.stop="">
+            <div class="ch-modal-title d-flex align-items-center justify-content-between">
+              <div class="me-2" t-esc="(state.preview.att &amp;&amp; state.preview.att.name) || 'Preview'"/>
+              <div class="">
+                <a class="btn btn-primary" t-att-href="_downloadUrl(state.preview.att)" target="_blank">Download</a>
+              </div>
+              <button class="ch-icon-btn" title="Close" t-on-click="closePreview">✕</button>
+            </div>
+            <div class="ch-preview-body">
+              <t t-if="_isImage(state.preview.att)">
+                <img class="ch-preview-img" t-att-src="_contentUrl(state.preview.att, false)" alt=""/>
+              </t>
+
+              <t t-elif="_isPdf(state.preview.att)">
+                <iframe class="ch-preview-frame" t-att-src="_contentUrl(state.preview.att, false)" frameborder="0"/>
+              </t>
+
+              <t t-elif="_isVideo(state.preview.att)">
+                <video class="ch-preview-media" controls="controls" t-att-src="_contentUrl(state.preview.att, false)"></video>
+              </t>
+
+              <t t-elif="_isAudio(state.preview.att)">
+                <audio class="ch-preview-media" controls="controls" t-att-src="_contentUrl(state.preview.att, false)"></audio>
+              </t>
+
+              <t t-elif="_isText(state.preview.att)">
+                <t t-if="state.preview.loadingText">
+                  <div class="ch-hint">Đang tải nội dung...</div>
+                </t>
+                <t t-elif="state.preview.error">
+                  <div class="text-danger" t-esc="state.preview.error"/>
+                </t>
+                <t t-else="">
+                  <pre class="ch-preview-pre" t-esc="state.preview.text || ''"/>
+                </t>
+              </t>
+
+              <t t-else="">
+                <div class="ch-empty">Định dạng này chưa hỗ trợ preview. Bạn có thể Open/Download.</div>
+              </t>
+            </div>
+
+
           </div>
         </t>
 

@@ -37,6 +37,7 @@ Manage future & potential projects:
         "web.assets_backend": [
             "future_project_management/static/src/report_dashboard/dashboard.scss",
             "future_project_management/static/src/report_dashboard/dashboard.xml",
+            "future_project_management/static/src/services/future_project_dashboard_repository.js",
             "future_project_management/static/src/report_dashboard/dashboard.js",
         ],
     },
