@@ -123,6 +123,8 @@ deletePost: (payload) => call("/community_hub/api/post/delete", payload),
 // comment
 updateComment: (payload) => call("/community_hub/api/comment/update", payload),
 deleteComment: (payload) => call("/community_hub/api/comment/delete", payload),
+unread: (payload) => call("/community_hub/api/unread", payload),
+markChannelRead: (payload) => call("/community_hub/api/channel/mark_read", payload),
 
     // feed / comments
     feed: (channelId, params = {}) =>
