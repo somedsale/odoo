@@ -55,8 +55,13 @@
 
                             <!-- VALUE -->
                             <div class="fw-bold my-2">
-                                <i class="fa fa-money me-1"/>
+                                <span>Giá trị dự kiến <i class="fa fa-money me-1"/>:</span>
+                                
                                 <field name="expected_value"/>
+                            </div>
+                            <div class="fw-bold my-2">
+                                <span>Tổng vốn đầu tư <i class="fa fa-money me-1"/>:</span>
+                                <field name="total_investment_capital"/>
                             </div>
 
                         </div>

@@ -6,7 +6,10 @@ from markupsafe import Markup, escape
 import json
 import base64
 import logging
+from urllib.parse import urlencode
+from odoo.tools import html2plaintext
 
+from werkzeug.utils import redirect
 _logger = logging.getLogger(__name__)
 
 # =========================================================
@@ -151,6 +154,89 @@ def _is_creator_uid(record_create_uid: int):
     uid = request.env.user.id
     return bool(record_create_uid) and int(record_create_uid) == int(uid)
 
+def _unread_counts_for_user(user_id: int, community_ids=None):
+    """
+    Return:
+      {
+        "community": {community_id: unread_count},
+        "channel":   {channel_id: unread_count},
+      }
+
+    ✅ IMPORTANT:
+    - channel map phải trả FULL (kể cả 0) để FE merge có thể reset badge.
+    """
+    user_id = int(user_id)
+    Member = request.env["community.hub.member"].sudo()
+    Channel = request.env["community.hub.channel"].sudo()
+
+    dom_mem = [("user_id", "=", user_id), ("state", "=", "joined")]
+    if community_ids:
+        dom_mem.append(("community_id", "in", [int(x) for x in community_ids]))
+
+    joined_cids = Member.search(dom_mem).mapped("community_id").ids
+    if not joined_cids:
+        return {"community": {}, "channel": {}}
+
+    channels = Channel.search([("community_id", "in", joined_cids)])
+    if not channels:
+        return {"community": {cid: 0 for cid in joined_cids}, "channel": {}}
+
+    ch_ids = channels.ids
+
+    cr = request.env.cr
+    cr.execute("""
+        SELECT p.channel_id, COUNT(*)::int AS cnt
+        FROM community_hub_post p
+        LEFT JOIN community_hub_channel_read r
+          ON r.channel_id = p.channel_id AND r.user_id = %s
+        WHERE p.channel_id IN %s
+          AND (r.last_read_post_id IS NULL OR p.id > r.last_read_post_id)
+        GROUP BY p.channel_id
+    """, (user_id, tuple(ch_ids)))
+
+    rows = cr.fetchall()  # [(channel_id, cnt), ...]
+    only_nonzero = {int(chid): int(cnt) for (chid, cnt) in rows}
+
+    # ✅ FULL channel map (missing => 0)
+    full_ch_cnt = {int(ch.id): int(only_nonzero.get(ch.id, 0)) for ch in channels}
+
+    # ✅ cộng theo community từ full map
+    ch_to_c = {int(ch.id): int(ch.community_id.id) for ch in channels}
+    c_cnt = {int(cid): 0 for cid in joined_cids}
+    for chid, cnt in full_ch_cnt.items():
+        cid = ch_to_c.get(chid)
+        if cid:
+            c_cnt[cid] = c_cnt.get(cid, 0) + int(cnt)
+
+    return {"community": c_cnt, "channel": full_ch_cnt}
+def _set_channel_read(user_id: int, channel_id: int, last_post_id: int):
+    Read = request.env["community.hub.channel.read"].sudo()
+    ch = request.env["community.hub.channel"].sudo().browse(int(channel_id)).exists()
+    if not ch:
+        return False
+
+    uid = int(user_id)
+    last_post_id = int(last_post_id or 0)
+
+    r = Read.search([("channel_id", "=", ch.id), ("user_id", "=", uid)], limit=1)
+
+    vals = {
+        "community_id": ch.community_id.id,
+        "channel_id": ch.id,
+        "user_id": uid,
+        "last_read_post_id": last_post_id or False,
+        "last_read_at": fields.Datetime.now(),
+    }
+
+    if r:
+        # chỉ tăng, không giảm
+        if r.last_read_post_id and last_post_id and r.last_read_post_id.id > last_post_id:
+            vals["last_read_post_id"] = r.last_read_post_id.id
+        r.write(vals)
+    else:
+        Read.create(vals)
+
+    return True
 
 # =========================================================
 # ATTACHMENTS
@@ -248,7 +334,7 @@ def _cleanup_attachments_any(res_model: str, res_ids):
 # =========================================================
 # DISCUSS INBOX NOTIFY (optional)
 # =========================================================
-def _hub_dashboard_url(community_id=None, channel_id=None, post_id=None):
+def _hub_dashboard_url(community_id=None, channel_id=None, post_id=None, tab="posts"):
     action = request.env.ref("community_hub.action_community_hub_client", raise_if_not_found=False)
     menu = request.env.ref("community_hub.menu_community_hub_root", raise_if_not_found=False)
 
@@ -264,6 +350,8 @@ def _hub_dashboard_url(community_id=None, channel_id=None, post_id=None):
         parts.append(f"channel_id={int(channel_id)}")
     if post_id:
         parts.append(f"post_id={int(post_id)}")
+    if tab:
+        parts.append(f"tab={tab}")
 
     return "/web#" + "&".join(parts) if parts else "/web"
 
@@ -273,31 +361,130 @@ def _notify_discuss_inbox_users(user_ids, *, subject, body_html, community_id=No
     if not user_ids:
         return
 
-    Users = request.env["res.users"].sudo().browse(list(set(user_ids)))
+    env = request.env
+    Users = env["res.users"].sudo().browse(list(set(user_ids)))
     partner_ids = Users.mapped("partner_id").ids
     if not partner_ids:
         return
 
-    url = _hub_dashboard_url(community_id=community_id, channel_id=channel_id, post_id=post_id)
-    body = (body_html or "").strip()
-    if url:
-        body = Markup("""
-        <p style="margin:0 0 8px 0"><a href="{url}" style="text-decoration:none;">➡️ Mở Community Hub</a></p>
-        """).format(url=escape(url or "/web")) + Markup(body)
+    author_pid = env.user.partner_id.id
 
-    author_pid = request.env.user.partner_id.id
+    # ===== chọn target record để message_post =====
+    target = None
+    if post_id:
+        target = env["community.hub.post"].sudo().browse(int(post_id)).exists() or None
+    if not target and channel_id:
+        target = env["community.hub.channel"].sudo().browse(int(channel_id)).exists() or None
+    if not target and community_id:
+        target = env["community.hub"].sudo().browse(int(community_id)).exists() or None
+    # --- resolve ids nếu thiếu (post -> channel -> community) ---
+    if post_id:
+        p = env["community.hub.post"].sudo().browse(int(post_id)).exists()
+        if p:
+            # tùy field thực tế của bạn: channel_id / community_id
+            if not channel_id and hasattr(p, "channel_id"):
+                channel_id = p.channel_id.id
+            if not community_id and hasattr(p, "community_id"):
+                community_id = p.community_id.id
+            # nếu post chỉ có channel_id thì suy ra community_id từ channel
+            if channel_id and (not community_id) and hasattr(p, "channel_id") and hasattr(p.channel_id, "community_id"):
+                community_id = p.channel_id.community_id.id
 
-    request.env["mail.thread"].sudo().message_notify(
+    if channel_id and not community_id:
+        ch = env["community.hub.channel"].sudo().browse(int(channel_id)).exists()
+        if ch and hasattr(ch, "community_id"):
+            community_id = ch.community_id.id
+
+
+    # body gốc
+    body_main = (body_html or "").strip()
+
+    # placeholder link (sẽ thay sau khi có msg.id)
+    PLACEHOLDER = "__CH_OPEN_LINK__"
+    body_with_placeholder = (
+        Markup("""
+            <p style="margin:0 0 8px 0">
+              <a href="{url}" style="text-decoration:none;">➡️ Mở Community Hub</a>
+            </p>
+        """).format(url=PLACEHOLDER)
+        + Markup(body_main)
+    )
+
+    if target and hasattr(target, "message_post"):
+        try:
+            # 1) post message để tạo mail.message + mail.notification
+            msg = target.message_post(
+                subject=subject or False,
+                body=str(body_with_placeholder),
+                author_id=author_pid,
+                partner_ids=partner_ids,
+                message_type="notification",
+                subtype_xmlid="mail.mt_comment",
+                email_layout_xmlid="mail.mail_notification_layout",
+            )
+
+            # 2) tạo open-link đi qua controller -> mark read -> redirect /web#...
+            open_link = (
+                "/community_hub/open"
+                f"?message_id={msg.id}"
+                f"&community_id={int(community_id or 0)}"
+                f"&channel_id={int(channel_id or 0)}"
+                f"&post_id={int(post_id or 0)}"
+                f"&tab=posts"
+            )
+
+            # 3) update body để thay placeholder bằng link thật
+            new_body = str(body_with_placeholder).replace(PLACEHOLDER, str(escape(open_link)))
+            # msg.sudo().write({"body": new_body})
+            msg.sudo().write({
+                "body": new_body,
+                "community_hub_open_url": open_link,  # <-- quan trọng
+                "community_hub_skip_desktop": True,      # ✅ chặn desktop kiểu cũ
+            })
+            _send_browser_notify_via_bus(
+                user_ids,
+                title=subject,
+                body_html=body_main,     # hoặc body_with_placeholder
+                open_url=open_link,
+            )
+            return
+
+        except Exception:
+            _logger.exception("message_post failed, fallback to message_notify")
+
+    # fallback
+    env["mail.thread"].sudo().message_notify(
         partner_ids=partner_ids,
         subject=subject or False,
-        body=body or "",
+        body=str(body_with_placeholder).replace(PLACEHOLDER, "/web"),
         author_id=author_pid,
         model=False,
         res_id=False,
         email_layout_xmlid="mail.mail_notification_layout",
         mail_auto_delete=False,
     )
+def _send_browser_notify_via_bus(user_ids, *, title, body_html, open_url):
+    """Send a custom bus notification so frontend can create a Desktop Notification with correct onclick."""
+    env = request.env
+    Bus = env["bus.bus"].sudo()
 
+    base_url = env["ir.config_parameter"].sudo().get_param("web.base.url", "")
+    # dùng absolute URL cho chắc (Windows notification click mở đúng)
+    full_url = (base_url.rstrip("/") + "/" + open_url.lstrip("/")) if base_url else open_url
+
+    text = (html2plaintext(body_html or "") or "").strip()
+    text = text[:180]  # ngắn thôi cho notification
+
+    Users = env["res.users"].sudo().browse(list(set(int(u) for u in (user_ids or []) if u)))
+    for u in Users:
+        channel = f"community_hub_notify:{u.id}"
+        payload = {
+            "type": "community_hub_notify",
+            "title": title or "Community Hub",
+            "body": text or "Bạn có thông báo mới",
+            "url": full_url,
+        }
+        Bus._sendone(channel, "notification", payload)
 
 def _notify_members(
     community_id: int,
@@ -358,8 +545,9 @@ def _channel_to_dict(ch):
     return {"id": ch.id, "name": ch.name, "community_id": ch.community_id.id, "sequence": ch.sequence}
 
 
-def _reaction_summary(post_id=None, comment_id=None):
+def _reaction_summary(post_id=None, comment_id=None, limit_users=20):
     Reaction = request.env["community.hub.reaction"].sudo()
+
     dom = []
     if post_id:
         dom += [("post_id", "=", int(post_id))]
@@ -370,20 +558,35 @@ def _reaction_summary(post_id=None, comment_id=None):
     else:
         dom += [("comment_id", "=", False)]
 
-    recs = Reaction.search(dom)
+    recs = Reaction.search(dom, order="id asc")
     me_uid = request.env.user.id
+
     summary = {}
     for r in recs:
-        e = r.emoji or ""
+        e = (r.emoji or "").strip()
         if not e:
             continue
-        if e not in summary:
-            summary[e] = {"count": 0, "me": False}
-        summary[e]["count"] += 1
-        if r.user_id.id == me_uid:
-            summary[e]["me"] = True
-    return [{"emoji": emoji, "count": d["count"], "me": d["me"]} for emoji, d in summary.items()]
 
+        d = summary.setdefault(e, {"count": 0, "me": False, "users": [], "more": 0})
+        d["count"] += 1
+
+        if r.user_id.id == me_uid:
+            d["me"] = True
+
+        # collect names (limit to avoid payload too big)
+        if len(d["users"]) < int(limit_users or 20):
+            d["users"].append({"id": r.user_id.id, "name": r.user_id.name})
+        else:
+            d["more"] += 1
+
+    # return stable list
+    return [{
+        "emoji": emoji,
+        "count": d["count"],
+        "me": d["me"],
+        "users": d["users"],   # [{id,name},...]
+        "more": d["more"],     # number of extra users not included
+    } for emoji, d in summary.items()]
 
 def _post_to_dict(p):
     if "attachment_ids" in p._fields:
@@ -456,12 +659,13 @@ class CommunityHubController(http.Controller):
 
         def _my_member_for(c):
             return my_members.filtered(lambda m: m.community_id.id == c.id)[:1]
-
+        unread = _unread_counts_for_user(user.id)
         return {
             "user": {"id": user.id, "name": user.name, "login": user.login},
             "communities": [_community_to_dict(c, _my_member_for(c)) for c in communities],
             "selected": _community_to_dict(selected, _my_member_for(selected)) if selected else None,
             "channels": [_channel_to_dict(ch) for ch in channels],
+            "unread":unread,
         }
 
     # ---------------- COMMUNITY CRUD ----------------
@@ -712,6 +916,7 @@ class CommunityHubController(http.Controller):
             post.sudo().write({"attachment_ids": [(6, 0, moved_ids)]})
 
         # ❌ BỎ realtime feed notify community
+        _set_channel_read(request.env.user.id, ch.id, post.id)
 
         # Inbox notify (tuỳ bạn giữ)
         actor = request.env.user
@@ -945,10 +1150,20 @@ class CommunityHubController(http.Controller):
     def toggle_reaction(self, communityId=None, emoji=None, postId=None, commentId=None, **kw):
         if isinstance(communityId, dict):
             data = communityId
-            communityId = data.get("communityId") or data.get("community_id")
+            communityId = data.get("communityId") or data.get("community_id") or communityId
             emoji = data.get("emoji") or emoji
-            postId = data.get("postId") or postId
-            commentId = data.get("commentId") or commentId
+            postId = data.get("postId") or data.get("post_id") or postId
+            commentId = data.get("commentId") or data.get("comment_id") or commentId
+        else:
+            # fallback nếu FE gửi qua kw
+            if not communityId:
+                communityId = kw.get("communityId") or kw.get("community_id")
+            if not postId:
+                postId = kw.get("postId") or kw.get("post_id")
+            if not commentId:
+                commentId = kw.get("commentId") or kw.get("comment_id")
+            if not emoji:
+                emoji = kw.get("emoji")
 
         communityId = int(communityId or 0)
         if not communityId:
@@ -964,6 +1179,17 @@ class CommunityHubController(http.Controller):
         commentId = int(commentId) if commentId else False
         if not postId and not commentId:
             raise ValidationError(_("postId or commentId is required."))
+
+        # (khuyến nghị) validate post/comment thuộc đúng community
+        if postId:
+            post = request.env["community.hub.post"].sudo().browse(postId).exists()
+            if not post or post.community_id.id != communityId:
+                raise ValidationError(_("Invalid postId"))
+        if commentId:
+            c = request.env["community.hub.comment"].sudo().browse(commentId).exists()
+            cid = c.community_id.id if (c and "community_id" in c._fields) else (c.post_id.community_id.id if c else 0)
+            if not c or cid != communityId:
+                raise ValidationError(_("Invalid commentId"))
 
         Reaction = request.env["community.hub.reaction"].sudo()
         dom = [
@@ -985,8 +1211,15 @@ class CommunityHubController(http.Controller):
                 "comment_id": commentId or False,
             })
 
-        # ❌ BỎ realtime notify community
-        return {"ok": True}
+        # ✅ trả về summary để FE update ngay
+        # cuối toggle_reaction (sau create/unlink)
+        return {
+            "ok": True,
+            "post_id": postId or False,
+            "comment_id": commentId or False,
+            "reactions": _reaction_summary(post_id=postId) if postId else _reaction_summary(comment_id=commentId),
+        }
+
 
     # ---------------- MEMBERS ----------------
     @http.route("/community_hub/api/community/<int:community_id>/members", type="json", auth="user")
@@ -1341,3 +1574,135 @@ class CommunityHubController(http.Controller):
         files = [x for x in items if x.get("kind") != "image"]
 
         return {"items": items, "photos": photos, "files": files}
+    @http.route("/community_hub/api/unread", type="json", auth="user")
+    def unread(self, communityId=None, communityIds=None, **kw):
+        if isinstance(communityId, dict):
+            data = communityId
+            communityId = data.get("communityId") or data.get("community_id")
+            communityIds = data.get("communityIds") or data.get("community_ids")
+
+        if communityId:
+            cids = [int(communityId)]
+        else:
+            cids = _to_int_list(communityIds)
+
+        data = _unread_counts_for_user(request.env.user.id, community_ids=cids or None)
+        return {"unread": data}
+    @http.route("/community_hub/api/channel/mark_read", type="json", auth="user", methods=["POST"])
+    def mark_channel_read(self, channelId=None, lastPostId=None, **kw):
+        if isinstance(channelId, dict):
+            data = channelId
+            channelId = data.get("channelId") or data.get("channel_id")
+            lastPostId = data.get("lastPostId") or data.get("last_post_id") or lastPostId
+
+        channelId = int(channelId or 0)
+        if not channelId:
+            raise ValidationError(_("channelId is required."))
+
+        ch = request.env["community.hub.channel"].sudo().browse(channelId).exists()
+        if not ch:
+            raise ValidationError(_("Channel not found."))
+
+        _ensure_joined(ch.community_id.id)
+
+        # nếu client không gửi lastPostId thì lấy post mới nhất
+        Post = request.env["community.hub.post"].sudo()
+        if not lastPostId:
+            latest = Post.search([("channel_id", "=", channelId)], order="id desc", limit=1)
+            lastPostId = latest.id if latest else False
+        else:
+            lastPostId = int(lastPostId)
+
+        Read = request.env["community.hub.channel.read"].sudo()
+        uid = request.env.user.id
+        r = Read.search([("channel_id", "=", channelId), ("user_id", "=", uid)], limit=1)
+
+        vals = {
+            "community_id": ch.community_id.id,
+            "channel_id": channelId,
+            "user_id": uid,
+            "last_read_post_id": lastPostId or False,
+            "last_read_at": fields.Datetime.now(),
+        }
+        if r:
+            # chỉ tăng, không giảm
+            if r.last_read_post_id and lastPostId and r.last_read_post_id.id > lastPostId:
+                vals["last_read_post_id"] = r.last_read_post_id.id
+            r.write(vals)
+        else:
+            Read.create(vals)
+
+        # trả lại unread mới cho community hiện tại (để update badge ngay)
+        unread = _unread_counts_for_user(uid, community_ids=[ch.community_id.id])
+        return {"ok": True, "unread": unread}
+    @http.route("/community_hub/open", type="http", auth="user", website=False)
+    def community_hub_open(self, message_id=None, community_id=0, channel_id=0, post_id=0, tab="posts", **kw):
+        # mark as read (tuỳ bạn)
+        if message_id:
+            mid = int(message_id)
+            pid = request.env.user.partner_id.id
+            notif = request.env["mail.notification"].sudo().search([
+                ("mail_message_id", "=", mid),
+                ("res_partner_id", "=", pid),
+            ])
+            if notif:
+                notif.write({"is_read": True})
+
+        # QUAN TRỌNG: redirect ra /web#... (hash)
+        return request.redirect(
+            _hub_dashboard_url(
+                community_id=int(community_id or 0),
+                channel_id=int(channel_id or 0),
+                post_id=int(post_id or 0),
+                tab=tab or "posts",
+            )
+        )
+    @http.route("/community_hub/hub_url_from_record", type="json", auth="user")
+    def hub_url_from_record(self, res_model=None, res_id=None):
+        try:
+            if not res_model or not res_id:
+                return {"ok": False}
+
+            res_id = int(res_id)
+            if res_model not in ("community.hub.post", "community.hub.channel", "community.hub"):
+                return {"ok": False}
+
+            rec = request.env[res_model].browse(res_id).exists()
+            if not rec:
+                return {"ok": False}
+
+            community_id = None
+            channel_id = None
+            post_id = None
+
+            if res_model == "community.hub.post":
+                post_id = rec.id
+                channel_id = rec.channel_id.id if hasattr(rec, "channel_id") and rec.channel_id else None
+                community_id = rec.community_id.id if hasattr(rec, "community_id") and rec.community_id else None
+                if not community_id and channel_id:
+                    # fallback nếu post không có community_id trực tiếp
+                    try:
+                        community_id = rec.channel_id.community_id.id
+                    except Exception:
+                        pass
+
+            elif res_model == "community.hub.channel":
+                channel_id = rec.id
+                community_id = rec.community_id.id if hasattr(rec, "community_id") and rec.community_id else None
+
+            elif res_model == "community.hub":
+                community_id = rec.id
+
+            url = _hub_dashboard_url(
+                community_id=community_id,
+                channel_id=channel_id,
+                post_id=post_id,
+                tab="posts",
+            )
+            return {"ok": True, "url": url}
+
+        except AccessError:
+            return {"ok": False}
+        except Exception:
+            _logger.exception("hub_url_from_record failed")
+            return {"ok": False}

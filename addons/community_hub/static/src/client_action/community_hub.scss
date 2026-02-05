@@ -1,10 +1,9 @@
 /* =========================================================
-   Community Hub - SCSS (v3.0)
-   - Readable LIGHT default
-   - DARK override (Odoo dark)
-   - Clean, consistent spacing/typography
-   - Fix low/harsh contrast: text always readable
-   - Timeline + Search styles included
+   Community Hub - SCSS (v3.1) - FIXED LAYOUT + MODAL ZINDEX + PREVIEW
+   - LIGHT default + DARK override
+   - Header + Left sidebar do NOT scroll with post list
+   - Only .ch-main-body scrolls
+   - ✅ Added: Attachment Preview Lightbox (.ch-preview-*)
 ========================================================= */
 
 .o_community_hub {
@@ -34,7 +33,7 @@
 
   --ch-bg: #f6f8fc;
   --ch-card: #ffffff;
-  --ch-card-2: #f7f9fd;        /* slightly tinted for layers */
+  --ch-card-2: #f7f9fd;
   --ch-card-3: #eef2ff;
 
   --ch-primary: var(--o-brand-primary, #2563eb);
@@ -49,6 +48,17 @@
   --ch-scroll-track: rgba(17, 24, 39, 0.06);
   --ch-scroll-thumb: rgba(17, 24, 39, 0.16);
 
+  /* z-index layering (avoid modal being covered) */
+  --ch-z-header: 0;
+  --ch-z-sidebar: 40;
+  --ch-z-backdrop: 6000;
+  --ch-z-modal: 6100;
+  --ch-z-drawer: 6200;
+
+  /* ✅ Preview lightbox should be above all */
+  --ch-z-preview-backdrop: 7000;
+  --ch-z-preview: 7100;
+
   font-family: var(--ch-font);
   color: var(--ch-text);
 
@@ -60,7 +70,6 @@
     &:hover { text-decoration: underline; }
   }
 
-  /* Bootstrap buttons inside hub */
   .btn {
     border-radius: 12px;
     font-weight: 700;
@@ -69,9 +78,18 @@
   /* =========================
      2) APP BACKGROUND
   ========================= */
+  /* ✅ lock hub to viewport (desktop) */
+  height: 100%;
+  min-height: 100vh;
+
   .ch-app {
-    min-height: 100%;
+    height: 100%;
+    min-height: 100vh;
     padding: 14px;
+
+    /* ✅ prevent whole-page scroll inside hub (desktop) */
+    overflow: hidden;
+
     background:
       radial-gradient(1000px 620px at 12% 10%, rgba(37, 99, 235, 0.08), transparent 60%),
       radial-gradient(900px 600px at 88% 18%, rgba(22, 163, 74, 0.05), transparent 60%),
@@ -79,7 +97,6 @@
       var(--ch-bg);
   }
 
-  /* Reusable surface */
   .ch-surface {
     border: 1px solid var(--ch-border);
     border-radius: var(--ch-radius-xl);
@@ -98,20 +115,45 @@
   .ch-empty--small { padding: 10px; font-size: 12px; }
 
   /* =========================
-     3) LAYOUT
+     3) LAYOUT (FIX: ONLY MAIN BODY SCROLL)
   ========================= */
   .ch-layout {
     display: grid;
     grid-template-columns: 320px 1fr;
     gap: var(--ch-gap);
-    min-height: calc(100vh - 28px);
+
+    /* ✅ lock to viewport (14px padding top+bottom => 28px) */
+    height: calc(100vh - 28px);
+    min-height: 0;          /* important for nested scroll */
+    overflow: hidden;       /* prevent outer scroll */
   }
 
   .ch-main {
     min-width: 0;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     gap: var(--ch-gap);
+
+    /* prevent main column itself from scrolling */
+    overflow: hidden;
+  }
+
+  /* ✅ This is the ONLY scroll area for posts/files/photos (desktop) */
+  .ch-main-body {
+    flex: 1;
+    min-height: 0;          /* QUAN TRỌNG để overflow hoạt động trong flex */
+    overflow: auto;
+    padding-bottom: 18px;
+    scrollbar-gutter: stable;
+
+    &::-webkit-scrollbar { width: 10px; }
+    &::-webkit-scrollbar-thumb {
+      background: var(--ch-scroll-thumb);
+      border-radius: 10px;
+      border: 2px solid var(--ch-scroll-track);
+    }
+    &::-webkit-scrollbar-track { background: var(--ch-scroll-track); }
   }
 
   /* =========================
@@ -165,7 +207,7 @@
   }
 
   /* =========================
-     5) SIDEBAR
+     5) SIDEBAR (FIX: NO SCROLL WITH FEED)
   ========================= */
   .ch-sidebar {
     border: 1px solid var(--ch-border);
@@ -176,7 +218,34 @@
     display: flex;
     flex-direction: column;
     gap: var(--ch-gap);
+
+    /* ✅ sidebar stays put; only its inner lists scroll */
+    height: 100%;
+    min-height: 0;
     overflow: hidden;
+    z-index: var(--ch-z-sidebar);
+    align-self: stretch;
+  }
+
+  .ch-side-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--ch-border);
+    background: var(--ch-card);
+
+    .ch-side-search-input {
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ch-text);
+      width: 100%;
+      font-weight: 750;
+      font-size: 13px;
+
+      &::placeholder { color: var(--ch-muted-2); }
+    }
   }
 
   .ch-side-block {
@@ -285,7 +354,7 @@
   }
 
   /* =========================
-     6) HEADER + TABS + SEARCH
+     6) HEADER + TABS + SEARCH (FIX: HEADER DOES NOT SCROLL)
   ========================= */
   .ch-team-header {
     border: 1px solid var(--ch-border);
@@ -297,6 +366,9 @@
     grid-template-columns: 1fr auto auto;
     gap: 12px;
     align-items: center;
+
+    /* ✅ keep above scrolled content */
+    z-index: var(--ch-z-header);
   }
 
   .ch-team-name {
@@ -360,7 +432,6 @@
     }
   }
 
-  /* Optional search bar (if you add into header) */
   .ch-searchbar {
     display: inline-flex;
     align-items: center;
@@ -453,7 +524,6 @@
 
   .ch-announce-title { margin-bottom: 10px; }
 
-  /* contenteditable editor */
   .ch-editor {
     border-radius: var(--ch-radius);
     border: 1px solid var(--ch-border);
@@ -472,7 +542,6 @@
       background: var(--ch-card);
     }
 
-    /* placeholder for truly empty editor */
     &[contenteditable="true"]:empty::before {
       content: attr(data-placeholder);
       color: var(--ch-muted-2);
@@ -481,7 +550,6 @@
     p { margin: 0 0 8px 0; }
     ul, ol { padding-left: 22px; margin: 6px 0; }
     b, strong { font-weight: 900; }
-
     a { color: var(--ch-primary); text-decoration: underline; }
 
     img {
@@ -511,7 +579,6 @@
 
   .ch-hint { color: var(--ch-muted); font-size: 12px; font-weight: 700; }
 
-  /* Emoji popover */
   .ch-emoji-pop {
     margin-top: 10px;
     padding: 10px;
@@ -637,7 +704,6 @@
     &:active { transform: translateY(0); }
   }
 
-  /* Edit actions */
   .ch-edit-actions {
     display: inline-flex;
     gap: 6px;
@@ -932,6 +998,183 @@
   }
 
   /* =========================
+     ✅ 10.5) PREVIEW LIGHTBOX / MODAL
+     Use with your JS state: state.ui.previewOpen, previewUrl, previewName, previewKind...
+  ========================= */
+  .ch-preview-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.72);
+    backdrop-filter: blur(2px);
+    z-index: var(--ch-z-preview-backdrop);
+  }
+
+  .ch-preview {
+    position: fixed;
+    z-index: var(--ch-z-preview);
+    inset: 22px;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(15, 23, 42, 0.86);
+    box-shadow: 0 24px 90px rgba(0, 0, 0, 0.55);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* allow body scroll if needed */
+  }
+
+  .ch-preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(2, 6, 23, 0.35);
+  }
+
+  .ch-preview-title {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .ch-preview-name {
+    font-weight: 950;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.92);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ch-preview-sub {
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .ch-preview-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .ch-preview-btn {
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.92);
+    cursor: pointer;
+    font-weight: 900;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.08s ease, background 0.15s ease, border-color 0.15s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.10);
+      border-color: rgba(255, 255, 255, 0.22);
+      transform: translateY(-1px);
+    }
+    &:active { transform: translateY(0); }
+  }
+
+  .ch-preview-btn--danger:hover {
+    background: rgba(239, 68, 68, 0.18);
+    border-color: rgba(239, 68, 68, 0.28);
+  }
+
+  .ch-preview-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+    overflow: auto;
+
+    &::-webkit-scrollbar { width: 10px; }
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 10px;
+      border: 2px solid rgba(0, 0, 0, 0.22);
+    }
+    &::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.22); }
+  }
+
+  /* image preview */
+  .ch-preview-imgwrap {
+    max-width: 100%;
+    max-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+  }
+
+  .ch-preview-img {
+    max-width: 100%;
+    max-height: calc(100vh - 160px);
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.04);
+    object-fit: contain;
+    display: block;
+  }
+
+  /* iframe preview for pdf/url/video */
+  .ch-preview-frame {
+    width: 100%;
+  height: clamp(420px, 70vh, 720px);
+    border: 0;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  /* fallback content */
+  .ch-preview-fallback {
+    width: 100%;
+    max-width: 720px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.06);
+    padding: 16px;
+    color: rgba(255, 255, 255, 0.88);
+
+    .ch-preview-f-title {
+      font-weight: 950;
+      margin-bottom: 6px;
+    }
+    .ch-preview-f-sub {
+      color: rgba(255, 255, 255, 0.62);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .ch-preview-f-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+  }
+
+  /* make preview full-bleed on small screens */
+  @media (max-width: 680px) {
+    .ch-preview { inset: 10px; border-radius: 18px; }
+    .ch-preview-frame { height: calc(100vh - 160px); }
+    .ch-preview-img { max-height: calc(100vh - 190px); }
+    .ch-preview-actions { gap: 6px; }
+    .ch-preview-btn { padding: 0 10px; }
+  }
+
+  /* =========================
      11) FILES / PHOTOS TAB + TIMELINE
   ========================= */
   .ch-files,
@@ -1038,14 +1281,14 @@
   }
 
   /* =========================
-     12) SETTINGS DRAWER + MODALS
+     12) SETTINGS DRAWER + MODALS (FIX: Z-INDEX ABOVE HEADER/SIDEBAR)
   ========================= */
   .ch-drawer-backdrop,
   .ch-modal-backdrop {
     position: fixed;
     inset: 0;
     background: rgba(15, 23, 42, 0.38);
-    z-index: 1000;
+    z-index: var(--ch-z-backdrop);
   }
 
   .ch-drawer {
@@ -1059,7 +1302,7 @@
     border: 1px solid var(--ch-border);
     background: var(--ch-card);
     box-shadow: var(--ch-shadow);
-    z-index: 1001;
+    z-index: var(--ch-z-drawer);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -1195,7 +1438,6 @@
     b { color: var(--ch-text); }
   }
 
-  /* Members */
   .ch-member-list {
     display: flex;
     flex-direction: column;
@@ -1236,10 +1478,9 @@
     align-items: center;
   }
 
-  /* Modals */
   .ch-modal {
     position: fixed;
-    z-index: 1002;
+    z-index: var(--ch-z-modal);
     left: 50%;
     top: 12vh;
     transform: translateX(-50%);
@@ -1280,7 +1521,6 @@
     .btn { border-radius: 12px; font-weight: 800; }
   }
 
-  /* Load more */
   .ch-loadmore {
     display: flex;
     justify-content: center;
@@ -1289,16 +1529,27 @@
   }
 
   /* =========================
-     13) RESPONSIVE
+     13) RESPONSIVE (MOBILE: NATURAL SCROLL)
   ========================= */
   @media (max-width: 1100px) {
     .ch-layout { grid-template-columns: 290px 1fr; }
   }
 
   @media (max-width: 920px) {
-    .ch-layout { grid-template-columns: 1fr; }
-    .ch-sidebar { order: 2; }
-    .ch-main { order: 1; }
+    /* ✅ give back normal page scroll on mobile */
+    .ch-app { overflow: visible; min-height: auto; height: auto; }
+
+    .ch-layout {
+      grid-template-columns: 1fr;
+      height: auto;
+      min-height: auto;
+      overflow: visible;
+    }
+
+    .ch-sidebar { order: 2; height: auto; overflow: visible; }
+    .ch-main { order: 1; overflow: visible; }
+    .ch-main-body { overflow: visible; height: auto; }
+
     .ch-team-header { grid-template-columns: 1fr; gap: 10px; }
   }
 
@@ -1352,7 +1603,6 @@ body.o_dark .o_community_hub,
       var(--ch-bg);
   }
 
-  /* Make “hover backgrounds” still subtle (avoid unreadable contrast) */
   .ch-icon-btn:hover,
   .ch-react-btn:hover,
   .ch-mini-action:hover,
@@ -1388,82 +1638,161 @@ body.o_dark .o_community_hub,
     border-color: rgba(255, 255, 255, 0.14);
   }
 }
-.ch-side-search {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--ch-border);
-  background: var(--ch-card);
+.ch-emoji-pop {
+  max-height: 280px;   /* chỉnh 240/260/300 tuỳ bạn */
+  overflow: auto;
+  align-content: flex-start;
 
-  .ch-side-search-input {
-    border: 0;
-    outline: 0;
-    background: transparent;
-    color: var(--ch-text);
-    width: 100%;
-    font-weight: 750;
-    font-size: 13px;
-
-    &::placeholder { color: var(--ch-muted-2); }
+  &::-webkit-scrollbar { width: 10px; }
+  &::-webkit-scrollbar-thumb {
+    background: var(--ch-scroll-thumb);
+    border-radius: 10px;
+    border: 2px solid var(--ch-scroll-track);
   }
+  &::-webkit-scrollbar-track { background: var(--ch-scroll-track); }
 }
-.o_community_hub {
-  /* ✅ Ensure container can lock to viewport */
-  height: 100%;
+.ch-emoji-anchor{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  z-index: 9999;
+}
+.ch-react-btn.is-me { font-weight: 700; }
+.ch-react-count { margin-left: 6px; font-size: 12px; opacity: .85; }
+.ch-photo--btn{
+  border:0;
+  padding:0;
+  background:transparent;
+  display:block;
+  cursor:pointer;
+}
+/* =========================
+   Community Hub - Channel list badge
+   ========================= */
 
-  .ch-app { height: 100%; }
+/* button item */
+.ch-channel-item{
+  border: 0;
+  background: transparent;
+  padding: 10px 12px;
+  border-radius: 12px;
+  gap: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color .15s ease;
+}
 
-  /* ✅ Desktop: lock viewport, no page scroll inside hub */
-  .ch-layout {
-    height: calc(100vh - 28px);  /* 28px = padding 14*2 của .ch-app */
-    overflow: hidden;
-  }
+/* hover */
+.ch-channel-item:hover{
+  background: rgba(0,0,0,.04);
+}
 
-  /* LEFT SIDEBAR không chạy theo feed */
-  .ch-sidebar {
-    height: 100%;
-    overflow: hidden;     /* list bên trong tự scroll như hiện tại */
-    align-self: start;
-    position: sticky;     /* fallback nếu outer container có scroll */
-    top: 14px;
-  }
+/* active (bạn set class active bằng t-att-class ở XML) */
+.ch-channel-item.is-active{
+  background: rgba(25,135,84,.10); /* xanh nhẹ kiểu selected */
+}
 
-  /* MAIN: header đứng yên, body scroll */
-  .ch-main {
-    min-height: 0;        /* QUAN TRỌNG để overflow hoạt động trong flex */
-    overflow: hidden;
-  }
+/* name text */
+.ch-channel-item .ch-channel-name{
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-  .ch-team-header {
-    position: sticky;     /* fallback */
-    top: 14px;
-    z-index: 50;
-    background: var(--ch-card);
-  }
+/* unread badge */
+.ch-channel-item .ch-unread-badge{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 18px;
+  min-width: 18px;
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 999px;
+  user-select: none;
+}
 
-  .ch-main-body {
-    flex: 1;
-    min-height: 0;        /* QUAN TRỌNG */
-    overflow: auto;
-    padding-bottom: 18px;
-    scrollbar-gutter: stable;
+/* nếu số lớn, vẫn gọn */
+.ch-channel-item .ch-unread-badge{
+  letter-spacing: .2px;
+}
 
-    &::-webkit-scrollbar { width: 10px; }
-    &::-webkit-scrollbar-thumb {
-      background: var(--ch-scroll-thumb);
-      border-radius: 10px;
-      border: 2px solid var(--ch-scroll-track);
-    }
-    &::-webkit-scrollbar-track { background: var(--ch-scroll-track); }
-  }
+/* optional: khi active thì badge nổi hơn */
+.ch-channel-item.is-active .ch-unread-badge{
+  filter: saturate(1.1);
+}
 
-  /* ✅ Mobile: trả lại scroll tự nhiên để còn thấy sidebar khi xuống dưới */
-  @media (max-width: 920px) {
-    .ch-layout { height: auto; overflow: visible; }
-    .ch-sidebar { position: relative; top: auto; height: auto; overflow: visible; }
-    .ch-team-header { position: relative; top: auto; }
-    .ch-main { overflow: visible; }
-    .ch-main-body { overflow: visible; }
-  }
+/* optional: spacing nếu bạn không dùng ms-2 */
+.ch-channel-item .ch-unread-badge{
+  margin-left: 8px;
+}
+.ch-toolbar--rich{
+  display:flex; align-items:center; gap:6px;
+  padding:6px 8px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+}
+
+.ch-toolbar--rich .ch-sep{
+  width:1px; height:18px; background:#e5e7eb; margin:0 2px;
+}
+
+.ch-toolbar--rich .ch-dd{
+  height:30px;
+  border:1px solid #e5e7eb;
+  border-radius:8px;
+  padding:0 8px;
+  background:#fff;
+  font-size:13px;
+}
+.ch-toolbar--rich .ch-dd--sm{ width:62px; text-align:center; }
+
+.ch-toolbar--rich .ch-tb{
+  height:30px; min-width:30px;
+  border:1px solid transparent;
+  border-radius:8px;
+  background:#fff;
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:0 8px;
+  cursor:pointer;
+}
+.ch-toolbar--rich .ch-tb:hover{ background:#f3f4f6; }
+.ch-toolbar--rich .ch-tb:active{ transform: translateY(1px); }
+
+.ch-toolbar--rich .ch-tb--color{
+  position:relative;
+  padding-right:10px;
+}
+.ch-toolbar--rich .ch-color-swatch{
+  width:14px; height:14px; border-radius:4px;
+  border:1px solid #d1d5db; margin-right:6px;
+}
+.ch-toolbar--rich .ch-tb-label{ font-size:13px; }
+
+.ch-toolbar--rich .ch-color-input{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  cursor:pointer;
+}
+
+/* Checklist style */
+.ch-checklist{
+  list-style:none;
+  padding-left:0;
+  margin:6px 0;
+}
+.ch-checklist li{
+  display:flex; align-items:center;
+  gap:8px;
+  margin:4px 0;
+}
+.ch-checklist input[type="checkbox"]{
+  width:14px; height:14px;
 }
