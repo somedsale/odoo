@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+  <t t-name="proposal_sheet_popup.ProposalSheetPopover" owl="1">
+    <div class="o_psp_card shadow-sm">
+      <div class="o_psp_header">
+        <div class="o_psp_title">
+          <div class="o_psp_name">
+            <t t-esc="props.proposalInfo.name"/>
+          </div>
+          <div class="o_psp_sub">
+            <t t-if="props.proposalInfo.project">
+              <span class="o_psp_chip">
+                <i class="fa fa-briefcase me-1"/>
+                <t t-esc="props.proposalInfo.project"/>
+              </span>
+            </t>
+            <t t-if="props.proposalInfo.type_label">
+              <span class="o_psp_chip o_psp_chip_primary">
+                <i class="fa fa-tag me-1"/>
+                <t t-esc="props.proposalInfo.type_label"/>
+              </span>
+            </t>
+          </div>
+        </div>
+
+        <t t-if="props.proposalInfo.state_label">
+          <span class="o_psp_badge" t-att-class="'o_psp_state_' + (props.proposalInfo.state || 'draft')">
+            <t t-esc="props.proposalInfo.state_label"/>
+          </span>
+        </t>
+      </div>
+
+      <div class="o_psp_kv">
+        <div class="o_psp_kv_row">
+          <div class="o_psp_k">Người đề xuất</div>
+          <div class="o_psp_v">
+            <t t-esc="props.proposalInfo.requested_by"/>
+          </div>
+        </div>
+        <div class="o_psp_kv_row">
+          <div class="o_psp_k">Tổng</div>
+          <div class="o_psp_v o_psp_money">
+            <t t-esc="props.proposalInfo.amount_total_fmt"/>
+          </div>
+        </div>
+        <div class="o_psp_kv_row">
+          <div class="o_psp_k">Tổng (sau thuế)</div>
+          <div class="o_psp_v o_psp_money">
+            <t t-esc="props.proposalInfo.amount_total_taxes_fmt"/>
+          </div>
+        </div>
+        <t t-if="props.proposalInfo.payment_total_fmt">
+          <div class="d-flex gap-2">
+            <span class="text-muted">Đã chi</span>
+            <span class="ms-auto text-end fw-semibold">
+              <t t-esc="props.proposalInfo.payment_total_fmt"/>
+            </span>
+          </div>
+        </t>
+      </div>
+
+      <div class="o_psp_divider"/>
+
+      <div class="o_psp_table_wrap">
+        <div class="o_psp_table_title">
+          <i class="fa fa-list me-2"/>
+Dòng đề xuất
+        </div>
+
+        <div class="table-responsive o_psp_table_scroller">
+          <table class="table table-sm table-hover mb-0 o_psp_table">
+            <thead>
+              <tr>
+                <th style="width: 46%;">Nội dung</th>
+                <th class="text-end" style="width: 14%;">SL</th>
+                <th style="width: 14%;">ĐVT</th>
+                <th class="text-end" style="width: 13%;">Đơn giá</th>
+                <th class="text-end" style="width: 13%;">Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody>
+              <t t-if="props.proposalInfo.lines &amp;&amp; props.proposalInfo.lines.length">
+                <t t-foreach="props.proposalInfo.lines" t-as="ln" t-key="ln.name + '-' + ln.qty">
+                  <tr>
+                    <td class="o_psp_cell_name">
+                      <t t-esc="ln.name"/>
+                    </td>
+                    <td class="text-end o_psp_cell_num">
+                      <t t-esc="ln.qty"/>
+                    </td>
+                    <td class="o_psp_cell_uom">
+                      <t t-esc="ln.uom"/>
+                    </td>
+                    <td class="text-end o_psp_cell_num">
+                      <t t-esc="ln.price_unit_fmt"/>
+                    </td>
+                    <td class="text-end o_psp_cell_num">
+                      <t t-esc="ln.total_fmt"/>
+                    </td>
+                  </tr>
+                </t>
+              </t>
+              <t t-else="">
+                <tr>
+                  <td colspan="5" class="text-center text-muted py-3">
+                    <i class="fa fa-inbox me-2"/>
+Không có dòng đề xuất
+                  </td>
+                </tr>
+              </t>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </t>
+</templates>

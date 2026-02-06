@@ -7,7 +7,7 @@
                     <thead class="bg-100">
                         <tr>
                             <th class="text-start">STT</th>
-                            <th class="text-start" id="product_name_header">Sản phẩm</th>
+                            <th class="text-start" style="min-width: 100px;" id="product_name_header">Sản phẩm</th>
                             <th class="text-start" id="product_ts">Thông số</th>
                             <th class="text-start" id="product_xs">Xuất sứ</th>
 
@@ -42,7 +42,7 @@
                                         <t t-out="line_index + 1"/>
                                     </td>
                                     <td>
-                                        <span t-field="line.name"/>
+                                        <span t-field="line.product_id.name"/>
                                     </td>
                                     <td>
                                         <span t-field="line.x_thongso"/>
