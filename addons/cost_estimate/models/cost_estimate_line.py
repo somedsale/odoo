@@ -8,7 +8,7 @@ class CostEstimateLine(models.Model):
     _description = 'Chi tiết dự toán'
 
     cost_estimate_id = fields.Many2one('cost.estimate', string='Dự toán', ondelete='cascade', required=True)
-    product_id = fields.Many2one('product.product', string='Sản phẩm', ondelete='restrict', required=True)
+    product_id = fields.Many2one('product.product', string='Sản phẩm', ondelete='restrict')
     product_name = fields.Char(string="Tên sản phẩm", related='product_id.name', store=False)
     quantity = fields.Float('Số lượng', default=1.0, required=True)
     unit = fields.Many2one('uom.uom', string='Đơn vị')
@@ -108,6 +108,31 @@ class CostEstimateLine(models.Model):
         store=True, readonly=True,
         related_sudo=True,
     )
+    actual_cost = fields.Float(
+        string="Chi phí thực tế",
+        compute="_compute_actual_cost",
+        store=False
+    )
+    name = fields.Text(string="Tên hạng mục")
+    difference_cost = fields.Float(
+        string="Chênh lệch",
+        compute="_compute_difference_cost",
+        store=False
+    )
+
+    @api.depends('product_id', 'quantity')
+    def _compute_actual_cost(self):
+        for line in self:
+            payments = self.env['account.payment.request'].search([
+                ('cost_estimate_line_id', '=', line.id),
+                ('project_id', '=', line.cost_estimate_id.project_id.id),
+                ('state', '=', 'done'),
+            ])
+            line.actual_cost = sum(p.total for p in payments)
+    @api.depends('actual_cost', 'price_subtotal')
+    def _compute_difference_cost(self):
+        for line in self:
+            line.difference_cost = (line.actual_cost or 0.0) - (line.price_subtotal or 0.0)
     @api.depends('price_subtotal', 'tax_id', 'currency_id')
     def _compute_total_with_tax(self):
         for rec in self:
