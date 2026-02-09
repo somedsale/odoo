@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ===== TREE PROJECT (CUSTOM) ===== -->
+    <record id="view_project_project_tree_work_custom" model="ir.ui.view">
+        <field name="name">project.project.tree.work.custom</field>
+        <field name="model">project.project</field>
+        <field name="arch" type="xml">
+            <tree string="Dự án (Theo SO)" create="1" edit="1">
+                <field name="partner_id"/>
+                <field name="name" string="Tên dự án"/>
+                <field name="num_contract" string="Số hợp đồng"/>
+                <field name="sales_category_ids" widget="many2many_tags" options="{'color_field': 'color'}" string="Hạng mục"/>
+                <field name="value_contract" sum="Tổng" string="Giá trị hợp đồng"/>
+                <field name="signature_year" string="Năm ký hợp đồng"/>
+                <field name="date_start"/>
+                <field name="date"/>
+                <field name="stage_id"/>
+                <field name="currency_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ===== FORM PROJECT (CUSTOM) ===== -->
+    <record id="view_project_project_form_work_custom" model="ir.ui.view">
+        <field name="name">project.project.form.work.custom</field>
+        <field name="model">project.project</field>
+        <!-- ✅ thêm -->
+        <field name="priority" eval="1"/>
+        <field name="arch" type="xml">
+            <form string="Dự án (Theo SO)" create="1" edit="1">
+                <sheet>
+
+                    <!-- tránh lỗi validate domain partner_id theo company_id -->
+                    <group invisible="1">
+                        <field name="company_id"/>
+                    </group>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Tên dự án..."/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group>
+                            <field name="date_start"/>
+                            <field name="date"/>
+                        </group>
+
+                        <group string="Thông tin hợp đồng">
+                            <field name="contract_id" options="{'no_create': True}"/>
+                            <field name="signature_date" readonly="1"/>
+                            <field name="location" readonly="1"/>
+                            <field name="sale_order_id" readonly="1"/>
+                            <field name="value_contract" readonly="1"/>
+                            <field name="sales_category_ids" widget="many2many_tags" readonly="1"/>
+                            <field name="description"/>
+                        </group>
+                        <group string="Tiến độ dự án">
+                            <field name="stage_id"/>
+                            <field name="value_contract" readonly="1"/>
+                            <field name="value_completed" readonly="1"/>
+                            <field name="value_remaining" readonly="1"/>
+                            <field name="progress_percent" readonly="1"/>
+                        </group>
+
+                        <group string="Tài liệu">
+                            <field name="attachment_ids" widget="many2many_binary" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+
+                        <page string="Hạng mục công việc">
+                            <div class="mb-2">
+                                <button name="action_sync_work_items_from_so" type="object" string="Lấy hạng mục từ Đơn bán" class="btn btn-primary"/>
+                            </div>
+
+                            <field name="work_item_ids" context="{'default_project_id': id}">
+                                <tree editable="bottom" string="Hạng mục công việc" delete="1">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="description"/>
+                                    <field name="product_id"/>
+                                    <field name="uom_id"/>
+                                    <field name="qty_plan"/>
+                                    <field name="qty_done" readonly="1"/>
+                                    <field name="qty_remaining" readonly="1"/>
+                                    <field name="progress_percent" readonly="1"/>
+                                    <field name="assigned_user_ids" widget="many2many_avatar_user"/>
+                                    <field name="active" invisible="1"/>
+                                </tree>
+
+                                <form string="Hạng mục công việc">
+                                    <sheet>
+
+                                        <!-- ✅ BẮT BUỘC: để dùng project_id trong context bên dưới -->
+                                        <field name="project_id" invisible="1"/>
+
+                                        <group>
+                                            <group>
+                                                <field name="name"/>
+                                                <field name="product_id"/>
+                                                <field name="uom_id"/>
+                                                <field name="so_line_id" readonly="1"/>
+                                                <field name="assigned_user_ids" widget="many2many_tags"/>
+                                            </group>
+                                            <group>
+                                                <field name="qty_plan" readonly="1"/>
+                                                <field name="qty_done" readonly="1"/>
+                                                <field name="qty_remaining" readonly="1"/>
+                                                <field name="progress_percent" readonly="1"/>
+                                            </group>
+                                        </group>
+
+                                        <notebook>
+                                            <page string="Phân công">
+                                                <field name="assignment_ids" context="{'default_project_id': project_id, 'default_work_item_id': id}">
+                                                    <tree editable="bottom">
+                                                        <field name="user_id"/>
+                                                        <field name="date_start"/>
+                                                        <field name="qty_done" readonly="1"/>
+                                                        <field name="qty_remaining" readonly="1"/>
+                                                    </tree>
+                                                </field>
+                                            </page>
+                                        </notebook>
+
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ===== ACTION RIÊNG ===== -->
+    <record id="action_project_project_work_custom" model="ir.actions.act_window">
+        <field name="name">Dự án (Theo SO)</field>
+        <field name="res_model">project.project</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_ids" eval="[
+            (5,0,0),
+            (0,0, {'sequence': 1, 'view_mode': 'tree', 'view_id': ref('view_project_project_tree_work_custom')}),
+            (0,0, {'sequence': 2, 'view_mode': 'form', 'view_id': ref('view_project_project_form_work_custom')})
+        ]"/>
+    </record>
+
+    <!-- ===== MENU RIÊNG ===== -->
+    <menuitem id="menu_project_work_root" name="Dự án (Theo SO)" parent="project.menu_main_pm" action="action_project_project_work_custom" sequence="95"/>
+
+</odoo>
