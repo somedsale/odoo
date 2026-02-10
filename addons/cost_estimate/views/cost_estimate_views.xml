@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
     <!-- TREE VIEW COST ESTIMATE -->
     <record id="view_cost_estimate_tree" model="ir.ui.view">
         <field name="name">cost.estimate.tree</field>
@@ -7,14 +8,14 @@
         <field name="priority" eval="5"/>
         <field name="arch" type="xml">
             <tree>
-                <field name="code" />
+                <field name="code"/>
                 <field name="create_date" string="Ngày tạo"/>
                 <field name="name"/>
                 <field name="sale_order_id"/>
                 <field name="project_id"/>
                 <field name="total_final_non_tax" string="Tổng dự toán (TT)" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="total_final_tax" string="Tổng dự toán (ST)" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                <field name ="state" widget="badge" decoration-muted="state == 'draft'" decoration-primary="state == 'summitted'" decoration-success="state == 'approved'"/>
+                <field name="state" widget="badge" decoration-muted="state == 'draft'" decoration-primary="state == 'submitted'" decoration-success="state == 'approved'"/>
                 <field name="currency_id" optional="hide"/>
                 <field name="activity_ids" widget="list_activity" string="Hoạt động" optional="hide"/>
             </tree>
@@ -27,19 +28,19 @@
         <field name="model">cost.estimate</field>
         <field name="priority" eval="5"/>
         <field name="arch" type="xml">
-
             <form string="Dự toán chi phí Dự án">
                 <field name="show_button_submit" invisible="1"/>
                 <field name="show_button_approve" invisible="1"/>
                 <field name="show_button_cancel" invisible="1"/>
                 <field name="show_button_draft" invisible="1"/>
+
                 <header>
                     <button name="action_submit" type="object" string="Gửi duyệt" invisible="show_button_submit == False" class="oe_highlight"/>
                     <button name="action_approve" type="object" string="Duyệt" invisible="show_button_approve == False" class="oe_highlight"/>
-                    <button name="action_cancel" type="object" string="Hủy" invisible="show_button_cancel == False" class="oe_highlight" confirm="Bạn có chắc muốn hủy không?" />
-                    <!-- <button name="action_draft" type="object" string="Trở về nháp" invisible="show_button_draft == False" class="oe_highlight" confirm="Chắc chắn muốn chuyển thành nháp?" /> -->
+                    <button name="action_cancel" type="object" string="Hủy" invisible="show_button_cancel == False" class="oe_highlight" confirm="Bạn có chắc muốn hủy không?"/>
                     <field name="state" widget="statusbar" statusbar_visible="submitted,approved"/>
                 </header>
+
                 <sheet>
                     <div class="oe_title">
                         <h1>
@@ -50,17 +51,22 @@
                         <group>
                             <field name="code" readonly="1"/>
                             <field name="project_id" readonly="state != 'draft'"/>
-                            <field name="total_cost" string="Tổng dự toán sản phẩm (Trước thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                            <field name="total_cost_with_tax" string="Tổng dự toán sản phẩm (Có thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                            <field name="amount_additional_expense" string="Tổng dự toán khác (Trước thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                            <field name="amount_additional_expense_with_tax" string="Tổng dự toán khác (Có thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                            <field name="total_final_non_tax" string="Tổng dự toán (Trước thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                            <field name="total_final_tax" string="Tổng dự toán (Có thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                            <field name="currency_id" invisible="1" optional="hide"/>
+
+                            <field name="total_cost" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_cost_with_tax" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+
+                            <field name="amount_additional_expense" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="amount_additional_expense_with_tax" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+
+                            <field name="total_final_non_tax" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_final_tax" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+
+                            <field name="currency_id" invisible="1"/>
                         </group>
+
                         <group>
                             <field name="create_date" string="Ngày tạo" readonly="1"/>
-                            <!-- <field name="sale_order_id" readonly="1"/> -->
+
                             <label for="sale_order_id"/>
                             <div class="popup-wrapper">
                                 <field name="sale_order_id" readonly="1" nolabel="1" class="popup-trigger"/>
@@ -79,136 +85,175 @@
                                     </p>
                                 </div>
                             </div>
-                            <field name="contract_value" string="Giá trị hợp đồng" readonly="1" groups = "custom_director_role.group_director"/>
+
+                            <field name="contract_value" string="Giá trị hợp đồng" readonly="1" groups="custom_director_role.group_director"/>
                         </group>
                     </group>
-                    <notebook>
-                        <page string="Chi tiết dự toán sản phẩm">
-                            <field name="line_ids" editable="bottom" context="{'default_cost_estimate_id': active_id}" options="{'no_open': True}" readonly="state == 'approved'">
-                                <!-- <tree view_id="view_cost_estimate_line_tree"/> -->
-                                <tree>
-                                    <field name ="name" string="Tên hạng mục"/>
-                                    <field name="product_id" context="{'no_default_code': True}" required="1"/>
-                                    <field name="so_name" optional="show"/>
-                                    <field name="so_thongso" optional="hide"/>
-                                    <field name="so_xuatxu" optional="hide"/>
-                                    <field name="quantity" required="1"/>
-                                    <field name="unit" required="1"/>
-                                    <field name="price_unit" readonly="1" optional="show" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                                    <field name="tax_id" string="Thuế áp dụng"/>
-                                    <field name="price_subtotal" readonly="1" optional="show" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                                    <field name="price_tax" readonly="1" string="Tiền thuế" optional="hide" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}" />
-                                    <field name="price_total" readonly="1" optional="show" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                                    <field name="actual_cost" string="Chi phí thực tế" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                                    <field name="difference_cost" string="Chênh lệch" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                                    <field name="sale_order_price_unit" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}" groups = "custom_director_role.group_director"/>
-                                    <field name="sale_order_price_subtotal" sum="Tổng" groups = "custom_director_role.group_director" />
-                                    <field name="sale_order_price_total" sum="Tổng" groups = "custom_director_role.group_director"/>
-                                    <field name="currency_id" invisible="1" optional="hide"/>
-                                </tree>
-                                <form string="Chi tiết dòng dự toán">
-                                    <sheet>
-                                        <group col="2">
-                                            <group string="Thông tin dự toán">
-                                                <field name="is_from_sale_order" invisible="1"/>
-                                                <field name="product_type" invisible="1"/>
-                                                <field name="name" string="Tên hạng mục"/>
-                                                <field name="product_id" context="{'no_default_code': True}" readonly="is_from_sale_order"/>
-                                                <field name="quantity" readonly="is_from_sale_order"/>
-                                                <field name="tax_id" string="Thuế áp dụng"/>
-                                                <field name="unit" readonly="is_from_sale_order"/>
-                                                <field name="price_unit" string="Giá thành trên 1 sản phẩm" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                                                <field name="price_subtotal" string="Thành tiền dự toán chưa thuế" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                                                <field name="currency_id" invisible="1" optional="hide"/>
-                                            </group>
 
-                                            <group string="Phân loại chi phí">
-                                                <field name="material_total_cost" readonly="1"/>
-                                                <field name="labor_total_cost" readonly="1"/>
-                                                <field name="other_total_cost" readonly="1"/>
-                                                <!-- <field name="equipment_total_cost" readonly="1"/> -->
-                                            </group>
+                    <notebook>
+
+                        <page string="Chi tiết dự toán sản phẩm">
+                            <!-- ✅ không editable="bottom" => create sẽ mở popup form -->
+                            <field name="line_ids" widget="section_and_note_one2many" context="{'default_cost_estimate_id': active_id}" readonly="state == 'approved'">
+
+                                <!-- ===== FORM (khi bấm mở 1 dòng) ===== -->
+                                <form string="Chi tiết dòng dự toán">
+                                    <field name="display_type" invisible="1"/>
+                                    <field name="sequence" invisible="1"/>
+
+                                    <group invisible="display_type" col="2">
+                                        <group string="Thông tin dự toán">
+                                            <field name="is_from_sale_order" invisible="1"/>
+                                            <field name="product_type" invisible="1"/>
+
+                                            <field name="name" string="Tên hạng mục"/>
+                                            <field name="product_id" context="{'no_default_code': True}" readonly="is_from_sale_order" required="not display_type" force_save="1"/>
+
+                                            <field name="quantity" readonly="is_from_sale_order" required="not display_type"/>
+                                            <field name="unit" readonly="is_from_sale_order" required="not display_type" force_save="1"/>
+
+                                            <field name="tax_id" string="Thuế áp dụng"/>
+
+                                            <field name="price_unit" string="Giá thành trên 1 sản phẩm" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                            <field name="price_subtotal" string="Thành tiền dự toán chưa thuế" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+
+                                            <field name="currency_id" invisible="1"/>
                                         </group>
-                                        <notebook>
-                                            <page string="Chi phí nguyên vật liệu (VT)">
-                                                <field name="material_line_ids" context="{'default_estimate_line_id': active_id}" mode="tree,form">
-                                                    <!-- <tree editable="bottom" view_id="project_material.view_product_material_line_tree"/>
-                                                    <form view_id="project_material.view_product_material_line_form"/> -->
-                                                    <tree editable="bottom">
-                                                        <field name="material_id" required="1" width="30%"/>
-                                                        <field name ="factor" string="Hệ số"/>
-                                                        <field name="quantity" required="1" width="15%"/>
-                                                        <field name="unit" widget="selection" options="{'no_create': True}" required="1" width="15%"/>
-                                                        <field name="price_unit" required="1" width="20%"/>
-                                                        <field name="price_total" readonly="1" width="20%" sum="Tổng"/>
-                                                        <field name="vendor_id" placeholder="Nhà cung cấp" width="30%"/>
-                                                    </tree>
-                                                    <form>
-                                                        <group>
-                                                            <field name="material_id" required="1"/>
-                                                            <field name ="factor" string="Hệ số"/>
-                                                            <field name="quantity" required="1"/>
-                                                            <field name="unit" required="1"/>
-                                                            <field name="price_unit" required="1"/>
-                                                            <field name="price_total" readonly="1"/>
-                                                            <field name="vendor_id" placeholder="Nhà cung cấp"/>
-                                                        </group>
-                                                    </form>
-                                                </field>
-                                            </page>
-                                            <page string="Chi phí nhân công">
-                                                <field name="labor_expense_line_ids" context="{'default_estimate_line_id': active_id, 'default_type': 'labor'}" mode="tree,form">
-                                                    <tree editable="bottom">
-                                                        <field name="expense_id" context="{'default_type': 'labor'}" string="Chi phí nhân công" domain="[('type', '=', 'labor')]" />
+
+                                        <group string="Phân loại chi phí">
+                                            <field name="material_total_cost" readonly="1"/>
+                                            <field name="labor_total_cost" readonly="1"/>
+                                            <field name="other_total_cost" readonly="1"/>
+                                        </group>
+                                    </group>
+
+                                    <notebook invisible="display_type">
+                                        <page string="Chi phí nguyên vật liệu (VT)">
+                                            <field name="material_line_ids" context="{'default_estimate_line_id': active_id}" mode="tree,form">
+                                                <tree editable="bottom">
+                                                    <field name="material_id" required="1" width="30%"/>
+                                                    <field name="factor" string="Hệ số"/>
+                                                    <field name="quantity" required="1" width="15%"/>
+                                                    <field name="unit" widget="selection" options="{'no_create': True}" required="1" width="15%"/>
+                                                    <field name="price_unit" required="1" width="20%"/>
+                                                    <field name="price_total" readonly="1" width="20%" sum="Tổng"/>
+                                                    <field name="vendor_id" placeholder="Nhà cung cấp" width="30%"/>
+                                                </tree>
+                                                <form>
+                                                    <group>
+                                                        <field name="material_id" required="1"/>
+                                                        <field name="factor" string="Hệ số"/>
+                                                        <field name="quantity" required="1"/>
+                                                        <field name="unit" required="1"/>
+                                                        <field name="price_unit" required="1"/>
+                                                        <field name="price_total" readonly="1"/>
+                                                        <field name="vendor_id" placeholder="Nhà cung cấp"/>
+                                                    </group>
+                                                </form>
+                                            </field>
+                                        </page>
+
+                                        <page string="Chi phí nhân công">
+                                            <field name="labor_expense_line_ids" context="{'default_estimate_line_id': active_id, 'default_type': 'labor'}" mode="tree,form">
+                                                <tree editable="bottom">
+                                                    <field name="expense_id" context="{'default_type': 'labor'}" string="Chi phí nhân công" domain="[('type', '=', 'labor')]"/>
+                                                    <field name="factor" string="Hệ số"/>
+                                                    <field name="quantity"/>
+                                                    <field name="unit"/>
+                                                    <field name="price_unit"/>
+                                                    <field name="price_total" readonly="1" sum="Tổng"/>
+                                                </tree>
+                                                <form>
+                                                    <group>
+                                                        <field name="expense_id" context="{'default_type': 'labor'}" string="Chi phí nhân công" domain="[('type', '=', 'labor')]"/>
                                                         <field name="factor" string="Hệ số"/>
                                                         <field name="quantity"/>
                                                         <field name="unit"/>
                                                         <field name="price_unit"/>
-                                                        <field name="price_total" readonly="1" sum="Tổng"/>
-                                                    </tree>
-                                                    <form>
-                                                        <group>
-                                                            <field name="expense_id" context="{'default_type': 'labor'}" string="Chi phí nhân công" domain="[('type', '=', 'labor')]" />
-                                                            <field name="factor" string="Hệ số"/>
-                                                            <field name="quantity"/>
-                                                            <field name="unit"/>
-                                                            <field name="price_unit"/>
-                                                            <field name="price_total" readonly="1"/>
-                                                        </group>
-                                                    </form>
-                                                </field>
-                                            </page>
-                                            <page string="Chi phí khác (SXC)">
-                                                <field name="expense_line_ids" context="{'default_estimate_line_id': active_id, 'default_type': 'other'}" mode="tree,form">
-                                                    <tree editable="bottom">
+                                                        <field name="price_total" readonly="1"/>
+                                                    </group>
+                                                </form>
+                                            </field>
+                                        </page>
+
+                                        <page string="Chi phí khác (SXC)">
+                                            <field name="expense_line_ids" context="{'default_estimate_line_id': active_id, 'default_type': 'other'}" mode="tree,form">
+                                                <tree editable="bottom">
+                                                    <field name="expense_id" context="{'default_type': 'other'}" domain="[('type', '=', 'other')]" string="Chi phí sản xuất chung"/>
+                                                    <field name="factor" string="Hệ số"/>
+                                                    <field name="quantity"/>
+                                                    <field name="unit"/>
+                                                    <field name="price_unit"/>
+                                                    <field name="price_total" readonly="1" sum="Tổng"/>
+                                                </tree>
+                                                <form>
+                                                    <group>
                                                         <field name="expense_id" context="{'default_type': 'other'}" domain="[('type', '=', 'other')]" string="Chi phí sản xuất chung"/>
                                                         <field name="factor" string="Hệ số"/>
                                                         <field name="quantity"/>
                                                         <field name="unit"/>
                                                         <field name="price_unit"/>
-                                                        <field name="price_total" readonly="1" sum="Tổng"/>
-                                                    </tree>
-                                                    <form>
-                                                        <group>
-                                                            <field name="expense_id" context="{'default_type': 'other'}" domain="[('type', '=', 'other')]" string="Chi phí sản xuất chung"/>
-                                                            <field name="factor" string="Hệ số"/>
-                                                            <field name="quantity"/>
-                                                            <field name="unit"/>
-                                                            <field name="price_unit"/>
-                                                            <field name="price_total" readonly="1"/>
-                                                        </group>
-                                                    </form>
-                                                </field>
-                                            </page>
-                                        </notebook>
-                                    </sheet>
+                                                        <field name="price_total" readonly="1"/>
+                                                    </group>
+                                                </form>
+                                            </field>
+                                        </page>
+                                    </notebook>
+
+                                    <!-- SECTION / NOTE -->
+                                    <label for="name" string="Description" invisible="display_type"/>
+                                    <label for="name" string="Section Name" invisible="display_type != 'line_section'"/>
+                                    <group invisible="not display_type">
+                                        <field name="name"/>
+                                    </group>
                                 </form>
+
+                                <!-- ===== TREE (list) ===== -->
+                                <tree string="Chi tiết dự toán">
+                                    <control>
+                                        <!-- ✅ create sẽ mở popup form (vì one2many không editable) -->
+                                        <create name="add_product_control" string="Thêm hạng mục"/>
+                                        <create name="add_section_control" string="Thêm nhóm" context="{'default_display_type': 'line_section'}"/>
+                                        <!-- <create name="add_note_control" string="Thêm ghi chú" context="{'default_display_type': 'line_note'}"/> -->
+                                    </control>
+
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="display_type" column_invisible="True"/>
+
+                                    <field name="name" string="Tên hạng mục" widget="section_and_note_text" optional="show"/>
+
+                                    <field name="product_id" context="{'no_default_code': True}" required="not display_type" invisible="display_type"/>
+
+                                    <field name="so_name" optional="show" invisible="display_type"/>
+                                    <field name="so_thongso" optional="hide" invisible="display_type"/>
+                                    <field name="so_xuatxu" optional="hide" invisible="display_type"/>
+
+                                    <field name="quantity" required="not display_type" invisible="display_type"/>
+                                    <field name="unit" required="not display_type" invisible="display_type"/>
+
+                                    <field name="price_unit" readonly="1" optional="show" widget="monetary" options="{'currency_field': 'currency_id'}" invisible="display_type"/>
+                                    <field name="tax_id" string="Thuế áp dụng" invisible="display_type"/>
+                                    <field name="price_subtotal" readonly="1" optional="show" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}" invisible="display_type"/>
+                                    <field name="price_tax" readonly="1" string="Tiền thuế" optional="hide" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}" invisible="display_type"/>
+                                    <field name="price_total" readonly="1" optional="show" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}" invisible="display_type"/>
+
+                                    <field name="actual_cost" string="Chi phí thực tế" widget="monetary" options="{'currency_field': 'currency_id'}" invisible="display_type"/>
+                                    <field name="difference_cost" string="Chênh lệch" widget="monetary" options="{'currency_field': 'currency_id'}" invisible="display_type"/>
+
+                                    <field name="sale_order_price_unit" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}" groups="custom_director_role.group_director" invisible="display_type"/>
+                                    <field name="sale_order_price_subtotal" sum="Tổng" groups="custom_director_role.group_director" invisible="display_type"/>
+                                    <field name="sale_order_price_total" sum="Tổng" groups="custom_director_role.group_director" invisible="display_type"/>
+
+                                    <field name="currency_id" column_invisible="True"/>
+                                </tree>
+
                             </field>
                         </page>
+
                         <page string="Chi tiết dự toán chi phí gián tiếp">
                             <field name="additional_expense_line_ids" context="{'default_cost_estimate_id': active_id}" readonly="state == 'approved'">
                                 <tree editable="bottom">
-                                    <field name="expense_id" string ="Tên chi phí"/>
+                                    <field name="expense_id" string="Tên chi phí"/>
                                     <field name="quantity"/>
                                     <field name="uom_id" string="Đơn vị"/>
                                     <field name="price_unit" widget="monetary" options="{'currency_field': 'currency_id'}"/>
@@ -220,7 +265,9 @@
                                 </tree>
                             </field>
                         </page>
+
                     </notebook>
+
                     <div class="oe_chatter">
                         <field name="message_follower_ids" widget="mail_followers"/>
                         <field name="activity_ids" widget="mail_activity"/>
@@ -231,118 +278,7 @@
         </field>
     </record>
 
-    <!-- TREE VIEW COST ESTIMATE LINE -->
-    <!-- <record id="view_cost_estimate_line_tree" model="ir.ui.view">
-        <field name="name">cost.estimate.line.tree</field>
-        <field name="model">cost.estimate.line</field>
-        <field name="arch" type="xml">
-            <tree>
-                <field name ="name" string="Tên hạng mục"/>
-                <field name="product_id" context="{'no_default_code': True}" required="1"/>
-                <field name="so_name" optional="show"/>
-                <field name="so_thongso" optional="hide"/>
-                <field name="so_xuatxu" optional="hide"/>
-                <field name="quantity" required="1"/>
-                <field name="unit" required="1"/>
-                <field name="price_unit" readonly="1" optional="show" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                <field name="tax_id" string="Thuế áp dụng"/>
-                <field name="price_subtotal" readonly="1" optional="show" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                <field name="price_tax" readonly="1" string="Tiền thuế" optional="hide" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}" />
-                <field name="price_total" readonly="1" optional="show" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                <field name="actual_cost" string="Chi phí thực tế" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                <field name="difference_cost" string="Chênh lệch" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                <field name="sale_order_price_unit" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}" groups = "custom_director_role.group_director"/>
-                <field name="sale_order_price_subtotal" sum="Tổng" groups = "custom_director_role.group_director" />
-                <field name="sale_order_price_total" sum="Tổng" groups = "custom_director_role.group_director"/>
-                <field name="currency_id" invisible="1" optional="hide"/>
-            </tree>
-        </field>
-    </record> -->
-    <!-- FORM VIEW COST ESTIMATE LINE -->
-    <!-- <record id="view_cost_estimate_line_form" model="ir.ui.view">
-        <field name="name">cost.estimate.line.form</field>
-        <field name="model">cost.estimate.line</field>
-        <field name="arch" type="xml">
-            <form string="Chi tiết dòng dự toán">
-                <sheet>
-                    <group col="2">
-                        <group string="Thông tin dự toán">
-                            <field name="is_from_sale_order" invisible="1"/>
-                            <field name="product_type" invisible="1"/>
-                            <field name="name" string="Tên hạng mục"/>
-                            <field name="product_id" context="{'no_default_code': True}" readonly="is_from_sale_order"/>
-                            <field name="quantity" readonly="is_from_sale_order"/>
-                            <field name="tax_id" string="Thuế áp dụng"/>
-                            <field name="unit" readonly="is_from_sale_order"/>
-                            <field name="price_unit" string="Giá thành trên 1 sản phẩm" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                            <field name="price_subtotal" string="Thành tiền dự toán chưa thuế" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                            <field name="currency_id" invisible="1" optional="hide"/>
-                        </group>
-
-                        <group string="Phân loại chi phí">
-                            <field name="material_total_cost" readonly="1"/>
-                            <field name="labor_total_cost" readonly="1"/>
-                            <field name="other_total_cost" readonly="1"/>
-                        </group>
-                    </group>
-                    <notebook>
-                        <page string="Chi phí nguyên vật liệu (VT)">
-                            <field name="material_line_ids" context="{'default_estimate_line_id': active_id}" mode="tree,form">
-                                <tree editable="bottom" view_id="project_material.view_product_material_line_tree"/>
-                                <form view_id="project_material.view_product_material_line_form"/>
-                            </field>
-                        </page>
-                        <page string="Chi phí nhân công">
-                            <field name="labor_expense_line_ids" context="{'default_estimate_line_id': active_id, 'default_type': 'labor'}" mode="tree,form">
-                                <tree editable="bottom">
-                                    <field name="expense_id" context="{'default_type': 'labor'}" string="Chi phí nhân công" domain="[('type', '=', 'labor')]" />
-                                    <field name="factor" string="Hệ số"/>
-                                    <field name="quantity"/>
-                                    <field name="unit"/>
-                                    <field name="price_unit"/>
-                                    <field name="price_total" readonly="1" sum="Tổng"/>
-                                </tree>
-                                <form>
-                                    <group>
-                                        <field name="expense_id" context="{'default_type': 'labor'}" string="Chi phí nhân công" domain="[('type', '=', 'labor')]" />
-                                        <field name="factor" string="Hệ số"/>
-                                        <field name="quantity"/>
-                                        <field name="unit"/>
-                                        <field name="price_unit"/>
-                                        <field name="price_total" readonly="1"/>
-                                    </group>
-                                </form>
-                            </field>
-                        </page>
-                        <page string="Chi phí khác (SXC)">
-                            <field name="expense_line_ids" context="{'default_estimate_line_id': active_id, 'default_type': 'other'}" mode="tree,form">
-                                <tree editable="bottom">
-                                    <field name="expense_id" context="{'default_type': 'other'}" domain="[('type', '=', 'other')]" string="Chi phí sản xuất chung"/>
-                                    <field name="factor" string="Hệ số"/>
-                                    <field name="quantity"/>
-                                    <field name="unit"/>
-                                    <field name="price_unit"/>
-                                    <field name="price_total" readonly="1" sum="Tổng"/>
-                                </tree>
-                                <form>
-                                    <group>
-                                        <field name="expense_id" context="{'default_type': 'other'}" domain="[('type', '=', 'other')]" string="Chi phí sản xuất chung"/>
-                                        <field name="factor" string="Hệ số"/>
-                                        <field name="quantity"/>
-                                        <field name="unit"/>
-                                        <field name="price_unit"/>
-                                        <field name="price_total" readonly="1"/>
-                                    </group>
-                                </form>
-                            </field>
-                        </page>
-                    </notebook>
-                </sheet>
-            </form>
-        </field>
-    </record> -->
-
-    <!-- ACTION FOR COST ESTIMATE -->
+    <!-- ACTION -->
     <record id="action_cost_estimate" model="ir.actions.act_window">
         <field name="name">Dự toán chi phí Dự án</field>
         <field name="res_model">cost.estimate</field>
