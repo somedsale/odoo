@@ -5,11 +5,36 @@
         <field name="name">project.expense.custom.tree</field>
         <field name="model">project.expense.custom</field>
         <field name="arch" type="xml">
-            <tree string="Chi phí dự án">
+            <tree string="Chi phí dự án" default_order="create_date desc" decoration-bf="1">
                 <field name="project_id"/>
-                <field name="total_spent" sum="Tổng đã chi" widget="monetary"/>
-                <field name="total_not_spent" sum="Tổng chưa chi" widget="monetary"/>
-                <field name="total_cost" sum="Tổng chi phí" widget="monetary"/>
+                <field name="contract_number"/>
+                <!-- Đã chi theo phân loại (xanh khi > 0) -->
+                <field name="total_spent_material" string="Đã chi NVL" sum="Đã chi NVL" widget="monetary" options="{'currency_field': 'currency_id'}" decoration-success="total_spent_material &gt; 0" decoration-bf="total_spent_material &gt; 0" decoration-muted="total_spent_material == 0"/>
+
+                <field name="total_spent_labor" string="Đã chi NC" sum="Đã chi NC" widget="monetary" options="{'currency_field': 'currency_id'}" decoration-success="total_spent_labor &gt; 0" decoration-bf="total_spent_labor &gt; 0" decoration-muted="total_spent_labor == 0"/>
+
+                <field name="total_spent_manufacturing" string="Đã chi SXC" sum="Đã chi SXC" widget="monetary" options="{'currency_field': 'currency_id'}" decoration-success="total_spent_manufacturing &gt; 0" decoration-bf="total_spent_manufacturing &gt; 0" decoration-muted="total_spent_manufacturing == 0"/>
+
+                <field name="total_spent" string="Đã chi" sum="Tổng đã chi" widget="monetary" options="{'currency_field': 'currency_id'}" decoration-success="total_spent &gt; 0" decoration-bf="total_spent &gt; 0" decoration-muted="total_spent == 0"/>
+
+                <!-- Chưa chi theo phân loại (đỏ/cam khi > 0) -->
+                <field name="total_not_spent_material" string="Chưa chi NVL" sum="Chưa chi NVL" widget="monetary" options="{'currency_field': 'currency_id'}" decoration-danger="total_not_spent_material &gt; 0" decoration-bf="total_not_spent_material &gt; 0" decoration-muted="total_not_spent_material == 0"/>
+
+                <field name="total_not_spent_labor" string="Chưa chi NC" sum="Chưa chi NC" widget="monetary" options="{'currency_field': 'currency_id'}" decoration-danger="total_not_spent_labor &gt; 0" decoration-bf="total_not_spent_labor &gt; 0" decoration-muted="total_not_spent_labor == 0"/>
+
+                <field name="total_not_spent_manufacturing" string="Chưa chi SXC" sum="Chưa chi SXC" widget="monetary" options="{'currency_field': 'currency_id'}" decoration-danger="total_not_spent_manufacturing &gt; 0" decoration-bf="total_not_spent_manufacturing &gt; 0" decoration-muted="total_not_spent_manufacturing == 0"/>
+
+                <field name="total_not_spent" string="Chưa chi" sum="Tổng chưa chi" widget="monetary" options="{'currency_field': 'currency_id'}" decoration-danger="total_not_spent &gt; 0" decoration-bf="total_not_spent &gt; 0" decoration-muted="total_not_spent == 0"/>
+
+                <!-- Tổng theo phân loại (optional) -->
+                <field name="total_material" string="Tổng NVL" widget="monetary" options="{'currency_field': 'currency_id'}" optional="hide" decoration-info="total_material &gt; 0" decoration-bf="total_material &gt; 0" decoration-muted="total_material == 0"/>
+
+                <field name="total_labor" string="Tổng NC" widget="monetary" options="{'currency_field': 'currency_id'}" optional="hide" decoration-info="total_labor &gt; 0" decoration-bf="total_labor &gt; 0" decoration-muted="total_labor == 0"/>
+
+                <field name="total_manufacturing" string="Tổng SXC" widget="monetary" options="{'currency_field': 'currency_id'}" optional="hide" decoration-info="total_manufacturing &gt; 0" decoration-bf="total_manufacturing &gt; 0" decoration-muted="total_manufacturing == 0"/>
+
+                <field name="total_cost" string="Tổng theo dõi" sum="Tổng theo dõi" widget="monetary" options="{'currency_field': 'currency_id'}" decoration-primary="total_cost &gt; 0" decoration-bf="total_cost &gt; 0" decoration-muted="total_cost == 0"/>
+
                 <field name="currency_id" invisible="1" optional="hide"/>
             </tree>
         </field>
@@ -23,29 +48,69 @@
             <form string="Chi phí dự án">
                 <sheet>
                     <group>
-                        <field name="project_id" options="{'no_create': True}" readonly="1"/>
-                        <field name="currency_id" invisible="1" optional="hide"/>
-                        <field name="total_cost" widget="monetary"/>
-                        <field name="total_spent" widget="monetary"/>
-                        <field name="total_not_spent" widget="monetary"/>
+                        <group string="Thông tin">
+                            <field name="project_id" options="{'no_create': True}" readonly="1"/>
+                            <field name="contract_number"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+
+                        <group string="Tổng quan chi phí">
+                            <field name="total_cost" string="Tổng theo dõi" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_spent" string="Tổng đã chi" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_not_spent" string="Tổng chưa chi" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        </group>
                     </group>
 
-                    <field name="payment_request_ids" readonly="context.get('readonly_by_ctx', False)">
-                        <tree create="false" edit="false" delete="false">
+                    <separator string="Theo phân loại chi phí"/>
+
+                    <!-- Hiển thị gọn: mỗi nhóm 1 cột -->
+                    <group col="3">
+                        <group string="Nguyên vật liệu (NVL)">
+                            <field name="total_material" string="Tổng" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_spent_material" string="Đã chi" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_not_spent_material" string="Chưa chi" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        </group>
+
+                        <group string="Nhân công">
+                            <field name="total_labor" string="Tổng" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_spent_labor" string="Đã chi" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_not_spent_labor" string="Chưa chi" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        </group>
+
+                        <group string="Sản xuất chung (SXC)">
+                            <field name="total_manufacturing" string="Tổng" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_spent_manufacturing" string="Đã chi" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_not_spent_manufacturing" string="Chưa chi" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        </group>
+                    </group>
+
+                    <separator string="Danh sách yêu cầu chi (chỉ theo dõi Xác nhận / Hoàn tất)"/>
+
+                    <!-- Chỉ hiển thị confirmed + done -->
+                    <field name="payment_request_ids" readonly="context.get('readonly_by_ctx', False)" domain="[('state', 'in', ['confirmed', 'done'])]">
+                        <tree create="false" edit="false" delete="false" default_order="date_payment desc, expense_type asc">
                             <field name="name"/>
                             <field name="note" string="Nội dung"/>
-                            <field name="proposal_sheet_id"/>
-                            <field name="proposal_person_id" widget ="many2one_avatar_user"/>
-                            <field name="date"/>
                             <field name="date_payment"/>
+                            <field name="expense_type"/>
                             <field name="total" widget="monetary" sum="Tổng cộng"/>
-                            <field name="status_expense" string="Trạng thái chi" widget="badge" decoration-danger="status_expense == 'not yet'" decoration-success="status_expense=='paid'"/>
+                            <field name="state" string="Trạng thái" widget="badge" decoration-warning="state == 'confirmed'" decoration-success="state == 'done'"/>
+                            <field name="proposal_sheet_id" optional="hide"/>
+                            <field name="date" optional="hide"/>
                             <field name="currency_id" optional="hide"/>
-                            <!-- <field name="state" widget="badge"/> -->
+
+                            <!-- Nếu vẫn muốn xem file thì để optional, tránh tree bị rối -->
+                            <!-- <field name="attachment_ids" string="Tệp đính kèm" widget="many2many_binary" optional="hide"/> -->
                         </tree>
                     </field>
 
                 </sheet>
+
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
             </form>
         </field>
     </record>

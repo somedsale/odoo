@@ -1,55 +1,202 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
+
     <t t-name="custom_project_expense.ListRenderer" t-inherit="web.ListRenderer" t-inherit-mode="extension" owl="1">
+
         <xpath expr="//table" position="before">
-            <t t-if="props.list.resModel === 'project.expense.custom'">
+            <t t-if="props.list &amp;&amp; props.list.resModel === 'project.expense.custom'">
 
-                <!-- Lấy ký hiệu tiền tệ từ bản ghi đầu tiên nếu có -->
-                <t t-set="currencySymbol" t-value="props.list.records.length &gt; 0 &amp;&amp; props.list.records[0].data.currency_id ? props.list.records[0].data.currency_id[1] : ''"/>
+                <!-- ===== Data source ===== -->
+                <t t-set="records" t-value="props.list.records || []"/>
+                <t t-set="fmt" t-value="(n) =&gt; (+n || 0).toLocaleString('vi-VN')"/>
 
-                <!-- Tính tổng các giá trị -->
-                <t t-set="totalCost" t-value="props.list.records.reduce((sum, r) =&gt; sum + (r.data.total_cost || 0), 0)"/>
-                <t t-set="totalSpent" t-value="props.list.records.reduce((sum, r) =&gt; sum + (r.data.total_spent || 0), 0)"/>
-                <t t-set="totalNotSpent" t-value="props.list.records.reduce((sum, r) =&gt; sum + (r.data.total_not_spent || 0), 0)"/>
+                <!-- Currency label -->
+                <t t-set="currencyLabel" t-value="records.length &gt; 0 &amp;&amp; records[0].data.currency_id ? (records[0].data.currency_id[1] || '') : ''"/>
 
-                <div class="o_expense_statusbar d-flex w-100 align-items-stretch">
+                <!-- ===== Tổng quan ===== -->
+                <t t-set="totalCost" t-value="records.reduce((sum, r) =&gt; sum + (+r.data.total_cost || 0), 0)"/>
+                <t t-set="totalSpent" t-value="records.reduce((sum, r) =&gt; sum + (+r.data.total_spent || 0), 0)"/>
+                <t t-set="totalNotSpent" t-value="records.reduce((sum, r) =&gt; sum + (+r.data.total_not_spent || 0), 0)"/>
 
-                    <!-- Step 1: Tổng chi phí -->
-                    <div class="o_expense_card o_arrow_button flex-grow-1 d-flex flex-column p-3 border-bottom text-center">
-                        <span class="h2 m-0 text-primary">
-                            <t t-esc="totalCost.toLocaleString()"/>
-                            <t t-esc="currencySymbol"/>
-                        </span>
-                        <b class="mx-2">Tổng chi phí</b>
-                    </div>
-                    <div class="o_expense_card o_arrow_button flex-grow-0 d-flex align-items-center justify-content-center border-bottom px-2">
-                        <i class="fa fa-angle-right fa-3x"/>
-                    </div>
+                <!-- ===== Đã chi theo phân loại ===== -->
+                <t t-set="spentMaterial" t-value="records.reduce((sum, r) =&gt; sum + (+r.data.total_spent_material || 0), 0)"/>
+                <t t-set="spentLabor" t-value="records.reduce((sum, r) =&gt; sum + (+r.data.total_spent_labor || 0), 0)"/>
+                <t t-set="spentManufacturing" t-value="records.reduce((sum, r) =&gt; sum + (+r.data.total_spent_manufacturing || 0), 0)"/>
 
-                    <!-- Step 2: Tổng đã chi -->
-                    <div class="o_expense_card o_arrow_button flex-grow-1 d-flex flex-column p-3 border-bottom text-center">
-                        <span class="h2 m-0 text-primary">
-                            <t t-esc="totalSpent.toLocaleString()"/>
-                            <t t-esc="currencySymbol"/>
-                        </span>
-                        <b class="mx-2">Tổng đã chi</b>
-                    </div>
-                    <div class="o_expense_card o_arrow_button flex-grow-0 d-flex align-items-center justify-content-center border-bottom px-2">
-                        <i class="fa fa-angle-right fa-3x"/>
-                    </div>
+                <!-- ===== Chưa chi theo phân loại ===== -->
+                <t t-set="pendingMaterial" t-value="records.reduce((sum, r) =&gt; sum + (+r.data.total_not_spent_material || 0), 0)"/>
+                <t t-set="pendingLabor" t-value="records.reduce((sum, r) =&gt; sum + (+r.data.total_not_spent_labor || 0), 0)"/>
+                <t t-set="pendingManufacturing" t-value="records.reduce((sum, r) =&gt; sum + (+r.data.total_not_spent_manufacturing || 0), 0)"/>
 
-                    <!-- Step 3: Tổng chưa chi -->
-                    <div class="o_expense_card o_arrow_button_current flex-grow-1 d-flex flex-column p-3 border-bottom text-center">
-                        <span class="h2 m-0 text-primary">
-                            <t t-esc="totalNotSpent.toLocaleString()"/>
-                            <t t-esc="currencySymbol"/>
-                        </span>
-                        <b class="mx-2">Tổng chưa chi</b>
-                    </div>
+                <!-- ===== Tổng theo dõi theo phân loại ===== -->
+                <t t-set="trackMaterial" t-value="records.reduce((sum, r) =&gt; sum + (+r.data.total_material || 0), 0)"/>
+                <t t-set="trackLabor" t-value="records.reduce((sum, r) =&gt; sum + (+r.data.total_labor || 0), 0)"/>
+                <t t-set="trackManufacturing" t-value="records.reduce((sum, r) =&gt; sum + (+r.data.total_manufacturing || 0), 0)"/>
 
+                <!-- ===== Tỷ lệ ===== -->
+                <t t-set="spentPct" t-value="totalCost ? +(((totalSpent / totalCost) * 100).toFixed(1)) : 0"/>
+                <t t-set="pendingPct" t-value="totalCost ? +(((totalNotSpent / totalCost) * 100).toFixed(1)) : 0"/>
+
+                <!-- Clamp width 0..100 -->
+                <t t-set="spentPctClamped" t-value="spentPct &lt; 0 ? 0 : (spentPct &gt; 100 ? 100 : spentPct)"/>
+                <t t-set="pendingPctClamped" t-value="pendingPct &lt; 0 ? 0 : (pendingPct &gt; 100 ? 100 : pendingPct)"/>
+
+                <!-- ===== Toggle button + Dashboard ===== -->
+                <div class="o_pe_dash_toggle_wrap mb-2">
+                    <details class="o_pe_dash_toggle">
+                        <summary class="o_pe_dash_toggle__summary">
+                            <span class="o_pe_dash_toggle__btn">
+                                <i class="fa fa-bar-chart me-1"/>
+                                <span>Xem thống kê chi phí dự án</span>
+                                <i class="fa fa-chevron-right o_pe_dash_toggle__chev ms-2"/>
+                            </span>
+
+                            <span class="o_pe_dash_toggle__meta">
+                                <span class="badge rounded-pill text-bg-light">
+                                    <t t-esc="records.length"/>
+ dự án
+                                </span>
+                            </span>
+                        </summary>
+
+                        <!-- ===== Nội dung dashboard (xổ xuống) ===== -->
+                        <div class="o_pe_dash o_pe_dash--compact mt-2">
+                            <t t-if="records.length">
+
+                                <!-- Header -->
+                                <div class="o_pe_dash__head mb-2">
+                                    <div class="o_pe_dash__title">
+                                        <div class="o_pe_dash__title_main">Tổng quan chi phí dự án</div>
+                                        <div class="o_pe_dash__title_sub">Theo danh sách đang hiển thị</div>
+                                    </div>
+                                </div>
+
+                                <!-- KPI Cards -->
+                                <div class="row g-2 mb-2">
+                                    <div class="col-12 col-md-4">
+                                        <div class="o_pe_kpi o_pe_kpi--tracking h-100">
+                                            <div class="o_pe_kpi__label">Tổng theo dõi</div>
+                                            <div class="o_pe_kpi__value">
+                                                <t t-esc="fmt(totalCost)"/>
+                                            </div>
+                                            <div class="o_pe_kpi__sub">Confirmed + Done</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-4">
+                                        <div class="o_pe_kpi o_pe_kpi--spent h-100">
+                                            <div class="o_pe_kpi__label">Đã chi</div>
+                                            <div class="o_pe_kpi__value">
+                                                <t t-esc="fmt(totalSpent)"/>
+                                            </div>
+                                            <div class="o_pe_kpi__sub">
+                                                <span class="o_pe_dot o_pe_dot--spent"/>
+                                                <t t-esc="spentPct"/>
+%
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-4">
+                                        <div class="o_pe_kpi o_pe_kpi--pending h-100">
+                                            <div class="o_pe_kpi__label">Chưa chi</div>
+                                            <div class="o_pe_kpi__value">
+                                                <t t-esc="fmt(totalNotSpent)"/>
+                                            </div>
+                                            <div class="o_pe_kpi__sub">
+                                                <span class="o_pe_dot o_pe_dot--pending"/>
+                                                <t t-esc="pendingPct"/>
+%
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Breakdown table -->
+                                <div class="o_pe_panel">
+                                    <div class="o_pe_panel__head">
+                                        <div class="o_pe_panel__title">Chi tiết theo phân loại</div>
+                                        <div class="o_pe_panel__sub">NVL / Nhân công / SXC</div>
+                                    </div>
+
+                                    <div class="table-responsive">
+                                        <table class="o_pe_tbl table table-sm mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Phân loại</th>
+                                                    <th class="text-end">Đã chi</th>
+                                                    <th class="text-end">Chưa chi</th>
+                                                    <th class="text-end">Tổng theo dõi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Nguyên vật liệu (NVL)</td>
+                                                    <td class="text-end o_pe_num o_pe_num--spent">
+                                                        <t t-esc="fmt(spentMaterial)"/>
+                                                    </td>
+                                                    <td class="text-end o_pe_num o_pe_num--pending">
+                                                        <t t-esc="fmt(pendingMaterial)"/>
+                                                    </td>
+                                                    <td class="text-end o_pe_num o_pe_num--tracking">
+                                                        <t t-esc="fmt(trackMaterial)"/>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Nhân công</td>
+                                                    <td class="text-end o_pe_num o_pe_num--spent">
+                                                        <t t-esc="fmt(spentLabor)"/>
+                                                    </td>
+                                                    <td class="text-end o_pe_num o_pe_num--pending">
+                                                        <t t-esc="fmt(pendingLabor)"/>
+                                                    </td>
+                                                    <td class="text-end o_pe_num o_pe_num--tracking">
+                                                        <t t-esc="fmt(trackLabor)"/>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Sản xuất chung (SXC)</td>
+                                                    <td class="text-end o_pe_num o_pe_num--spent">
+                                                        <t t-esc="fmt(spentManufacturing)"/>
+                                                    </td>
+                                                    <td class="text-end o_pe_num o_pe_num--pending">
+                                                        <t t-esc="fmt(pendingManufacturing)"/>
+                                                    </td>
+                                                    <td class="text-end o_pe_num o_pe_num--tracking">
+                                                        <t t-esc="fmt(trackManufacturing)"/>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <th>Tổng cộng</th>
+                                                    <th class="text-end o_pe_num o_pe_num--spent">
+                                                        <t t-esc="fmt(totalSpent)"/>
+                                                    </th>
+                                                    <th class="text-end o_pe_num o_pe_num--pending">
+                                                        <t t-esc="fmt(totalNotSpent)"/>
+                                                    </th>
+                                                    <th class="text-end o_pe_num o_pe_num--tracking">
+                                                        <t t-esc="fmt(totalCost)"/>
+                                                    </th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            </t>
+
+                            <t t-else="">
+                                <div class="o_pe_empty_state">
+                                    <i class="fa fa-info-circle me-1"/>
+                            Chưa có dữ liệu để thống kê.
+                                </div>
+                            </t>
+                        </div>
+                    </details>
                 </div>
-
             </t>
         </xpath>
     </t>
+
 </templates>

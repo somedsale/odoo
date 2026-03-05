@@ -142,6 +142,87 @@ class CostEstimateLine(models.Model):
     material_total_cost = fields.Float(string='Tổng chi phí vật tư', digits=(16, 0), compute='_compute_expense_totals')
     other_total_cost = fields.Float(string='Tổng chi phí khác', digits=(16, 0), compute='_compute_expense_totals')
 
+
+    estimate_material_amount = fields.Float(
+    string='Dự toán vật tư (theo SL)',
+    compute='_compute_estimate_amount_breakdown',
+    digits=(16, 0),
+    store=False,
+)
+    estimate_labor_amount = fields.Float(
+        string='Dự toán nhân công (theo SL)',
+        compute='_compute_estimate_amount_breakdown',
+        digits=(16, 0),
+        store=False,
+    )
+    estimate_other_amount = fields.Float(
+        string='Dự toán SX chung (theo SL)',
+        compute='_compute_estimate_amount_breakdown',
+        digits=(16, 0),
+        store=False,
+    )
+    actual_material_cost = fields.Float(
+    string="Chi phí thực tế NVL",
+    compute="_compute_actual_cost_by_type",
+    digits=(16, 0),
+    store=False,
+    )
+    actual_labor_cost = fields.Float(
+        string="Chi phí thực tế nhân công",
+        compute="_compute_actual_cost_by_type",
+        digits=(16, 0),
+        store=False,
+    )
+    actual_manufacturing_cost = fields.Float(
+        string="Chi phí thực tế sản xuất chung",
+        compute="_compute_actual_cost_by_type",
+        digits=(16, 0),
+        store=False,
+    )
+
+    @api.depends('material_total_cost', 'labor_total_cost', 'other_total_cost', 'quantity', 'display_type')
+    def _compute_estimate_amount_breakdown(self):
+        for rec in self:
+            if rec.display_type:
+                rec.estimate_material_amount = 0.0
+                rec.estimate_labor_amount = 0.0
+                rec.estimate_other_amount = 0.0
+                continue
+
+            qty = rec.quantity or 0.0
+            rec.estimate_material_amount = (rec.material_total_cost or 0.0) * qty
+            rec.estimate_labor_amount = (rec.labor_total_cost or 0.0) * qty
+            rec.estimate_other_amount = (rec.other_total_cost or 0.0) * qty
+    @api.depends('cost_estimate_id.project_id', 'display_type')
+    def _compute_actual_cost_by_type(self):
+        Payment = self.env['account.payment.request']
+
+        for line in self:
+            line.actual_material_cost = 0.0
+            line.actual_labor_cost = 0.0
+            line.actual_manufacturing_cost = 0.0
+
+            if line.display_type:
+                continue
+            if not line.id or not line.cost_estimate_id.project_id:
+                continue
+
+            payments = Payment.search([
+                ('cost_estimate_line_id', '=', line.id),
+                ('project_id', '=', line.cost_estimate_id.project_id.id),
+                ('status_expense', '=', 'paid'),   # hoặc ('state', '=', 'done') nếu bạn dùng chuẩn này
+            ])
+
+            line.actual_material_cost = sum(
+                payments.filtered(lambda p: p.expense_type == 'material').mapped('total')
+            )
+            line.actual_labor_cost = sum(
+                payments.filtered(lambda p: p.expense_type == 'labor').mapped('total')
+            )
+            line.actual_manufacturing_cost = sum(
+                payments.filtered(lambda p: p.expense_type == 'manufacturing').mapped('total')
+            )
+
     # =========================
     # Default sequence like SO
     # =========================
@@ -257,12 +338,14 @@ class CostEstimateLine(models.Model):
 
     @api.onchange('product_id')
     def _onchange_product_id(self):
-        if self.product_id:
-            self.unit = self.product_id.uom_id
-            if self.product_id.detailed_type == 'service' and self.sale_order_line_id:
-                self.price_unit = self.sale_order_line_id.price_unit
-        else:
-            self.unit = False
+        for rec in self:
+            if rec.product_id:
+                rec.unit = rec.product_id.uom_id
+                rec.name = rec.product_id.display_name 
+                if rec.product_id.detailed_type == 'service' and rec.sale_order_line_id:
+                    rec.price_unit = rec.sale_order_line_id.price_unit
+            else:
+                rec.unit = False
 
     @api.depends('labor_expense_line_ids.price_total', 'material_line_ids.price_total', 'expense_line_ids.price_total', 'display_type')
     def _compute_expense_totals(self):
