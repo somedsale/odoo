@@ -16,6 +16,7 @@
                 <field name="account_tax_id"/>
                 <field name="amount_untaxed"/>
                 <field name="amount_total" sum="Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="attachment_ids" widget="many2many_binary" string="Tệp đính kèm"/>
                 <field name="currency_id" string="Tiền tệ" optional="hide"/>
             </tree>
         </field>
@@ -29,16 +30,21 @@
             <form string="Hóa đơn">
                 <sheet>
                     <group>
-                        <field name="name"/>
-                        <field name="invoice_number"/>
-                        <field name="date"/>
-                        <field name="contract_id"/>
-                        <field name="project_id"/>
-                        <field name="partner_id" require="1"/>
-                        <field name="account_tax_id"/>
-                        <field name="amount_untaxed"/>
-                        <field name="amount_tax"/>
-                        <field name="amount_total"/>
+                        <group>
+                            <field name="name"/>
+                            <field name="invoice_number"/>
+                            <field name="date"/>
+                            <field name="contract_id"/>
+                            <field name="project_id"/>
+                            <field name="partner_id" require="1"/>
+                            <field name="attachment_ids" widget="many2many_binary" string="Tệp đính kèm"/>
+                        </group>
+                        <group>
+                            <field name="account_tax_id"/>
+                            <field name="amount_untaxed"/>
+                            <field name="amount_tax"/>
+                            <field name="amount_total"/>
+                        </group>
                     </group>
                 </sheet>
             </form>

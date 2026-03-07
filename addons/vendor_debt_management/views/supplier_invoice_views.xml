@@ -17,6 +17,8 @@
                 <field name="amount_untaxed"/>
                 <field name="amount"/>
                 <field name="note"/>
+                <field name="reconciled" widget="checkbox"/>
+                <field name="attachment_ids" widget="many2many_binary" optional="hide"/>
                 <field name="currency_id" optional="hide"/>
             </tree>
         </field>
@@ -43,6 +45,7 @@
                             <field name="amount_tax"/>
                             <field name="amount"/>
                             <field name="reconciled" widget="checkbox"/>
+                            <field name="attachment_ids" widget="many2many_binary"/>
                         </group>
                         <group>
                             <field name="date"/>
@@ -55,11 +58,10 @@
                         </group>
                     </group>
                     <group string="Loại nhà cung cấp">
-                            <field name="supplier_category"/>
-                            <field name="supplier_domestic_type"
-                                invisible="supplier_category != 'domestic'"/>
-                            <field name="supply_category"/>
-                        </group>
+                        <field name="supplier_category"/>
+                        <field name="supplier_domestic_type" invisible="supplier_category != 'domestic'"/>
+                        <field name="supply_category"/>
+                    </group>
                     <notebook>
                         <page string="Thông tin phiếu chi">
                             <field name="account_payment_request_ids">

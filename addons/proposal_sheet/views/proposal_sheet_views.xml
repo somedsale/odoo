@@ -16,6 +16,7 @@
                 <field name="show_button_reset_draft" invisible="1"/>
                 <field name="is_type_readonly" invisible="1"/>
                 <field name="is_new_proposal" invisible="1"/>
+                <field name="show_button_withdraw_submit" invisible="1"/>
                 <header>
                     <button name="action_submit" type="object" string="Gửi Duyệt" class="btn-primary" invisible="show_button_submit == False"/>
                     <button name="action_manager_approve" type="object" string="Quản Lý Duyệt" class="btn-success" invisible="show_button_manager_approve == False"/>
@@ -27,7 +28,8 @@
                     <button name="%(action_proposal_reject_wizard)d" type="action" string="Từ Chối" class="btn-danger" invisible="show_button_reject == False"/>
                     <button name="action_cancel" type="object" string="Hủy Phiếu" class="btn-warning" invisible="show_button_cancel == False"/>
                     <button name="action_reset_to_draft" type="object" string="Reset về Nháp" class="btn-secondary" invisible="show_button_reset_draft == False"/>
-                    <button name="action_load_from_estimate" type="object" string="Lấy từ Dự toán" invisible="state != 'draft'"/>
+                    <button name="action_withdraw_submit" type="object" string="Hủy gửi" class="btn-danger" invisible="show_button_withdraw_submit == False"/>
+                    <!-- <button name="action_load_from_estimate" type="object" string="Lấy từ Dự toán" invisible="state != 'draft'"/> -->
                     <field name="state" widget="statusbar" statusbar_visible="reviewed_manager,reviewed_accounting,approved,waiting_accounting_paid,done" invisible="state in (&apos;rejected&apos;, &apos;canceled&apos;)"/>
                     <field name="state" widget="statusbar" statusbar_visible="reviewed_manager,reviewed_accounting,approved,rejected" invisible="state != 'rejected'"/>
                     <field name="state" widget="statusbar" statusbar_visible="reviewed_manager,reviewed_accounting,approved,canceled" invisible="state != 'canceled'"/>

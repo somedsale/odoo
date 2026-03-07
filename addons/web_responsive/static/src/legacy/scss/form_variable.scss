@@ -3,3 +3,7 @@
 
 $o-form-renderer-max-width: 3840px;
 $o-form-view-sheet-max-width: 2560px;
+.o_form_label,
+.o_form_label_readonly {
+  opacity: 1 !important;
+}

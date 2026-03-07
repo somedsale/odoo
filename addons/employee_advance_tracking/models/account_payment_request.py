@@ -9,7 +9,7 @@ class AccountPaymentRequest(models.Model):
         compute="_compute_is_refunded",
         store=True,
     )
-    refund_receipt_id = fields.Many2one("account.receipt",string="Phiếu thu hoàn ứng (CT)",domain ="[('is_advance_refund','=',True)]")
+    refund_receipt_id = fields.Many2one("account.receipt",string="Phiếu thu hoàn ứng (CT)",domain ="[('is_advance_refund','=',True),('employee_id','=',employee_id)]")
     @api.depends("refund_receipt_id")
     def _compute_is_refunded(self):
         """Phiếu chi tạm ứng -> nếu có Phiếu thu hoàn ứng thì đánh dấu đã hoàn"""

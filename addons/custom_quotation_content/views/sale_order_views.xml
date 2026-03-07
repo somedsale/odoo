@@ -77,6 +77,10 @@
                 <xpath expr="//tree/field[@name='partner_id']" position="after">
                     <field name="sales_category_ids" widget="many2many_tags" options="{'color_field': 'color'}" string="Hạng mục bán hàng" optional="hide"/>
                 </xpath>
+                <xpath expr="//tree/field[@name='user_id']" position="after">
+                    <field name="write_uid" widget="many2one_avatar_user"/>
+                    <field name="write_date"/>
+                </xpath>
 
             </field>
         </record>
