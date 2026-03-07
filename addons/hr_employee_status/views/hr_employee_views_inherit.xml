@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!-- FORM nhân viên -->
+        <record id="view_employee_form_inherit_status_khkt" model="ir.ui.view">
+            <field name="name">hr.employee.form.inherit.status.khkt</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+
+                <!-- Chèn vào phần thông tin công việc -->
+                <xpath expr="//group[.//field[@name='department_id']]" position="inside">
+                    <field name="employee_status" string="Trạng thái nhân sự"/>
+                    <field name="resignation_date" readonly="employee_status != 'resigned'" string="Ngày nghỉ việc"/>
+                </xpath>
+
+                <!-- Thêm lý do nghỉ việc + ghi chú -->
+                <xpath expr="//sheet/notebook" position="inside">
+                    <page string="Trạng thái nhân sự">
+                        <group>
+                            <group>
+                                <field name="employee_status"/>
+                                <field name="resignation_date" readonly="employee_status != 'resigned'"/>
+                            </group>
+                            <group>
+                                <field name="status_note"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="resignation_reason"
+                                   readonly="employee_status != 'resigned'"
+                                   placeholder="Nhập lý do nghỉ việc..."/>
+                        </group>
+                    </page>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!-- TREE nhân viên -->
+        <record id="view_employee_tree_inherit_status_khkt" model="ir.ui.view">
+            <field name="name">hr.employee.tree.inherit.status.khkt</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree/field[@name='department_id']" position="after">
+                    <field name="employee_status"/>
+                    <field name="resignation_date" optional="hide"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- SEARCH/FILTER nhân viên -->
+        <record id="view_employee_filter_inherit_status_khkt" model="ir.ui.view">
+            <field name="name">hr.employee.search.inherit.status.khkt</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_filter"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//search" position="inside">
+                    <separator/>
+
+                    <filter string="Thử việc" name="employee_status_probation"
+                            domain="[('employee_status','=','probation')]"/>
+                    <filter string="Chính thức" name="employee_status_official"
+                            domain="[('employee_status','=','official')]"/>
+                    <filter string="Nghỉ thai sản" name="employee_status_maternity"
+                            domain="[('employee_status','=','maternity')]"/>
+                    <filter string="Tạm nghỉ" name="employee_status_suspended"
+                            domain="[('employee_status','=','suspended')]"/>
+                    <filter string="Đã nghỉ việc" name="employee_status_resigned"
+                            domain="[('employee_status','=','resigned')]"/>
+
+                    <group expand="0" string="Nhóm theo">
+                        <filter string="Trạng thái nhân sự"
+                                name="group_employee_status"
+                                context="{'group_by':'employee_status'}"/>
+                    </group>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>

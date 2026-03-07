@@ -14,20 +14,23 @@ class ProjectWorkProgress(models.Model):
     work_item_id = fields.Many2one(related="assignment_id.work_item_id", store=True, readonly=True)
     user_id = fields.Many2one(related="assignment_id.user_id", store=True, readonly=True)
     company_id = fields.Many2one(related="assignment_id.company_id", store=True, readonly=True)
-
+    price_unit = fields.Float(string="Đơn giá", digits="Product Price", related="work_item_id.price_unit", store=True)
+    price_period = fields.Float(string="Tổng giá trị", compute="_compute_price_period", store=True, digits="Product Price")
     period_no = fields.Integer(string="Kỳ", required=True, index=True)
     period_start = fields.Date(string="Từ ngày", compute="_compute_period", store=True)
     period_end = fields.Date(string="Đến ngày", compute="_compute_period", store=True)
-
     qty_cum = fields.Float(string="Lũy kế", digits="Product Unit of Measure", default=0.0)
     qty_period = fields.Float(string="Sản lượng kỳ", compute="_compute_qty_period", store=True, digits="Product Unit of Measure")
-
+    uom_id = fields.Many2one(related="work_item_id.uom_id", store=True, readonly=True)
     note = fields.Text(string="Ghi chú")
-
+    currency_id = fields.Many2one(related="company_id.currency_id", store=True, readonly=True)
     _sql_constraints = [
         ("uniq_assignment_period", "unique(assignment_id, period_no)", "Mỗi kỳ chỉ có 1 dòng tiến độ."),
     ]
-
+    @api.depends("period_no", "assignment_id", "assignment_id.date_start", "price_unit", "qty_period")
+    def _compute_price_period(self):
+        for rec in self:
+            rec.price_period = rec.price_unit * rec.qty_period
     @api.depends("assignment_id.date_start", "period_no")
     def _compute_period(self):
         for rec in self:

@@ -7,7 +7,7 @@
         <field name="name">customer.contract.tree</field>
         <field name="model">customer.contract</field>
         <field name="arch" type="xml">
-            <tree>
+            <tree default_order="date desc">
                 <field name="name"/>
                 <field name="contract_id"/>
                 <field name="date"/>

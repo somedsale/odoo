@@ -35,6 +35,26 @@
                     <group invisible="1">
                         <field name="company_id"/>
                     </group>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_tasks_custom" type="object" class="oe_stat_button" icon="fa-tasks">
+                            <field name="task_count_custom" widget="statinfo" string="Nhiệm vụ"/>
+                        </button>
+                        <button name="action_view_work_items" type="object" class="oe_stat_button" icon="fa-list-ul">
+                            <field name="work_item_count" widget="statinfo" string="Hạng mục công việc"/>
+                        </button>
+                                    <button name="action_view_cost_estimates"
+                    type="object"
+                    class="oe_stat_button"
+                    icon="fa-calculator">
+                <field name="cost_estimate_count" widget="statinfo" string="Dự toán chi phí"/>
+            </button>
+            <button name="action_view_project_expense_custom"
+                    type="object"
+                    class="oe_stat_button"
+                    icon="fa-usd">
+                <field name="project_expense_custom_count" widget="statinfo" string="Chi phí dự án"/>
+            </button>
+                    </div>
 
                     <div class="oe_title">
                         <h1>
@@ -45,7 +65,7 @@
                     <group>
                         <group>
                             <field name="partner_id"/>
-                            <field name="user_id"/>
+                            <!-- <field name="user_id"/> -->
                         </group>
                         <group>
                             <field name="date_start"/>
@@ -69,7 +89,7 @@
                             <field name="progress_percent" readonly="1"/>
                         </group>
 
-                        <group string="Tài liệu">
+                        <group string="Tài liệu" name="attachment_group">
                             <field name="attachment_ids" widget="many2many_binary" readonly="1"/>
                         </group>
                     </group>
@@ -86,14 +106,15 @@
                                     <field name="sequence" widget="handle"/>
                                     <field name="name"/>
                                     <field name="description"/>
+                                    <field name="assigned_user_id" widget="many2one_avatar_user"/>
                                     <field name="product_id"/>
                                     <field name="uom_id"/>
                                     <field name="qty_plan"/>
+                                    <field name="qty_arise"/>
+                                    <field name="qty_settlement"/>
                                     <field name="qty_done" readonly="1"/>
                                     <field name="qty_remaining" readonly="1"/>
                                     <field name="progress_percent" readonly="1"/>
-                                    <field name="assigned_user_ids" widget="many2many_avatar_user"/>
-                                    <field name="active" invisible="1"/>
                                 </tree>
 
                                 <form string="Hạng mục công việc">
@@ -108,7 +129,7 @@
                                                 <field name="product_id"/>
                                                 <field name="uom_id"/>
                                                 <field name="so_line_id" readonly="1"/>
-                                                <field name="assigned_user_ids" widget="many2many_tags"/>
+                                                <field name="assigned_user_id" widget="many2one_avatar_user"/>
                                             </group>
                                             <group>
                                                 <field name="qty_plan" readonly="1"/>
@@ -135,8 +156,56 @@
                                 </form>
                             </field>
                         </page>
+                        <page string="Nhiệm vụ">
+    <field name="task_ids" context="{'default_project_id': id, 'default_company_id': company_id}">
+        <tree editable="bottom" string="Nhiệm vụ">
+            <!-- ✅ thêm để tránh lỗi domain validate -->
+            <field name="company_id" invisible="1"/>
+            <!-- <field name="is_internal_project" invisible="1"/> -->
+
+            <field name="name"/>
+            <field name="user_ids" widget="many2many_tags"/>
+            <field name="date_deadline"/>
+            <field name="priority"/>
+
+            <!-- nếu có hiển thị project_id thì vẫn giữ -->
+            <field name="project_id" invisible="1"/>
+        </tree>
+
+        <form string="Nhiệm vụ">
+            <sheet>
+                <!-- ✅ bắt buộc cho domain của project_id -->
+                <field name="company_id" invisible="1"/>
+                <!-- <field name="is_internal_project" invisible="1"/> -->
+                <field name="project_id" invisible="1"/>
+
+                <group>
+                    <group>
+                        <field name="name"/>
+                        <!-- Có thể bỏ field project_id khỏi form vì đang tạo trong dự án -->
+                        <!-- <field name="project_id" readonly="1"/> -->
+                        <field name="user_ids" widget="many2many_tags"/>
+                    </group>
+                    <group>
+                        <field name="date_deadline"/>
+                        <field name="priority"/>
+                        <field name="partner_id"/>
+                    </group>
+                </group>
+
+                <group>
+                    <field name="description" placeholder="Mô tả nhiệm vụ..."/>
+                </group>
+            </sheet>
+        </form>
+    </field>
+</page>
                     </notebook>
                 </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
             </form>
         </field>
     </record>
@@ -154,6 +223,6 @@
     </record>
 
     <!-- ===== MENU RIÊNG ===== -->
-    <menuitem id="menu_project_work_root" name="Dự án (Theo SO)" parent="project.menu_main_pm" action="action_project_project_work_custom" sequence="95"/>
+    <!-- <menuitem id="menu_project_work_root" name="Dự án (Theo SO)" parent="project.menu_main_pm" action="action_project_project_work_custom" sequence="95"/> -->
 
 </odoo>

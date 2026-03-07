@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+  <t t-name="project_work_from_so.WorkItemManagerDashboard" owl="1">
+    <div class="pwds">
+
+      <!-- Header -->
+      <div class="pwds-header d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <h2 class="m-0">Dashboard hạng mục công việc</h2>
+          <div class="text-muted">Theo từng dự án • Có progress • Bấm để mở chi tiết</div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-primary" t-on-click="onRefresh">
+            <i class="fa fa-refresh me-1"/>
+ Làm mới
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="pwds-filters card mb-3">
+        <div class="card-body d-flex flex-wrap gap-3 align-items-center">
+          <div class="flex-grow-1" style="min-width:260px;">
+            <input class="form-control" placeholder="Tìm theo tên hạng mục..." t-on-input="onQueryInput"/>
+          </div>
+
+          <label class="form-check form-switch m-0">
+            <input class="form-check-input" type="checkbox" t-att-checked="state.onlyActive" t-on-change="onToggleActive"/>
+            <span class="form-check-label">Chỉ hiện đang hoạt động</span>
+          </label>
+
+          <label class="form-check form-switch m-0">
+            <input class="form-check-input" type="checkbox" t-att-checked="state.onlyNotDone" t-on-change="onToggleNotDone"/>
+            <span class="form-check-label">Chưa hoàn thành (&lt; 100%)</span>
+          </label>
+
+          <div class="text-muted">
+            Giới hạn tải: <strong t-esc="state.limit"/>
+ dòng
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI -->
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-md-4">
+          <div class="card pwds-kpi">
+            <div class="card-body">
+              <div class="text-muted">Tổng số hạng mục</div>
+              <div class="pwds-kpi-value" t-esc="state.totals.items"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+          <div class="card pwds-kpi">
+            <div class="card-body">
+              <div class="text-muted">Tổng kế hoạch</div>
+              <div class="pwds-kpi-value" t-esc="state.totals.qty_plan"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+          <div class="card pwds-kpi">
+            <div class="card-body">
+              <div class="text-muted">Tổng đã làm</div>
+              <div class="pwds-kpi-value" t-esc="state.totals.qty_done"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <t t-if="state.loading">
+        <div class="card">
+          <div class="card-body">
+            <i class="fa fa-spinner fa-spin me-2"/>
+ Đang tải dữ liệu...
+          </div>
+        </div>
+      </t>
+
+      <!-- Projects -->
+      <t t-else="">
+        <t t-if="!state.projects.length">
+          <div class="card">
+            <div class="card-body text-muted">
+              Không có dữ liệu phù hợp bộ lọc.
+            </div>
+          </div>
+        </t>
+
+        <t t-foreach="state.projects" t-as="p" t-key="p.projectId">
+          <div class="card mb-3 pwds-project">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-outline-secondary" t-on-click="toggleProject" t-att-data-project-id="p.projectId">
+                  <t t-if="p.expanded">−</t>
+                  <t t-else="">+</t>
+                </button>
+
+
+                <a href="#" class="pwds-project-title" t-on-click.prevent="openProject" t-att-data-project-id="p.projectId">
+                  <strong t-esc="p.projectName"/>
+                </a>
+
+
+                <span class="badge bg-secondary">
+                  <t t-esc="p.kpi.items"/>
+ hạng mục
+                </span>
+              </div>
+
+              <div class="text-muted d-flex gap-3">
+                <span>Kế hoạch: <strong t-esc="p.kpi.qty_plan"/>
+                </span>
+                <span>Đã làm: <strong t-esc="p.kpi.qty_done"/>
+                </span>
+                <span>TB %: <strong t-esc="Math.round(p.kpi.avg_progress)"/>
+%</span>
+              </div>
+            </div>
+
+            <t t-if="p.expanded">
+              <div class="card-body p-0">
+                <table class="table table-hover m-0">
+                  <thead>
+                    <tr>
+                      <th style="width:34%;">Hạng mục</th>
+                      <th>Sản phẩm</th>
+                      <th class="text-end">Kế hoạch</th>
+                      <th class="text-end">Đã làm</th>
+                      <th class="text-end">Còn lại</th>
+                      <th style="width:22%;">Tiến độ</th>
+                      <th class="text-end">Người</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <t t-foreach="p.items" t-as="it" t-key="it.id">
+                      <tr class="pwds-row" t-on-click="openWorkItem" t-att-data-work-item-id="it.id">
+
+                        <td>
+                          <div class="fw-semibold" t-esc="it.name"/>
+                          <t t-if="it.active === false">
+                            <span class="badge bg-warning ms-1">Đã ẩn</span>
+                          </t>
+                        </td>
+                        <td>
+                          <t t-if="it.product_id">
+                            <span t-esc="it.product_id[1]"/>
+                          </t>
+                        </td>
+                        <td class="text-end" t-esc="it.qty_plan || 0"/>
+                        <td class="text-end" t-esc="it.qty_done || 0"/>
+                        <td class="text-end" t-esc="it.qty_remaining || 0"/>
+
+                        <td>
+                          <div class="d-flex justify-content-between">
+                            <span class="text-muted">%</span>
+                            <strong>
+                              <t t-esc="Math.round(it.progress_percent || 0)"/>
+%</strong>
+                          </div>
+                          <div class="progress" style="height:10px;">
+                            <div class="progress-bar" role="progressbar" t-att-style="'width:' + progressWidth(it.progress_percent)">
+                            </div>
+                          </div>
+                        </td>
+
+                        <td class="text-end">
+                          <span class="badge bg-light text-dark">
+                            <t t-esc="(it.assigned_user_ids &amp;&amp; it.assigned_user_ids.length) ? it.assigned_user_ids.length : 0"/>
+                          </span>
+                        </td>
+                      </tr>
+                    </t>
+                  </tbody>
+                </table>
+              </div>
+            </t>
+          </div>
+        </t>
+      </t>
+
+    </div>
+  </t>
+
+</templates>

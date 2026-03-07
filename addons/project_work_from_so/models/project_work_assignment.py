@@ -17,7 +17,7 @@ class ProjectWorkAssignment(models.Model):
     work_item_id = fields.Many2one("project.work.item", string="Work Item", required=True, ondelete="cascade")
     user_id = fields.Many2one("res.users", string="Người được phân công", required=True)
     description = fields.Text(string="Mô tả")
-    date_start = fields.Date(string="Date Start", required=True, default=lambda self: fields.Date.context_today(self))
+    date_start = fields.Date(string="Ngày bắt đầu", related="project_id.date_start", store=True, readonly=True)
 
     # info từ work item
     work_item_name = fields.Char(related="work_item_id.name", store=True, readonly=True)
@@ -25,10 +25,10 @@ class ProjectWorkAssignment(models.Model):
     description = fields.Text(related="work_item_id.description", store=True, readonly=True)
     uom_id = fields.Many2one(related="work_item_id.uom_id", store=True, readonly=True)
     qty_plan = fields.Float(related="work_item_id.qty_plan", store=True, readonly=True, digits="Product Unit of Measure")
+    qty_settlement = fields.Float(related="work_item_id.qty_settlement", store=True, readonly=True, digits="Product Unit of Measure")
     price_unit = fields.Float(related="work_item_id.so_line_id.price_unit", store=True, readonly=True, digits="Product Price")
     # Progress lines
     progress_ids = fields.One2many("project.work.progress", "assignment_id", string="Lịch sử kỳ")
-
     qty_done = fields.Float(string="Đã thực hiện", compute="_compute_qty_done", store=True, digits="Product Unit of Measure")
     qty_remaining = fields.Float(string="Còn lại", compute="_compute_qty_done", store=True, digits="Product Unit of Measure")
     qty_item_done = fields.Float(related="work_item_id.qty_done", store=True, readonly=True, digits="Product Unit of Measure")
@@ -36,6 +36,7 @@ class ProjectWorkAssignment(models.Model):
     value_completed = fields.Monetary(string="Giá trị hoàn thành", compute="_compute_qty_done", store=True)
     currency_id = fields.Many2one(related="project_id.company_id.currency_id", store=True, readonly=True)
     progress_percent = fields.Float(string="% Hoàn thành", related ="work_item_id.progress_percent", store=True)
+    attachment_ids = fields.Many2many("ir.attachment", related="project_id.attachment_ids", string="Tài liệu đính kèm", store=False, readonly=True)
     # ====== Compute fields ======
     @api.depends("work_item_id", "work_item_id.name")
     def _compute_name(self):
