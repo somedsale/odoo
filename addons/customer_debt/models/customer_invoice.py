@@ -78,6 +78,14 @@ class CustomerInvoice(models.Model):
         compute="_compute_display_name",
         store=True
     )
+    attachment_ids = fields.Many2many(
+    "ir.attachment",
+    "customer_invoice_ir_attachments_rel",  # bảng quan hệ
+    "customer_invoice_id",
+    "attachment_id",
+    string="Tệp đính kèm",
+    help="Đính kèm hóa đơn, biên bản, hợp đồng, chứng từ liên quan.",
+)
 
     # -----------------------------
     # HIỂN THỊ

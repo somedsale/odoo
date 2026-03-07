@@ -115,6 +115,8 @@
             <field name="receiving_status" invisible="1"/>
             <!-- Xác nhận đơn hàng (RFQ -> PO) -->
             <button name="button_confirm" type="object" class="oe_highlight" string="Xác nhận đơn hàng" groups="account.group_account_manager" context="{'validate_analytic': True}" invisible="state not in ['draft','sent']"/>
+            <button name="button_draft" type="object" class="oe_highlight" string="Chuyển về nháp" groups="account.group_account_manager" invisible="state in ['draft']"/>
+
 
             <!-- Xác nhận ngày nhận hàng (nếu bạn vẫn dùng field mail_reminder_confirmed/effective_date) -->
             <button name="confirm_reminder_mail" type="object" string="Xác nhận ngày nhận hàng" groups="account.group_account_manager" invisible="state not in ('purchase','done') or mail_reminder_confirmed or effective_date"/>
