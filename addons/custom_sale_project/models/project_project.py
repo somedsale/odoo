@@ -15,7 +15,21 @@ class ProjectProject(models.Model):
         ('upcoming', 'Sắp hết hạn'),
         ('ontrack', 'Còn thời gian')
     ], string="Trạng thái Deadline", compute='_compute_deadline_status', store=True)
-
+    # Field đệm để domain stage_id có thể tham chiếu project_id
+    project_id = fields.Many2one(
+        "project.project",
+        compute="_compute_project_id_self",
+        store=False,
+        readonly=True,
+    )
+    currency_id = fields.Many2one(
+        'res.currency',
+        string='Currency',
+        default=lambda self: self.env.company.currency_id,
+    )
+    def _compute_project_id_self(self):
+        for rec in self:
+            rec.project_id = rec
     @api.depends('task_ids.completion_percent')
     def _compute_completion_percent(self):
         for project in self:

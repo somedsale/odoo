@@ -18,7 +18,9 @@
                 <field name="can_edit" invisible="1"/>
                 <field name="user_ids" class="o_task_user_field" options="{'no_open': True, 'no_quick_create': True}" widget="many2many_avatar_user" readonly="can_edit == False" />
             </xpath>
-            <xpath expr="//sheet/notebook" position="inside">
+            <xpath expr="//header/field[@name=&apos;stage_id&apos;]" position="replace"/>
+
+            <!-- <xpath expr="//sheet/notebook" position="inside">
                 <page string="Thi công">
                     <group>
                         <field name="quantity_uom"/>
@@ -36,7 +38,7 @@
                         </tree>
                     </field>
                 </page>
-            </xpath>
+            </xpath> -->
             <xpath expr="//page[@name=&apos;page_timesheets&apos;]" position="replace"/>
             <xpath expr="//page[@name=&apos;task_dependencies&apos;]" position="attributes">
                 <attribute name="invisible">1</attribute>
@@ -60,6 +62,33 @@
             <xpath expr="//group/group/field[@name=&apos;sale_line_id&apos;]" position="replace">
                 <field name="sale_line_id" invisible="1"/>
             </xpath>
+        </field>
+    </record>
+    <record id="view_project_task_tree_inherit_use_state_no_stage" model="ir.ui.view">
+        <field name="name">project.task.tree.inherit.use.state.no.stage</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_tree2"/>
+        <field name="arch" type="xml">
+
+            <!-- 1) Đổi group mặc định từ stage_id sang state -->
+            <xpath expr="//tree" position="attributes">
+                <attribute name="default_group_by"></attribute>
+            </xpath>
+
+            <!-- 2) Bỏ cột stage_id (badge) ở cuối tree -->
+            <xpath expr="//tree/field[@name='stage_id']" position="replace">
+                <field name="state" widget="badge" string="Trạng thái" nolabel="1" decoration-primary="state == '[01_in_progress]'" decoration-warning="state == '[02_changes_requested]'" decoration-success="state in ['[03_approved]', '[1_done]']" decoration-danger="state == '[1_canceled]'" decoration-info="state == '[04_waiting_normal]'"/>
+            </xpath>
+ <xpath expr="//tree/field[@name='progress']" position="attributes">
+                <attribute name="column_invisible">True</attribute>
+            </xpath>
+            <!-- (Tuỳ chọn) nếu muốn state hiện kiểu badge thay vì widget toggle ở đầu -->
+            <!--
+                <xpath expr="//tree/field[@name='state'][@widget='project_task_state_selection']" position="replace">
+                    <field name="state" widget="badge"/>
+                </xpath>
+                -->
+
         </field>
     </record>
     <record id="view_project_task_kanban_inherit_progress" model="ir.ui.view">

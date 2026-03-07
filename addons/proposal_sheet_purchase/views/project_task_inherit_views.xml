@@ -28,20 +28,5 @@
       </field>
     </record>
     <!-- Thêm 2 checkbox vào form Task -->
-    <record id="view_task_form_add_optional_stages" model="ir.ui.view">
-      <field name="name">project.task.form.add.optional.stages</field>
-      <field name="model">project.task</field>
-      <field name="inherit_id" ref="project.view_task_form2"/>
-      <field name="priority" eval="10010"/>
-      <field name="arch" type="xml">
-        <!-- Chèn vào group đầu tiên trong sheet (tuỳ bố cục của bạn) -->
-        <xpath expr="//form/sheet/group" position="inside">
-          <group string="Luồng tuỳ chọn">
-            <field name="add_stage_production"/>
-            <field name="add_stage_installation"/>
-          </group>
-        </xpath>
-      </field>
-    </record>
   </data>
 </odoo>

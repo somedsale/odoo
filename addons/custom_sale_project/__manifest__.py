@@ -1,7 +1,7 @@
 {
     'name': 'Auto Create Project from Sale Order',
     'version': '1.0',
-    'depends': ['sale', 'project', 'base', 'sale_project'],
+    'depends': ['sale', 'project', 'base', 'sale_project', 'contract_management'],
     'data': [
         'data/cron_data.xml',
         'security/ir.model.access.csv',
@@ -11,6 +11,7 @@
         'views/task_production_message_template.xml', 
         'views/project_project_view.xml',
         'views/create_kanban_view.xml',
+        # "views/project_project_custom_views.xml",
     ],
     'installable': True,
     'auto_install': False,

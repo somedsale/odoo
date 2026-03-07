@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_project_work_item_user,project.work.item user,model_project_work_item,project.group_project_user,1,0,0,0
+access_project_work_assignment_user,project.work.assignment user,model_project_work_assignment,project.group_project_user,1,1,1,0
+access_project_work_progress_user,project.work.progress user,model_project_work_progress,project.group_project_user,1,1,1,0
+access_project_project_user,project.project user,model_project_project,project.group_project_user,1,0,0,0
+access_project_work_item_manager,project.work.item manager,model_project_work_item,project.group_project_manager,1,1,1,1
+access_project_work_assignment_manager,project.work.assignment manager,model_project_work_assignment,project.group_project_manager,1,1,1,1
+access_project_work_progress_manager,project.work.progress manager,model_project_work_progress,project.group_project_manager,1,1,1,1
+access_project_project_manager,project.project manager,model_project_project,project.group_project_manager,1,1,1,1

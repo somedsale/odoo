@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <data>
+
+    <!-- =========================
+         SEARCH VIEW (Tổng hợp theo dự án)
+    ========================== -->
+    <record id="view_customer_invoice_project_summary_search" model="ir.ui.view">
+      <field name="name">customer.invoice.project.summary.search</field>
+      <field name="model">customer.invoice</field>
+      <field name="arch" type="xml">
+        <search string="Tổng hợp hóa đơn theo dự án">
+          <field name="name"/>
+          <field name="invoice_number"/>
+          <field name="partner_id"/>
+          <field name="project_id"/>
+          <field name="contract_id"/>
+          <field name="date"/>
+
+          <separator/>
+
+          <filter string="Có dự án" name="has_project" domain="[('project_id','!=',False)]"/>
+          <filter string="Không có dự án" name="no_project" domain="[('project_id','=',False)]"/>
+
+          <!-- Filter thời gian mẫu -->
+          <filter string="Tháng này" name="this_month"
+                  domain="[('date', '&gt;=', context_today().strftime('%%Y-%%m-01'))]"/>
+
+          <group expand="0" string="Nhóm theo">
+            <filter string="Dự án" name="group_project" context="{'group_by':'project_id'}"/>
+            <filter string="Khách hàng" name="group_partner" context="{'group_by':'partner_id'}"/>
+            <filter string="Hợp đồng" name="group_contract" context="{'group_by':'contract_id'}"/>
+            <filter string="Ngày hóa đơn" name="group_date" context="{'group_by':'date'}"/>
+          </group>
+
+          <!-- Search panel chỉ dùng field stored để tránh lỗi -->
+          <searchpanel>
+            <field name="project_id" string="Dự án" enable_counters="1"/>
+            <field name="partner_id" string="Khách hàng" enable_counters="1"/>
+          </searchpanel>
+        </search>
+      </field>
+    </record>
+
+    <!-- =========================
+         TREE VIEW (Có sum để tổng hợp)
+    ========================== -->
+    <record id="view_customer_invoice_project_summary_tree" model="ir.ui.view">
+      <field name="name">customer.invoice.project.summary.tree</field>
+      <field name="model">customer.invoice</field>
+      <field name="arch" type="xml">
+        <tree string="Tổng hợp hóa đơn theo dự án"
+              default_order="date desc, id desc"
+              create="1" edit="1">
+          <field name="date"/>
+          <field name="name" string="Mã hóa đơn"/>
+          <field name="invoice_number"/>
+          <field name="partner_id"/>
+          <field name="project_id"/>
+          <field name="contract_id"/>
+
+          <field name="amount_untaxed" sum="Tổng trước thuế" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+          <field name="amount_tax" sum="Tổng thuế" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+          <field name="amount_total" sum="Tổng sau thuế" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+
+          <!-- Nếu bạn đã thêm các field này ở customer.invoice thì giữ -->
+          <field name="receipt_amount_total" sum="Tổng đã thu" optional="show" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+          <field name="receivable_remaining" sum="Tổng còn phải thu" optional="show" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+          <field name="receipt_percent" optional="show"/>
+          <field name="currency_id" optional="hide" column_invisible="1"/>
+        </tree>
+      </field>
+    </record>
+
+    <!-- =========================
+         PIVOT VIEW (Tổng hợp chuẩn)
+    ========================== -->
+    <record id="view_customer_invoice_project_summary_pivot" model="ir.ui.view">
+      <field name="name">customer.invoice.project.summary.pivot</field>
+      <field name="model">customer.invoice</field>
+      <field name="arch" type="xml">
+        <pivot string="Pivot hóa đơn theo dự án">
+          <field name="project_id" type="row"/>
+          <field name="partner_id" type="row" optional="show"/>
+          <field name="date" type="col" interval="month" optional="show"/>
+
+          <field name="amount_untaxed" type="measure"/>
+          <field name="amount_tax" type="measure"/>
+          <field name="amount_total" type="measure"/>
+
+          <!-- Nếu đã có -->
+          <field name="receipt_amount_total" type="measure" optional="show"/>
+          <field name="receivable_remaining" type="measure" optional="show"/>
+        </pivot>
+      </field>
+    </record>
+
+    <!-- =========================
+         GRAPH VIEW (Tuỳ chọn)
+    ========================== -->
+    <record id="view_customer_invoice_project_summary_graph" model="ir.ui.view">
+      <field name="name">customer.invoice.project.summary.graph</field>
+      <field name="model">customer.invoice</field>
+      <field name="arch" type="xml">
+        <graph string="Biểu đồ hóa đơn theo dự án" type="bar">
+          <field name="project_id"/>
+          <field name="amount_total" type="measure"/>
+        </graph>
+      </field>
+    </record>
+
+    <!-- =========================
+         ACTION
+         - mở trực tiếp customer.invoice
+         - mặc định group theo project_id
+    ========================== -->
+    <record id="action_customer_invoice_project_summary" model="ir.actions.act_window">
+      <field name="name">Tổng hợp hóa đơn theo dự án</field>
+      <field name="res_model">customer.invoice</field>
+      <field name="view_mode">tree,pivot,graph,form</field>
+      <field name="search_view_id" ref="view_customer_invoice_project_summary_search"/>
+      <field name="domain">[('project_id','!=',False)]</field>
+      <field name="context">{'group_by': ['project_id']}</field>
+      <field name="view_ids" eval="[
+        (5,0,0),
+        (0,0, {'sequence':1, 'view_mode':'tree', 'view_id': ref('view_customer_invoice_project_summary_tree')}),
+        (0,0, {'sequence':2, 'view_mode':'pivot', 'view_id': ref('view_customer_invoice_project_summary_pivot')}),
+        (0,0, {'sequence':3, 'view_mode':'graph', 'view_id': ref('view_customer_invoice_project_summary_graph')})
+      ]"/>
+    </record>
+
+    <!-- =========================
+         MENU (trong Project / KH-KT)
+    ========================== -->
+    <menuitem id="menu_customer_invoice_project_summary_root"
+              name="Giải ngân dự án"
+              parent="project.menu_main_pm"
+              sequence="85"/>
+
+    <menuitem id="menu_customer_invoice_project_summary"
+              name="Báo cáo giải ngân"
+              parent="menu_customer_invoice_project_summary_root"
+              action="action_customer_invoice_project_summary"
+              sequence="1"/>
+  </data>
+</odoo>
