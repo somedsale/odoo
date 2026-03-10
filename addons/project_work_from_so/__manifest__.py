@@ -9,6 +9,7 @@
         "proposal_sheet",
         "cost_estimate",
         "custom_project_expense",
+        "custom_project_role",
         "web"
         # "your_contract_module_name",  # <- đổi thành tên module chứa model contract.management của bạn
     ],
