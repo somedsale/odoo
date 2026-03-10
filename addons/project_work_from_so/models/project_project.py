@@ -73,7 +73,7 @@ class ProjectProject(models.Model):
     @api.depends("work_item_ids.qty_settlement", "work_item_ids.value_settlement", "work_item_ids.qty_arise", "work_item_ids.value_arise")
     def _compute_qty_settlement(self):
         for rec in self:
-            rec.value_settlement = sum(rec.work_item_ids.mapped("value_settlement") or rec.value_contract)
+            rec.value_settlement = sum(rec.work_item_ids.mapped("value_settlement")) or rec.value_contract
             rec.value_arise = sum(rec.work_item_ids.mapped("value_arise") or [0.0])
     @api.depends('task_ids')
     def _compute_task_count_custom(self):
