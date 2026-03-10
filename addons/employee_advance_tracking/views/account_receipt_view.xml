@@ -9,7 +9,7 @@
             <field name="arch" type="xml">
                 <!-- Thêm field mới ngay dưới project_id -->
                 <xpath expr="//field[@name='note_advance_refund']" position="after">
-                    <field name="payment_id" options="{'no_create': True}" invisible="is_advance_refund == False"/>
+                    <field name="payment_id" options="{'no_create': True}" invisible="is_advance_refund == False" required="is_advance_refund"/>
                 </xpath>
             </field>
         </record>

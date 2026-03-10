@@ -13,6 +13,8 @@
     'assets': {
         'web.assets_backend': [
             'custom_project_expense/static/src/xml/custom_list_render.xml',
+            'custom_project_expense/static/src/scss/style.scss',
+            'custom_project_expense/static/src/scss/project_expense_dashboard.scss',
         ],
     },
     'installable': True,

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from odoo import models, fields, api
-from odoo.exceptions import ValidationError
+from odoo import models, fields, api,_
+from odoo.exceptions import ValidationError,UserError
 
 
 class CompanyLoan(models.Model):
@@ -124,6 +124,29 @@ class CompanyLoan(models.Model):
         ('done', 'Hoàn tất'),
         ('cancel', 'Hủy'),
     ], string='Trạng thái', default='ongoing', tracking=True)
+    def action_done(self):
+        """Bấm nút Hoàn thành"""
+        for rec in self:
+            if rec.state == 'done':
+                continue
+
+            # (Tuỳ chọn) chặn hoàn thành nếu còn dư nợ
+            # Nếu bạn muốn cho hoàn thành dù còn nợ thì comment block này lại
+            # if rec.balance and rec.balance > 0:
+            #     raise UserError(_("Khoản vay vẫn còn nợ gốc, không thể Hoàn tất."))
+
+            # if rec.interest_outstanding and rec.interest_outstanding > 0:
+            #     raise UserError(_("Khoản vay vẫn còn nợ lãi, không thể Hoàn tất."))
+
+            rec.state = 'done'
+
+    def action_set_ongoing(self):
+        """Mở lại khoản vay"""
+        self.write({'state': 'ongoing'})
+
+    def action_cancel(self):
+        """Hủy khoản vay"""
+        self.write({'state': 'cancel'})
     @api.depends(
         'receipt_ids.amount',
         'receipt_ids.state',

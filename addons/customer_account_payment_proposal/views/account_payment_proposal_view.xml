@@ -13,11 +13,13 @@
                     <field name="can_paid" invisible="1"/>
                     <field name="can_reset_draft" invisible="1"/>
                     <field name="can_reject" invisible="1"/>
+                    <field name="can_withdraw_submit" invisible="1"/>
                     <button name="action_submit" type="object" string="Gửi duyệt" class="btn-primary" invisible="not can_submit"/>
                     <button name="action_approve_manager" type="object" string="Trưởng phòng duyệt" class="btn-success" invisible="not can_approve_manager"/>
                     <button name="action_approve_accountant" type="object" string="Kế toán duyệt" class="btn-success" invisible="not can_approve_accountant"/>
                     <button name="action_approve_director" type="object" string="Giám đốc duyệt" class="btn-success" invisible="not can_approve_director"/>
                     <button name="action_paid" type="object" string="Kế toán chi tiền" class="btn-secondary" invisible="not can_paid"/>
+                    <button name="action_withdraw_submit" type="object" string="Hủy gửi" class="btn-secondary" invisible="not can_withdraw_submit" confirm="Bạn chắc chắn muốn hủy gửi để chỉnh sửa không?"/>
                     <button name ="action_done" type="object" string="Hoàn tất chi" class="btn-success" invisible="not can_paid" confirm="Bạn chắc chắn muốn hoàn tất không?"/>
                     <button name ="action_reset_draft" type="object" string="Trở về nháp" class="btn-secondary" invisible="not can_reset_draft" confirm="Bạn chắc chắn chuyển thành nhap?"/>
                     <button name="action_reject" type="object" string="Từ chối" class="btn-danger" invisible="not can_reject"/>
@@ -56,8 +58,8 @@
                     <group>
                         <group>
                             <field name="name" readonly="1" string="Số phiếu đề nghị"/>
-                            <field name="project_id" string="Dự án" options="{'no_create': True,'no_open':True}"/>
-                            <field name="date_request"/>
+                            <field name="project_id" string="Dự án" options="{'no_create': True,'no_open':True}" readonly="state !='draft'"/>
+                            <field name="date_request" readonly="state !='draft'"/>
                             <field name="user_id" widget="many2one_avatar_user" options="{'no_create': True,'no_open':True}" readonly="1"/>
                             <field name="department_id" options="{'no_create': True,'no_open':True}" readonly="state !='draft'"/>
                             <field name ="manager_id" widget="many2one_avatar_user" options="{'no_create': True,'no_open':True}" readonly="1"/>
@@ -65,7 +67,7 @@
                         </group>
 
                         <group>
-                            <field name="amount_advance" help="Nhập số tiền tạm ứng (nếu có)."/>
+                            <field name="amount_advance" help="Nhập số tiền tạm ứng (nếu có)." readonly="state !='draft'"/>
                             <field name="total_amount" readonly="1"/>
                             <field name="amount_refund" readonly="1"/>
                             <field name="amount_remain" readonly="1"/>
@@ -74,10 +76,10 @@
                     </group>
 
                     <separator string="Nội dung đề nghị" colspan="2"/>
-                    <field name="note" placeholder="Nội dung chi tiết mục đích thanh toán"/>
+                    <field name="note" placeholder="Nội dung chi tiết mục đích thanh toán" readonly="state !='draft'"/>
 
                     <separator string="Chi tiết chứng từ" colspan="2"/>
-                    <field name="line_ids">
+                    <field name="line_ids" readonly="state != 'draft'">
                         <tree editable="bottom">
                             <field name="sequence" widget="handle" string="" width="30"/>
                             <field name="date_from" width="90"/>

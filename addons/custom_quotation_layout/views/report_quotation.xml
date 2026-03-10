@@ -21,7 +21,7 @@
                     </div>
                 </div>                <!-- // đọc dữ liệu nhân viên  -->
                 <t t-set="emp" t-value="env[&apos;hr.employee&apos;].search([(&apos;user_id&apos;, &apos;=&apos;, doc.user_id.id)], limit=1)"/>
-                <table style="color:#000; width: 100%; font-size:14px; line-height: 1.8; border-color: white; border-style: none; outline: none; border-collapse: collapse;">
+                <table style="color:#000; width: 100%; font-size:14px; line-height: 1.8; border-color: transparent; border-style: none; outline: none; border-collapse: collapse;">
                     <tr style="border: none;color:#000 !important;">
                         <td style="width: 50%; padding-right: 10px; border: none;">
                             <strong>Khách hàng:</strong>
@@ -29,7 +29,7 @@
                         </td>
                         <td style="width: 50%; padding-left: 10px; border: none;">
                             <strong>Nhân viên kinh doanh:</strong>
-                            <span t-field="doc.user_id.name"/>
+                            <span t-esc="(doc.user_id.name if doc.user_id and doc.write_uid and doc.user_id.id == doc.write_uid.id else (doc.write_uid.name if doc.write_uid else ''))"/>
                         </td>
                     </tr>
                     <tr style="border: none;color:#000 !important;">
@@ -91,6 +91,24 @@
         sản phẩm, vật tư theo yêu cầu từ Quý khách hàng, cụ thể như sau:</p>
                 </div>
                 <div style="page-break-inside: auto;">
+                    <style>
+                        .num { 
+                            white-space: nowrap !important;
+                        }
+                        .table tr {
+                            page-break-inside: avoid !important;  /* không tách row */
+                            break-inside: avoid-page !important;  /* fallback cho engine mới */
+                        }
+                        .table td, table th {
+                            page-break-inside: avoid !important;
+                            vertical-align: top;
+                        }
+                        .table td {
+                            overflow-wrap: anywhere;           /* text “Thông số” dài không phá layout */
+                            word-break: break-word;
+                            white-space: normal;
+                        }
+                    </style>
                     <table class="table" style="font-family: &apos;Times New Roman&apos;, Times, serif !important; color:#000 !important;border-dark border-2;">
                         <tbody>
                             <tr class="table-bordered border-dark border-2" style="height:auto; ">
@@ -109,8 +127,8 @@
                                 <t t-if="doc.is_show_chi_phi_nhan_cong">
                                     <th style="width:100px !important;border-right: 1px solid black;">Chi phí nhân công</th>
                                 </t>
-                                <th style="min-width:100px !important;border-right: 1px solid black;">Đơn giá</th>
-                                <th style="min-width:100px !important;border-right: 1px solid black;">Thành tiền</th>
+                                <th class="num" style="min-width:110px !important;border-right: 1px solid black; white-space: nowrap;">Đơn giá</th>
+                                <th class="num" style="min-width:110px !important;border-right: 1px solid black;white-space: nowrap;">Thành tiền</th>
                                 <th style="min-width:80px !important;border-right: 1px solid black;">Ghi chú</th>
                             </tr>
                             <t t-set="stt" t-value="0"/>
@@ -140,9 +158,9 @@
                                                 <span t-field="line.product_id.default_code" t-field-options="{&quot;widget&quot;: &quot;char&quot;}"/>
                                             </td>
                                         </t>
-                                        <td>
+                                        <td class="spec_cell">
                                             <i>
-                                                <span t-esc="line.name or line.x_thong_so" t-options='{"widget": "text"}'/>
+                                                <span t-esc="(line.name or line.x_thongso or '')" style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;"/>
                                             </i>
                                         </td>
                                         <td class="text-center">
@@ -159,10 +177,10 @@
                                                 <span t-field="line.x_chi_phi_nhan_cong" t-field-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;currency_field&quot;: &quot;currency_id&quot;}"/>
                                             </td>
                                         </t>
-                                        <td style="text-align: right !important;">
+                                        <td class="num" style="text-align: right !important;">
                                             <span t-field="line.formatted_price"/>
                                         </td>
-                                        <td style="text-align: right !important;">
+                                        <td class="num" style="text-align: right !important;">
                                             <span t-field="line.price_subtotal"/>
                                         </td>
                                         <td style="border-center: 2px solid black;">
@@ -376,9 +394,7 @@
                             </b>
                         </div>
                         <div style="height:65px"></div>
-                        <div>
-                            <span t-field="doc.user_id.name"/>
-                        </div>
+                        <span t-esc="(doc.user_id.name if doc.user_id and doc.write_uid and doc.user_id.id == doc.write_uid.id else (doc.write_uid.name if doc.write_uid else ''))"/>
                     </div>
                 </div>
             </div>

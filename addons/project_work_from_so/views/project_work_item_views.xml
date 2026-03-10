@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!-- =========================
+             SEARCH VIEW
+        ========================== -->
+        <record id="view_project_work_item_search" model="ir.ui.view">
+            <field name="name">project.work.item.search</field>
+            <field name="model">project.work.item</field>
+            <field name="arch" type="xml">
+                <search string="Tìm hạng mục công việc">
+                    <field name="name"/>
+                    <field name="project_id"/>
+                    <field name="product_id"/>
+                    <field name="section_name"/>
+
+                    <filter string="Đang hoạt động" name="active_true" domain="[('active','=',True)]"/>
+                    <filter string="Đã ẩn" name="active_false" domain="[('active','=',False)]"/>
+
+                    <separator/>
+
+                    <filter string="Chưa hoàn thành" name="not_done" domain="[('progress_percent','&lt;',100)]"/>
+                    <filter string="Hoàn thành ≥ 100%" name="done_100" domain="[('progress_percent','&gt;=',100)]"/>
+                    <filter string="Vượt kế hoạch" name="over_plan" domain="[('progress_percent','&gt;',100)]"/>
+
+                    <group expand="0" string="Nhóm theo">
+                        <filter string="Dự án" name="group_project" context="{'group_by':'project_id'}"/>
+                        <filter string="Danh mục" name="group_section" context="{'group_by':'section_name'}"/>
+                        <filter string="Sản phẩm" name="group_product" context="{'group_by':'product_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- =========================
+             TREE VIEW
+        ========================== -->
+        <record id="view_project_work_item_tree" model="ir.ui.view">
+            <field name="name">project.work.item.tree</field>
+            <field name="model">project.work.item</field>
+            <field name="arch" type="xml">
+                <tree string="Hạng mục công việc"
+                      default_order="project_id, section_name, sequence, id"
+                      decoration-danger="active == False"
+                      decoration-warning="progress_percent &gt; 100"
+                      decoration-success="progress_percent &gt;= 100 and active == True">
+
+                    <field name="sequence" widget="handle"/>
+                    <field name="project_id"/>
+                    <field name="section_name" string="Danh mục"/>
+                    <field name="name"/>
+                    <field name="product_id"/>
+                    <field name="uom_id"/>
+
+                    <field name="qty_settlement" sum="Tổng"/>
+                    <field name="qty_done" sum="Tổng"/>
+                    <field name="qty_remaining" sum="Tổng"/>
+
+                    <!-- Giá trị (nếu model bạn đã có các field này) -->
+                    <field name="value_settlement" sum="Tổng" optional="hide"/>
+                    <field name="value_completed" sum="Tổng" optional="show"/>
+                    <field name="value_remaining" sum="Tổng" optional="show"/>
+                    <field name="progress_percent" widget="progressbar" string="Tiến độ" optional="show"/>
+
+                    <!-- Tránh widget tags trong tree nếu bạn từng bị OWL lỗi -->
+                    <field name="assigned_user_id" optional="hide"/>
+
+                    <field name="active" optional="hide"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- =========================
+             FORM VIEW (tùy chọn, để mở từ tree)
+        ========================== -->
+        <record id="view_project_work_item_form" model="ir.ui.view">
+            <field name="name">project.work.item.form</field>
+            <field name="model">project.work.item</field>
+            <field name="arch" type="xml">
+                <form string="Hạng mục công việc">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="project_id"/>
+                                <field name="section_name" string="Danh mục"/>
+                                <field name="name"/>
+                                <field name="description"/>
+                                <field name="product_id"/>
+                                <field name="uom_id"/>
+                                <field name="so_line_id" readonly="1"/>
+                                <field name="attachment_ids" widget="many2many_binary" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="qty_settlement"/>
+                                <field name="qty_done" readonly="1"/>
+                                <field name="qty_remaining" readonly="1"/>
+                                <field name="progress_percent" readonly="1" widget="progressbar"/>
+                                <field name="value_settlement" readonly="1"/>
+                                <field name="value_completed" readonly="1"/>
+                                <field name="value_remaining" readonly="1"/>
+                                <field name="active"/>
+                            </group>
+                        </group>
+
+                        <group>
+                            <field name="assigned_user_id" widget="many2one_avatar_user"/>
+                        </group>
+
+                        <notebook>
+                            <!-- <page string="Phân công">
+                                <field name="assignment_ids"
+                                       context="{'default_project_id': project_id, 'default_work_item_id': id}">
+                                    <tree editable="bottom">
+                                        <field name="user_id"/>
+                                        <field name="date_start"/>
+                                        <field name="qty_done" readonly="1"/>
+                                        <field name="qty_remaining" readonly="1"/>
+                                        <field name="active"/>
+                                    </tree>
+                                </field>
+                            </page> -->
+
+                            <page string="Lũy kế theo kỳ">
+                                <field name="progress_line_ids" context="{'default_work_item_id': id}">
+                                    <tree editable="bottom">
+                                        <field name="period_no"/>
+                                        <field name="period_start" readonly="1"/>
+                                        <field name="period_end" readonly="1"/>
+                                        <!-- <field name="qty_cum"/> -->
+                                        <field name="qty_period" readonly="1" sum="Tổng"/>
+                                        <field name="price_unit" readonly="1" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                        <field name="price_period" readonly="1" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                        <field name="user_id" readonly="1"/>
+                                        <field name="note"/>
+                                        <field name="currency_id" readonly="1" column_invisible="1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- =========================
+             ACTION
+        ========================== -->
+        <record id="action_project_work_item_list" model="ir.actions.act_window">
+            <field name="name">Hạng mục công việc</field>
+            <field name="res_model">project.work.item</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_project_work_item_search"/>
+            <field name="context">{'search_default_active_true': 1, 'group_by': ['project_id']}</field>
+            <field name="view_ids" eval="[
+                (5,0,0),
+                (0,0, {'sequence': 1, 'view_mode': 'tree', 'view_id': ref('view_project_work_item_tree')}),
+                (0,0, {'sequence': 2, 'view_mode': 'form', 'view_id': ref('view_project_work_item_form')})
+            ]"/>
+        </record>
+
+        <!-- =========================
+             MENU (đặt dưới KH-KT / Nội bộ)
+             - Nếu bạn muốn dưới menu Nội bộ của bạn: parent="menu_internal_project"
+             - Nếu muốn dưới KH-KT root: parent="project.menu_main_pm"
+        ========================== -->
+        <!-- <menuitem id="menu_project_work_item_list"
+                  name="Hạng mục công việc"
+                  parent="menu_internal_project"
+                  action="action_project_work_item_list"
+                  sequence="5"/> -->
+
+    </data>
+</odoo>

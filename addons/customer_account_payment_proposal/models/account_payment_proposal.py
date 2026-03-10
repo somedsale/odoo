@@ -118,6 +118,7 @@ class AccountPaymentProposal(models.Model):
     can_paid = fields.Boolean(compute="_compute_permissions", string="Kế toán chi được")
     can_reset_draft = fields.Boolean(compute="_compute_permissions", string="Có thể hóa nháp")
     can_reject = fields.Boolean(compute="_compute_permissions", string="Có thể từ chối")
+    can_withdraw_submit = fields.Boolean(compute="_compute_permissions", string="Có thể hủy gửi")
     @api.depends("state", "user_id", "manager_id", "director_user_id")
     def _compute_permissions(self):
         """Xác định ai được thấy nút nào"""
@@ -154,8 +155,22 @@ class AccountPaymentProposal(models.Model):
             rec.can_reject = (
             (rec.state == "submitted" and rec.manager_id and rec.manager_id.user_id == current_user)
             or (rec.state == "dept_approved" and is_accountant)
-            or (rec.state == "account_approved" and rec.director_user_id == current_user)
-        )
+            or (rec.state == "account_approved" and rec.director_user_id == current_user))
+
+            rec.can_withdraw_submit = False                              
+            # Chỉ người tạo mới được hủy gửi
+            if current_user == rec.user_id:
+                # Case NV thường (đang chờ trưởng phòng)
+                if rec.state == "submitted":
+                    rec.can_withdraw_submit = True
+
+                # Case trưởng phòng tự gửi (đang chờ kế toán) -> chỉ đúng khi người tạo chính là trưởng phòng
+                elif rec.state == "dept_approved" and rec.manager_id and rec.manager_id.user_id == rec.user_id:
+                    rec.can_withdraw_submit = True
+
+                # Case kế toán tự gửi (đang chờ giám đốc) -> chỉ đúng khi người tạo là kế toán
+                elif rec.state == "account_approved" and is_accountant:
+                    rec.can_withdraw_submit = True
 
     @api.model
     def _default_director_user(self):
@@ -259,6 +274,87 @@ class AccountPaymentProposal(models.Model):
             rec.director_approved_at = fields.Datetime.now()
             rec._send_notification("🏁 Giám đốc đã duyệt, chuyển lại cho kế toán xử lý chi.", rec._get_accountant_partners())
             rec._close_activity(rec.director_user_id)
+    def action_withdraw_submit(self):
+        self.ensure_one()
+        current_user = self.env.user
+
+        # ✅ chỉ người tạo
+        if current_user != self.user_id:
+            raise UserError(_("Chỉ người tạo phiếu mới có quyền hủy gửi."))
+
+        accountant_group = self.env.ref("account.group_account_manager", raise_if_not_found=False)
+        is_accountant = accountant_group and current_user in accountant_group.users
+
+        # ===== CASE 1: NV thường đang chờ Trưởng phòng duyệt =====
+        if self.state == "submitted":
+            # back về nháp
+            self.state = "draft"
+
+            # notify người tạo + trưởng phòng
+            partner_ids = [self.user_id.partner_id.id]
+            if self.manager_id and self.manager_id.user_id and self.manager_id.user_id.partner_id:
+                partner_ids.append(self.manager_id.user_id.partner_id.id)
+
+            self._send_notification(
+                f"↩️ Người đề nghị <b>{current_user.name}</b> đã <b>hủy gửi</b> phiếu <b>{self.name}</b> để chỉnh sửa và sẽ gửi lại.",
+                partner_ids,
+            )
+            return {"type": "ir.actions.client", "tag": "reload"}
+
+        # ===== CASE 2: Trưởng phòng tự gửi (đã nhảy tới dept_approved) =====
+        if self.state == "dept_approved":
+            # chỉ đúng khi người tạo chính là trưởng phòng
+            if not (self.manager_id and self.manager_id.user_id == self.user_id):
+                raise UserError(_("Phiếu này đã qua bước trưởng phòng duyệt, không thể hủy gửi."))
+
+            self.state = "draft"
+            # reset dấu thời gian tự duyệt
+            self.manager_approved_at = False
+
+            # notify người tạo + kế toán
+            partner_ids = [self.user_id.partner_id.id] + (self._get_accountant_partners() or [])
+
+            self._send_notification(
+                f"↩️ Trưởng phòng <b>{current_user.name}</b> đã <b>hủy gửi</b> phiếu <b>{self.name}</b> để chỉnh sửa và sẽ gửi lại.",
+                partner_ids,
+            )
+            return {"type": "ir.actions.client", "tag": "reload"}
+
+        # ===== CASE 3: Kế toán tự gửi (đã nhảy tới account_approved) =====
+        if self.state == "account_approved":
+            if not is_accountant:
+                raise UserError(_("Chỉ phiếu do kế toán gửi trực tiếp mới được hủy gửi ở bước này."))
+
+            self.state = "draft"
+            # reset dấu thời gian kế toán duyệt/tự gửi
+            self.accountant_approved_at = False
+
+            # đóng activity đã schedule cho giám đốc (nếu có)
+            if self.director_user_id:
+                act_type = self.env.ref("mail.mail_activity_data_todo")
+                acts = self.env["mail.activity"].search([
+                    ("res_model", "=", self._name),
+                    ("res_id", "=", self.id),
+                    ("activity_type_id", "=", act_type.id),
+                    ("user_id", "=", self.director_user_id.id),
+                ])
+                if acts:
+                    acts.action_feedback(feedback="Đã hủy gửi để chỉnh sửa")
+
+            # notify người tạo + giám đốc
+            partner_ids = [self.user_id.partner_id.id]
+            if self.director_user_id and self.director_user_id.partner_id:
+                partner_ids.append(self.director_user_id.partner_id.id)
+
+            self._send_notification(
+                f"↩️ Kế toán <b>{current_user.name}</b> đã <b>hủy gửi</b> phiếu <b>{self.name}</b> để chỉnh sửa và sẽ gửi lại.",
+                partner_ids,
+            )
+            return {"type": "ir.actions.client", "tag": "reload"}
+
+        # ===== các state khác: đã duyệt rồi thì không được back =====
+        raise UserError(_("Chỉ được hủy gửi khi phiếu đang chờ duyệt (chưa được duyệt ở bước đó)."))
+
 
     def action_paid(self):
         self.ensure_one()

@@ -16,6 +16,7 @@
                 <field name="show_button_reset_draft" invisible="1"/>
                 <field name="is_type_readonly" invisible="1"/>
                 <field name="is_new_proposal" invisible="1"/>
+                <field name="show_button_withdraw_submit" invisible="1"/>
                 <header>
                     <button name="action_submit" type="object" string="Gửi Duyệt" class="btn-primary" invisible="show_button_submit == False"/>
                     <button name="action_manager_approve" type="object" string="Quản Lý Duyệt" class="btn-success" invisible="show_button_manager_approve == False"/>
@@ -27,7 +28,8 @@
                     <button name="%(action_proposal_reject_wizard)d" type="action" string="Từ Chối" class="btn-danger" invisible="show_button_reject == False"/>
                     <button name="action_cancel" type="object" string="Hủy Phiếu" class="btn-warning" invisible="show_button_cancel == False"/>
                     <button name="action_reset_to_draft" type="object" string="Reset về Nháp" class="btn-secondary" invisible="show_button_reset_draft == False"/>
-                    <button name="action_load_from_estimate" type="object" string="Lấy từ Dự toán" invisible="state != 'draft'"/>
+                    <button name="action_withdraw_submit" type="object" string="Hủy gửi" class="btn-danger" invisible="show_button_withdraw_submit == False"/>
+                    <!-- <button name="action_load_from_estimate" type="object" string="Lấy từ Dự toán" invisible="state != 'draft'"/> -->
                     <field name="state" widget="statusbar" statusbar_visible="reviewed_manager,reviewed_accounting,approved,waiting_accounting_paid,done" invisible="state in (&apos;rejected&apos;, &apos;canceled&apos;)"/>
                     <field name="state" widget="statusbar" statusbar_visible="reviewed_manager,reviewed_accounting,approved,rejected" invisible="state != 'rejected'"/>
                     <field name="state" widget="statusbar" statusbar_visible="reviewed_manager,reviewed_accounting,approved,canceled" invisible="state != 'canceled'"/>
@@ -50,7 +52,7 @@
                             <field name="project_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft' " force_save="context.get('from_task', False)"/>
                             <field name="contract_num" string="Số hợp đồng" invisible="not project_id"/>
                             <field name="cost_additional_expense_line_id" string="Hạng mục dự toán chi phí gián tiếp" domain="[('project_id', '=', project_id)]"/>
-                            <field name="task_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft'" force_save="context.get('from_task', False)" domain="[('project_id', '=', project_id)]" invisible="type=='expense'"/>
+                            <!-- <field name="task_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft'" force_save="context.get('from_task', False)" domain="[('project_id', '=', project_id)]" invisible="type=='expense'"/> -->
                             <field name="requested_by" widget="many2one_avatar_user" readonly="1" options="{'no_open':True}"/>
                             <field name="take_note" placeholder="Ghi chú về phiếu đề xuất" readonly="state != 'draft'"/>
                             <field name="amount_total" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
@@ -173,7 +175,7 @@
         <field name="arch" type="xml">
             <search>
                 <field name="name"/>
-                <field name="task_id"/>
+                <!-- <field name="task_id"/> -->
                 <field name="requested_by"/>
                 <filter string="Nháp" name="draft" domain="[('state', '=', 'draft')]"/>
                 <filter string="Chờ Duyệt (Sếp)" name="approved" domain="[('state', '=', 'approved')]"/>

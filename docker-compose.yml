@@ -1,4 +1,5 @@
 version: "3.1"
+
 services:
   web:
     image: odoo:17.0
@@ -10,7 +11,6 @@ services:
       - odoo-web-data:/var/lib/odoo
       - ./addons:/mnt/extra-addons
       - ./config:/etc/odoo
-
     environment:
       - HOST=db
       - USER=odoo
@@ -24,6 +24,41 @@ services:
       pip install boto3 &&
       /usr/bin/odoo --config /etc/odoo/odoo.conf
       "
+
+  # ✅ Odoo giả lập thời gian (test qua tuần) mở port 8070
+  web_timewarp:
+    build:
+      context: .
+      dockerfile: Dockerfile.faketime
+    depends_on:
+      - db
+    ports:
+      - "8070:8069"
+    volumes:
+      - odoo-web-data-timewarp:/var/lib/odoo
+      - ./addons:/mnt/extra-addons
+      - ./config:/etc/odoo
+    environment:
+      - HOST=db
+      - USER=odoo
+      - PASSWORD=odoo
+
+      # ✅ Fake time: +7 ngày (giả lập sang tuần sau)
+      - FAKETIME=+13d
+
+      # ✅ preload libfaketime (đường dẫn phổ biến trên Debian/Ubuntu)
+      - LD_PRELOAD=/usr/lib/x86_64-linux-gnu/faketime/libfaketime.so.1
+
+    command: >
+      /bin/bash -c "
+      pip install Pillow &&
+      pip install openpyxl &&
+      pip install xlrd &&
+      pip install xlsxwriter &&
+      pip install boto3 &&
+      /usr/bin/odoo --config /etc/odoo/odoo.conf
+      "
+
   db:
     image: postgres:15
     environment:
@@ -34,16 +69,19 @@ services:
       - "5432:5432"
     volumes:
       - odoo-db-data:/var/lib/postgresql/data
+
   pgadmin:
     image: dpage/pgadmin4
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com # ⚡ đổi thành email bạn muốn
-      PGADMIN_DEFAULT_PASSWORD: admin123 # ⚡ đổi thành password bạn muốn
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
       PGADMIN_CONFIG_SESSION_EXPIRATION_TIME: 604800
     ports:
-      - "5050:80" # Truy cập pgadmin qua http://localhost:5050
+      - "5050:80"
     depends_on:
       - db
+
 volumes:
   odoo-web-data:
+  odoo-web-data-timewarp:
   odoo-db-data:

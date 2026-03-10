@@ -132,6 +132,7 @@ class ProposalSheet(models.Model):
     show_button_reject = fields.Boolean(compute='_compute_show_buttons')
     show_button_cancel = fields.Boolean(compute='_compute_show_buttons')
     show_button_reset_draft = fields.Boolean(compute='_compute_show_buttons')
+    show_button_withdraw_submit = fields.Boolean(compute="_compute_show_buttons")
     is_type_readonly = fields.Boolean(compute='_compute_is_type_readonly', store=False)
     
 
@@ -344,6 +345,113 @@ class ProposalSheet(models.Model):
                     user=self.director_user_id,
                     feedback="Đã duyệt"
                 )
+    def action_withdraw_submit(self):
+        self.ensure_one()
+
+        # ✅ Chỉ người tạo phiếu mới được rút lại
+        if self.requested_by != self.env.user:
+            raise UserError(_("Chỉ người đề xuất mới có quyền hủy gửi phiếu này."))
+
+        # Xác định role của người tạo
+        accounting_group = self.env.ref('account.group_account_manager', raise_if_not_found=False)
+        is_accounting_user = bool(accounting_group and accounting_group in self.env.user.groups_id)
+        is_manager_user = bool(self.manager_id and self.manager_id.user_id == self.env.user)
+
+        # ===== RULE: 3 case được back =====
+        # 1) NV thường -> đang chờ QL duyệt
+        # 2) Trưởng phòng -> đang chờ KT duyệt
+        # 3) Kế toán -> đang chờ Giám đốc duyệt
+        if is_accounting_user:
+            allowed_state = 'approved'
+            waiting_label = "Giám đốc"
+        elif is_manager_user:
+            allowed_state = 'reviewed_accounting'
+            waiting_label = "Kế toán"
+        else:
+            allowed_state = 'reviewed_manager'
+            waiting_label = "Quản lý"
+
+        if self.state != allowed_state:
+            raise UserError(_(
+                "Chỉ được hủy gửi khi phiếu đang chờ %s duyệt (đúng luồng gửi của bạn). "
+                "Phiếu đã qua bước duyệt thì không thể rút lại."
+            ) % waiting_label)
+
+        old_state = self.state
+
+        # ✅ Reset về nháp để sửa + reset các dấu duyệt
+        self.write({
+            'state': 'draft',
+            'treasurer_confirmed': False,
+            'date_proposal': False,
+            'date_reviewed_manager': False,
+            'date_reviewed_accounting': False,
+            'date_approved': False,
+        })
+
+        # ✅ Nếu đang ở bước Giám đốc (approved) thì thường có activity -> đóng lại
+        if old_state == 'approved' and self.director_user_id:
+            self._close_activity(
+                user=self.director_user_id,
+                feedback="Phiếu đã được rút lại để chỉnh sửa"
+            )
+
+        # Notify theo đúng “bên đang nhận”
+        partner_ids = [self.requested_by.partner_id.id]
+
+        if old_state == 'reviewed_manager':
+            # đang chờ QL
+            if self.manager_id and self.manager_id.user_id and self.manager_id.user_id.partner_id:
+                partner_ids.append(self.manager_id.user_id.partner_id.id)
+
+        elif old_state == 'reviewed_accounting':
+            # đang chờ KT
+            if accounting_group:
+                for u in accounting_group.users:
+                    if u.partner_id and u.partner_id.id not in partner_ids:
+                        partner_ids.append(u.partner_id.id)
+
+        elif old_state == 'approved':
+            # đang chờ GĐ
+            if self.director_user_id and self.director_user_id.partner_id:
+                partner_ids.append(self.director_user_id.partner_id.id)
+
+        message = (
+            f"<p>Người đề xuất <em>{self.env.user.name}</em> đã <strong>hủy gửi</strong> "
+            f"phiếu <strong>{self.name}</strong> để chỉnh sửa và sẽ gửi lại sau.</p>"
+        )
+        self._send_notification(message, partner_ids)
+
+        return {'type': 'ir.actions.client', 'tag': 'reload'}
+        self.ensure_one()
+
+        # ✅ Chỉ được rút lại khi đang chờ Quản lý duyệt
+        if self.state != 'reviewed_manager':
+            raise UserError(_("Chỉ phiếu đang chờ Quản lý duyệt mới được hủy gửi."))
+
+        # ✅ Chỉ người tạo phiếu mới được rút lại
+        if self.requested_by != self.env.user:
+            raise UserError(_("Chỉ người đề xuất mới có quyền hủy gửi phiếu này."))
+
+        # Reset về nháp để sửa
+        self.state = 'draft'
+
+        # (Tuỳ bạn) có thể reset lại ngày gửi để khỏi “dính lịch sử”
+        self.date_proposal = False
+        self.date_reviewed_manager = False
+
+        # Notify cho người tạo + quản lý (để quản lý biết phiếu đã bị rút)
+        partner_ids = [self.requested_by.partner_id.id]
+        if self.manager_id and self.manager_id.user_id and self.manager_id.user_id.partner_id:
+            partner_ids.append(self.manager_id.user_id.partner_id.id)
+
+        message = (
+            f"<p>Người đề xuất <em>{self.env.user.name}</em> đã <strong>hủy gửi</strong> "
+            f"phiếu <strong>{self.name}</strong> để chỉnh sửa và sẽ gửi lại sau.</p>"
+        )
+        self._send_notification(message, partner_ids)
+
+        return {'type': 'ir.actions.client', 'tag': 'reload'}
 
     def action_waiting_accounting_paid(self):
         if self.state != 'waiting_accounting_paid':
@@ -475,6 +583,7 @@ class ProposalSheet(models.Model):
             )
             rec.show_button_cancel = rec.state in ['draft'] and is_creator
             rec.show_button_reset_draft = rec.state == 'rejected' and is_creator
+            rec.show_button_withdraw_submit = rec.state in ['reviewed_manager','reviewed_accounting','approved']  and is_creator
     
 
     @api.depends('material_line_ids', 'expense_line_ids')

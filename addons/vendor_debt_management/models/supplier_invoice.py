@@ -125,7 +125,14 @@ class SupplierInvoice(models.Model):
         string="Đã đối chiếu công nợ",
         help="Đánh dấu phiếu chi này đã được đối chiếu công nợ.",
     )
-
+    attachment_ids = fields.Many2many(
+    "ir.attachment",
+    "supplier_invoice_ir_attachments_rel",  # tên bảng quan hệ (tự đặt)
+    "supplier_invoice_id",
+    "attachment_id",
+    string="Tệp đính kèm",
+    help="Đính kèm hóa đơn, báo giá, biên bản, chứng từ liên quan.",
+)
     # ==============================
     # COMPUTE & ONCHANGE
     # ==============================

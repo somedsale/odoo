@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+  <t t-name="project_work_from_so.ProjectWorkDashboard" owl="1">
+    <div class="o_pwf_dash d-flex flex-column h-100">
+
+      <!-- =========================
+           LIST MODE
+      ========================== -->
+      <t t-if="state.mode === 'list'">
+
+        <div class="card flex-grow-1 d-flex flex-column" style="min-height:0;">
+
+          <!-- Header / Search / Filter -->
+          <div class="card-header pwf-toolbar">
+            <div class="pwf-toolbar-top d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+              <div class="pwf-toolbar-title">
+                <div class="fw-semibold">Danh sách dự án Dashboard</div>
+                <div class="text-muted small">
+                  Chọn 1 dòng để mở chi tiết • Hỗ trợ tìm kiếm, lọc, sắp xếp và chọn nhiều dòng để cộng tổng
+                </div>
+              </div>
+
+              <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-outline-primary" t-on-click="loadProjects">
+                  <i class="fa fa-refresh me-1"/>
+ Làm mới
+                </button>
+
+                <button class="btn btn-sm btn-outline-secondary" t-on-click="resetFiltersAndSort">
+                  <i class="fa fa-filter me-1"/>
+ Xóa lọc
+                </button>
+              </div>
+            </div>
+
+            <div class="pwf-toolbar-grid">
+              <!-- Search -->
+              <div class="pwf-toolbar-item pwf-search">
+                <label class="form-label mb-1">Tìm kiếm</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">
+                    <i class="fa fa-search"/>
+                  </span>
+                  <input class="form-control" placeholder="Tên dự án / đối tác / địa điểm / hạng mục..." t-on-input="onSearch" t-att-value="state.query || ''"/>
+                </div>
+              </div>
+
+              <!-- Lọc đối tác -->
+              <div class="pwf-toolbar-item">
+                <label class="form-label mb-1">Đối tác</label>
+                <select class="form-select form-select-sm" t-on-change="onChangePartnerFilter" t-att-value="state.filterPartnerId ? '' + state.filterPartnerId : ''">
+                  <option value="">Tất cả đối tác</option>
+                  <t t-foreach="partnerOptions" t-as="opt" t-key="opt.value">
+                    <option t-att-value="opt.value">
+                      <t t-esc="opt.label"/>
+                    </option>
+                  </t>
+                </select>
+              </div>
+
+              <!-- Lọc trạng thái -->
+              <div class="pwf-toolbar-item">
+                <label class="form-label mb-1">Trạng thái</label>
+                <select class="form-select form-select-sm" t-on-change="onChangeStageFilter" t-att-value="state.filterStageId ? '' + state.filterStageId : ''">
+                  <option value="">Tất cả trạng thái</option>
+                  <t t-foreach="stageOptions" t-as="opt" t-key="opt.value">
+                    <option t-att-value="opt.value">
+                      <t t-esc="opt.label"/>
+                    </option>
+                  </t>
+                </select>
+              </div>
+
+              <!-- Sắp xếp theo -->
+              <div class="pwf-toolbar-item">
+                <label class="form-label mb-1">Sắp xếp theo</label>
+                <select class="form-select form-select-sm" t-on-change="onChangeSortBy" t-att-value="state.sortBy || 'id'">
+                  <option value="id">Mặc định (ID mới nhất)</option>
+                  <option value="name">Tên dự án</option>
+                  <option value="partner_name">Đối tác</option>
+                  <option value="stage_name">Trạng thái dự án</option>
+                  <option value="value_contract">GT theo HĐ</option>
+                  <option value="value_completed">GT SL đã thực hiện</option>
+                  <option value="progress_percent">% SL</option>
+
+                  <option value="acceptance_value_done">GT đã nghiệm thu</option>
+                  <option value="acceptance_value_remaining">GT chưa nghiệm thu</option>
+                  <option value="acceptance_progress_percent">% Nghiệm thu</option>
+
+                  <option value="claim_value_done">GT đã quyết toán</option>
+                  <option value="claim_value_remaining">GT còn lại quyết toán</option>
+                  <option value="claim_progress_percent">% Quyết toán</option>
+
+                  <option value="customer_invoice_amount_total">Tổng GT hóa đơn</option>
+                  <option value="customer_invoice_received_total">Tổng GT đã thu</option>
+                </select>
+              </div>
+
+              <!-- Chiều sắp xếp -->
+              <div class="pwf-toolbar-item pwf-toolbar-item-sm">
+                <label class="form-label mb-1">Chiều</label>
+                <select class="form-select form-select-sm" t-on-change="onChangeSortDir" t-att-value="state.sortDir || 'desc'">
+                  <option value="desc">Giảm dần</option>
+                  <option value="asc">Tăng dần</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vùng scroll bảng -->
+          <div class="card-body p-0 flex-grow-1 pwf-table-wrap" style="overflow:auto; min-height:0;">
+            <t t-if="state.listLoading">
+              <div class="pwf-state-box">
+                <div class="text-muted">
+                  <i class="fa fa-spinner fa-spin me-2"/>
+ Đang tải dữ liệu dự án...
+                </div>
+              </div>
+            </t>
+
+            <t t-else="">
+              <table class="table table-sm table-hover align-middle m-0 pwf-table">
+                <colgroup>
+                  <!-- Sticky cols -->
+                  <col style="width:44px;"/>
+                  <!-- Checkbox -->
+                  <col style="width:60px;"/>
+                  <!-- STT -->
+                  <col style="width:220px;"/>
+                  <!-- Đối tác -->
+                  <col style="width:280px;"/>
+                  <!-- Tên dự án -->
+
+                  <!-- Thông tin -->
+                  <col style="width:220px;"/>
+                  <!-- Địa điểm -->
+                  <col style="width:220px;"/>
+                  <!-- Hạng mục -->
+
+                  <!-- Sản lượng / Giá trị -->
+                  <col style="width:190px;"/>
+                  <!-- GT Theo HĐ/PLHD/Thực tế -->
+                  <col style="width:190px;"/>
+                  <!-- GT SL đã thực hiện -->
+                  <col style="width:210px;"/>
+                  <!-- GT còn lại theo HĐ/PLHD/Thực tế -->
+                  <col style="width:110px;"/>
+                  <!-- % SL -->
+
+                  <!-- Nghiệm thu -->
+                  <col style="width:180px;"/>
+                  <!-- GT đã nghiệm thu -->
+                  <col style="width:190px;"/>
+                  <!-- GT chưa nghiệm thu -->
+                  <col style="width:120px;"/>
+                  <!-- % Nghiệm thu -->
+
+                  <!-- Thanh / Quyết toán -->
+                  <col style="width:170px;"/>
+                  <!-- GT đã quyết toán -->
+                  <col style="width:170px;"/>
+                  <!-- GT còn lại quyết toán -->
+                  <col style="width:120px;"/>
+                  <!-- % Quyết toán -->
+
+                  <!-- Hóa đơn / Thu tiền -->
+                  <col style="width:200px;"/>
+                  <!-- Tổng hóa đơn chưa thuế -->
+                  <col style="width:180px;"/>
+                  <!-- Tổng hóa đơn -->
+                  <col style="width:180px;"/>
+                  <!-- Tổng tiền đã thu -->
+                  <col style="width:180px;"/>
+                  <!-- Tổng tiền còn lại -->
+                  <col style="width:120px;"/>
+                  <!-- % Tiền đã thu -->
+                  <col style="width:120px;"/>
+                  <!-- % Tiền đã thu -->
+                  <col style="width:120px;"/>
+                  <!-- % Tiền đã thu -->
+                  <col style="width:120px;"/>
+                  <!-- % Tiền đã thu -->
+                </colgroup>
+
+                <thead class="pwf-thead">
+                  <!-- Header nhóm -->
+                  <tr class="pwf-group-head">
+                    <!-- Checkbox select current page -->
+                    <th rowspan="2" class="text-center sticky-col sticky-col-0">
+                      <input type="checkbox" class="form-check-input m-0" t-att-checked="allPageSelected ? true : undefined" t-on-click.stop="noop" t-on-change="onToggleSelectPage" title="Chọn tất cả dòng trong trang hiện tại"/>
+                    </th>
+
+                    <th rowspan="2" class="text-center sticky-col sticky-col-1">STT</th>
+
+                    <th colspan="4" class="text-center">Thông tin dự án</th>
+                    <th colspan="4" class="text-center">Sản lượng / Giá trị</th>
+                    <th colspan="3" class="text-center">Nghiệm thu</th>
+                    <th colspan="3" class="text-center">Hồ sơ Thanh / Quyết toán</th>
+                    <th colspan="8" class="text-center">GT Hóa đơn / Tiền thu</th>
+                  </tr>
+
+                  <!-- Header chi tiết -->
+                  <tr>
+                    <th class="sticky-col sticky-col-2">Đối tác</th>
+                    <th class="sticky-col sticky-col-3">Tên dự án</th>
+                    <th>Địa điểm XD</th>
+                    <th>Hạng mục</th>
+
+                    <th class="text-end">GT Theo HĐ/PLHD/Thực tế</th>
+                    <th class="text-end">GT SL đã thực hiện</th>
+                    <th class="text-end">GT còn lại theo HĐ/PLHD/Thực tế</th>
+                    <th class="text-end">% SL</th>
+
+                    <th class="text-end">GT đã nghiệm thu</th>
+                    <th class="text-end">GT chưa nghiệm thu</th>
+                    <th class="text-end">% Nghiệm thu</th>
+
+                    <th class="text-end">GT HS thanh / quyết toán</th>
+                    <th class="text-end">GT HS còn lại thanh / quyết toán</th>
+                    <th class="text-end">% HS Thanh / Quyết toán</th>
+
+                    <th class="text-end">Tổng hóa đơn chưa thuế</th>
+                    <th class="text-end">Tổng hóa đơn bao gồm thuế</th>
+                    <th class="text-end">Tổng tiền đã thu</th>
+                    <th class="text-end">Tổng tiền còn lại</th>
+                    <th class="text-end">% Tiền đã thu / Hồ sơ</th>
+                    <th class="text-end">% Tiền đã thu / Nghiệm thu</th>
+                    <th class="text-end">% Tiền đã thu / Sản lượng đã thực hiện</th>
+                    <th class="text-end">% Tiền đã thu / Hóa đơn</th>
+
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <t t-if="filteredProjects.length">
+                    <t t-foreach="pagedProjects" t-as="pr" t-key="pr.id">
+                      <tr class="cursor-pointer pwf-row" t-att-class="isSelected(pr.id) ? ' is-selected' : ''" t-on-click="openDetail" t-att-data-project-id="pr.id" t-att-title="'Mở dashboard dự án: ' + (pr.name || '')">
+
+                        <!-- Checkbox -->
+                        <td class="text-center sticky-col sticky-col-0" t-on-click.stop="noop">
+                          <input type="checkbox" class="form-check-input m-0" t-att-data-id="pr.id" t-att-checked="isSelected(pr.id) ? true : undefined" t-on-click.stop="noop" t-on-change="onToggleRowSelect"/>
+                        </td>
+
+                        <!-- STT -->
+                        <td class="text-center fw-semibold sticky-col sticky-col-1" t-esc="pageStart + pr_index"/>
+
+                        <!-- Đối tác -->
+                        <td class="sticky-col sticky-col-2 pwf-cell-partner">
+                          <div class="pwf-text-wrap" t-att-title="pr.partner_name || ''" t-esc="pr.partner_name || ''"/>
+                        </td>
+
+                        <!-- Tên dự án + stage -->
+                        <td class="sticky-col sticky-col-3 pwf-cell-project">
+                          <div class="fw-semibold pwf-text-wrap" t-att-title="pr.name || ''" t-esc="pr.name || ''"/>
+                          <div class="mt-1">
+                            <span class="pwf-stage-badge" t-att-class="stageBadgeClass(pr.stage_name)" t-att-title="pr.stage_name || ''" t-esc="pr.stage_name || 'Chưa có trạng thái'"/>
+                          </div>
+                        </td>
+
+                        <!-- Địa điểm -->
+                        <td>
+                          <div class="pwf-ellipsis" t-att-title="pr.location || ''" t-esc="pr.location || ''"/>
+                        </td>
+
+                        <!-- Hạng mục -->
+                        <td>
+                          <div class="pwf-ellipsis" t-att-title="pr.category_text || ''" t-esc="pr.category_text || ''"/>
+                        </td>
+
+                        <!-- Sản lượng / giá trị -->
+                        <td class="text-end fw-medium" t-esc="money(pr.value_settlement)"/>
+                        <td class="text-end" t-esc="money(pr.value_completed)"/>
+                        <td class="text-end" t-esc="money(pr.value_remaining)"/>
+                        <td class="text-end">
+                          <span class="pwf-percent-badge" t-att-class="(pr.progress_percent || 0) >= 100 ? ' is-done' : ((pr.progress_percent || 0) >= 70 ? ' is-good' : ((pr.progress_percent || 0) >= 30 ? ' is-mid' : ' is-low'))" t-esc="Math.round(pr.progress_percent || 0) + '%'"/>
+                        </td>
+
+                        <!-- Nghiệm thu -->
+                        <td class="text-end" t-esc="money(pr.acceptance_value_done)"/>
+                        <td class="text-end" t-esc="money(pr.acceptance_value_remaining)"/>
+                        <td class="text-end">
+                          <span class="pwf-percent-badge" t-att-class="(pr.acceptance_progress_percent || 0) >= 100 ? ' is-done' : ((pr.acceptance_progress_percent || 0) >= 70 ? ' is-good' : ((pr.acceptance_progress_percent || 0) >= 30 ? ' is-mid' : ' is-low'))" t-esc="Math.round(pr.acceptance_progress_percent || 0) + '%'"/>
+                        </td>
+
+                        <!-- Thanh / Quyết toán -->
+                        <td class="text-end" t-esc="money(pr.claim_value_done)"/>
+                        <td class="text-end" t-esc="money(pr.claim_value_remaining)"/>
+                        <td class="text-end">
+                          <span class="pwf-percent-badge" t-att-class="(pr.claim_progress_percent || 0) >= 100 ? ' is-done' : ((pr.claim_progress_percent || 0) >= 70 ? ' is-good' : ((pr.claim_progress_percent || 0) >= 30 ? ' is-mid' : ' is-low'))" t-esc="Math.round(pr.claim_progress_percent || 0) + '%'"/>
+                        </td>
+
+                        <!-- Hóa đơn -->
+                        <td class="text-end" t-esc="money(pr.customer_invoice_untaxed_total)"/>
+                        <td class="text-end" t-esc="money(pr.customer_invoice_amount_total)"/>
+                        <td class="text-end fw-semibold" t-esc="money(pr.customer_invoice_received_total)"/>
+                        <td class="text-end fw-semibold" t-esc="money(pr.customer_invoice_remaining_total)"/>
+                        <td class="text-end">
+                          <span class="pwf-percent-badge" t-att-class="(pr.payment_process_percent || 0) >= 100 ? ' is-done' : ((pr.payment_process_percent || 0) >= 70 ? ' is-good' : ((pr.payment_process_percent || 0) >= 30 ? ' is-mid' : ' is-low'))" t-esc="Math.round(pr.payment_process_percent || 0) + '%'"/>
+                        </td>
+                        <td class="text-end">
+                          <span class="pwf-percent-badge" t-att-class="(pr.payment_vs_acceptance_percent || 0) >= 100 ? ' is-done' : ((pr.payment_vs_acceptance_percent || 0) >= 70 ? ' is-good' : ((pr.payment_vs_acceptance_percent || 0) >= 30 ? ' is-mid' : ' is-low'))" t-esc="Math.round(pr.payment_vs_acceptance_percent || 0) + '%'"/>
+                        </td>
+                        <td class="text-end">
+                          <span class="pwf-percent-badge" t-att-class="(pr.payment_vs_completed_percent || 0) >= 100 ? ' is-done' : ((pr.payment_vs_completed_percent || 0) >= 70 ? ' is-good' : ((pr.payment_vs_completed_percent || 0) >= 30 ? ' is-mid' : ' is-low'))" t-esc="Math.round(pr.payment_vs_completed_percent || 0) + '%'"/>
+                        </td>
+                        <td class="text-end">
+                          <span class="pwf-percent-badge" t-att-class="(pr.payment_vs_invoice_percent || 0) >= 100 ? ' is-done' : ((pr.payment_vs_invoice_percent || 0) >= 70 ? ' is-good' : ((pr.payment_vs_invoice_percent || 0) >= 30 ? ' is-mid' : ' is-low'))" t-esc="Math.round(pr.payment_vs_invoice_percent || 0) + '%'"/>
+                        </td>
+
+                      </tr>
+                    </t>
+                  </t>
+
+                  <t t-else="">
+                    <tr>
+                      <td colspan="21" class="p-0">
+                        <div class="pwf-empty-state">
+                          <div class="pwf-empty-icon">
+                            <i class="fa fa-folder-open-o"/>
+                          </div>
+                          <div class="fw-semibold mb-1">Không có dự án phù hợp</div>
+                          <div class="text-muted small">
+                            Hãy thử thay đổi từ khóa tìm kiếm, bộ lọc đối tác / trạng thái hoặc bấm “Xóa lọc”.
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </t>
+                </tbody>
+              </table>
+            </t>
+          </div>
+
+          <!-- Tổng các dòng đã chọn -->
+          <t t-if="selectedCount">
+            <div class="pwf-selected-summary px-3 py-2 border-top">
+              <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+                <div class="small">
+                  Đã chọn <b>
+                  <t t-esc="selectedCount"/>
+                </b> dòng
+              </div>
+              <button class="btn btn-sm btn-outline-secondary" t-on-click="clearSelected">
+                  Bỏ chọn tất cả
+              </button>
+            </div>
+
+            <div class="d-flex flex-wrap gap-3 small">
+              <div>GT theo HĐ: <b>
+                <t t-esc="money(selectedTotals.value_contract)"/>
+              </b>
+            </div>
+            <div>GT còn lại theo HĐ: <b>
+              <t t-esc="money(selectedTotals.value_remaining)"/>
+            </b>
+          </div>
+          <div>GT SL đã thực hiện: <b>
+            <t t-esc="money(selectedTotals.value_completed)"/>
+          </b>
+        </div>
+        <div>GT đã quyết toán: <b>
+          <t t-esc="money(selectedTotals.claim_value_done)"/>
+        </b>
+      </div>
+      <div>GT còn lại quyết toán: <b>
+        <t t-esc="money(selectedTotals.claim_value_remaining)"/>
+      </b>
+    </div>
+    <div>GT nghiệm thu: <b>
+      <t t-esc="money(selectedTotals.acceptance_value_done)"/>
+    </b>
+  </div>
+  <div>HĐ chưa thuế: <b>
+    <t t-esc="money(selectedTotals.customer_invoice_untaxed_total)"/>
+  </b>
+</div>
+<div>Tổng HĐ: <b>
+  <t t-esc="money(selectedTotals.customer_invoice_amount_total)"/>
+</b>
+</div>
+<div>Đã thu: <b>
+<t t-esc="money(selectedTotals.customer_invoice_received_total)"/>
+</b>
+</div>
+</div>
+</div>
+</t>
+
+<!-- Pagination -->
+<div class="card-footer d-flex align-items-center justify-content-between flex-wrap gap-2">
+<div class="text-muted" style="font-size:12px;">
+              Trang <b>
+<t t-esc="state.page"/>
+</b> /<b>
+<t t-esc="totalPages"/>
+</b>
+              — Hiển thị <b>
+<t t-esc="pageStart"/>
+</b> -<b>
+<t t-esc="pageEnd"/>
+</b>
+              /<b>
+<t t-esc="filteredProjects.length"/>
+</b> dự án
+<t t-if="state.query">
+                (lọc theo: "<t t-esc="state.query"/>
+")
+</t>
+</div>
+
+<div class="d-flex align-items-center gap-2">
+<!-- Page size -->
+<div class="d-flex align-items-center gap-1">
+<span class="text-muted" style="font-size:12px;">/ trang</span>
+<select class="form-select form-select-sm" style="width:90px;" t-on-change="onChangePageSize" t-att-value="'' + state.pageSize">
+<option value="10">10</option>
+<option value="20">20</option>
+<option value="50">50</option>
+<option value="100">100</option>
+</select>
+</div>
+
+<!-- First / Prev -->
+<button class="btn btn-sm btn-outline-secondary" t-on-click="firstPage" t-att-disabled="state.page &lt;= 1" title="Trang đầu">«</button>
+
+<button class="btn btn-sm btn-outline-secondary" t-on-click="prevPage" t-att-disabled="state.page &lt;= 1" title="Trang trước">‹</button>
+
+<!-- Page numbers -->
+<div class="btn-group btn-group-sm" role="group">
+<t t-foreach="pageTokens" t-as="pg" t-key="pg.key">
+<button t-if="!pg.ellipsis" class="btn" t-att-class="pg.page === state.page ? 'btn-primary' : 'btn-outline-secondary'" t-att-data-page="pg.page" t-on-click="onClickPage">
+<t t-esc="pg.label"/>
+</button>
+<span t-else="" class="btn btn-outline-secondary disabled" style="pointer-events:none;">…</span>
+</t>
+</div>
+
+<!-- Next / Last -->
+<button class="btn btn-sm btn-outline-secondary" t-on-click="nextPage" t-att-disabled="state.page &gt;= totalPages" title="Trang sau">›</button>
+
+<button class="btn btn-sm btn-outline-secondary" t-on-click="lastPage" t-att-disabled="state.page &gt;= totalPages" title="Trang cuối">»</button>
+</div>
+</div>
+</div>
+</t>
+
+<!-- =========================
+           DETAIL MODE
+      ========================== -->
+<t t-else="">
+<div class="card flex-grow-1" style="min-height:0;">
+<div class="card-body p-0" style="overflow:auto;">
+<ProjectWorkProjectFormOwl t-props="{
+              projectId: state.selectedId,
+              formViewId: formViewId || undefined,
+              onBack: backToList.bind(this)
+            }"/>
+</div>
+</div>
+</t>
+
+</div>
+</t>
+
+</templates>

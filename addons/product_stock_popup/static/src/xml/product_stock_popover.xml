@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="product_stock_popup.ProductStockPopover">
+        <div class="o_product_stock_popover p-3 shadow-lg bg-white rounded" style="min-width: 350px; max-width: 450px; border: 1px solid #dee2e6;">
+            <div class="text-center mb-3" t-if="props.stockInfo.image">
+                <img t-att-src="'data:image/png;base64,' + props.stockInfo.image" class="img-fluid rounded border" style="max-width: 250px; max-height: 200px; object-fit: contain;"/>
+            </div>
+
+            <div class="text-center mb-3 p-4 bg-light rounded" t-if="!props.stockInfo.image">
+                <i class="fa fa-cube fa-4x text-muted"/>
+            </div>
+
+            <div class="mb-3">
+                <div class="mb-1" t-if="props.stockInfo.barcode">
+                    <strong class="text-primary">Barcode: </strong>
+                    <span class="fw-bold" t-esc="props.stockInfo.barcode"/>
+                </div>
+                <div class="mb-1">
+                    <strong class="text-success">Sales Price: </strong>
+                    <span class="fw-bold text-success">
+                        <t t-esc="(props.formatMoney ? props.formatMoney(props.stockInfo.sales_price) : (props.stockInfo.sales_price || 0))"/>
+                        <t t-esc="' ' + (props.stockInfo.currency_symbol || '')"/>
+                    </span>
+                </div>
+                <div>
+                    <strong class="text-warning">Cost: </strong>
+                    <span class="fw-bold text-warning">
+                        <t t-esc="(props.formatMoney ? props.formatMoney(props.stockInfo.cost) : (props.stockInfo.cost || 0))"/>
+                        <t t-esc="' ' + (props.stockInfo.currency_symbol || '')"/>
+                    </span>
+                </div>
+            </div>
+
+            <hr class="my-2"/>
+
+            <div class="stock-locations mt-3">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fa fa-warehouse me-2 text-primary"/>
+                    <strong>Stock by Location</strong>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 50%;">Location</th>
+                                <th class="text-end" style="width: 25%;">Available</th>
+                                <th class="text-end" style="width: 25%;">Reserved</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-if="props.stockInfo.locations.length > 0">
+                                <t t-foreach="props.stockInfo.locations" t-as="loc" t-key="loc.id">
+                                    <tr>
+                                        <td class="small">
+                                            <i class="fa fa-map-marker-alt fa-xs me-1 text-muted"/>
+                                            <t t-esc="loc.name"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <span t-esc="loc.available" t-att-class="{
+                                                      'text-success fw-bold': loc.available > 0,
+                                                      'text-danger': loc.available &lt; 0,
+                                                      'text-muted': loc.available === 0
+                                                  }"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <span t-esc="loc.reserved" t-att-class="{
+                                                      'text-warning fw-bold': loc.reserved > 0,
+                                                      'text-muted': loc.reserved === 0
+                                                  }"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </t>
+                            <t t-else="">
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-3">
+                                        <i class="fa fa-inbox fa-2x mb-2 d-block"/>
+                                        <small>No stock available in any location</small>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                        <tfoot class="table-secondary fw-bold" t-if="props.stockInfo.locations.length > 0">
+                            <tr>
+                                <th>
+                                    <i class="fa fa-calculator me-1"/>
+                                    Total
+                                </th>
+                                <th class="text-end">
+                                    <span t-esc="props.stockInfo.total_available" t-att-class="{
+                                              'text-success': props.stockInfo.total_available > 0,
+                                              'text-danger': props.stockInfo.total_available &lt; 0,
+                                              'text-muted': props.stockInfo.total_available === 0
+                                          }"/>
+                                </th>
+                                <th class="text-end">
+                                    <span t-esc="props.stockInfo.total_reserved" t-att-class="{
+                                              'text-warning': props.stockInfo.total_reserved > 0,
+                                              'text-muted': props.stockInfo.total_reserved === 0
+                                          }"/>
+                                </th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

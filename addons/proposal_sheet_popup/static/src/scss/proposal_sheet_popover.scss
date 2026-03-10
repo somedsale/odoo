@@ -1,0 +1,153 @@
+// Modern proposal-sheet popover
+.o_psp_card {
+  width: 560px;
+  max-width: 560px;
+  background: #fff;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  padding: 12px;
+}
+
+.o_psp_header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.o_psp_name {
+  font-weight: 800;
+  font-size: 14px;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.o_psp_sub {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.o_psp_chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: rgba(17,24,39,.72);
+  background: rgba(17,24,39,.04);
+  border: 1px solid rgba(17,24,39,.06);
+  max-width: 420px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.o_psp_chip_primary{
+  background: rgba(59,130,246,.08);
+  border-color: rgba(59,130,246,.14);
+  color: rgba(30,64,175,.86);
+}
+
+.o_psp_badge{
+  flex: 0 0 auto;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(17,24,39,.08);
+  background: rgba(17,24,39,.04);
+  color: rgba(17,24,39,.72);
+}
+
+.o_psp_state_draft { background: rgba(148,163,184,.18); color: rgba(51,65,85,.9); border-color: rgba(148,163,184,.28); }
+.o_psp_state_reviewed_manager { background: rgba(56,189,248,.12); color: rgba(3,105,161,.95); border-color: rgba(56,189,248,.22); }
+.o_psp_state_reviewed_accounting { background: rgba(251,191,36,.16); color: rgba(146,64,14,.95); border-color: rgba(251,191,36,.26); }
+.o_psp_state_approved { background: rgba(34,197,94,.14); color: rgba(22,101,52,.95); border-color: rgba(34,197,94,.24); }
+.o_psp_state_waiting_accounting_paid { background: rgba(251,191,36,.16); color: rgba(146,64,14,.95); border-color: rgba(251,191,36,.26); }
+.o_psp_state_done { background: rgba(34,197,94,.14); color: rgba(22,101,52,.95); border-color: rgba(34,197,94,.24); }
+.o_psp_state_rejected { background: rgba(239,68,68,.12); color: rgba(153,27,27,.95); border-color: rgba(239,68,68,.22); }
+.o_psp_state_canceled { background: rgba(100,116,139,.14); color: rgba(30,41,59,.9); border-color: rgba(100,116,139,.22); }
+
+.o_psp_kv{
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.o_psp_kv_row{
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+.o_psp_k{
+  font-size: 12px;
+  color: rgba(17,24,39,.55);
+  white-space: nowrap;
+}
+
+.o_psp_v{
+  font-size: 12px;
+  color: rgba(17,24,39,.9);
+  text-align: right;
+  word-break: break-word;
+}
+
+.o_psp_money{
+  font-weight: 800;
+}
+
+.o_psp_divider{
+  height: 1px;
+  background: rgba(17,24,39,.08);
+  margin: 10px 0;
+}
+
+.o_psp_table_title{
+  font-weight: 800;
+  font-size: 12px;
+  color: rgba(17,24,39,.75);
+  margin-bottom: 6px;
+}
+
+.o_psp_table_scroller{
+  max-height: 260px;
+  overflow: auto;
+  border-radius: 10px;
+  border: 1px solid rgba(17,24,39,.08);
+}
+
+.o_psp_table thead th{
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f8fafc;
+  font-size: 12px;
+  color: rgba(17,24,39,.75);
+  border-bottom: 1px solid rgba(17,24,39,.08);
+}
+
+.o_psp_table td{
+  font-size: 12px;
+  color: rgba(17,24,39,.88);
+  vertical-align: top;
+}
+
+.o_psp_cell_name{
+  max-width: 260px;
+  word-break: break-word;
+}
+
+.o_psp_cell_num{
+  white-space: nowrap;
+}
+
+.o_psp_cell_uom{
+  white-space: nowrap;
+  color: rgba(17,24,39,.70);
+}

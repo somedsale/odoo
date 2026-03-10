@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_project_work_claim_progress_user,project.work.claim.progress.user,model_project_work_claim_progress,project.group_project_user,1,1,1,0
+access_project_work_claim_progress_manager,project.work.claim.progress.manager,model_project_work_claim_progress,project.group_project_manager,1,1,1,1
