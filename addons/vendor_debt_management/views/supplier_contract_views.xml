@@ -81,8 +81,9 @@
                                 <tree>
                                     <field name="name" width="150"/>
                                     <field name="date" width="100"/>
+                                    <field name="date_payment" width="100" string="Ngày chi"/>
                                     <field name="total" widget="monetary" class="o_list_number" width="120"/>
-                                    <field name="state" width="100" string="Trạng thái"/>
+                                    <field name="state" width="100" string="Trạng thái" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'done'" decoration-danger="state == 'cancel'"/>
                                     <field name="currency_id" invisible="1" optional="hide"/>
                                 </tree>
                             </field>

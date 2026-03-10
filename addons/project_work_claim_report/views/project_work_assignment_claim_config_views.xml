@@ -99,7 +99,7 @@
     <menuitem id="menu_project_work_claim_root"
               name="Báo cáo thanh / quyết toán"
               parent="project.menu_main_pm"
-              sequence="60"/>
+              sequence="15"/>
 
     <!-- <menuitem id="menu_project_work_assignment_claim_config"
               name="Phân công báo cáo T/QT"

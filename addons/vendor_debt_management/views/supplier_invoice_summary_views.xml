@@ -141,11 +141,12 @@
                             <field name="payment_request_ids" readonly="1">
                                 <tree create="false" edit="false" delete="false">
                                     <field name="name"/>
-                                    <field name="date"/>
                                     <field name="project_id"/>
                                     <field name="supplier_contract_id"/>
                                     <field name="invoice_id"/>
-                                    <field name="state"/>
+                                    <field name="date"/>
+                                    <field name="date_payment" string="Ngày chi"/>
+                                    <field name="state" string="Trạng thái" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'done'" decoration-danger="state == 'cancel'"/>
                                     <field name="total"/>
                                     <field name="currency_id" column_invisible="1"/>
                                 </tree>

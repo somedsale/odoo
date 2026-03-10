@@ -8,7 +8,7 @@ class ProjectWorkItem(models.Model):
     _name = "project.work.item"
     _description = "Project Work Item"
     _order = "sequence, id"
-
+    _inherit = ["mail.thread", "mail.activity.mixin"]
     project_id = fields.Many2one("project.project", required=True, ondelete="cascade", string="Dự án", index=True)
     company_id = fields.Many2one(related="project_id.company_id", store=True, readonly=True)
 
@@ -39,13 +39,14 @@ class ProjectWorkItem(models.Model):
     currency_id = fields.Many2one(related="project_id.company_id.currency_id", store=True, readonly=True)
 
     progress_line_ids = fields.One2many("project.work.progress", "work_item_id", string="Lịch sử lũy kế")
-    section_name = fields.Char(string="Danh mục (Section SO)")
+    section_name = fields.Char(string="Danh mục")
     attachment_ids = fields.Many2many("ir.attachment", related="project_id.attachment_ids", string="Tài liệu đính kèm")
-    @api.depends("qty_plan", "qty_arise", "price_unit")
+    @api.depends("qty_plan", "qty_arise", "price_unit", "qty_settlement")
     def _compute_qty_settlement(self):
         for rec in self:
             rec.qty_settlement = (rec.qty_plan or 0.0) + (rec.qty_arise or 0.0)
             rec.value_settlement = rec.qty_settlement * rec.price_unit if rec.price_unit else 0.0
+            rec.value_arise = rec.qty_arise * rec.price_unit if rec.price_unit else 0.0
 
     @api.depends("qty_plan", "assignment_ids.qty_done", "assignment_ids.active", "price_unit", "qty_settlement","qty_arise")
     def _compute_qty_done(self):

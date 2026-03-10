@@ -37,6 +37,7 @@ class ProjectWorkAssignment(models.Model):
     currency_id = fields.Many2one(related="project_id.company_id.currency_id", store=True, readonly=True)
     progress_percent = fields.Float(string="% Hoàn thành", related ="work_item_id.progress_percent", store=True)
     attachment_ids = fields.Many2many("ir.attachment", related="project_id.attachment_ids", string="Tài liệu đính kèm", store=False, readonly=True)
+    section_name = fields.Char(related="work_item_id.section_name", store=True, readonly=True)
     # ====== Compute fields ======
     @api.depends("work_item_id", "work_item_id.name")
     def _compute_name(self):

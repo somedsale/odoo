@@ -33,6 +33,12 @@
     <record id="project.menu_project_config" model="ir.ui.menu">
         <field name="active" eval="False"/>
     </record>
+<record id="cost_estimate.menu_cost_estimate_root" model="ir.ui.menu">
+    <field name="groups_id" eval="[(6, 0, [ref('project.group_project_manager')])]"/>
+</record>
+<record id="custom_project_expense.menu_project_expense_in_project" model="ir.ui.menu">
+    <field name="groups_id" eval="[(6, 0, [ref('project.group_project_manager')])]"/>
+</record>
             <!-- Action: Danh sách nhân viên phòng KH_KT -->
         <record id="action_khkt_employee_list" model="ir.actions.act_window">
             <field name="name">Nhân viên phòng KH-KT</field>

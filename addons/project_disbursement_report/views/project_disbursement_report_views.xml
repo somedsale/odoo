@@ -149,7 +149,7 @@
     </record>
 
     <!-- MENU -->
-    <menuitem id="menu_project_disbursement_root" name="Giải ngân dự án" parent="project.menu_main_pm" sequence="80"/>
+    <menuitem id="menu_project_disbursement_root" name="Giải ngân dự án" parent="project.menu_main_pm" sequence="80" groups="project.group_project_manager"/>
 
     <menuitem id="menu_project_disbursement_dashboard" name="Báo cáo giải ngân" parent="menu_project_disbursement_root" action="action_project_disbursement_dashboard" sequence="1"/>
 
