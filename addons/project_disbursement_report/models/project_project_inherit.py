@@ -38,15 +38,34 @@ class ProjectProject(models.Model):
         currency_field="currency_id",
     )
     payment_process_percent = fields.Float(
-        string="% tiến độ thu",
+        string="% Tiền đã thu so với giá trị quyết toán",
         compute="_compute_customer_invoice_stats",
         store=False,    )
+    # Mới
+    payment_vs_acceptance_percent = fields.Float(
+        string="% Tiền đã thu so với nghiệm thu",
+        compute="_compute_customer_invoice_stats",
+        store=False,
+    )
+    payment_vs_completed_percent = fields.Float(
+        string="% Tiền đã thu so với sản lượng đã thực hiện",
+        compute="_compute_customer_invoice_stats",
+        store=False,
+    )
+    payment_vs_invoice_percent = fields.Float(
+        string="% Tiền đã thu so với hóa đơn",
+        compute="_compute_customer_invoice_stats",
+        store=False,
+    )
     @api.depends(
         "customer_invoice_ids",
         "customer_invoice_ids.amount_total",
         "customer_invoice_ids.amount_untaxed",
         "customer_invoice_ids.account_receipt_ids",
         "work_item_ids.claim_value_done",
+                "work_item_ids.claim_value_done",
+        "work_item_ids.acceptance_value_done",
+        "work_item_ids.value_completed",
     )
     def _compute_customer_invoice_stats(self):
         """
@@ -108,6 +127,18 @@ class ProjectProject(models.Model):
             rec.payment_process_percent = (
                 (total_received / rec.claim_value_done) * 100.0
                 if rec.claim_value_done else 0.0
+            )
+            rec.payment_vs_acceptance_percent = (
+                (total_received / rec.acceptance_value_done) * 100.0
+                if rec.acceptance_value_done else 0.0
+            )
+            rec.payment_vs_completed_percent = (
+                (total_received / rec.value_completed) * 100.0
+                if rec.value_completed else 0.0
+            )
+            rec.payment_vs_invoice_percent = (
+                (total_received / total_invoice) * 100.0
+                if total_invoice else 0.0
             )
 
     def action_view_customer_invoices(self):

@@ -36,9 +36,9 @@
           <filter string="Dự án"
                   name="group_project"
                   context="{'group_by':'project_id'}"/>
-          <filter string="Hạng mục"
-                  name="group_work_item"
-                  context="{'group_by':'work_item_name'}"/>
+          <filter string="Danh mục"
+                  name="group_section"
+                  context="{'group_by':'section_name'}"/>
           <filter string="Sản phẩm"
                   name="group_product"
                   context="{'group_by':'product_id'}"/>
@@ -60,7 +60,7 @@
     <field name="name">project.work.assignment.my.report.tree</field>
     <field name="model">project.work.assignment</field>
     <field name="arch" type="xml">
-      <tree string="Báo cáo lũy kế theo kỳ" create="0" delete="0">
+      <tree string="Báo cáo sản lượng của tôi" create="0" delete="0">
         <field name="project_id"/>
         <field name="work_item_name"/>
         <field name="product_id"/>
@@ -165,7 +165,7 @@
     <field name="search_view_id" ref="view_my_assignment_report_search"/>
     <field name="domain">[('user_id','=',uid), ('active','=',True)]</field>
     <!-- mặc định nhóm theo dự án -->
-    <field name="context">{}</field>
+    <field name="context">{'search_default_group_project': 1}</field>
     <field name="view_ids" eval="[
       (5,0,0),
       (0,0, {'sequence': 1, 'view_mode':'tree', 'view_id': ref('view_my_assignment_report_tree')}),
@@ -178,7 +178,7 @@
             name="Báo cáo sản lượng"
             parent="project.menu_main_pm"
             action="action_my_assignment_report"
-            sequence="5"/>
+            sequence="10"/>
 
   <menuitem id="menu_my_assignment_report"
             name="Báo cáo sản lượng của tôi"

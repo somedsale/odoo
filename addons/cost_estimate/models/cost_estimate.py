@@ -330,17 +330,28 @@ class CostEstimate(models.Model):
         return action
     @api.depends("sale_order_id")
     def _compute_contract_id(self):
+        Contract = self.env["contract.management"]
         for rec in self:
-            contract = self.env["contract.management"].search(
-                [("sale_order_id", "=", rec.sale_order_id.id)],
-                limit=1
-            )
-            rec.contract_id = contract.id if contract else False
+            rec.contract_id = False
+            if rec.sale_order_id:
+                contract = Contract.search(
+                    [("sale_order_id", "=", rec.sale_order_id.id)],
+                    limit=1
+                )
+                rec.contract_id = contract.id if contract else False
 
-    @api.depends("contract_id")
+    @api.depends("sale_order_id")
     def _compute_contract_value(self):
+        Contract = self.env["contract.management"]
         for rec in self:
-            rec.contract_value = rec.contract_id.contract_value if rec.contract_id else 0.0
+            rec.contract_value = 0.0
+            if rec.sale_order_id:
+                contract = Contract.search(
+                    [("sale_order_id", "=", rec.sale_order_id.id)],
+                    limit=1
+                )
+                if contract:
+                    rec.contract_value = contract.contract_value or 0.0
 
     @api.depends('total_cost_with_tax', 'amount_additional_expense_with_tax')
     def _compute_total_final_tax(self):

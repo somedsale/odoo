@@ -84,7 +84,7 @@
     <menuitem id="menu_project_work_acceptance_root"
               name="Báo cáo nghiệm thu"
               parent="project.menu_main_pm"
-              sequence="62"/>
+              sequence="13"/>
 
     <!-- <menuitem id="menu_project_work_assignment_acceptance_config"
               name="Phân công người nghiệm thu"

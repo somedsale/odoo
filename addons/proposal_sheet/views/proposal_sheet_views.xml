@@ -52,7 +52,7 @@
                             <field name="project_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft' " force_save="context.get('from_task', False)"/>
                             <field name="contract_num" string="Số hợp đồng" invisible="not project_id"/>
                             <field name="cost_additional_expense_line_id" string="Hạng mục dự toán chi phí gián tiếp" domain="[('project_id', '=', project_id)]"/>
-                            <field name="task_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft'" force_save="context.get('from_task', False)" domain="[('project_id', '=', project_id)]" invisible="type=='expense'"/>
+                            <!-- <field name="task_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft'" force_save="context.get('from_task', False)" domain="[('project_id', '=', project_id)]" invisible="type=='expense'"/> -->
                             <field name="requested_by" widget="many2one_avatar_user" readonly="1" options="{'no_open':True}"/>
                             <field name="take_note" placeholder="Ghi chú về phiếu đề xuất" readonly="state != 'draft'"/>
                             <field name="amount_total" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
@@ -175,7 +175,7 @@
         <field name="arch" type="xml">
             <search>
                 <field name="name"/>
-                <field name="task_id"/>
+                <!-- <field name="task_id"/> -->
                 <field name="requested_by"/>
                 <filter string="Nháp" name="draft" domain="[('state', '=', 'draft')]"/>
                 <filter string="Chờ Duyệt (Sếp)" name="approved" domain="[('state', '=', 'approved')]"/>

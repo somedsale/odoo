@@ -19,7 +19,7 @@
 
           <group expand="0" string="Nhóm theo">
             <filter string="Dự án" name="group_project" context="{'group_by':'project_id'}"/>
-            <filter string="Hạng mục" name="group_work_item" context="{'group_by':'work_item_id'}"/>
+            <filter string="Danh mục" name="group_section" context="{'group_by':'section_name'}"/>
             <filter string="Người nghiệm thu" name="group_acceptance_user" context="{'group_by':'acceptance_user_id'}"/>
           </group>
 
@@ -44,7 +44,7 @@
           <field name="date_start"/>
           <field name="current_period_no"/>
           <field name="uom_id"/>
-          <field name="qty_settlement"/>
+          <field name="qty_settlement" string="KL HĐ/TT"/>
           <field name="prev_acceptance_qty_cum" string="Lũy kế kỳ trước"/>
           <field name="current_acceptance_qty_period" string="KL nghiệm thu kỳ này"/>
           <field name="current_acceptance_qty_cum" string="Lũy kế nghiệm thu"/>
@@ -78,7 +78,7 @@
                 <field name="date_start" readonly="1"/>
                 <field name="current_period_no" readonly="1"/>
                 <field name="uom_id" readonly="1"/>
-                <field name="qty_settlement" readonly="1"/>
+                <field name="qty_settlement" readonly="1" string="KL Hợp đồng/ Thực tế"/>
                 <field name="qty_done" readonly="1" string="Sản lượng đã thực hiện"/>
 
                 <field name="current_acceptance_qty_cum" readonly="1" string="KL đã nghiệm thu"/>
@@ -106,14 +106,10 @@
 
                 <group>
                   <group>
-                    <field name="current_acceptance_qty_period"
-                           readonly="not current_period_start"
-                           placeholder="Nhập khối lượng nghiệm thu trong kỳ..."/>
+                    <field name="current_acceptance_qty_period" readonly="not current_period_start" placeholder="Nhập khối lượng nghiệm thu trong kỳ..."/>
                   </group>
                   <group>
-                    <field name="current_acceptance_note"
-                           readonly="not current_period_start"
-                           placeholder="Ghi chú nghiệm thu..."/>
+                    <field name="current_acceptance_note" readonly="not current_period_start" placeholder="Ghi chú nghiệm thu..."/>
                   </group>
                 </group>
 
@@ -179,18 +175,9 @@
       ]"/>
     </record>
 
-    <menuitem id="menu_my_assignment_acceptance_report"
-              name="Báo cáo nghiệm thu của tôi"
-              parent="project_work_acceptance_report.menu_project_work_acceptance_root"
-              action="action_my_assignment_acceptance_report"
-              sequence="2"/>
+    <menuitem id="menu_my_assignment_acceptance_report" name="Báo cáo nghiệm thu của tôi" parent="project_work_acceptance_report.menu_project_work_acceptance_root" action="action_my_assignment_acceptance_report" sequence="1"/>
 
-    <menuitem id="menu_manager_assignment_acceptance_report"
-              name="Quản lý báo cáo nghiệm thu"
-              parent="project_work_acceptance_report.menu_project_work_acceptance_root"
-              action="action_manager_assignment_acceptance_report"
-              sequence="3"
-              groups="project.group_project_manager"/>
+    <menuitem id="menu_manager_assignment_acceptance_report" name="Quản lý báo cáo nghiệm thu" parent="project_work_acceptance_report.menu_project_work_acceptance_root" action="action_manager_assignment_acceptance_report" sequence="3" groups="project.group_project_manager"/>
 
   </data>
 </odoo>

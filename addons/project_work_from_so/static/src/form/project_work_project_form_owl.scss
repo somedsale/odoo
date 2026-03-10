@@ -1,294 +1,88 @@
 .o_pwf_project_form_owl {
-  .card-header {
-    background: #f8fafc;
-    border-bottom: 1px solid #e5e7eb;
-  }
-
-  .form-label {
-    font-size: 12px;
-    color: #475569;
-    margin-bottom: 4px;
-  }
-
-  .table thead th {
-    background: #f8fafc;
-    font-size: 12px;
-    color: #475569;
-    border-bottom: 1px solid #dbe3ee;
-    white-space: nowrap;
-  }
-
-  .table td {
-    border-color: #edf2f7;
-  }
-}
-.o_pwf_project_form_owl {
-  .pwf-wi-desc {
-    min-width: 300px;
-    white-space: pre-wrap;
-    resize: vertical; // cho phép kéo cao hơn nếu mô tả dài
-    line-height: 1.25;
-  }
-}
-/* =========================
-   ProjectWorkProjectFormOwl - SCSS
-   (thêm vào file scss của module)
-========================= */
-
-.o_pwf_project_form_owl {
-  // ===== Tổng thể =====
-  .card {
-    border-radius: 12px;
-  }
-
-  .card-header {
-    border-bottom: 1px solid #e5e7eb;
-  }
-
-  .form-label {
-    color: #334155;
-    font-weight: 600;
-    font-size: 12px;
-  }
-
-  .form-control,
-  .form-select {
-    border-radius: 10px;
-    border-color: #dbe3ee;
-
-    &:focus {
-      border-color: #93c5fd;
-      box-shadow: 0 0 0 0.15rem rgba(59, 130, 246, 0.12);
-    }
-  }
-
-  .btn.btn-sm {
-    border-radius: 10px;
-  }
-
-  // ===== Progress card trong "Thông tin hợp đồng / tiến độ" =====
-  .pwf-progress-card {
-    border: 1px solid #e5e7eb;
-    background: #f8fafc;
-    border-radius: 12px;
-    padding: 10px 12px;
-  }
-
-  .pwf-progress-row + .pwf-progress-row {
-    margin-top: 12px;
-    padding-top: 10px;
-    border-top: 1px dashed #e2e8f0;
-  }
-
-  .pwf-progress-label {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    font-size: 12px;
-    margin-bottom: 5px;
-    color: #475569;
-
-    span {
-      font-weight: 700;
-      color: #334155;
-    }
-
-    b {
-      color: #0f172a;
-      font-weight: 800;
-      min-width: 54px;
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-    }
-  }
-
-  .pwf-progress-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 16px;
-    margin-bottom: 6px;
-    font-size: 12px;
-    color: #64748b;
-
-    span {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      white-space: nowrap;
-    }
-
-    b {
-      color: #0f172a;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-    }
-  }
-
-  .pwf-progress-track {
-    height: 10px;
-    border-radius: 999px;
-    background: #e2e8f0;
-    overflow: hidden;
-    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.06);
-  }
-
-  .pwf-progress-fill {
-    height: 100%;
-    width: 0;
-    border-radius: 999px;
-    transition: width 0.25s ease;
-    background: #94a3b8; // default
-
-    &.is-low {
-      background: linear-gradient(90deg, #fb923c, #f97316);
-    }
-
-    &.is-mid {
-      background: linear-gradient(90deg, #facc15, #eab308);
-    }
-
-    &.is-good {
-      background: linear-gradient(90deg, #22d3ee, #14b8a6);
-    }
-
-    &.is-done {
-      background: linear-gradient(90deg, #60a5fa, #2563eb);
-    }
-  }
-
-  // ===== Smart button area =====
-  .bg-light-subtle {
-    border-color: #e5e7eb !important;
-    border-radius: 12px;
-  }
-
-  // ===== Bảng hạng mục công việc =====
-  .table {
-    --tbl-border: #dbe3ee;
-
-    th,
-    td {
-      border-color: var(--tbl-border) !important;
-      vertical-align: middle;
-    }
-
-    thead th {
-      font-size: 12px;
-      font-weight: 700;
-      color: #334155;
-      background: #f8fafc !important;
-    }
-
-    tbody td {
-      font-size: 13px;
-    }
-
-    tbody tr:hover td {
-      background: #f8fbff !important;
-    }
-  }
-
-  // Checkbox nhìn gọn hơn
-  .form-check-input {
-    cursor: pointer;
-
-    &:focus {
-      box-shadow: 0 0 0 0.15rem rgba(59, 130, 246, 0.12);
-    }
-  }
-
-  // Ô mô tả trong bảng hạng mục
-  textarea.form-control.form-control-sm {
-    min-height: 52px;
-
-    &::placeholder {
-      color: #94a3b8;
-    }
-  }
-
-  // Ô số trong bảng dễ đọc hơn
-  .text-end {
-    font-variant-numeric: tabular-nums;
-  }
-
-  // Badge % ở bảng hạng mục
-  .badge.text-bg-light.border {
-    color: #334155 !important;
-    background: #f8fafc !important;
-    border-color: #dbe3ee !important;
-    font-weight: 600;
-  }
-
-  // ===== Scroll area table =====
-  .table-responsive {
-    border-top: 1px solid #e5e7eb;
-
-    &::-webkit-scrollbar {
-      height: 10px;
-      width: 10px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 999px;
-      border: 2px solid #f8fafc;
-    }
-
-    &::-webkit-scrollbar-track {
-      background: #f8fafc;
-    }
-  }
-}
-/* =========================================
-   ProjectWorkProjectFormOwl - Layout polish
-   (bố cục mới 3 block + progress + table)
-========================================= */
-
-.o_pwf_project_form_owl {
-  --pwf-border: #e5e7eb;
-  --pwf-border-2: #dbe3ee;
-  --pwf-bg-soft: #f8fafc;
-  --pwf-bg-soft-2: #f1f5f9;
+  --pwf-bg: #f5f7fb;
+  --pwf-card: #ffffff;
+  --pwf-soft: #f8fafc;
+  --pwf-soft-2: #f1f5f9;
+  --pwf-border: #e2e8f0;
+  --pwf-border-2: #d7dee8;
   --pwf-text: #0f172a;
-  --pwf-text-muted: #64748b;
+  --pwf-muted: #64748b;
+  --pwf-title: #334155;
+  --pwf-primary: #2563eb;
+  --pwf-success: #16a34a;
+  --pwf-warning: #d97706;
+  --pwf-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 10px 24px rgba(15, 23, 42, 0.04);
 
-  /* ===== Tổng thể ===== */
-  .card {
-    border-radius: 12px;
+  color: var(--pwf-text);
+
+  .pwf-main-card,
+  .pwf-section-card {
     border: 1px solid var(--pwf-border);
+    border-radius: 16px;
+    background: var(--pwf-card);
+    box-shadow: var(--pwf-shadow);
     overflow: hidden;
   }
 
-  .card.shadow-sm {
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.03) !important;
-  }
-
   .card-header {
+    background: linear-gradient(180deg, #fbfcfe 0%, #f8fafc 100%) !important;
     border-bottom: 1px solid var(--pwf-border);
-    background: var(--pwf-bg-soft) !important;
-    color: #334155;
-    font-size: 13px;
-    letter-spacing: 0.01em;
+    padding: 0.85rem 1rem;
   }
 
   .card-body {
     background: #fff;
   }
 
+  .pwf-card-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--pwf-title);
+
+    i {
+      width: 16px;
+      text-align: center;
+    }
+  }
+
+  .pwf-smartbar {
+    background: linear-gradient(180deg, #fbfcfe 0%, #f8fafc 100%);
+    border: 1px solid var(--pwf-border);
+    border-radius: 14px;
+    padding: 0.75rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+
+    .btn {
+      border-radius: 10px;
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+    }
+
+    .badge {
+      background: rgba(148, 163, 184, 0.12);
+      color: #334155;
+      border: 1px solid var(--pwf-border);
+      font-weight: 600;
+    }
+  }
+
   .form-label {
-    color: #334155;
-    font-weight: 600;
     font-size: 12px;
-    margin-bottom: 0.25rem;
+    font-weight: 700;
+    color: var(--pwf-title);
+    margin-bottom: 0.3rem;
   }
 
   .form-control,
   .form-select {
+    min-height: 38px;
     border-radius: 10px;
     border-color: var(--pwf-border-2);
-    min-height: 36px;
     color: var(--pwf-text);
+    background: #fff;
 
     &:focus {
       border-color: #93c5fd;
@@ -298,6 +92,11 @@
     &::placeholder {
       color: #94a3b8;
     }
+  }
+
+  .form-control-lg {
+    min-height: 44px;
+    font-weight: 600;
   }
 
   .btn.btn-sm {
@@ -306,78 +105,161 @@
 
   .badge.text-bg-light.border {
     background: #fff !important;
-    border-color: var(--pwf-border-2) !important;
     color: #334155 !important;
+    border-color: var(--pwf-border-2) !important;
+    font-weight: 600;
   }
 
-  .bg-light-subtle {
-    background: #f8fafc !important;
-    border-color: var(--pwf-border) !important;
-  }
+  .pwf-stat-card {
+    height: 100%;
+    background: linear-gradient(180deg, #fbfcfe 0%, #f8fafc 100%);
+    border: 1px solid var(--pwf-border);
+    border-radius: 14px;
+    padding: 0.85rem 0.9rem;
 
-  /* ===== Toolbar trên cùng ===== */
-  > .d-flex.justify-content-between.mb-2 {
-    .btn {
-      white-space: nowrap;
+    &.is-success {
+      background: linear-gradient(180deg, #f6fef8 0%, #eefbf1 100%);
+      border-color: #cfead7;
+    }
+
+    &.is-warning {
+      background: linear-gradient(180deg, #fffaf3 0%, #fff4e5 100%);
+      border-color: #f3dfb8;
     }
   }
 
-  /* ===== 3 block top (Cơ bản / Hợp đồng / Tiến độ) ===== */
-  .row.g-3.mb-3 {
-    > [class*="col-"] {
-      display: flex;
-      flex-direction: column;
-    }
+  .pwf-stat-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--pwf-muted);
+    margin-bottom: 6px;
+  }
 
-    > [class*="col-"] > .card {
-      flex: 1 1 auto;
+  .pwf-stat-value {
+    font-size: 18px;
+    line-height: 1.25;
+    font-weight: 800;
+    color: var(--pwf-text);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    word-break: break-word;
+  }
+
+  .pwf-metric-panel {
+    border: 1px solid var(--pwf-border);
+    border-radius: 14px;
+    padding: 0.95rem;
+    background: #fff;
+
+    &.is-highlight {
+      background: linear-gradient(180deg, #fbfcfe 0%, #f4f8ff 100%);
+      border-color: #cfe0ff;
     }
   }
 
-  /* Block tiến độ nhìn “dễ đọc” hơn */
-  .card-header + .card-body {
-    .row.g-2 > [class*="col-4"] .form-control.text-end {
-      font-variant-numeric: tabular-nums;
+  .pwf-panel-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--pwf-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.75rem;
+  }
+
+  .pwf-mini-metric {
+    border: 1px solid var(--pwf-border);
+    border-radius: 12px;
+    background: var(--pwf-soft);
+    padding: 0.75rem 0.8rem;
+    height: 100%;
+  }
+
+  .pwf-mini-metric-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--pwf-muted);
+    margin-bottom: 0.35rem;
+  }
+
+  .pwf-mini-metric-value {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--pwf-text);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.25;
+
+    &.is-strong {
+      font-size: 16px;
+      color: #0b3b91;
+    }
+  }
+
+  .pwf-stack-metric {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0.7rem 0;
+    border-bottom: 1px dashed var(--pwf-border);
+
+    &:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    &:first-of-type {
+      padding-top: 0.1rem;
+    }
+
+    span {
+      font-size: 13px;
+      color: var(--pwf-title);
       font-weight: 600;
     }
+
+    b {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--pwf-text);
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
   }
 
-  /* ===== Progress card ===== */
   .pwf-progress-card {
     border: 1px solid var(--pwf-border);
-    background: var(--pwf-bg-soft);
-    border-radius: 12px;
-    padding: 10px 12px;
+    background: linear-gradient(180deg, #fbfcfe 0%, #f8fafc 100%);
+    border-radius: 14px;
+    padding: 0.9rem;
   }
 
   .pwf-progress-row + .pwf-progress-row {
     margin-top: 12px;
-    padding-top: 10px;
-    border-top: 1px dashed #e2e8f0;
+    padding-top: 12px;
+    border-top: 1px dashed var(--pwf-border);
   }
 
   .pwf-progress-label {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 5px;
-    font-size: 12px;
-    color: #475569;
+    gap: 12px;
+    margin-bottom: 6px;
 
     span {
+      font-size: 13px;
       font-weight: 700;
-      color: #334155;
-      line-height: 1.2;
+      color: var(--pwf-title);
     }
 
     b {
-      color: var(--pwf-text);
+      font-size: 13px;
       font-weight: 800;
-      min-width: 54px;
+      color: var(--pwf-text);
+      min-width: 52px;
       text-align: right;
       font-variant-numeric: tabular-nums;
-      line-height: 1.2;
     }
   }
 
@@ -385,16 +267,12 @@
     display: flex;
     flex-wrap: wrap;
     gap: 6px 14px;
-    margin-bottom: 6px;
-    font-size: 12px;
-    color: var(--pwf-text-muted);
+    margin-bottom: 7px;
 
     span {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
+      font-size: 12px;
+      color: var(--pwf-muted);
       white-space: nowrap;
-      line-height: 1.2;
     }
 
     b {
@@ -417,7 +295,7 @@
     width: 0;
     border-radius: 999px;
     transition: width 0.25s ease;
-    background: #94a3b8;
+    background: linear-gradient(90deg, #94a3b8, #64748b);
 
     &.is-low {
       background: linear-gradient(90deg, #fb923c, #f97316);
@@ -428,7 +306,7 @@
     }
 
     &.is-good {
-      background: linear-gradient(90deg, #22d3ee, #14b8a6);
+      background: linear-gradient(90deg, #22c55e, #16a34a);
     }
 
     &.is-done {
@@ -436,37 +314,66 @@
     }
   }
 
-  /* ===== Mô tả dự án ===== */
-  textarea.form-control[data-field="description"] {
-    min-height: 92px;
-    resize: vertical;
-    line-height: 1.35;
-    white-space: pre-wrap;
+  .pwf-html-view {
+    min-height: 90px;
+    border: 1px solid var(--pwf-border);
+    border-radius: 12px;
+    background: #fff;
+    padding: 0.9rem 1rem;
+    line-height: 1.5;
+    color: var(--pwf-text);
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.5rem 0;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--pwf-border);
+      padding: 6px 8px;
+      vertical-align: top;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 6px;
+    }
+
+    blockquote {
+      margin: 0.5rem 0;
+      padding: 0.6rem 0.8rem;
+      border-left: 3px solid #cbd5e1;
+      background: #f8fafc;
+      color: #475569;
+    }
   }
 
-  /* ===== Batch assign toolbar ===== */
-  .card-body.p-0 > .px-3.py-2.border-bottom.bg-light-subtle {
+  .pwf-batchbar {
+    background: linear-gradient(180deg, #fbfcfe 0%, #f8fafc 100%);
     border-bottom-color: var(--pwf-border) !important;
 
     .small {
-      color: #64748b !important;
+      color: var(--pwf-muted) !important;
+    }
 
-      b {
-        color: var(--pwf-text);
-      }
+    b {
+      color: var(--pwf-text);
     }
 
     .form-select.form-select-sm {
       min-height: 32px;
+      border-radius: 8px;
       font-size: 12px;
-    }
-
-    .btn.btn-sm {
-      min-height: 32px;
     }
   }
 
-  /* ===== Bảng hạng mục công việc ===== */
   .table-responsive {
     border-top: 1px solid var(--pwf-border);
 
@@ -487,8 +394,7 @@
   }
 
   .table {
-    --tbl-border: #dbe3ee;
-
+    --tbl-border: #e3e8f0;
     margin-bottom: 0;
 
     th,
@@ -498,17 +404,17 @@
     }
 
     thead th {
-      font-size: 12px;
-      font-weight: 700;
-      color: #334155;
       background: #f8fafc !important;
+      color: var(--pwf-title);
+      font-size: 12px;
+      font-weight: 800;
       line-height: 1.15;
       white-space: nowrap;
     }
 
     tbody td {
       font-size: 13px;
-      color: #0f172a;
+      color: var(--pwf-text);
     }
 
     tbody tr:hover td {
@@ -520,35 +426,25 @@
     }
   }
 
-  /* Sticky header mượt hơn trong bảng hạng mục */
-  .table-responsive thead.table-light {
-    box-shadow: 0 1px 0 0 var(--pwf-border);
-  }
-
-  /* Ô mô tả hạng mục (multiline editable) */
+  .pwf-wi-desc,
   .table textarea.form-control.form-control-sm {
-    min-height: 54px;
+    min-width: 260px;
+    min-height: 56px;
     border-radius: 8px;
     resize: vertical;
-    line-height: 1.25;
     white-space: pre-wrap;
+    line-height: 1.3;
     padding-top: 6px;
     padding-bottom: 6px;
   }
 
-  /* Select/input trong bảng hạng mục */
-  .table .form-select.form-select-sm,
-  .table .form-control.form-control-sm {
+  .table .form-control.form-control-sm,
+  .table .form-select.form-select-sm {
     min-height: 32px;
-    font-size: 12px;
     border-radius: 8px;
+    font-size: 12px;
   }
 
-  .table input[type="number"].form-control.form-control-sm {
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* Checkbox */
   .form-check-input {
     cursor: pointer;
 
@@ -557,117 +453,6 @@
     }
   }
 
-  /* ===== Responsive ===== */
-
-  /* <= 1400px: card tiến độ bớt chật */
-  @media (max-width: 1400px) {
-    .pwf-progress-meta {
-      gap: 6px 10px;
-
-      span {
-        white-space: normal;
-      }
-    }
-  }
-
-  /* <= 1200px: top cards xếp 2 cột thì spacing mềm hơn */
-  @media (max-width: 1199.98px) {
-    .row.g-3.mb-3 > [class*="col-"] > .card {
-      min-height: auto;
-    }
-
-    .pwf-progress-card {
-      padding: 10px;
-    }
-  }
-
-  /* <= 992px: toolbar và batch assign xuống hàng đẹp hơn */
-  @media (max-width: 991.98px) {
-    > .d-flex.justify-content-between.mb-2 {
-      align-items: stretch !important;
-
-      > div:last-child {
-        width: 100%;
-        justify-content: flex-end;
-        flex-wrap: wrap;
-      }
-    }
-
-    .card-body.p-0 > .px-3.py-2.border-bottom.bg-light-subtle {
-      .d-flex {
-        align-items: stretch !important;
-      }
-
-      .form-select.form-select-sm {
-        width: 100% !important;
-        min-width: 220px;
-      }
-    }
-  }
-
-  /* <= 768px: các ô quick stats tiến độ xuống dòng hợp lý */
-  @media (max-width: 767.98px) {
-    .card-body {
-      padding: 0.85rem;
-    }
-
-    .pwf-progress-label {
-      font-size: 11px;
-    }
-
-    .pwf-progress-meta {
-      font-size: 11px;
-      gap: 4px 10px;
-    }
-
-    .row.g-2 > .col-4 {
-      width: 100%;
-      flex: 0 0 100%;
-    }
-
-    .table thead th {
-      font-size: 11px;
-    }
-
-    .table tbody td {
-      font-size: 12px;
-    }
-  }
-}
-/* ===== Attachments ===== */
-.o_pwf_project_form_owl {
-  .pwf-attach-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #475569;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-
-  .pwf-attach-name {
-    font-weight: 600;
-    color: #0f172a;
-    line-height: 1.2;
-  }
-
-  .list-group-item {
-    border-left: 0;
-    border-right: 0;
-    padding: 0.75rem 1rem;
-  }
-
-  .list-group-item:first-child {
-    border-top: 0;
-  }
-}
-/* ===== Attachments (preview image + pdf) ===== */
-.o_pwf_project_form_owl {
   .pwf-attach-row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 240px;
@@ -675,7 +460,7 @@
     align-items: start;
     border-left: 0;
     border-right: 0;
-    padding: 0.85rem 1rem;
+    padding: 0.9rem 1rem;
   }
 
   .pwf-attach-main {
@@ -683,11 +468,11 @@
   }
 
   .pwf-attach-icon {
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
     background: #f1f5f9;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--pwf-border);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -697,15 +482,15 @@
   }
 
   .pwf-attach-name {
-    font-weight: 600;
-    color: #0f172a;
+    font-weight: 700;
+    color: var(--pwf-text);
     line-height: 1.2;
 
     a {
       color: inherit;
 
       &:hover {
-        color: #2563eb;
+        color: var(--pwf-primary);
       }
     }
   }
@@ -719,12 +504,11 @@
     position: relative;
     display: block;
     width: 100%;
-    height: 145px;
-    border-radius: 10px;
-    border: 1px solid #dbe3ee;
+    height: 150px;
+    border-radius: 12px;
+    border: 1px solid var(--pwf-border-2);
     background: #f8fafc;
     overflow: hidden;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
 
     &.is-image img {
       width: 100%;
@@ -765,15 +549,15 @@
     }
   }
 
-  .list-group-item:first-child {
-    border-top: 0;
+  @media (max-width: 1400px) {
+    .pwf-progress-meta span {
+      white-space: normal;
+    }
   }
 
-  /* responsive */
   @media (max-width: 991.98px) {
     .pwf-attach-row {
       grid-template-columns: 1fr;
-      gap: 10px;
     }
 
     .pwf-attach-preview-wrap {
@@ -783,101 +567,100 @@
     .pwf-attach-preview {
       height: 180px;
     }
+
+    .pwf-batchbar .form-select.form-select-sm {
+      width: 100% !important;
+      min-width: 220px;
+    }
   }
 
-  @media (max-width: 575.98px) {
-    .pwf-attach-preview {
-      height: 160px;
+  @media (max-width: 767.98px) {
+    .card-body {
+      padding: 0.85rem;
+    }
+
+    .pwf-stat-value {
+      font-size: 16px;
+    }
+
+    .pwf-progress-label span,
+    .pwf-progress-label b {
+      font-size: 12px;
+    }
+
+    .pwf-progress-meta span {
+      font-size: 11px;
+    }
+
+    .table thead th {
+      font-size: 11px;
+    }
+
+    .table tbody td {
+      font-size: 12px;
     }
   }
 }
 .o_pwf_project_form_owl {
-  .pwf-html-editor-wrap {
-    .form-text {
-      color: #64748b;
-      font-size: 12px;
+  .pwf-stat-card.is-danger {
+    background: linear-gradient(180deg, #fff6f6 0%, #feecec 100%);
+    border-color: #f3caca;
+
+    .pwf-stat-value {
+      color: #b91c1c;
     }
   }
 
-  .pwf-html-editor {
-    min-height: 120px;
-    height: auto;
-    overflow: auto;
-    white-space: normal;
-    line-height: 1.45;
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid #dbe3ee;
+  .pwf-compare-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .pwf-stack-metric b.is-over {
+    color: #b91c1c;
+  }
+
+  .pwf-stack-metric b.is-under {
+    color: #15803d;
+  }
+
+  @media (max-width: 991.98px) {
+    .pwf-compare-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+.o_pwf_project_form_owl {
+  .pwf-stat-card.is-danger {
+    background: linear-gradient(180deg, #fff7f7 0%, #feeeee 100%);
+    border-color: #f3caca;
+
+    .pwf-stat-value {
+      color: #b91c1c;
+    }
+  }
+
+  .pwf-stack-metric b.is-danger {
+    color: #b91c1c;
+  }
+
+  .pwf-stack-metric b.is-success {
+    color: #15803d;
+  }
+}
+.pwf-scroll-body {
+    position: relative;
+    padding-top: 0 !important;
+}
+
+.pwf-sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 30;
     background: #fff;
-
-    &:focus {
-      border-color: #93c5fd;
-      box-shadow: 0 0 0 0.15rem rgba(59, 130, 246, 0.12);
-      outline: none;
-    }
-
-    // Placeholder cho contenteditable
-    &:empty::before {
-      content: attr(data-placeholder);
-      color: #94a3b8;
-      pointer-events: none;
-      display: block;
-    }
-
-    // Format HTML cơ bản
-    p {
-      margin: 0 0 0.5rem 0;
-    }
-
-    p:last-child {
-      margin-bottom: 0;
-    }
-
-    ul,
-    ol {
-      margin: 0.25rem 0 0.5rem 1.25rem;
-      padding: 0;
-    }
-
-    li {
-      margin: 0.15rem 0;
-    }
-
-    h1, h2, h3, h4, h5, h6 {
-      margin: 0.35rem 0 0.5rem 0;
-      line-height: 1.25;
-      font-weight: 700;
-    }
-
-    a {
-      color: #2563eb;
-      text-decoration: underline;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 0.5rem 0;
-    }
-
-    th, td {
-      border: 1px solid #dbe3ee;
-      padding: 6px 8px;
-      vertical-align: top;
-    }
-
-    img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 6px;
-    }
-
-    blockquote {
-      margin: 0.5rem 0;
-      padding: 0.5rem 0.75rem;
-      border-left: 3px solid #cbd5e1;
-      background: #f8fafc;
-      color: #475569;
-    }
-  }
+    padding-top: 0;
+    padding-bottom: 10px;
+    margin-top: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }

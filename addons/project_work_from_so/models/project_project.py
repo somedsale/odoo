@@ -19,8 +19,8 @@ class ProjectProject(models.Model):
     work_item_ids = fields.One2many(
         "project.work.item", "project_id", string="Hạng mục công việc"
     )
-    value_settlement = fields.Monetary(string="Giá trị thực tế", related="work_item_ids.value_settlement", store=True)
-    value_arise = fields.Monetary(string="Giá trị phát sinh", related="work_item_ids.value_arise", store=True)
+    value_settlement = fields.Monetary(string="Giá trị thực tế", compute="_compute_qty_settlement", store=True)
+    value_arise = fields.Monetary(string="Giá trị phát sinh", compute="_compute_qty_settlement", store=True)
     value_completed = fields.Monetary(string="Giá trị hoàn thành", compute="_compute_qty_done", store=True)
     value_remaining = fields.Monetary(string="Giá trị còn lại", compute="_compute_qty_done", store=True)
     progress_percent = fields.Float(string="% Hoàn thành", compute="_compute_qty_done", store=True)
@@ -38,6 +38,12 @@ class ProjectProject(models.Model):
         "project_id",
         string="Dự toán chi phí",
     )
+    total_cost_estimate = fields.Float(string="Tổng dự toán chi phí chưa thuế", related="cost_estimate_id.total_cost", store=True)
+    total_cost_with_tax_estimate = fields.Float(string="Tổng dự toán chi phí có thuế", related="cost_estimate_id.total_cost_with_tax", store=True)
+    amount_additional_expense_estimate = fields.Float(string="Tổng chi phí phát sinh dự toán chưa thuế", related="cost_estimate_id.amount_additional_expense", store=True)
+    amount_additional_expense_with_tax_estimate = fields.Float(string="Tổng chi phí phát sinh dự toán có thuế", related="cost_estimate_id.amount_additional_expense_with_tax", store=True)
+    total_final_non_tax_estimate = fields.Float(string="Tổng dự toán cuối cùng chưa thuế", related="cost_estimate_id.total_final_non_tax", store=True)
+    total_final_with_tax_estimate = fields.Float(string="Tổng dự toán cuối cùng có thuế", related="cost_estimate_id.total_final_tax", store=True)
     cost_estimate_count = fields.Integer(
         string="Số dự toán chi phí",
         compute="_compute_cost_estimate_count",
@@ -47,10 +53,28 @@ class ProjectProject(models.Model):
         "project_id",
         string="Chi phí dự án",
     )
+    total_spent = fields.Float(string="Tổng đã chi", related="project_expense_custom_id.total_spent", store=True)
+    total_not_spent = fields.Float(string="Tổng chưa chi", related="project_expense_custom_id.total_not_spent", store=True)
+    total_cost_expense = fields.Float(string="Tổng chi phí theo dõi", related="project_expense_custom_id.total_cost", store=True)
+    total_spent_material = fields.Float(string="Đã chi NVL", related="project_expense_custom_id.total_spent_material", store=True)
+    total_spent_labor = fields.Float(string="Đã chi Nhân công", related="project_expense_custom_id.total_spent_labor", store=True)
+    total_spent_manufacturing = fields.Float(string="Đã chi Sản xuất chung", related="project_expense_custom_id.total_spent_manufacturing", store=True)
+    total_material = fields.Float(string="Tổng NVL", related="project_expense_custom_id.total_material", store=True)
+    total_labor = fields.Float(string="Tổng Nhân công", related="project_expense_custom_id.total_labor", store=True)
+    total_manufacturing = fields.Float(string="Tổng Sản xuất chung", related="project_expense_custom_id.total_manufacturing", store=True)
+    total_not_spent_material = fields.Float(string="Chưa chi NVL", related="project_expense_custom_id.total_not_spent_material", store=True)
+    total_not_spent_labor = fields.Float(string="Chưa chi Nhân công", related="project_expense_custom_id.total_not_spent_labor", store=True)
+    total_not_spent_manufacturing = fields.Float(string="Chưa chi Sản xuất chung", related="project_expense_custom_id.total_not_spent_manufacturing", store=True)
     project_expense_custom_count = fields.Integer(
         string="Số bản ghi chi phí dự án",
         compute="_compute_project_expense_custom_count",
     )
+
+    @api.depends("work_item_ids.qty_settlement", "work_item_ids.value_settlement", "work_item_ids.qty_arise", "work_item_ids.value_arise")
+    def _compute_qty_settlement(self):
+        for rec in self:
+            rec.value_settlement = sum(rec.work_item_ids.mapped("value_settlement") or rec.value_contract)
+            rec.value_arise = sum(rec.work_item_ids.mapped("value_arise") or [0.0])
     @api.depends('task_ids')
     def _compute_task_count_custom(self):
         for rec in self:
