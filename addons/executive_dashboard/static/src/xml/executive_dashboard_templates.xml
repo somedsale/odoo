@@ -1,173 +1,181 @@
 <templates xml:space="preserve">
     <t t-name="executive_dashboard.Template" owl="1">
         <div class="ed-dashboard o_action">
-
-            <!-- ================= HEADER ================= -->
+            <!-- HEADER -->
             <div class="ed-header">
                 <div class="ed-header-main">
-                    <h2>📊 Dashboard</h2>
+                    <div class="ed-header-left">
+                        <div class="ed-eyebrow">EXECUTIVE CONTROL</div>
+                        <h2>Bảng điều hành kinh doanh &amp; tài chính</h2>
+                    </div>
 
                     <t t-if="state.filter_label">
-                        <span class="ed-header-sub">
-                            <i class="fa fa-filter"></i>
-                            <t t-esc="state.filter_label"/>
-                        </span>
+                        <div class="ed-header-badge">
+                            <i class="fa fa-calendar"></i>
+                            <span t-esc="state.filter_label"/>
+                        </div>
                     </t>
                 </div>
             </div>
 
-            <!-- ================= BODY ================= -->
+            <!-- BODY -->
             <div class="ed-body">
+                <t t-if="state.loading">
+                    <div class="ed-empty-block">Đang tải dữ liệu...</div>
+                </t>
 
-                <!-- ============ KPI CARDS ============ -->
-                <div class="ed-kpis" t-if="state.data">
-
-                    <!-- Báo giá -->
-                    <div class="ed-kpi-card ed-kpi-card--split" t-on-click="openQuotations">
-                        <div class="ed-kpi-left">
-                            <div class="ed-kpi-icon">
-                                <i class="fa fa-file-text-o"></i>
-                            </div>
-                            <div class="ed-kpi-info">
-                                <p>BÁO GIÁ</p>
-                                <h3>
-                                    <t t-esc="state.data.kpis.quotation.count.toLocaleString('vi-VN')"/>
-                                </h3>
+                <t t-if="!state.loading and state.data">
+                    <!-- KPI -->
+                    <div class="ed-kpis">
+                        <div class="ed-kpi-card" t-on-click="openQuotations">
+                            <div class="ed-kpi-label">Báo giá</div>
+                            <div class="ed-kpi-value" t-esc="state.data.kpis.quotation.count.toLocaleString('vi-VN')"/>
+                            <div class="ed-kpi-meta">
+                                Giá trị:
+                                <strong t-esc="state.data.kpis.quotation.total_amount.toLocaleString('vi-VN')"/>
+ đ
                             </div>
                         </div>
-                        <div class="ed-kpi-right">
-                            <span class="ed-kpi-amount">
-                                <t t-esc="state.data.kpis.quotation.total_amount.toLocaleString('vi-VN')"/>
- ₫
-                            </span>
-                        </div>
-                    </div>
 
-                    <!-- Đơn hàng -->
-                    <div class="ed-kpi-card ed-kpi-card--split" t-on-click="openOrders">
-                        <div class="ed-kpi-left">
-                            <div class="ed-kpi-icon">
-                                <i class="fa fa-shopping-cart"></i>
-                            </div>
-                            <div class="ed-kpi-info">
-                                <p>ĐƠN HÀNG</p>
-                                <h3>
-                                    <t t-esc="state.data.kpis.order.count.toLocaleString('vi-VN')"/>
-                                </h3>
+                        <div class="ed-kpi-card" t-on-click="openOrders">
+                            <div class="ed-kpi-label">Đơn hàng</div>
+                            <div class="ed-kpi-value" t-esc="state.data.kpis.order.count.toLocaleString('vi-VN')"/>
+                            <div class="ed-kpi-meta">
+                                Giá trị:
+                                <strong t-esc="state.data.kpis.order.total_amount.toLocaleString('vi-VN')"/>
+ đ
                             </div>
                         </div>
-                        <div class="ed-kpi-right">
-                            <span class="ed-kpi-amount">
-                                <t t-esc="state.data.kpis.order.total_amount.toLocaleString('vi-VN')"/>
- ₫
-                            </span>
-                        </div>
-                    </div>
 
-                    <!-- Tiền thu -->
-                    <div class="ed-kpi-card ed-kpi-card--split" t-on-click="openCashIn">
-                        <div class="ed-kpi-left">
-                            <div class="ed-kpi-icon">
-                                <i class="fa fa-sign-in"></i>
-                            </div>
-                            <div class="ed-kpi-info">
-                                <p>TIỀN THU</p>
-                                <h3>
-                                    <t t-esc="state.data.kpis.cash_in.toLocaleString('vi-VN')"/>
- ₫
-                                </h3>
-                            </div>
+                        <div class="ed-kpi-card">
+                            <div class="ed-kpi-label">Tỷ lệ chuyển đổi</div>
+                            <div class="ed-kpi-value" t-esc="state.data.conversion_rate.toLocaleString('vi-VN') + ' %'"/>
+                            <div class="ed-kpi-meta">Báo giá chuyển thành đơn hàng</div>
+                        </div>
+
+                        <div class="ed-kpi-card" t-on-click="openCashIn">
+                            <div class="ed-kpi-label">Thu tiền</div>
+                            <div class="ed-kpi-value ed-kpi-value--money" t-esc="state.data.kpis.cash_in.toLocaleString('vi-VN') + ' đ'"/>
+                            <div class="ed-kpi-meta">Phiếu thu đã ghi sổ</div>
+                        </div>
+
+                        <div class="ed-kpi-card" t-on-click="openCashOut">
+                            <div class="ed-kpi-label">Chi tiền</div>
+                            <div class="ed-kpi-value ed-kpi-value--money" t-esc="state.data.kpis.cash_out.toLocaleString('vi-VN') + ' đ'"/>
+                            <div class="ed-kpi-meta">Phiếu chi đã thanh toán</div>
+                        </div>
+
+                        <div class="ed-kpi-card">
+                            <div class="ed-kpi-label">Chênh lệch thu chi</div>
+                            <div t-attf-class="ed-kpi-value ed-kpi-value--money #{state.data.kpis.net_cash >= 0 ? 'is-positive' : 'is-negative'}" t-esc="state.data.kpis.net_cash.toLocaleString('vi-VN') + ' đ'"/>
+                            <div class="ed-kpi-meta">Thu - chi trong kỳ</div>
                         </div>
                     </div>
 
-                    <!-- Tiền chi -->
-                    <div class="ed-kpi-card ed-kpi-card--split" t-on-click="openCashOut">
-                        <div class="ed-kpi-left">
-                            <div class="ed-kpi-icon">
-                                <i class="fa fa-sign-out"></i>
-                            </div>
-                            <div class="ed-kpi-info">
-                                <p>TIỀN CHI</p>
-                                <h3>
-                                    <t t-esc="state.data.kpis.cash_out.toLocaleString('vi-VN')"/>
- ₫
-                                </h3>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- ============ CHART GRID #1 ============ -->
-                <div class="ed-content-grid">
-                    <!-- Doughnut: Top sản phẩm -->
-                    <div class="ed-list">
-                        <h4>📊 Top sản phẩm: Báo giá + Đơn hàng</h4>
-
-                        <div style="height: 320px; position: relative;">
-                            <canvas t-ref="productChart" style="cursor: pointer;"></canvas>
-
-                            <t t-if="!state.data">
-                                <div class="ed-empty">Chưa có dữ liệu hiển thị</div>
+                    <!-- Summary -->
+                    <div class="ed-summary-grid">
+                        <div class="ed-panel ed-panel--clickable" t-on-click="openTopOrder">
+                            <div class="ed-panel-title">Đơn hàng lớn nhất</div>
+                            <t t-if="state.data.top_order and state.data.top_order.name">
+                                <div class="ed-summary-name" t-esc="state.data.top_order.name"/>
+                                <div class="ed-summary-sub" t-esc="state.data.top_order.partner"/>
+                                <div class="ed-summary-amount" t-esc="state.data.top_order.amount_total.toLocaleString('vi-VN') + ' đ'"/>
+                            </t>
+                            <t t-if="!state.data.top_order or !state.data.top_order.name">
+                                <div class="ed-empty-inline">Không có dữ liệu</div>
                             </t>
                         </div>
-                    </div>
 
-                    <!-- Bar: Top khách hàng -->
-                    <div class="ed-list" t-if="state.data">
-                        <h4>👥 Top 5 khách hàng tiêu biểu</h4>
-                        <div style="height: 300px;">
-                            <canvas t-ref="customerChart" style="cursor: pointer;"></canvas>
-
-                            <t t-if="!state.data">
-                                <div class="ed-empty">Chưa có dữ liệu hiển thị</div>
-                            </t>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ============ CHART GRID #2 ============ -->
-                <div class="ed-content-grid">
-                    <!-- Chi phí dự án -->
-                    <div class="ed-list">
-                        <h4>📊 Chi phí dự án</h4>
-
-                        <div style="height: 300px;">
-                            <canvas t-ref="projectExpenseChart" style="cursor: pointer;"></canvas>
-
-                            <t t-if="!state.data">
-                                <div class="ed-empty">Chưa có dữ liệu hiển thị</div>
-                            </t>
+                        <div class="ed-panel">
+                            <div class="ed-panel-title">Tổng quan hóa đơn</div>
+                            <div class="ed-mini-stats">
+                                <div>
+                                    <span>Đầu vào</span>
+                                    <strong t-esc="state.data.invoice_overview.supplier_total.toLocaleString('vi-VN') + ' đ'"/>
+                                </div>
+                                <div>
+                                    <span>Đầu ra</span>
+                                    <strong t-esc="state.data.invoice_overview.customer_total.toLocaleString('vi-VN') + ' đ'"/>
+                                </div>
+                                <div>
+                                    <span>Chênh lệch</span>
+                                    <strong t-esc="state.data.invoice_overview.net_invoice.toLocaleString('vi-VN') + ' đ'"/>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Hóa đơn vào / ra -->
-                    <div class="ed-list" t-if="state.data">
-                        <h4>💳 Hóa đơn vào / ra</h4>
-                        <div style="height: 260px;">
-                            <canvas t-ref="invoiceChart" style="cursor: pointer;"></canvas>
+                    <!-- Charts row 1 -->
+                    <div class="ed-grid ed-grid--2">
+                        <div class="ed-panel">
+                            <div class="ed-panel-title">Top khách hàng</div>
+                            <div class="ed-chart-box">
+                                <t t-if="state.data.top_customers and state.data.top_customers.length">
+                                    <canvas t-ref="customerChart" style="cursor:pointer;"/>
+                                </t>
+                                <t t-else="">
+                                    <div class="ed-empty-inline">Không có dữ liệu khách hàng</div>
+                                </t>
+                            </div>
+                        </div>
+
+                        <div class="ed-panel">
+                            <div class="ed-panel-title">Top sản phẩm</div>
+                            <div class="ed-chart-box">
+                                <t t-if="state.data.top_products and state.data.top_products.length">
+                                    <canvas t-ref="productChart" style="cursor:pointer;"/>
+                                </t>
+                                <t t-else="">
+                                    <div class="ed-empty-inline">Không có dữ liệu sản phẩm</div>
+                                </t>
+                            </div>
                         </div>
                     </div>
-                </div>
+
+                    <!-- Charts row 2 -->
+                    <div class="ed-grid ed-grid--2">
+                        <div class="ed-panel">
+                            <div class="ed-panel-title">Chi phí dự án</div>
+                            <div class="ed-chart-box ed-chart-box--tall">
+                                <t t-if="state.data.project_expense and state.data.project_expense.length">
+                                    <canvas t-ref="projectExpenseChart" style="cursor:pointer;"/>
+                                </t>
+                                <t t-else="">
+                                    <div class="ed-empty-inline">Không có dữ liệu chi phí dự án</div>
+                                </t>
+                            </div>
+                        </div>
+
+                        <div class="ed-panel">
+                            <div class="ed-panel-title">Hóa đơn đầu vào / đầu ra</div>
+                            <div class="ed-chart-box">
+                                <canvas t-ref="invoiceChart" style="cursor:pointer;"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
             </div>
 
-            <!-- ================= FILTER OVERLAY ================= -->
+            <!-- Overlay -->
             <div t-attf-class="ed-filter-overlay #{state.showFilters ? 'show' : ''}"></div>
 
-            <!-- ================= FILTER PANEL ================= -->
+            <!-- Filter panel -->
             <div t-ref="filterPanel" t-attf-class="ed-filter-panel #{state.showFilters ? 'show' : ''}">
-
                 <div class="ed-filter-header">
-                    <h4>Bộ lọc</h4>
+                    <h4>Bộ lọc thời gian</h4>
                     <button class="close-btn" t-on-click="toggleFilters">
                         <i class="fa fa-times"></i>
                     </button>
                 </div>
 
                 <div class="ed-filter-body">
+                    <label>Từ ngày</label>
                     <input type="date" t-model="state.filters.date_from" t-on-change="onChangeDate"/>
+
+                    <label>Đến ngày</label>
                     <input type="date" t-model="state.filters.date_to" t-on-change="onChangeDate"/>
 
+                    <label>Năm</label>
                     <select t-model="state.filters.year" t-on-change="onChangeYear">
                         <option value="">---</option>
                         <t t-foreach="years" t-as="y" t-key="y">
@@ -177,6 +185,7 @@
                         </t>
                     </select>
 
+                    <label>Quý</label>
                     <select t-model="state.filters.quarter" t-on-change="onChangeQuarter">
                         <option value="">---</option>
                         <option value="Q1">Q1</option>
@@ -192,11 +201,10 @@
                 </div>
             </div>
 
-            <!-- ================= FILTER FAB BUTTON ================= -->
+            <!-- FAB -->
             <button t-attf-class="ed-filter-fab #{state.showFilters ? 'active' : ''}" t-on-click="toggleFilters">
-                <i t-attf-class="fa #{state.showFilters ? 'fa-times' : 'fa-filter'}"></i>
+                <i t-attf-class="fa #{state.showFilters ? 'fa-times' : 'fa-sliders'}"></i>
             </button>
-
         </div>
     </t>
 </templates>
