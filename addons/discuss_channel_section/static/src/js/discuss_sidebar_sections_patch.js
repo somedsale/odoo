@@ -73,18 +73,13 @@ patch(DiscussSidebarCategories.prototype, {
     _getAllChannelThreads() {
         const threads = this._normalizeThreads(this.store?.Thread?.records);
         return threads.filter((thread) => {
-            return (
-                thread &&
-                thread.model === "discuss.channel" &&
-                (
-                    thread.displayToSelf ||
-                    thread.isLocallyPinned ||
-                    thread.type === "channel" ||
-                    thread.type === "group" ||
-                    thread.channel_type === "channel" ||
-                    thread.channel_type === "group"
-                )
-            );
+            if (!thread || thread.model !== "discuss.channel") {
+                return false;
+            }
+
+            const threadType = thread.type || thread.channel_type;
+
+            return threadType === "channel" || threadType === "group";
         });
     },
 
@@ -134,9 +129,28 @@ patch(DiscussSidebarCategories.prototype, {
     },
 
     filteredThreads(category) {
-        const threads = this._normalizeThreads(category?.threads);
+        let threads;
+
+        if (category?.id === "channels") {
+            threads = this._getAllChannelThreads();
+        } else {
+            threads = this._normalizeThreads(category?.threads);
+        }
 
         let result = threads.filter((thread) => {
+            if (!thread) {
+                return false;
+            }
+
+            if (category?.id === "channels") {
+                if (this.state.quickSearchVal) {
+                    return cleanTerm(thread.displayName || "").includes(
+                        cleanTerm(this.state.quickSearchVal || "")
+                    );
+                }
+                return true;
+            }
+
             return (
                 (thread.displayToSelf || thread.isLocallyPinned) &&
                 (!this.state.quickSearchVal ||
@@ -150,6 +164,7 @@ patch(DiscussSidebarCategories.prototype, {
             const map = this.sectionMap;
             result = result.filter((thread) => !map[this._getThreadChannelId(thread)]);
         }
+
         return result;
     },
 
