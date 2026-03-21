@@ -1,4 +1,18 @@
 <odoo>
+<record id="view_project_project_tree_popup_simple" model="ir.ui.view">
+    <field name="name">project.project.tree.popup.simple</field>
+    <field name="model">project.project</field>
+    <field name="priority" eval="5"/>
+    <field name="arch" type="xml">
+        <tree string="Chọn dự án">
+            <field name="name"/>
+            <field name="num_contract"/>
+            <field name="partner_id"/>
+            <field name="stage_id"/>
+        </tree>
+        
+    </field>
+</record>
     <!-- FORM VIEW -->
     <record id="view_proposal_sheet_form" model="ir.ui.view">
         <field name="name">proposal.sheet.form</field>
@@ -49,7 +63,7 @@
                     </div>
                     <group>
                         <group>
-                            <field name="project_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft' " force_save="context.get('from_task', False)"/>
+                            <field name="project_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft' " force_save="context.get('from_task', False)" context="{'tree_view_ref': 'proposal_sheet.view_project_project_tree_popup_simple'}"/>
                             <field name="contract_num" string="Số hợp đồng" invisible="not project_id"/>
                             <field name="cost_additional_expense_line_id" string="Hạng mục dự toán chi phí gián tiếp" domain="[('project_id', '=', project_id)]"/>
                             <!-- <field name="task_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft'" force_save="context.get('from_task', False)" domain="[('project_id', '=', project_id)]" invisible="type=='expense'"/> -->

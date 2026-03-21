@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Nhân viên nội bộ:
+         - thấy phiếu do mình tạo
+         - hoặc phiếu thuộc phòng ban mình đang quản lý -->
+    <record id="rule_overtime_request_user_scope" model="ir.rule">
+        <field name="name">Overtime Request - User Scope</field>
+        <field name="model_id" ref="model_overtime_request"/>
+        <field name="domain_force">
+            ['|',
+                ('requested_by', '=', user.id),
+                ('department_id.manager_id.user_id', '=', user.id)
+            ]
+        </field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- Nhân sự: xem tất cả -->
+    <record id="rule_overtime_request_hr_all" model="ir.rule">
+        <field name="name">Overtime Request - HR All</field>
+        <field name="model_id" ref="model_overtime_request"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('overtime_request.group_overtime_hr'))]"/>
+    </record>
+
+    <!-- Giám đốc: xem tất cả -->
+    <record id="rule_overtime_request_director_all" model="ir.rule">
+        <field name="name">Overtime Request - Director All</field>
+        <field name="model_id" ref="model_overtime_request"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('custom_director_role.group_director'))]"/>
+    </record>
+
+</odoo>

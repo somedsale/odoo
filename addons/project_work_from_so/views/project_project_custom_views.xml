@@ -6,12 +6,12 @@
         <field name="name">project.project.tree.work.custom</field>
         <field name="model">project.project</field>
         <field name="arch" type="xml">
-            <tree string="Dự án (Theo SO)" create="1" edit="1">
+            <tree string="Dự án" create="1" edit="1">
                 <field name="partner_id"/>
                 <field name="name" string="Tên dự án"/>
                 <field name="num_contract" string="Số hợp đồng"/>
                 <field name="sales_category_ids" widget="many2many_tags" options="{'color_field': 'color'}" string="Hạng mục"/>
-                <field name="value_contract" sum="Tổng" string="Giá trị hợp đồng"/>
+                <field name="value_contract_tax" sum="Tổng" string="Giá trị hợp đồng"/>
                 <field name="signature_year" string="Năm ký hợp đồng"/>
                 <field name="date_start"/>
                 <field name="date"/>
@@ -28,7 +28,7 @@
         <!-- ✅ thêm -->
         <field name="priority" eval="1"/>
         <field name="arch" type="xml">
-            <form string="Dự án (Theo SO)" create="1" edit="1">
+            <form string="Dự án" create="1" edit="1">
                 <sheet>
 
                     <!-- tránh lỗi validate domain partner_id theo company_id -->
@@ -42,18 +42,12 @@
                         <button name="action_view_work_items" type="object" class="oe_stat_button" icon="fa-list-ul">
                             <field name="work_item_count" widget="statinfo" string="Hạng mục công việc"/>
                         </button>
-                                    <button name="action_view_cost_estimates"
-                    type="object"
-                    class="oe_stat_button"
-                    icon="fa-calculator">
-                <field name="cost_estimate_count" widget="statinfo" string="Dự toán chi phí"/>
-            </button>
-            <button name="action_view_project_expense_custom"
-                    type="object"
-                    class="oe_stat_button"
-                    icon="fa-usd">
-                <field name="project_expense_custom_count" widget="statinfo" string="Chi phí dự án"/>
-            </button>
+                        <button name="action_view_cost_estimates" type="object" class="oe_stat_button" icon="fa-calculator">
+                            <field name="cost_estimate_count" widget="statinfo" string="Dự toán chi phí"/>
+                        </button>
+                        <button name="action_view_project_expense_custom" type="object" class="oe_stat_button" icon="fa-usd">
+                            <field name="project_expense_custom_count" widget="statinfo" string="Chi phí dự án"/>
+                        </button>
                     </div>
 
                     <div class="oe_title">
@@ -77,13 +71,13 @@
                             <field name="signature_date" readonly="1"/>
                             <field name="location" readonly="1"/>
                             <field name="sale_order_id" readonly="1"/>
-                            <field name="value_contract" readonly="1"/>
+                            <field name="value_contract_tax" readonly="1"/>
                             <field name="sales_category_ids" widget="many2many_tags" readonly="1"/>
                             <field name="description"/>
                         </group>
                         <group string="Tiến độ dự án">
                             <field name="stage_id"/>
-                            <field name="value_contract" readonly="1"/>
+                            <field name="value_contract_tax" readonly="1"/>
                             <field name="value_completed" readonly="1"/>
                             <field name="value_remaining" readonly="1"/>
                             <field name="progress_percent" readonly="1"/>
@@ -96,7 +90,7 @@
 
                     <notebook>
 
-                        <page string="Hạng mục công việc">
+                        <!-- <page string="Hạng mục công việc">
                             <div class="mb-2">
                                 <button name="action_sync_work_items_from_so" type="object" string="Lấy hạng mục từ Đơn bán" class="btn btn-primary"/>
                             </div>
@@ -120,7 +114,6 @@
                                 <form string="Hạng mục công việc">
                                     <sheet>
 
-                                        <!-- ✅ BẮT BUỘC: để dùng project_id trong context bên dưới -->
                                         <field name="project_id" invisible="1"/>
 
                                         <group>
@@ -155,51 +148,49 @@
                                     </sheet>
                                 </form>
                             </field>
-                        </page>
+                        </page> -->
                         <page string="Nhiệm vụ">
-    <field name="task_ids" context="{'default_project_id': id, 'default_company_id': company_id}">
-        <tree editable="bottom" string="Nhiệm vụ">
-            <!-- ✅ thêm để tránh lỗi domain validate -->
-            <field name="company_id" invisible="1"/>
-            <!-- <field name="is_internal_project" invisible="1"/> -->
+                            <field name="task_ids" context="{'default_project_id': id, 'default_company_id': company_id}">
+                                <tree editable="bottom" string="Nhiệm vụ">
+                                    <!-- ✅ thêm để tránh lỗi domain validate -->
+                                    <!-- <field name="is_internal_project" invisible="1"/> -->
 
-            <field name="name"/>
-            <field name="user_ids" widget="many2many_tags"/>
-            <field name="date_deadline"/>
-            <field name="priority"/>
+                                    <field name="name"/>
+                                    <field name="user_ids" widget="many2many_tags"/>
+                                    <field name="date_deadline"/>
+                                    <field name="priority"/>
 
-            <!-- nếu có hiển thị project_id thì vẫn giữ -->
-            <field name="project_id" invisible="1"/>
-        </tree>
+                                    <!-- nếu có hiển thị project_id thì vẫn giữ -->
+                                </tree>
 
-        <form string="Nhiệm vụ">
-            <sheet>
-                <!-- ✅ bắt buộc cho domain của project_id -->
-                <field name="company_id" invisible="1"/>
-                <!-- <field name="is_internal_project" invisible="1"/> -->
-                <field name="project_id" invisible="1"/>
+                                <form string="Nhiệm vụ">
+                                    <sheet>
+                                        <!-- ✅ bắt buộc cho domain của project_id -->
+                                        <field name="company_id" invisible="1"/>
+                                        <!-- <field name="is_internal_project" invisible="1"/> -->
+                                        <field name="project_id" invisible="1"/>
 
-                <group>
-                    <group>
-                        <field name="name"/>
-                        <!-- Có thể bỏ field project_id khỏi form vì đang tạo trong dự án -->
-                        <!-- <field name="project_id" readonly="1"/> -->
-                        <field name="user_ids" widget="many2many_tags"/>
-                    </group>
-                    <group>
-                        <field name="date_deadline"/>
-                        <field name="priority"/>
-                        <field name="partner_id"/>
-                    </group>
-                </group>
+                                        <group>
+                                            <group>
+                                                <field name="name"/>
+                                                <!-- Có thể bỏ field project_id khỏi form vì đang tạo trong dự án -->
+                                                <!-- <field name="project_id" readonly="1"/> -->
+                                                <field name="user_ids" widget="many2many_tags"/>
+                                            </group>
+                                            <group>
+                                                <field name="date_deadline"/>
+                                                <field name="priority"/>
+                                                <field name="partner_id"/>
+                                            </group>
+                                        </group>
 
-                <group>
-                    <field name="description" placeholder="Mô tả nhiệm vụ..."/>
-                </group>
-            </sheet>
-        </form>
-    </field>
-</page>
+                                        <group>
+                                            <field name="description" placeholder="Mô tả nhiệm vụ..."/>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
                     </notebook>
                 </sheet>
                 <div class="oe_chatter">
@@ -209,7 +200,19 @@
             </form>
         </field>
     </record>
-
+    <record id="view_project_project_form_chatter_only" model="ir.ui.view">
+        <field name="name">project.project.form.chatter.only</field>
+        <field name="model">project.project</field>
+        <field name="arch" type="xml">
+            <form string="Chatter dự án">
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
     <!-- ===== ACTION RIÊNG ===== -->
     <record id="action_project_project_work_custom" model="ir.actions.act_window">
         <field name="name">Dự án (Theo SO)</field>

@@ -12,7 +12,7 @@
             name="Hợp đồng - Dự án"
             parent="project.menu_main_pm"
             action="action_project_work_project_dashboard"
-            sequence="1"
+            sequence="2"
             groups="project.group_project_manager"/>
 
   <!-- (Tuỳ chọn) Smart button trong form project chuẩn để mở dashboard -->
