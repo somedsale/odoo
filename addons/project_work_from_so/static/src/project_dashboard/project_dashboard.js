@@ -36,14 +36,23 @@ export class ProjectWorkDashboard extends Component {
           ? num(ctx.active_id)
           : null;
 
+    const initialIsCreateMode =
+      hash.create === 1 ||
+      hash.create === "1" ||
+      hash.create === true ||
+      hash.create === "true";
+
     const initialMode =
-      hash.mode === "detail" || initialSelectedId ? "detail" : "list";
+      hash.mode === "detail" || initialSelectedId || initialIsCreateMode
+        ? "detail"
+        : "list";
 
     this.state = useState({
       loading: true,
 
       // mode: list | detail
       mode: initialMode,
+      isCreateMode: initialIsCreateMode,
 
       // list data
       query: hash.query || "",
@@ -72,7 +81,7 @@ export class ProjectWorkDashboard extends Component {
       await this._prepareProjectFields();
       await this.loadProjects();
 
-      if (this.state.selectedId) {
+      if (this.state.selectedId || this.state.isCreateMode) {
         this.state.mode = "detail";
       }
 
@@ -91,6 +100,7 @@ export class ProjectWorkDashboard extends Component {
     const nextHash = {
       ...currentHash,
       mode: this.state.mode || "list",
+      create: this.state.isCreateMode ? 1 : undefined,
       query: this.state.query || undefined,
       partner_id: this.state.filterPartnerId || undefined,
       stage_id: this.state.filterStageId || undefined,
@@ -104,7 +114,6 @@ export class ProjectWorkDashboard extends Component {
           : undefined,
     };
 
-    // Xóa key rỗng để URL sạch hơn
     for (const key of Object.keys(nextHash)) {
       if (
         nextHash[key] === undefined ||
@@ -135,13 +144,13 @@ export class ProjectWorkDashboard extends Component {
       rows = rows.filter((p) =>
         [p.name, p.partner_name, p.stage_name, p.location, p.category_text]
           .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q)),
+          .some((v) => String(v).toLowerCase().includes(q))
       );
     }
 
     if (partnerId) {
       rows = rows.filter(
-        (p) => Number(p.partner_id || 0) === Number(partnerId),
+        (p) => Number(p.partner_id || 0) === Number(partnerId)
       );
     }
 
@@ -321,23 +330,32 @@ export class ProjectWorkDashboard extends Component {
       "stage_id",
       "location",
       "sales_category_ids",
-      "value_contract",
+
+      "value_contract_tax",
       "value_settlement",
       "value_remaining",
       "value_completed",
       "progress_percent",
+
       "value_accepted",
+      "value_acceptance_remaining",
+      "acceptance_percent",
+
+      "value_finalized",
+      "value_finalization_remaining",
+      "finalization_percent",
+
       "claim_value_done",
       "claim_value_remaining",
       "claim_progress_percent",
+
+      "acceptance_progress_percent",
+
       "customer_invoice_amount_total",
       "customer_invoice_received_total",
       "customer_invoice_untaxed_total",
       "customer_invoice_remaining_total",
       "payment_process_percent",
-      "acceptance_value_done",
-      "acceptance_value_remaining",
-      "acceptance_progress_percent",
       "payment_vs_acceptance_percent",
       "payment_vs_completed_percent",
       "payment_vs_invoice_percent",
@@ -349,7 +367,7 @@ export class ProjectWorkDashboard extends Component {
         "project.project",
         "fields_get",
         [wanted, ["type"]],
-        {},
+        {}
       );
       for (const f of wanted) {
         if (fg && fg[f]) available.add(f);
@@ -363,7 +381,7 @@ export class ProjectWorkDashboard extends Component {
 
   async _resolveCategoryNames(ids) {
     const need = [...new Set(ids)].filter(
-      (id) => id && !this.state.catNameCache.has(id),
+      (id) => id && !this.state.catNameCache.has(id)
     );
     if (!need.length) return;
 
@@ -372,7 +390,7 @@ export class ProjectWorkDashboard extends Component {
         "sale.order.category",
         "name_get",
         [need],
-        {},
+        {}
       );
       for (const [id, name] of pairs || []) {
         this.state.catNameCache.set(id, name);
@@ -403,10 +421,9 @@ export class ProjectWorkDashboard extends Component {
         "project.project",
         domain,
         fields,
-        { order: "id desc", limit: 300 },
+        { order: "id desc", limit: 300 }
       );
 
-      // Giữ lại selection hợp lệ sau khi có rows mới
       const validIds = new Set((rows || []).map((r) => r.id));
       const cleaned = {};
       for (const [k, v] of Object.entries(this.state.selectedMap || {})) {
@@ -427,40 +444,56 @@ export class ProjectWorkDashboard extends Component {
       await this._resolveCategoryNames(allCatIds);
 
       this.state.projects = (rows || []).map((r, idx) => {
-        const value_contract = num(r.value_contract);
+        const value_contract_tax = num(r.value_contract_tax);
         const value_settlement = num(r.value_settlement);
         const value_remaining = num(r.value_remaining);
         const value_completed = num(r.value_completed);
         const progress_percent = num(r.progress_percent);
-        const claim_value_done = num(r.claim_value_done);
-        const claim_value_remaining = num(r.claim_value_remaining);
-        const claim_progress_percent = num(r.claim_progress_percent);
-        const customer_invoice_amount_total = num(
-          r.customer_invoice_amount_total,
-        );
-        const customer_invoice_received_total = num(
-          r.customer_invoice_received_total,
-        );
-        const customer_invoice_untaxed_total = num(
-          r.customer_invoice_untaxed_total,
-        );
-        const customer_invoice_remaining_total = num(
-          r.customer_invoice_remaining_total,
-        );
-        const payment_process_percent = num(r.payment_process_percent);
-        const acceptance_value_done = num(r.acceptance_value_done);
-        const acceptance_value_remaining = num(r.acceptance_value_remaining);
-        const acceptance_progress_percent = num(r.acceptance_progress_percent);
-        const payment_vs_acceptance_percent = num(
-          r.payment_vs_acceptance_percent,
-        );
-        const payment_vs_completed_percent = num(
-          r.payment_vs_completed_percent,
-        );
-        const payment_vs_invoice_percent = num(r.payment_vs_invoice_percent);
+
         const value_accepted = fields.includes("value_accepted")
           ? num(r.value_accepted)
-          : value_completed;
+          : num(r.value_accepted);
+
+        const value_acceptance_remaining = fields.includes("value_acceptance_remaining")
+          ? num(r.value_acceptance_remaining)
+          : num(r.value_acceptance_remaining);
+
+        const acceptance_progress_percent = fields.includes("acceptance_percent")
+          ? num(r.acceptance_percent)
+          : num(r.acceptance_progress_percent);
+
+        const claim_value_done = fields.includes("value_finalized")
+          ? num(r.value_finalized)
+          : num(r.claim_value_done);
+
+        const claim_value_remaining = fields.includes("value_finalization_remaining")
+          ? num(r.value_finalization_remaining)
+          : num(r.claim_value_remaining);
+
+        const claim_progress_percent = fields.includes("finalization_percent")
+          ? num(r.finalization_percent)
+          : num(r.claim_progress_percent);
+
+        const customer_invoice_amount_total = num(
+          r.customer_invoice_amount_total
+        );
+        const customer_invoice_received_total = num(
+          r.customer_invoice_received_total
+        );
+        const customer_invoice_untaxed_total = num(
+          r.customer_invoice_untaxed_total
+        );
+        const customer_invoice_remaining_total = num(
+          r.customer_invoice_remaining_total
+        );
+        const payment_process_percent = num(r.payment_process_percent);
+        const payment_vs_acceptance_percent = num(
+          r.payment_vs_acceptance_percent
+        );
+        const payment_vs_completed_percent = num(
+          r.payment_vs_completed_percent
+        );
+        const payment_vs_invoice_percent = num(r.payment_vs_invoice_percent);
 
         return {
           id: r.id,
@@ -472,36 +505,40 @@ export class ProjectWorkDashboard extends Component {
           category_text: this._categoryText(r.sales_category_ids || []),
           partner_id: (r.partner_id && r.partner_id[0]) || null,
           stage_id: (r.stage_id && r.stage_id[0]) || null,
-          value_contract,
+
+          value_contract_tax,
           value_settlement,
           value_remaining,
           value_completed,
           progress_percent,
+
           value_accepted,
+          value_acceptance_remaining,
+          acceptance_progress_percent,
+
           claim_value_done,
           claim_value_remaining,
           claim_progress_percent,
+
           customer_invoice_amount_total,
           customer_invoice_received_total,
           customer_invoice_untaxed_total,
           customer_invoice_remaining_total,
           payment_process_percent,
-          acceptance_value_done,
-          acceptance_value_remaining,
-          acceptance_progress_percent,
           payment_vs_acceptance_percent,
           payment_vs_completed_percent,
           payment_vs_invoice_percent,
         };
       });
 
-      // nếu selectedId không còn tồn tại thì về list
       if (
         this.state.selectedId &&
         !this.state.projects.some((p) => p.id === this.state.selectedId)
       ) {
         this.state.selectedId = null;
-        this.state.mode = "list";
+        if (!this.state.isCreateMode) {
+          this.state.mode = "list";
+        }
       }
 
       this._ensureValidPage();
@@ -531,12 +568,36 @@ export class ProjectWorkDashboard extends Component {
     if (!pid) return;
     this.state.selectedId = pid;
     this.state.mode = "detail";
+    this.state.isCreateMode = false;
     this._syncUrl();
   }
 
-  backToList() {
+  createProject() {
+    this.state.selectedId = null;
+    this.state.mode = "detail";
+    this.state.isCreateMode = true;
+    this._syncUrl();
+  }
+
+  async backToList() {
     this.state.mode = "list";
     this.state.selectedId = null;
+    this.state.isCreateMode = false;
+    await this.loadProjects();
+    this._syncUrl();
+  }
+
+  async onProjectSaved(newProjectId = null) {
+    this.state.isCreateMode = false;
+    await this.loadProjects();
+
+    if (newProjectId) {
+      this.state.selectedId = Number(newProjectId);
+      this.state.mode = "detail";
+    } else {
+      this.state.selectedId = null;
+      this.state.mode = "list";
+    }
     this._syncUrl();
   }
 
@@ -569,12 +630,13 @@ export class ProjectWorkDashboard extends Component {
 
   get selectedTotals() {
     const totals = {
-      value_contract: 0,
+      value_contract_tax: 0,
       value_remaining: 0,
       value_completed: 0,
       claim_value_done: 0,
       claim_value_remaining: 0,
-      acceptance_value_done: 0,
+      value_accepted: 0,
+      value_acceptance_remaining: 0,
       customer_invoice_untaxed_total: 0,
       customer_invoice_amount_total: 0,
       customer_invoice_received_total: 0,
@@ -582,23 +644,24 @@ export class ProjectWorkDashboard extends Component {
     };
 
     for (const r of this.selectedRows) {
-      totals.value_contract += num(r.value_contract);
+      totals.value_contract_tax += num(r.value_contract_tax);
       totals.value_remaining += num(r.value_remaining);
       totals.value_completed += num(r.value_completed);
       totals.claim_value_done += num(r.claim_value_done);
       totals.claim_value_remaining += num(r.claim_value_remaining);
-      totals.acceptance_value_done += num(r.acceptance_value_done);
+      totals.value_accepted += num(r.value_accepted);
+      totals.value_acceptance_remaining += num(r.value_acceptance_remaining);
       totals.customer_invoice_untaxed_total += num(
-        r.customer_invoice_untaxed_total,
+        r.customer_invoice_untaxed_total
       );
       totals.customer_invoice_amount_total += num(
-        r.customer_invoice_amount_total,
+        r.customer_invoice_amount_total
       );
       totals.customer_invoice_received_total += num(
-        r.customer_invoice_received_total,
+        r.customer_invoice_received_total
       );
       totals.customer_invoice_remaining_total += num(
-        r.customer_invoice_remaining_total,
+        r.customer_invoice_remaining_total
       );
     }
     return totals;
@@ -742,7 +805,7 @@ export class ProjectWorkDashboard extends Component {
       const action = await this.orm.call(
         "project.project",
         "action_view_tasks_custom",
-        [[this.state.selectedId]],
+        [[this.state.selectedId]]
       );
 
       if (!action) return;

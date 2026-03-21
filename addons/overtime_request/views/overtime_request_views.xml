@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_overtime_request_tree" model="ir.ui.view">
+        <field name="name">overtime.request.tree</field>
+        <field name="model">overtime.request</field>
+        <field name="arch" type="xml">
+            <tree string="Phiếu đề xuất tăng ca">
+                <field name="name"/>
+                <field name="requested_by"/>
+                <field name="department_id"/>
+                <field name="project_id"/>
+                <field name="contract_num"/>
+                <field name="work_item_names"/>
+                <field name="overtime_date"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_overtime_request_form" model="ir.ui.view">
+        <field name="name">overtime.request.form</field>
+        <field name="model">overtime.request</field>
+        <field name="arch" type="xml">
+            <form string="Phiếu đề xuất tăng ca">
+                <header>
+                    <button name="action_submit"
+                            string="Gửi duyệt"
+                            type="object"
+                            class="btn-primary"
+                            invisible="not show_button_submit"/>
+
+                    <button name="action_manager_approve"
+                            string="Trưởng phòng duyệt"
+                            type="object"
+                            class="btn-primary"
+                            invisible="not show_button_manager_approve"/>
+
+                    <button name="action_hr_approve"
+                            string="Nhân sự duyệt"
+                            type="object"
+                            class="btn-primary"
+                            invisible="not show_button_hr_approve"/>
+
+                    <button name="action_director_approve"
+                            string="Giám đốc duyệt"
+                            type="object"
+                            class="btn-primary"
+                            invisible="not show_button_director_approve"/>
+
+                    <button name="action_reject"
+                            string="Từ chối"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="not show_button_reject"/>
+
+                    <button name="action_withdraw_submit"
+                            string="Rút lại"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="not show_button_withdraw_submit"/>
+
+                    <button name="action_cancel"
+                            string="Hủy phiếu"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="not show_button_cancel"/>
+
+                    <button name="action_reset_draft"
+                            string="Đưa về nháp"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="not show_button_reset_draft"/>
+
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="draft,reviewed_manager,reviewed_hr,approved,done,rejected,canceled"/>
+                </header>
+
+                <sheet>
+                    <field name="show_button_submit" invisible="1"/>
+                    <field name="show_button_manager_approve" invisible="1"/>
+                    <field name="show_button_hr_approve" invisible="1"/>
+                    <field name="show_button_director_approve" invisible="1"/>
+                    <field name="show_button_reject" invisible="1"/>
+                    <field name="show_button_cancel" invisible="1"/>
+                    <field name="show_button_reset_draft" invisible="1"/>
+                    <field name="show_button_withdraw_submit" invisible="1"/>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1" nolabel="1"/>
+                        </h1>
+                    </div>
+
+                    <group string="Thông tin đề xuất" col="2">
+                        <group>
+                            <field name="requested_by" readonly="1"/>
+                            <field name="department_id" readonly="state != 'draft'"/>
+                            <field name="project_id" readonly="state != 'draft'"/>
+                            <field name="contract_num" readonly="1"/>
+                            <field name="work_item_ids"
+                                   widget="many2many_tags"
+                                   readonly="state != 'draft'"
+                                   options="{'no_create': True, 'no_open': False}"/>
+                            <field name="overtime_date" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="manager_id" readonly="1"/>
+                            <field name="director_user_id" readonly="1"/>
+                            <field name="date_submitted" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <!-- <group string="Thông tin phê duyệt" col="2">
+                        <group>
+                            <field name="date_reviewed_manager" readonly="1"/>
+                            <field name="manager_approved_by" readonly="1"/>
+                            <field name="date_reviewed_hr" readonly="1"/>
+                            <field name="hr_approved_by" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="date_approved" readonly="1"/>
+                            <field name="director_approved_by" readonly="1"/>
+                        </group>
+                    </group> -->
+
+                    <group string="Nội dung">
+                        <field name="reason"
+                               placeholder="Nhập lý do tăng ca..."
+                               readonly="state != 'draft'"/>
+
+                        <field name="reject_reason"
+                               invisible="state != 'rejected'"
+                               readonly="1"
+                               placeholder="Nhập lý do từ chối..."/>
+                    </group>
+
+                    <notebook>
+                        <page string="Danh sách tăng ca">
+                            <field name="line_ids" nolabel="1" readonly="state != 'draft'">
+                                <tree editable="bottom">
+                                    <field name="employee_id" readonly="parent.state != 'draft'"/>
+                                    <field name="time_start" widget="time_dropdown_split" readonly="parent.state != 'draft'"/>
+                                    <field name="time_end" widget="time_dropdown_split" readonly="parent.state != 'draft'"/>
+                                    <field name="hours" widget="float_time" readonly="1"/>
+                                    <field name="work_content" readonly="parent.state != 'draft'"/>
+                                    <field name="note" readonly="parent.state != 'draft'"/>
+                                </tree>
+                                <form string="Chi tiết tăng ca">
+                                    <group col="2">
+                                        <group>
+                                            <field name="employee_id" readonly="parent.state != 'draft'"/>
+                                            <field name="time_start" widget="time_dropdown_split" readonly="parent.state != 'draft'"/>
+                                            <field name="time_end" widget="time_dropdown_split" readonly="parent.state != 'draft'"/>
+                                            <field name="hours" widget="float_time" readonly="1"/>
+                                        </group>
+                                        <group>
+                                            <field name="work_content" readonly="parent.state != 'draft'"/>
+                                            <field name="note" readonly="parent.state != 'draft'"/>
+                                        </group>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+
+                        <page string="Tệp đính kèm">
+                            <field name="attachment_ids" widget="many2many_binary"/>
+                        </page>
+                    </notebook>
+<div class="oe_chatter">
+    <field name="message_follower_ids" widget="mail_followers"/>
+    <field name="activity_ids" widget="mail_activity"/>
+    <field name="message_ids" widget="mail_thread"/>
+</div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_overtime_request_search" model="ir.ui.view">
+        <field name="name">overtime.request.search</field>
+        <field name="model">overtime.request</field>
+        <field name="arch" type="xml">
+            <search string="Tìm phiếu tăng ca">
+                <field name="name"/>
+                <field name="requested_by"/>
+                <field name="department_id"/>
+                <field name="project_id"/>
+                <field name="contract_num"/>
+                <field name="work_item_names"/>
+                <field name="state"/>
+                <field name="overtime_date"/>
+
+                <filter string="Phiếu của tôi"
+                        name="my_request"
+                        domain="[('requested_by', '=', uid)]"/>
+
+                <filter string="Chờ duyệt"
+                        name="pending"
+                        domain="[('state', 'in', ('reviewed_manager','reviewed_hr','approved'))]"/>
+
+                <group expand="0" string="Nhóm theo">
+                    <filter string="Trạng thái" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Phòng ban" name="group_department" context="{'group_by': 'department_id'}"/>
+                    <filter string="Dự án" name="group_project" context="{'group_by': 'project_id'}"/>
+                    <filter string="Số hợp đồng" name="group_contract_num" context="{'group_by': 'contract_num'}"/>
+                    <filter string="Ngày tăng ca" name="group_overtime_date" context="{'group_by': 'overtime_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_overtime_request" model="ir.actions.act_window">
+        <field name="name">Phiếu đề xuất tăng ca</field>
+        <field name="res_model">overtime.request</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_overtime_request_search"/>
+    </record>
+
+</odoo>

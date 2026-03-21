@@ -2,7 +2,7 @@
 
 import { Component, useState, onWillStart, markup } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
-
+import { View } from "@web/views/view";
 function num(x) {
   const n = Number(x);
   return Number.isFinite(n) ? n : 0;
@@ -10,12 +10,14 @@ function num(x) {
 
 export class ProjectWorkProjectFormOwl extends Component {
   static template = "project_work_from_so.ProjectWorkProjectFormOwl";
+  static components = { View };
   static props = {
-    projectId: Number,
+    projectId: { type: Number, optional: true },
+    isCreateMode: { type: Boolean, optional: true },
     onBack: { type: Function, optional: true },
+    onSaved: { type: Function, optional: true },
     formViewId: { type: Number, optional: true },
   };
-
   setup() {
     this.orm = useService("orm");
     this.action = useService("action");
@@ -30,7 +32,8 @@ export class ProjectWorkProjectFormOwl extends Component {
       project: null,
       attachments: [],
       uploadingAttachments: false,
-      openedAttechmentPreviewId: null,
+      openedAttachmentPreviewId: null,
+
       form: {
         name: "",
         partner_id: null,
@@ -46,9 +49,6 @@ export class ProjectWorkProjectFormOwl extends Component {
         work_item_count: 0,
         cost_estimate_count: 0,
         project_expense_custom_count: 0,
-        claim_report_count: 0,
-        acceptance_report_count: 0,
-        customer_invoice_count: 0,
       },
 
       display: {
@@ -57,26 +57,13 @@ export class ProjectWorkProjectFormOwl extends Component {
         sale_order_name: "",
         partner_name: "",
         contract_name: "",
-        value_contract: 0,
+        value_contract_tax: 0,
         value_settlement: 0,
         value_completed: 0,
         value_remaining: 0,
         value_arise: 0,
 
         progress_percent: 0,
-        claim_progress_percent: 0,
-        acceptance_progress_percent: 0,
-        payment_process_percent: 0,
-
-        claim_value_done: 0,
-        claim_value_remaining: 0,
-        acceptance_value_done: 0,
-        acceptance_value_remaining: 0,
-
-        customer_invoice_amount_total: 0,
-        customer_invoice_received_total: 0,
-        customer_invoice_untaxed_total: 0,
-        customer_invoice_remaining_total: 0,
 
         sales_category_text: "",
 
@@ -100,7 +87,6 @@ export class ProjectWorkProjectFormOwl extends Component {
         total_not_spent_labor: 0,
         total_not_spent_manufacturing: 0,
 
-        // comparison fields (computed in JS)
         comparison_budget_total: 0,
         comparison_actual_total: 0,
         comparison_total_diff: 0,
@@ -124,6 +110,19 @@ export class ProjectWorkProjectFormOwl extends Component {
         comparison_manufacturing_diff: 0,
         comparison_manufacturing_diff_class: "",
 
+        value_accepted: 0,
+        value_acceptance_remaining: 0,
+        acceptance_progress_percent: 0,
+
+        value_finalized: 0,
+        value_finalization_remaining: 0,
+        claim_progress_percent: 0,
+
+        customer_invoice_amount_total: 0,
+        customer_invoice_received_total: 0,
+        customer_invoice_untaxed_total: 0,
+        customer_invoice_remaining_total: 0,
+        payment_process_percent: 0,
         payment_vs_acceptance_percent: 0,
         payment_vs_completed_percent: 0,
         payment_vs_invoice_percent: 0,
@@ -141,8 +140,6 @@ export class ProjectWorkProjectFormOwl extends Component {
 
       batchAssign: {
         assigned_user_id: null,
-        claim_user_id: null,
-        acceptance_user_id: null,
       },
     });
 
@@ -154,6 +151,10 @@ export class ProjectWorkProjectFormOwl extends Component {
   // =========================
   // Helpers
   // =========================
+  get isCreateMode() {
+    return !!this.props.isCreateMode || !this.props.projectId;
+  }
+
   money(v) {
     return this._nf0.format(num(v));
   }
@@ -289,6 +290,112 @@ export class ProjectWorkProjectFormOwl extends Component {
     };
   }
 
+  _emptyDisplay() {
+    const baseDisplay = {
+      signature_date: false,
+      location: "",
+      sale_order_name: "",
+      partner_name: "",
+      contract_name: "",
+      value_contract_tax: 0,
+      value_settlement: 0,
+      value_completed: 0,
+      value_remaining: 0,
+      value_arise: 0,
+
+      progress_percent: 0,
+      sales_category_text: "",
+
+      total_cost_estimate: 0,
+      total_cost_with_tax_estimate: 0,
+      amount_additional_expense_estimate: 0,
+      amount_additional_expense_with_tax_estimate: 0,
+      total_final_non_tax_estimate: 0,
+      total_final_with_tax_estimate: 0,
+
+      total_spent: 0,
+      total_not_spent: 0,
+      total_cost_expense: 0,
+      total_spent_material: 0,
+      total_spent_labor: 0,
+      total_spent_manufacturing: 0,
+      total_material: 0,
+      total_labor: 0,
+      total_manufacturing: 0,
+      total_not_spent_material: 0,
+      total_not_spent_labor: 0,
+      total_not_spent_manufacturing: 0,
+
+      value_accepted: 0,
+      value_acceptance_remaining: 0,
+      acceptance_progress_percent: 0,
+
+      value_finalized: 0,
+      value_finalization_remaining: 0,
+      claim_progress_percent: 0,
+
+      customer_invoice_amount_total: 0,
+      customer_invoice_received_total: 0,
+      customer_invoice_untaxed_total: 0,
+      customer_invoice_remaining_total: 0,
+      payment_process_percent: 0,
+      payment_vs_acceptance_percent: 0,
+      payment_vs_completed_percent: 0,
+      payment_vs_invoice_percent: 0,
+    };
+
+    return {
+      ...baseDisplay,
+      ...this._buildComparisonDisplay(baseDisplay),
+    };
+  }
+
+  _initCreateForm() {
+    this.state.project = null;
+    this._autoSyncedOnOpen = false;
+
+    this.state.form = {
+      name: "",
+      partner_id: null,
+      date_start: false,
+      date: false,
+      contract_id: null,
+      stage_id: null,
+      description: "",
+    };
+
+    this.state.stats = {
+      task_count_custom: 0,
+      work_item_count: 0,
+      cost_estimate_count: 0,
+      project_expense_custom_count: 0,
+    };
+
+    this.state.display = this._emptyDisplay();
+    this.state.work_items = [];
+    this.state.tasks = [];
+    this.state.attachments = [];
+    this.state.selectedWorkItemMap = {};
+    this.state.batchAssign = {
+      assigned_user_id: null,
+    };
+    this.state.openedAttachmentPreviewId = null;
+  }
+
+  _buildProjectVals() {
+    return {
+      name: (this.state.form.name || "").trim(),
+      partner_id: this.state.form.partner_id || false,
+      date_start: this.state.form.date_start || false,
+      date: this.state.form.date || false,
+      contract_id: this.state.form.contract_id || false,
+      stage_id: this.state.form.stage_id || false,
+      description: this.state.form.description
+        ? String(this.state.form.description)
+        : false,
+    };
+  }
+
   // =========================
   // Initial load
   // =========================
@@ -303,9 +410,13 @@ export class ProjectWorkProjectFormOwl extends Component {
         this._loadUsers(),
       ]);
 
-      await this._loadProject();
-      await this._autoSyncProjectAndWorkItemsOnOpen();
-      await this._loadProject();
+      if (this.isCreateMode) {
+        this._initCreateForm();
+      } else {
+        await this._loadProject();
+        await this._autoSyncProjectAndWorkItemsOnOpen();
+        await this._loadProject();
+      }
     } catch (e) {
       console.error("[PWF Owl Form] loadAll error:", e);
       this.notification.add("Không tải được dữ liệu form dự án.", {
@@ -320,6 +431,7 @@ export class ProjectWorkProjectFormOwl extends Component {
   // Auto sync on open
   // =========================
   async _autoSyncProjectAndWorkItemsOnOpen() {
+    if (this.isCreateMode) return;
     if (this._autoSyncedOnOpen) return;
     this._autoSyncedOnOpen = true;
 
@@ -457,11 +569,7 @@ export class ProjectWorkProjectFormOwl extends Component {
     const ids = new Set();
     for (const wi of rows || []) {
       const assignedId = this._m2oId(wi.assigned_user_id);
-      const claimId = this._m2oId(wi.claim_user_id);
-      const acceptanceId = this._m2oId(wi.acceptance_user_id);
       if (assignedId) ids.add(assignedId);
-      if (claimId) ids.add(claimId);
-      if (acceptanceId) ids.add(acceptanceId);
     }
     if (!ids.size) return;
     await Promise.all([...ids].map((id) => this._ensureSelectedUserOption(id)));
@@ -472,7 +580,10 @@ export class ProjectWorkProjectFormOwl extends Component {
   // =========================
   async _loadProject() {
     const pid = this.props.projectId;
-    if (!pid) return;
+    if (!pid) {
+      this._initCreateForm();
+      return;
+    }
 
     const fields = [
       "name",
@@ -486,36 +597,20 @@ export class ProjectWorkProjectFormOwl extends Component {
       "location",
       "sale_order_id",
 
-      "value_contract",
+      "value_contract_tax",
       "value_settlement",
       "value_completed",
       "value_remaining",
       "value_arise",
 
       "progress_percent",
-      "claim_progress_percent",
-      "acceptance_progress_percent",
-      "payment_process_percent",
-
-      "claim_value_done",
-      "claim_value_remaining",
-      "acceptance_value_done",
-      "acceptance_value_remaining",
 
       "sales_category_ids",
-
-      "customer_invoice_amount_total",
-      "customer_invoice_received_total",
-      "customer_invoice_untaxed_total",
-      "customer_invoice_remaining_total",
 
       "task_count_custom",
       "work_item_count",
       "cost_estimate_count",
       "project_expense_custom_count",
-      "claim_report_count",
-      "acceptance_report_count",
-      "customer_invoice_count",
 
       "total_cost_estimate",
       "total_cost_with_tax_estimate",
@@ -536,6 +631,20 @@ export class ProjectWorkProjectFormOwl extends Component {
       "total_not_spent_material",
       "total_not_spent_labor",
       "total_not_spent_manufacturing",
+
+      "value_accepted",
+      "value_acceptance_remaining",
+      "acceptance_percent",
+
+      "value_finalized",
+      "value_finalization_remaining",
+      "finalization_percent",
+
+      "customer_invoice_amount_total",
+      "customer_invoice_received_total",
+      "customer_invoice_untaxed_total",
+      "customer_invoice_remaining_total",
+      "payment_process_percent",
       "payment_vs_acceptance_percent",
       "payment_vs_completed_percent",
       "payment_vs_invoice_percent",
@@ -587,9 +696,6 @@ export class ProjectWorkProjectFormOwl extends Component {
       work_item_count: num(rec.work_item_count),
       cost_estimate_count: num(rec.cost_estimate_count),
       project_expense_custom_count: num(rec.project_expense_custom_count),
-      claim_report_count: num(rec.claim_report_count),
-      acceptance_report_count: num(rec.acceptance_report_count),
-      customer_invoice_count: num(rec.customer_invoice_count),
     };
 
     let salesCategoryText = "";
@@ -614,28 +720,13 @@ export class ProjectWorkProjectFormOwl extends Component {
       partner_name: this._m2oName(rec.partner_id),
       contract_name: contractDisplayName,
 
-      value_contract: num(rec.value_contract),
+      value_contract_tax: num(rec.value_contract_tax),
       value_settlement: num(rec.value_settlement),
       value_completed: num(rec.value_completed),
       value_remaining: num(rec.value_remaining),
       value_arise: num(rec.value_arise),
 
       progress_percent: num(rec.progress_percent),
-      claim_progress_percent: num(rec.claim_progress_percent),
-      acceptance_progress_percent: num(rec.acceptance_progress_percent),
-      payment_process_percent: num(rec.payment_process_percent),
-
-      claim_value_done: num(rec.claim_value_done),
-      claim_value_remaining: num(rec.claim_value_remaining),
-      acceptance_value_done: num(rec.acceptance_value_done),
-      acceptance_value_remaining: num(rec.acceptance_value_remaining),
-
-      customer_invoice_amount_total: num(rec.customer_invoice_amount_total),
-      customer_invoice_received_total: num(rec.customer_invoice_received_total),
-      customer_invoice_untaxed_total: num(rec.customer_invoice_untaxed_total),
-      customer_invoice_remaining_total: num(
-        rec.customer_invoice_remaining_total,
-      ),
 
       sales_category_text: salesCategoryText,
 
@@ -662,6 +753,21 @@ export class ProjectWorkProjectFormOwl extends Component {
       total_not_spent_material: num(rec.total_not_spent_material),
       total_not_spent_labor: num(rec.total_not_spent_labor),
       total_not_spent_manufacturing: num(rec.total_not_spent_manufacturing),
+      value_accepted: num(rec.value_accepted),
+      value_acceptance_remaining: num(rec.value_acceptance_remaining),
+      acceptance_progress_percent: num(rec.acceptance_percent),
+
+      value_finalized: num(rec.value_finalized),
+      value_finalization_remaining: num(rec.value_finalization_remaining),
+      claim_progress_percent: num(rec.finalization_percent),
+
+      customer_invoice_amount_total: num(rec.customer_invoice_amount_total),
+      customer_invoice_received_total: num(rec.customer_invoice_received_total),
+      customer_invoice_untaxed_total: num(rec.customer_invoice_untaxed_total),
+      customer_invoice_remaining_total: num(
+        rec.customer_invoice_remaining_total,
+      ),
+      payment_process_percent: num(rec.payment_process_percent),
       payment_vs_acceptance_percent: num(rec.payment_vs_acceptance_percent),
       payment_vs_completed_percent: num(rec.payment_vs_completed_percent),
       payment_vs_invoice_percent: num(rec.payment_vs_invoice_percent),
@@ -777,14 +883,20 @@ export class ProjectWorkProjectFormOwl extends Component {
           "product_id",
           "description",
           "assigned_user_id",
-          "claim_user_id",
-          "acceptance_user_id",
           "qty_plan",
           "qty_arise",
           "qty_settlement",
           "qty_done",
           "qty_remaining",
           "progress_percent",
+
+          "price_unit",
+          "price_unit_tax",
+          "value_plan_tax",
+          "value_arise_tax",
+          "value_settlement_tax",
+          "value_done_tax",
+          "value_remaining_tax",
         ],
         { order: "sequence asc, id asc", limit: 500 },
       );
@@ -851,26 +963,54 @@ export class ProjectWorkProjectFormOwl extends Component {
 
   async saveForm() {
     try {
+      const vals = this._buildProjectVals();
+
+      if (!vals.name) {
+        this.notification.add("Vui lòng nhập tên dự án.", {
+          type: "warning",
+        });
+        return;
+      }
+
       this.state.saving = true;
 
-      const pid = this.props.projectId;
-      const vals = {
-        name: this.state.form.name || "",
-        partner_id: this.state.form.partner_id || false,
-        date_start: this.state.form.date_start || false,
-        date: this.state.form.date || false,
-        contract_id: this.state.form.contract_id || false,
-        stage_id: this.state.form.stage_id || false,
-        description: this.state.form.description
-          ? String(this.state.form.description)
-          : false,
-      };
+      if (this.isCreateMode) {
+        const newId = await this.orm.create("project.project", [vals]);
 
-      await this.orm.write("project.project", [pid], vals);
-      this.notification.add("Đã lưu dự án.", { type: "success" });
+        this.notification.add("Đã tạo dự án.", { type: "success" });
 
-      this._autoSyncedOnOpen = false;
-      await this._loadProject();
+        if (this.props.onSaved) {
+          await this.props.onSaved(newId);
+        } else {
+          this.action.doAction({
+            type: "ir.actions.act_window",
+            res_model: "project.project",
+            res_id: newId,
+            view_mode: "form",
+            views: [[this.props.formViewId || false, "form"]],
+            target: "current",
+            context: { open_work_custom: 1 },
+          });
+        }
+      } else {
+        const pid = this.props.projectId;
+        if (!pid) {
+          this.notification.add("Không xác định được dự án để lưu.", {
+            type: "danger",
+          });
+          return;
+        }
+
+        await this.orm.write("project.project", [pid], vals);
+        this.notification.add("Đã lưu dự án.", { type: "success" });
+
+        this._autoSyncedOnOpen = false;
+        await this._loadProject();
+
+        if (this.props.onSaved) {
+          await this.props.onSaved(pid);
+        }
+      }
     } catch (e) {
       console.error("[PWF Owl Form] save error:", e);
       this.notification.add("Lưu dự án thất bại.", { type: "danger" });
@@ -901,7 +1041,27 @@ export class ProjectWorkProjectFormOwl extends Component {
     if (!rows.length) return false;
     return rows.every((r) => !!this.state.selectedWorkItemMap[r.id]);
   }
+  get embeddedProjectFormProps() {
+    if (this.isCreateMode || !this.props.projectId) {
+      return null;
+    }
 
+    return {
+      type: "form",
+      resModel: "project.project",
+      resId: this.props.projectId,
+      context: {
+        ...(this.env?.searchModel?.context || {}),
+        open_work_custom: 1,
+        form_view_ref:
+          "project_work_from_so.view_project_project_form_chatter_only",
+      },
+      display: {
+        controlPanel: false,
+      },
+      mode: "edit",
+    };
+  }
   onToggleSelectAllWorkItems(ev) {
     ev.stopPropagation();
     const checked = !!ev.currentTarget.checked;
@@ -959,9 +1119,17 @@ export class ProjectWorkProjectFormOwl extends Component {
       );
       if (row) {
         row[field] = value;
+
         if (field === "qty_plan" || field === "qty_arise") {
           row.qty_settlement = num(row.qty_plan) + num(row.qty_arise);
         }
+
+        const priceUnitTax = num(row.price_unit_tax || 0);
+        row.value_plan_tax = num(row.qty_plan) * priceUnitTax;
+        row.value_arise_tax = num(row.qty_arise) * priceUnitTax;
+        row.value_settlement_tax = num(row.qty_settlement) * priceUnitTax;
+        row.value_done_tax = num(row.qty_done) * priceUnitTax;
+        row.value_remaining_tax = num(row.qty_remaining) * priceUnitTax;
       }
 
       await this._loadProject();
@@ -1024,12 +1192,6 @@ export class ProjectWorkProjectFormOwl extends Component {
     if (batch.assigned_user_id !== null) {
       vals.assigned_user_id = batch.assigned_user_id || false;
     }
-    if (batch.claim_user_id !== null) {
-      vals.claim_user_id = batch.claim_user_id || false;
-    }
-    if (batch.acceptance_user_id !== null) {
-      vals.acceptance_user_id = batch.acceptance_user_id || false;
-    }
 
     if (!Object.keys(vals).length) {
       this.notification.add("Chưa chọn người để phân công hàng loạt.", {
@@ -1049,19 +1211,6 @@ export class ProjectWorkProjectFormOwl extends Component {
             ? [
                 vals.assigned_user_id,
                 this._userNameById(vals.assigned_user_id) || "",
-              ]
-            : false;
-        }
-        if ("claim_user_id" in vals) {
-          wi.claim_user_id = vals.claim_user_id
-            ? [vals.claim_user_id, this._userNameById(vals.claim_user_id) || ""]
-            : false;
-        }
-        if ("acceptance_user_id" in vals) {
-          wi.acceptance_user_id = vals.acceptance_user_id
-            ? [
-                vals.acceptance_user_id,
-                this._userNameById(vals.acceptance_user_id) || "",
               ]
             : false;
         }
@@ -1133,38 +1282,15 @@ export class ProjectWorkProjectFormOwl extends Component {
     );
   }
 
-  async onChangeWorkItemClaimUser(ev) {
-    const workItemId = Number(ev.currentTarget.dataset.workItemId || 0);
-    if (!workItemId) return;
-    const v = ev.currentTarget.value;
-    const userId = v ? Number(v) : false;
-
-    await this._writeWorkItemUserField(
-      workItemId,
-      "claim_user_id",
-      userId,
-      "Đã cập nhật người báo cáo quyết toán.",
-    );
-  }
-
-  async onChangeWorkItemAcceptanceUser(ev) {
-    const workItemId = Number(ev.currentTarget.dataset.workItemId || 0);
-    if (!workItemId) return;
-    const v = ev.currentTarget.value;
-    const userId = v ? Number(v) : false;
-
-    await this._writeWorkItemUserField(
-      workItemId,
-      "acceptance_user_id",
-      userId,
-      "Đã cập nhật người báo cáo nghiệm thu.",
-    );
-  }
-
   // =========================
   // Smart button actions
   // =========================
   async openTasksAction() {
+    if (!this.props.projectId) {
+      this.notification.add("Bạn cần lưu dự án trước.", { type: "warning" });
+      return;
+    }
+
     try {
       const action = await this.orm.call(
         "project.project",
@@ -1188,20 +1314,18 @@ export class ProjectWorkProjectFormOwl extends Component {
   }
 
   async openWorkItemsAction() {
+    if (!this.props.projectId) {
+      this.notification.add("Bạn cần lưu dự án trước.", { type: "warning" });
+      return;
+    }
+
     try {
       const action = await this.orm.call(
         "project.project",
-        "action_view_work_items",
+        "action_open_manager_assignment_report_owl",
         [[this.props.projectId]],
       );
-      await this._doActionSafe(
-        action,
-        [
-          [false, "list"],
-          [false, "form"],
-        ],
-        "list,form",
-      );
+      await this.action.doAction(action);
     } catch (e) {
       console.error(e);
       this.notification.add("Không mở được danh sách hạng mục công việc.", {
@@ -1211,6 +1335,11 @@ export class ProjectWorkProjectFormOwl extends Component {
   }
 
   async openCostEstimatesAction() {
+    if (!this.props.projectId) {
+      this.notification.add("Bạn cần lưu dự án trước.", { type: "warning" });
+      return;
+    }
+
     try {
       const action = await this.orm.call(
         "project.project",
@@ -1233,76 +1362,12 @@ export class ProjectWorkProjectFormOwl extends Component {
     }
   }
 
-  async openClaimReportsAction() {
-    try {
-      const action = await this.orm.call(
-        "project.project",
-        "action_view_claim_reports",
-        [[this.props.projectId]],
-      );
-      await this._doActionSafe(
-        action,
-        [
-          [false, "list"],
-          [false, "form"],
-        ],
-        "list,form",
-      );
-    } catch (e) {
-      console.error(e);
-      this.notification.add("Không mở được báo cáo quyết toán.", {
-        type: "danger",
-      });
-    }
-  }
-
-  async openAcceptanceReportsAction() {
-    try {
-      const action = await this.orm.call(
-        "project.project",
-        "action_view_acceptance_reports",
-        [[this.props.projectId]],
-      );
-      await this._doActionSafe(
-        action,
-        [
-          [false, "list"],
-          [false, "form"],
-        ],
-        "list,form",
-      );
-    } catch (e) {
-      console.error(e);
-      this.notification.add("Không mở được báo cáo nghiệm thu.", {
-        type: "danger",
-      });
-    }
-  }
-
-  async openInvoiceReportsAction() {
-    try {
-      const action = await this.orm.call(
-        "project.project",
-        "action_view_customer_invoices",
-        [[this.props.projectId]],
-      );
-      await this._doActionSafe(
-        action,
-        [
-          [false, "list"],
-          [false, "form"],
-        ],
-        "list,form",
-      );
-    } catch (e) {
-      console.error(e);
-      this.notification.add("Không mở được báo cáo hóa đơn.", {
-        type: "danger",
-      });
-    }
-  }
-
   async openExpenseDashboardAction() {
+    if (!this.props.projectId) {
+      this.notification.add("Bạn cần lưu dự án trước.", { type: "warning" });
+      return;
+    }
+
     try {
       const action = await this.orm.call(
         "project.project",
@@ -1325,11 +1390,42 @@ export class ProjectWorkProjectFormOwl extends Component {
       );
     }
   }
+  async openInvoiceDashboardAction() {
+    if (!this.props.projectId) {
+      this.notification.add("Bạn cần lưu dự án trước.", { type: "warning" });
+      return;
+    }
 
-  async syncWorkItemsFromSO() {
     try {
-      const pid = this.props.projectId;
+      const action = await this.orm.call(
+        "project.project",
+        "action_view_customer_invoices",
+        [[this.props.projectId]],
+      );
+      await this._doActionSafe(
+        action,
+        [
+          [false, "list"],
+          [false, "form"],
+        ],
+        "list,form",
+      );
+    } catch (e) {
+      console.warn(e);
+      this.notification.add(
+        "Chưa có method action_view_customer_invoices hoặc đang lỗi.",
+        { type: "warning" },
+      );
+    }
+  }
+  async syncWorkItemsFromSO() {
+    const pid = this.props.projectId;
+    if (!pid) {
+      this.notification.add("Bạn cần lưu dự án trước.", { type: "warning" });
+      return;
+    }
 
+    try {
       try {
         await this.orm.call(
           "project.project",
@@ -1357,6 +1453,11 @@ export class ProjectWorkProjectFormOwl extends Component {
   }
 
   openStandardForm() {
+    if (!this.props.projectId) {
+      this.notification.add("Bạn cần lưu dự án trước.", { type: "warning" });
+      return;
+    }
+
     this.action.doAction({
       type: "ir.actions.act_window",
       res_model: "project.project",
@@ -1374,15 +1475,99 @@ export class ProjectWorkProjectFormOwl extends Component {
   get progressPercentRounded() {
     return Math.round(num(this.state.display.progress_percent));
   }
+  async openAcceptanceAction() {
+    if (!this.props.projectId) {
+      this.notification.add("Bạn cần lưu dự án trước.", { type: "warning" });
+      return;
+    }
 
-  get claimProgressPercentRounded() {
-    return Math.round(num(this.state.display.claim_progress_percent));
+    try {
+      let action = null;
+
+      try {
+        action = await this.orm.call(
+          "project.project",
+          "action_open_acceptance_report_owl",
+          [[this.props.projectId]],
+        );
+      } catch (_e) {
+        action = null;
+      }
+
+      if (!action) {
+        action = {
+          type: "ir.actions.act_window",
+          name: "Nghiệm thu",
+          res_model: "project.work.item",
+          view_mode: "list,form",
+          views: [
+            [false, "list"],
+            [false, "form"],
+          ],
+          target: "current",
+          domain: [["project_id", "=", this.props.projectId]],
+          context: {
+            default_project_id: this.props.projectId,
+            acceptance_mode: true,
+          },
+        };
+      }
+
+      await this.action.doAction(action);
+    } catch (e) {
+      console.error(e);
+      this.notification.add("Không mở được màn hình nghiệm thu.", {
+        type: "danger",
+      });
+    }
   }
 
-  get acceptanceProgressPercentRounded() {
-    return Math.round(num(this.state.display.acceptance_progress_percent));
-  }
+  async openFinalizationAction() {
+    if (!this.props.projectId) {
+      this.notification.add("Bạn cần lưu dự án trước.", { type: "warning" });
+      return;
+    }
 
+    try {
+      let action = null;
+
+      try {
+        action = await this.orm.call(
+          "project.project",
+          "action_open_finalization_report_owl",
+          [[this.props.projectId]],
+        );
+      } catch (_e) {
+        action = null;
+      }
+
+      if (!action) {
+        action = {
+          type: "ir.actions.act_window",
+          name: "Thanh / Quyết toán",
+          res_model: "project.work.item",
+          view_mode: "list,form",
+          views: [
+            [false, "list"],
+            [false, "form"],
+          ],
+          target: "current",
+          domain: [["project_id", "=", this.props.projectId]],
+          context: {
+            default_project_id: this.props.projectId,
+            finalization_mode: true,
+          },
+        };
+      }
+
+      await this.action.doAction(action);
+    } catch (e) {
+      console.error(e);
+      this.notification.add("Không mở được màn hình thanh / quyết toán.", {
+        type: "danger",
+      });
+    }
+  }
   // =========================
   // Attachments
   // =========================
@@ -1450,10 +1635,6 @@ export class ProjectWorkProjectFormOwl extends Component {
     return `/web/content/${attId}?download=${download ? "true" : "false"}`;
   }
 
-  attachmentImageThumbUrl(attId) {
-    return `/web/image/ir.attachment/${attId}/datas?width=220&height=140`;
-  }
-
   attachmentPreviewUrl(attId) {
     return `/web/content/${attId}?download=false`;
   }
@@ -1479,9 +1660,10 @@ export class ProjectWorkProjectFormOwl extends Component {
 
     const pid = this.props.projectId;
     if (!pid) {
-      this.notification.add("Không xác định được dự án để đính kèm tệp.", {
+      this.notification.add("Bạn cần lưu dự án trước khi đính kèm tệp.", {
         type: "warning",
       });
+      if (ev.target) ev.target.value = "";
       return;
     }
 
@@ -1494,7 +1676,7 @@ export class ProjectWorkProjectFormOwl extends Component {
         await this.orm.call("ir.attachment", "create", [
           {
             name: file.name,
-            datas: datas,
+            datas,
             type: "binary",
             mimetype: file.type || false,
             res_model: "project.project",
@@ -1518,37 +1700,40 @@ export class ProjectWorkProjectFormOwl extends Component {
     }
   }
 
-async removeAttachment(ev) {
+  async removeAttachment(ev) {
     const attId = Number(ev.currentTarget?.dataset?.attachmentId || 0);
     if (!attId) return;
 
     try {
-        await this.orm.unlink("ir.attachment", [attId]);
-        this.state.attachments = (this.state.attachments || []).filter(
-            (a) => Number(a.id) !== attId
-        );
+      await this.orm.unlink("ir.attachment", [attId]);
+      this.state.attachments = (this.state.attachments || []).filter(
+        (a) => Number(a.id) !== attId,
+      );
 
-        if (Number(this.state.openedAttachmentPreviewId || 0) === attId) {
-            this.state.openedAttachmentPreviewId = null;
-        }
+      if (Number(this.state.openedAttachmentPreviewId || 0) === attId) {
+        this.state.openedAttachmentPreviewId = null;
+      }
 
-        this.notification.add("Đã xóa tệp đính kèm.", { type: "success" });
+      this.notification.add("Đã xóa tệp đính kèm.", { type: "success" });
     } catch (e) {
-        console.error(e);
-        this.notification.add("Không xóa được tệp đính kèm.", {
-            type: "danger",
-        });
+      console.error(e);
+      this.notification.add("Không xóa được tệp đính kèm.", {
+        type: "danger",
+      });
     }
-}
-  isAttachmentPreviewOpen(attId) {
-    return Number(this.state.openedAttachmentPreviewId || 0) === Number(attId || 0);
-}
+  }
 
-toggleAttachmentPreview(ev) {
+  isAttachmentPreviewOpen(attId) {
+    return (
+      Number(this.state.openedAttachmentPreviewId || 0) === Number(attId || 0)
+    );
+  }
+
+  toggleAttachmentPreview(ev) {
     const attId = Number(ev.currentTarget?.dataset?.attachmentId || 0);
     if (!attId) return;
 
     this.state.openedAttachmentPreviewId =
-        this.state.openedAttachmentPreviewId === attId ? null : attId;
-}
+      this.state.openedAttachmentPreviewId === attId ? null : attId;
+  }
 }

@@ -1,31 +1,198 @@
 .o_list_view th.o_list_row_count_sheliya,
 .o_list_view td.o_list_row_count_sheliya {
-  width: 50px !important;
-  min-width: 50px !important;
-  max-width: 50px !important;
-  text-align: center !important;
-  white-space: nowrap;
-  overflow: hidden;
+    width: 50px !important;
+    min-width: 50px !important;
+    max-width: 50px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    overflow: hidden;
 }
-/* .o_field_x2many_list_row_add {
-  border-top: 1px solid #dee2e6 !important;
-} */
+
+/* ===== Border tree/x2many ===== */
 .o_field_x2many .o_list_table th.o_list_row_count_sheliya,
 .o_field_x2many .o_list_table td.o_list_row_count_sheliya {
-  border-bottom: 1px solid #dee2e6 !important;
-}
-.o_field_x2many .o_list_table thead > tr > th {
-  border-bottom: 1px solid var(--bs-border-color, #dee2e6) !important;
+    border-bottom: 1px solid #dee2e6 !important;
 }
 
-/* 2) Đường kẻ giữa các dòng dữ liệu */
+.o_field_x2many .o_list_table thead > tr > th {
+    border-bottom: 1px solid var(--bs-border-color, #dee2e6) !important;
+}
+
 .o_field_x2many .o_list_table tbody > tr > td,
 .o_field_x2many .o_list_table tbody > tr > th {
-  border-bottom: 1px solid var(--bs-border-color, #dee2e6) !important;
+    border-bottom: 1px solid var(--bs-border-color, #dee2e6) !important;
 }
 
-/* 3) Nếu bạn muốn có luôn đường kẻ “ngay dưới header” (top của dòng đầu) */
 .o_field_x2many .o_list_table tbody > tr:first-child > td,
 .o_field_x2many .o_list_table tbody > tr:first-child > th {
-  border-top: 1px solid var(--bs-border-color, #dee2e6) !important;
+    border-top: 1px solid var(--bs-border-color, #dee2e6) !important;
+}
+
+/* =========================================================
+   1. TREE: highlight required
+   Chỉ tô lên input/select/textarea khi editable
+   ========================================================= */
+
+.o_list_view td.o_required_modifier,
+.o_field_x2many .o_list_table td.o_required_modifier {
+    background: inherit !important;
+}
+
+.o_list_view td.o_required_modifier input:not([readonly]):not([disabled]),
+.o_list_view td.o_required_modifier textarea:not([readonly]):not([disabled]),
+.o_list_view td.o_required_modifier select:not([disabled]),
+.o_list_view td .o_required_modifier input:not([readonly]):not([disabled]),
+.o_list_view td .o_required_modifier textarea:not([readonly]):not([disabled]),
+.o_list_view td .o_required_modifier select:not([disabled]),
+.o_field_x2many .o_list_table td.o_required_modifier input:not([readonly]):not([disabled]),
+.o_field_x2many .o_list_table td.o_required_modifier textarea:not([readonly]):not([disabled]),
+.o_field_x2many .o_list_table td.o_required_modifier select:not([disabled]),
+.o_field_x2many .o_list_table td .o_required_modifier input:not([readonly]):not([disabled]),
+.o_field_x2many .o_list_table td .o_required_modifier textarea:not([readonly]):not([disabled]),
+.o_field_x2many .o_list_table td .o_required_modifier select:not([disabled]) {
+    border: 1px solid #f0ad4e !important;
+    background: #fffdf5 !important;
+    box-shadow: none !important;
+}
+
+.o_list_view td.o_required_modifier input:not([readonly]):not([disabled]):placeholder-shown,
+.o_list_view td.o_required_modifier textarea:not([readonly]):not([disabled]):placeholder-shown,
+.o_field_x2many .o_list_table td.o_required_modifier input:not([readonly]):not([disabled]):placeholder-shown,
+.o_field_x2many .o_list_table td.o_required_modifier textarea:not([readonly]):not([disabled]):placeholder-shown {
+    background: #fff3cd !important;
+}
+
+.o_list_view td.o_required_modifier .o_readonly_modifier,
+.o_list_view td.o_readonly_modifier,
+.o_list_view td input[readonly],
+.o_list_view td textarea[readonly],
+.o_list_view td select[disabled],
+.o_field_x2many .o_list_table td.o_required_modifier .o_readonly_modifier,
+.o_field_x2many .o_list_table td.o_readonly_modifier,
+.o_field_x2many .o_list_table td input[readonly],
+.o_field_x2many .o_list_table td textarea[readonly],
+.o_field_x2many .o_list_table td select[disabled] {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+.o_list_view td.o_required_modifier .o_field_widget.o_readonly_modifier,
+.o_list_view td.o_required_modifier .o_readonly_modifier,
+.o_field_x2many .o_list_table td.o_required_modifier .o_field_widget.o_readonly_modifier,
+.o_field_x2many .o_list_table td.o_required_modifier .o_readonly_modifier {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+/* =========================================================
+   2. FORM: highlight required
+   Chỉ tô lên input/select/textarea khi editable
+   Không tô wrapper/label nữa
+   ========================================================= */
+
+.o_form_view .o_required_modifier,
+.o_form_view .o_field_widget.o_required_modifier,
+.o_form_view .o_group .o_required_modifier {
+    background: inherit !important;
+}
+
+/* input text / số / date / monetary render thành input */
+.o_form_view .o_required_modifier input:not([readonly]):not([disabled]),
+.o_form_view .o_required_modifier textarea:not([readonly]):not([disabled]),
+.o_form_view .o_required_modifier select:not([disabled]),
+.o_form_view .o_required_modifier .o_input:not([readonly]):not([disabled]) {
+    border: 1px solid #f0ad4e !important;
+    background: #fffdf5 !important;
+    box-shadow: none !important;
+    border-radius: 4px;
+}
+
+/* field editable mà đang rỗng thì đậm hơn */
+.o_form_view .o_required_modifier input:not([readonly]):not([disabled]):placeholder-shown,
+.o_form_view .o_required_modifier textarea:not([readonly]):not([disabled]):placeholder-shown {
+    background: #fff3cd !important;
+}
+
+/* readonly trong form thì không tô */
+.o_form_view .o_required_modifier .o_readonly_modifier,
+.o_form_view .o_field_widget.o_readonly_modifier,
+.o_form_view input[readonly],
+.o_form_view textarea[readonly],
+.o_form_view select[disabled] {
+    background: transparent !important;
+    border-color: inherit !important;
+    box-shadow: none !important;
+}
+
+/* label không highlight nữa */
+.o_form_view .o_form_label.o_required_modifier,
+.o_form_view label.o_required_modifier {
+    color: inherit !important;
+    font-weight: inherit !important;
+}
+
+/* =========================================================
+   3. TREE HEADER: chỉ xuống dòng ở dấu cách
+   không bẻ giữa các ký tự trong từ
+   ========================================================= */
+
+.o_list_view table.somed_list_wrapped_header thead th,
+.o_list_view .o_list_table thead th.somed_wrap_th {
+    white-space: normal !important;
+    word-break: keep-all !important;
+    overflow-wrap: normal !important;
+    hyphens: none !important;
+    line-height: 1.2 !important;
+    vertical-align: middle !important;
+    height: auto !important;
+    min-height: 38px;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+}
+
+.o_list_view .o_list_table thead th .o_column_title,
+.o_list_view .o_list_table thead th span,
+.o_list_view .o_list_table thead th div {
+    white-space: normal !important;
+    word-break: keep-all !important;
+    overflow-wrap: normal !important;
+    hyphens: none !important;
+    line-height: 1.2 !important;
+}
+
+/* tbody giữ bình thường */
+.o_list_view .o_list_table tbody td {
+    vertical-align: top;
+}
+
+/* riêng cột STT không xuống dòng */
+.o_list_view .o_list_table th.o_list_row_count_sheliya,
+.o_list_view .o_list_table td.o_list_row_count_sheliya {
+    white-space: nowrap !important;
+}
+
+/* tránh icon sort / resize lệch khi header nhiều dòng */
+.o_list_view .o_list_table thead th .o_resize,
+.o_list_view .o_list_table thead th .o-sort-up,
+.o_list_view .o_list_table thead th .o-sort-down {
+    vertical-align: middle;
+}
+/* =========================================================
+   4. TREE: default width tối thiểu 90px
+   không áp dụng cho cột STT
+   ========================================================= */
+
+.o_list_view .o_list_table thead th:not(.o_list_row_count_sheliya),
+.o_list_view .o_list_table tbody td:not(.o_list_row_count_sheliya),
+.o_list_view .o_list_table tfoot td:not(.o_list_row_count_sheliya) {
+    min-width: 90px !important;
+}
+
+/* nếu muốn áp dụng rõ hơn cho x2many tree trong form */
+.o_field_x2many .o_list_table thead th:not(.o_list_row_count_sheliya),
+.o_field_x2many .o_list_table tbody td:not(.o_list_row_count_sheliya),
+.o_field_x2many .o_list_table tfoot td:not(.o_list_row_count_sheliya) {
+    min-width: 90px !important;
 }

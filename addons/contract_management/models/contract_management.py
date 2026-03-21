@@ -550,8 +550,12 @@ class ProjectProject(models.Model):
         related='contract_id.location', store=True, readonly=True
     )
     value_contract = fields.Monetary(
-        string='Giá trị hợp đồng (trước thuế)',
+        string='Giá trị hợp đồng trước thuế',
         related='contract_id.amount_untaxed', store=True, readonly=True
+    )
+    value_contract_tax = fields.Monetary(
+        string='Giá trị hợp đồng',
+        related='contract_id.contract_value', store=True, readonly=True
     )
     signature_date = fields.Date(
         string='Ngày ký hợp đồng',

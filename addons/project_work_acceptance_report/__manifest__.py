@@ -1,24 +1,32 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Project Work Acceptance Report",
-    "summary": "Báo cáo nghiệm thu theo kỳ cho hạng mục công việc",
     "version": "17.0.1.0.0",
+    "summary": "Báo cáo nghiệm thu theo dự án",
     "category": "Project",
-    "author": "OpenAI",
+    "author": "Somed",
     "license": "LGPL-3",
     "depends": [
-        "project",
+        "web",
         "mail",
-        "project_work_from_so",   # module của bạn có project.work.assignment / project.work.progress / project.work.item
+        "project",
+        "sale_management",
+        "project_work_from_so",
     ],
     "data": [
         "security/ir.model.access.csv",
-        "views/project_work_assignment_acceptance_config_views.xml",
-        "views/project_work_assignment_acceptance_report_views.xml",
-        "views/project_project_acceptance_button_inherit.xml",
-        "views/project_project_assignment_acceptance_user_inherit.xml",
-        # "views/project_work_item_acceptance_inherit_views.xml",  # tuỳ chọn, nếu muốn hiện trên hạng mục
+        'wizard/project_acceptance_assign_multi_wizard_views.xml',
+        "views/acceptance_views.xml",
+        "views/acceptance_menus.xml",
     ],
+    "assets": {
+        "web.assets_backend": [
+            "project_work_acceptance_report/static/src/js/acceptance_project_list.js",
+            "project_work_acceptance_report/static/src/js/acceptance_report.js",
+            "project_work_acceptance_report/static/src/xml/acceptance_report.xml",
+            "project_work_acceptance_report/static/src/scss/acceptance_report.scss",
+        ],
+    },
     "installable": True,
     "application": False,
 }

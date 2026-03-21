@@ -14,14 +14,7 @@
           <!-- Header / Search / Filter -->
           <div class="card-header pwf-toolbar">
             <div class="pwf-toolbar-top d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-              <div class="pwf-toolbar-title">
-                <div class="fw-semibold">Danh sách dự án Dashboard</div>
-                <div class="text-muted small">
-                  Chọn 1 dòng để mở chi tiết • Hỗ trợ tìm kiếm, lọc, sắp xếp và chọn nhiều dòng để cộng tổng
-                </div>
-              </div>
-
-              <div class="d-flex align-items-center gap-2">
+                          <div class="d-flex align-items-center gap-2">
                 <button class="btn btn-sm btn-outline-primary" t-on-click="loadProjects">
                   <i class="fa fa-refresh me-1"/>
  Làm mới
@@ -31,7 +24,16 @@
                   <i class="fa fa-filter me-1"/>
  Xóa lọc
                 </button>
+                <button class="btn btn-primary" t-on-click="createProject">
+    <i class="fa fa-plus me-1"/>
+    Tạo dự án
+</button>
               </div>
+              <div class="pwf-toolbar-title">
+                <h1 class="fw-bold-title">Danh sách dự án</h1>
+              </div>
+
+
             </div>
 
             <div class="pwf-toolbar-grid">
@@ -80,16 +82,16 @@
                   <option value="name">Tên dự án</option>
                   <option value="partner_name">Đối tác</option>
                   <option value="stage_name">Trạng thái dự án</option>
-                  <option value="value_contract">GT theo HĐ</option>
+                  <option value="value_contract_tax">GT theo HĐ</option>
                   <option value="value_completed">GT SL đã thực hiện</option>
                   <option value="progress_percent">% SL</option>
 
-                  <option value="acceptance_value_done">GT đã nghiệm thu</option>
-                  <option value="acceptance_value_remaining">GT chưa nghiệm thu</option>
+                  <option value="value_accepted">GT đã nghiệm thu</option>
+                  <option value="value_acceptance_remaining">GT chưa nghiệm thu</option>
                   <option value="acceptance_progress_percent">% Nghiệm thu</option>
 
-                  <option value="claim_value_done">GT đã quyết toán</option>
-                  <option value="claim_value_remaining">GT còn lại quyết toán</option>
+                  <option value="value_finalized_tax">GT đã quyết toán</option>
+                  <option value="value_finalization_remaining_tax">GT còn lại quyết toán</option>
                   <option value="claim_progress_percent">% Quyết toán</option>
 
                   <option value="customer_invoice_amount_total">Tổng GT hóa đơn</option>
@@ -223,7 +225,7 @@
                     <th class="text-end">Tổng hóa đơn chưa thuế</th>
                     <th class="text-end">Tổng hóa đơn bao gồm thuế</th>
                     <th class="text-end">Tổng tiền đã thu</th>
-                    <th class="text-end">Tổng tiền còn lại</th>
+                    <th class="text-end">Tổng tiền còn lại / Hồ sơ</th>
                     <th class="text-end">% Tiền đã thu / Hồ sơ</th>
                     <th class="text-end">% Tiền đã thu / Nghiệm thu</th>
                     <th class="text-end">% Tiền đã thu / Sản lượng đã thực hiện</th>
@@ -277,8 +279,8 @@
                         </td>
 
                         <!-- Nghiệm thu -->
-                        <td class="text-end" t-esc="money(pr.acceptance_value_done)"/>
-                        <td class="text-end" t-esc="money(pr.acceptance_value_remaining)"/>
+                        <td class="text-end" t-esc="money(pr.value_accepted)"/>
+                        <td class="text-end" t-esc="money(pr.value_acceptance_remaining)"/>
                         <td class="text-end">
                           <span class="pwf-percent-badge" t-att-class="(pr.acceptance_progress_percent || 0) >= 100 ? ' is-done' : ((pr.acceptance_progress_percent || 0) >= 70 ? ' is-good' : ((pr.acceptance_progress_percent || 0) >= 30 ? ' is-mid' : ' is-low'))" t-esc="Math.round(pr.acceptance_progress_percent || 0) + '%'"/>
                         </td>
@@ -348,7 +350,7 @@
 
             <div class="d-flex flex-wrap gap-3 small">
               <div>GT theo HĐ: <b>
-                <t t-esc="money(selectedTotals.value_contract)"/>
+                <t t-esc="money(selectedTotals.value_contract_tax)"/>
               </b>
             </div>
             <div>GT còn lại theo HĐ: <b>
@@ -360,15 +362,15 @@
           </b>
         </div>
         <div>GT đã quyết toán: <b>
-          <t t-esc="money(selectedTotals.claim_value_done)"/>
+          <t t-esc="money(selectedTotals.value_finalized_tax)"/>
         </b>
       </div>
       <div>GT còn lại quyết toán: <b>
-        <t t-esc="money(selectedTotals.claim_value_remaining)"/>
+        <t t-esc="money(selectedTotals.value_finalization_remaining_tax)"/>
       </b>
     </div>
     <div>GT nghiệm thu: <b>
-      <t t-esc="money(selectedTotals.acceptance_value_done)"/>
+      <t t-esc="money(selectedTotals.value_accepted)"/>
     </b>
   </div>
   <div>HĐ chưa thuế: <b>
@@ -451,11 +453,14 @@
 <t t-else="">
 <div class="card flex-grow-1" style="min-height:0;">
 <div class="card-body p-0" style="overflow:auto;">
-<ProjectWorkProjectFormOwl t-props="{
-              projectId: state.selectedId,
-              formViewId: formViewId || undefined,
-              onBack: backToList.bind(this)
-            }"/>
+<ProjectWorkProjectFormOwl
+    t-if="state.mode === 'detail'"
+    projectId="state.selectedId || 0"
+    isCreateMode="state.isCreateMode"
+    onBack.bind="backToList"
+    onSaved.bind="onProjectSaved"
+    formViewId="formViewId"
+/>
 </div>
 </div>
 </t>

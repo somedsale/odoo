@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_project_work_finalization_user,project.work.finalization user,model_project_work_finalization,project.group_project_user,1,1,1,1
+access_project_work_finalization_manager,project.work.finalization manager,model_project_work_finalization,project.group_project_manager,1,1,1,1
+
+access_project_finalization_assign_multi_wizard_manager,access.project.finalization.assign.multi.wizard.manager,model_project_finalization_assign_multi_wizard,project.group_project_manager,1,1,1,1

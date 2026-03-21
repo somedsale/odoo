@@ -1,0 +1,107 @@
+.overtime_time_split_field {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: auto;
+    min-width: 0;
+
+    .overtime_time_split_select {
+        width: auto;
+        min-width: 72px;
+        height: 36px;
+        padding: 0 10px;
+        border: 1px solid #cfd7df;
+        border-radius: 8px;
+        background: #fff;
+        color: #212529;
+        font-size: 14px;
+        transition: all 0.2s ease;
+
+        &:hover {
+            border-color: #9fb3c8;
+            box-shadow: 0 0 0 2px rgba(49, 132, 253, 0.06);
+        }
+
+        &:focus {
+            outline: none;
+            border-color: #7c7bad;
+            box-shadow: 0 0 0 3px rgba(124, 123, 173, 0.15);
+        }
+
+        &:disabled {
+            background: #f8f9fa;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+    }
+
+    .overtime_time_hour,
+    .overtime_time_minute {
+        width: 78px;
+        min-width: 78px;
+        max-width: 78px;
+    }
+
+    .overtime_time_separator {
+        flex: 0 0 auto;
+        font-weight: 600;
+        color: #6c757d;
+        margin-top: -1px;
+    }
+}
+
+/* riêng trong tree/list */
+.o_list_renderer .overtime_time_split_field {
+    display: inline-flex;
+    justify-content: flex-start;
+    width: auto;
+    min-width: 0;
+    margin: 0;
+
+    .overtime_time_split_select {
+        flex: 0 0 auto;
+        min-width: 64px;
+        width: 64px;
+        max-width: 64px;
+        height: 32px;
+        padding: 0 6px;
+        border-radius: 6px;
+        font-size: 13px;
+    }
+}
+
+/* ép cell không canh phải */
+.o_list_renderer td .overtime_time_split_field {
+    float: none;
+    margin-left: 0;
+}
+.o_list_renderer th[data-name="employee_id"],
+.o_list_renderer td[data-name="employee_id"] {
+    width: 180px !important;
+    min-width: 180px !important;
+}
+
+.o_list_renderer th[data-name="time_start"],
+.o_list_renderer td[data-name="time_start"],
+.o_list_renderer th[data-name="time_end"],
+.o_list_renderer td[data-name="time_end"] {
+    width: 150px !important;
+    min-width: 150px !important;
+}
+
+.o_list_renderer th[data-name="hours"],
+.o_list_renderer td[data-name="hours"] {
+    width: 90px !important;
+    min-width: 90px !important;
+}
+
+.o_list_renderer th[data-name="note"],
+.o_list_renderer td[data-name="note"] {
+    width: 180px !important;
+    min-width: 180px !important;
+}
+
+.o_list_renderer th[data-name="work_content"],
+.o_list_renderer td[data-name="work_content"] {
+    min-width: 260px !important;
+}

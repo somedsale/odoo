@@ -1,0 +1,58 @@
+.overtime_time_picker_field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+
+    .overtime_time_input {
+        width: 100%;
+        min-width: 120px;
+        height: 36px;
+        padding: 0 38px 0 12px;
+        border: 1px solid #cfd7df;
+        border-radius: 8px;
+        background: #fff;
+        color: #212529;
+        font-size: 14px;
+        line-height: 1.2;
+        transition: all 0.2s ease;
+
+        &:hover {
+            border-color: #9fb3c8;
+            box-shadow: 0 0 0 2px rgba(49, 132, 253, 0.06);
+        }
+
+        &:focus {
+            outline: none;
+            border-color: #7c7bad;
+            box-shadow: 0 0 0 3px rgba(124, 123, 173, 0.15);
+        }
+
+        &:read-only {
+            background: #f8f9fa;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        &::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.8;
+        }
+    }
+
+    &::after {
+        content: "24h";
+        position: absolute;
+        right: 30px;
+        font-size: 11px;
+        color: #6c757d;
+        pointer-events: none;
+    }
+}
+
+.o_list_renderer .overtime_time_picker_field .overtime_time_input {
+    min-width: 105px;
+    padding-right: 34px;
+    border-radius: 6px;
+    font-size: 13px;
+}

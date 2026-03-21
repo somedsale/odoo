@@ -62,10 +62,10 @@ class ProjectProject(models.Model):
         "customer_invoice_ids.amount_total",
         "customer_invoice_ids.amount_untaxed",
         "customer_invoice_ids.account_receipt_ids",
-        "work_item_ids.claim_value_done",
-                "work_item_ids.claim_value_done",
-        "work_item_ids.acceptance_value_done",
+        "work_item_ids.value_finalized_tax",
+        "work_item_ids.value_accepted_tax",
         "work_item_ids.value_completed",
+        "work_item_ids.value_done_tax",
     )
     def _compute_customer_invoice_stats(self):
         """
@@ -74,7 +74,7 @@ class ProjectProject(models.Model):
         - receipt_amount_total
         thì dùng luôn. Nếu chưa có thì fallback cộng từ account_receipt_ids.
 
-        customer_invoice_remaining_total = claim_value_done - customer_invoice_received_total
+        customer_invoice_remaining_total = value_finalized_tax - customer_invoice_received_total
         """
         Invoice = self.env["customer.invoice"].sudo()
 
@@ -118,19 +118,19 @@ class ProjectProject(models.Model):
                     total_received += receipt_sum
 
             # ✅ MỚI: Còn lại = Giá trị quyết toán - Đã thu
-            total_remaining = (rec.claim_value_done or 0.0) - (total_received or 0.0)
+            total_remaining = (rec.value_finalized or 0.0) - (total_received or 0.0)
 
             rec.customer_invoice_amount_total = total_invoice
             rec.customer_invoice_received_total = total_received
             rec.customer_invoice_remaining_total = total_remaining
             rec.customer_invoice_untaxed_total = total_untaxed
             rec.payment_process_percent = (
-                (total_received / rec.claim_value_done) * 100.0
-                if rec.claim_value_done else 0.0
+                (total_received / rec.value_finalized) * 100.0
+                if rec.value_finalized else 0.0
             )
             rec.payment_vs_acceptance_percent = (
-                (total_received / rec.acceptance_value_done) * 100.0
-                if rec.acceptance_value_done else 0.0
+                (total_received / rec.value_accepted) * 100.0
+                if rec.value_accepted else 0.0
             )
             rec.payment_vs_completed_percent = (
                 (total_received / rec.value_completed) * 100.0
@@ -156,3 +156,4 @@ class ProjectProject(models.Model):
         }
 
         return action
+        

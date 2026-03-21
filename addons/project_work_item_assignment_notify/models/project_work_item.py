@@ -13,7 +13,7 @@ class ProjectWorkItem(models.Model):
     def _assignment_notify_role_map(self):
         return {
             "assigned_user_id": {
-                "label": _("báo cáo lũy kế theo kỳ"),
+                "label": _("báo cáo sản lượng"),
                 "action_xmlid": "project_work_from_so.action_my_assignment_report",
                 "form_view_xmlid": "project_work_from_so.view_my_assignment_report_form",
                 "assignment_user_field": "user_id",
@@ -33,7 +33,7 @@ class ProjectWorkItem(models.Model):
         }
 
     def _assignment_notify_tracked_fields(self):
-        return ["assigned_user_id", "claim_user_id", "acceptance_user_id"]
+        return ["claim_user_id", "acceptance_user_id"]
 
     # =========================================================
     # OLD VALUES
@@ -148,7 +148,6 @@ class ProjectWorkItem(models.Model):
             }
 
         return self._get_assignment_fallback_action(field_name)
-
     def _get_assignment_record_url(self, field_name, assignment_rec):
         self.ensure_one()
         if not assignment_rec:
@@ -221,7 +220,7 @@ class ProjectWorkItem(models.Model):
 
         if assignment_rec:
             record_url = self._get_assignment_record_url(field_name, assignment_rec)
-            link_label = _("Mở báo cáo")
+            link_label = _("Mở phiếu báo cáo")
             target_record = assignment_rec if hasattr(assignment_rec, "message_post") else self
         else:
             record_url = self._get_assignment_fallback_url(field_name)
@@ -229,8 +228,8 @@ class ProjectWorkItem(models.Model):
             target_record = self
 
         body = Markup("""
-            <p><b>Phân công công việc mới</b></p>
-            <p><b>%s</b> đã phân công cho bạn các vai trò: <b>%s</b>.</p>
+            <p><b>Phân công báo cáo</b></p>
+            <p><b>%s</b> đã phân công cho bạn vai trò: <b>%s</b>.</p>
             <p>Hạng mục: <b>%s</b></p>
             <p>Dự án: <b>%s</b></p>
             <p><a href="%s">%s</a></p>
@@ -279,7 +278,7 @@ class ProjectWorkItem(models.Model):
 
         self._assignment_notify_send_clickable(
             new_user,
-            _("Bạn được phân công công việc"),
+            _("Bạn được phân công báo cáo"),
             message,
             next_action=next_action,
         )
