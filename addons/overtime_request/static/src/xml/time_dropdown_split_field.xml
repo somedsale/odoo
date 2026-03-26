@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="overtime_request.TimeDropdownSplitField">
+        <div class="overtime_time_split_field">
+            <select
+                class="o_input overtime_time_split_select overtime_time_hour"
+                t-att-disabled="props.readonly"
+                t-on-change="onHourChange"
+            >
+                <option value="" t-att-selected="currentParts.hour === ''">Giờ</option>
+                <t t-foreach="hours" t-as="hour" t-key="hour">
+                    <option
+                        t-att-value="hour"
+                        t-att-selected="currentParts.hour === hour"
+                    >
+                        <t t-esc="hour"/>
+                    </option>
+                </t>
+            </select>
+
+            <span class="overtime_time_separator">:</span>
+
+            <select
+                class="o_input overtime_time_split_select overtime_time_minute"
+                t-att-disabled="props.readonly"
+                t-on-change="onMinuteChange"
+            >
+                <option value="" t-att-selected="currentParts.minute === ''">Phút</option>
+                <t t-foreach="minutes" t-as="minute" t-key="minute">
+                    <option
+                        t-att-value="minute"
+                        t-att-selected="currentParts.minute === minute"
+                    >
+                        <t t-esc="minute"/>
+                    </option>
+                </t>
+            </select>
+        </div>
+    </t>
+</templates>

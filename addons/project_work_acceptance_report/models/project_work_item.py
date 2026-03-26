@@ -9,101 +9,77 @@ class ProjectWorkItem(models.Model):
         "res.users",
         string="Người báo cáo nghiệm thu",
         tracking=True,
-        help="Người phụ trách báo cáo nghiệm thu cho hạng mục công việc.",
-    )
-    acceptance_qty_done = fields.Float(
-        string="KL nghiệm thu lũy kế",
-        compute="_compute_acceptance_totals",
-        digits="Product Unit of Measure",
-        store=False,
-    )
-    acceptance_qty_remaining = fields.Float(
-        string="KL nghiệm thu còn lại",
-        compute="_compute_acceptance_totals",
-        digits="Product Unit of Measure",
-        store=False,
-    )
-    acceptance_progress_percent = fields.Float(
-        string="% nghiệm thu",
-        compute="_compute_acceptance_totals",
-        store=False,
-    )
-    acceptance_value_done = fields.Float(
-        string="Giá trị nghiệm thu lũy kế",
-        compute="_compute_acceptance_totals",
-        store=False,
-    )
-    acceptance_value_remaining = fields.Float(
-        string="Giá trị nghiệm thu còn lại",
-        compute="_compute_acceptance_totals",
-        store=False,
     )
 
-    def _get_price_unit_for_acceptance(self):
-        self.ensure_one()
-        if "price_unit" in self._fields:
-            return self.price_unit or 0.0
-        if "price_subtotal" in self._fields and (self.qty_settlement or 0.0):
-            return (self.price_subtotal or 0.0) / self.qty_settlement if self.qty_settlement else 0.0
-        return 0.0
+    acceptance_line_ids = fields.One2many(
+        "project.work.acceptance",
+        "work_item_id",
+        string="Lịch sử nghiệm thu",
+    )
+
+    qty_accepted = fields.Float(
+        string="Khối lượng đã nghiệm thu",
+        compute="_compute_acceptance_metrics",
+        store=True,
+        digits="Product Unit of Measure",
+    )
+    qty_acceptance_remaining = fields.Float(
+        string="Khối lượng còn lại chưa nghiệm thu",
+        compute="_compute_acceptance_metrics",
+        store=True,
+        digits="Product Unit of Measure",
+    )
+    acceptance_percent = fields.Float(
+        string="% nghiệm thu",
+        compute="_compute_acceptance_metrics",
+        store=True,
+    )
+
+    value_accepted_tax = fields.Monetary(
+        string="Giá trị đã nghiệm thu sau thuế",
+        compute="_compute_acceptance_value_metrics",
+        store=True,
+        currency_field="currency_id",
+    )
+    value_acceptance_remaining_tax = fields.Monetary(
+        string="Giá trị còn lại chưa nghiệm thu sau thuế",
+        compute="_compute_acceptance_value_metrics",
+        store=True,
+        currency_field="currency_id",
+    )
 
     @api.depends(
-        "qty_settlement",
-        "assignment_ids.acceptance_progress_ids.qty_cum",
-        "assignment_ids.acceptance_progress_ids.period_no",
+        "qty_done",
+        "acceptance_line_ids.current_qty",
+        "acceptance_line_ids.active",
     )
-    def _compute_acceptance_totals(self):
+    def _compute_acceptance_metrics(self):
         for rec in self:
-            qty_done = 0.0
-            for assign in rec.assignment_ids:
-                latest = False
-                if assign.acceptance_progress_ids:
-                    latest = assign.acceptance_progress_ids.sorted(key=lambda x: (x.period_no or 0, x.id))[-1]
-                qty_done += (latest.qty_cum or 0.0) if latest else 0.0
+            completed_qty = rec.qty_done or 0.0
 
-            qty_settlement = rec.qty_settlement or 0.0
-            qty_remaining = max(0.0, qty_settlement - qty_done)
+            accepted_qty = sum(
+                rec.acceptance_line_ids.filtered(lambda x: x.active).mapped("current_qty") or [0.0]
+            )
+            accepted_qty = max(0.0, accepted_qty)
 
-            rec.acceptance_qty_done = qty_done
-            rec.acceptance_qty_remaining = qty_remaining
-            rec.acceptance_progress_percent = (qty_done / qty_settlement * 100.0) if qty_settlement else 0.0
+            # Không cho nghiệm thu vượt quá sản lượng đã thực hiện
+            accepted_qty = min(accepted_qty, completed_qty)
 
-            pu = rec._get_price_unit_for_acceptance()
-            rec.acceptance_value_done = qty_done * pu
-            rec.acceptance_value_remaining = qty_remaining * pu
-    @api.model_create_multi
-    def create(self, vals_list):
-        records = super().create(vals_list)
+            remaining_qty = max(0.0, completed_qty - accepted_qty)
 
-        # Nếu tạo hạng mục đã có acceptance_user_id sẵn thì sync xuống assignment (nếu assignment đã tồn tại)
-        for rec, vals in zip(records, vals_list):
-            if "acceptance_user_id" in vals:
-                rec._sync_acceptance_user_to_assignments()
-        return records
+            rec.qty_accepted = accepted_qty
+            rec.qty_acceptance_remaining = remaining_qty
+            rec.acceptance_percent = (accepted_qty / completed_qty * 100.0) if completed_qty else 0.0
 
-    def write(self, vals):
-        # Chỉ xử lý khi có thay đổi acceptance_user_id
-        sync_acceptance_user = "acceptance_user_id" in vals
-
-        res = super().write(vals)
-
-        if sync_acceptance_user:
-            self._sync_acceptance_user_to_assignments()
-
-        return res
-
-    def _sync_acceptance_user_to_assignments(self):
-        """
-        Đồng bộ người báo cáo nghiệm thu từ hạng mục xuống các phân công của hạng mục.
-        - Nếu work item có nhiều assignment -> tất cả assignment cùng nhận acceptance_user_id này.
-        - Nếu acceptance_user_id = False -> bỏ phân công người nghiệm thu ở assignment.
-        """
+    @api.depends(
+        "qty_done",
+        "price_unit_tax",
+        "qty_accepted",
+        "qty_acceptance_remaining",
+    )
+    def _compute_acceptance_value_metrics(self):
         for rec in self:
-            if not rec.assignment_ids:
-                continue
+            price_tax = rec.price_unit_tax or 0.0
 
-            # Nếu muốn chỉ sync assignment đang active thì dùng filtered(lambda a: a.active)
-            assignments = rec.assignment_ids
-            assignments.write({
-                "acceptance_user_id": rec.acceptance_user_id.id if rec.acceptance_user_id else False
-            })
+            rec.value_accepted_tax = (rec.qty_accepted or 0.0) * price_tax
+            rec.value_acceptance_remaining_tax = (rec.qty_acceptance_remaining or 0.0) * price_tax

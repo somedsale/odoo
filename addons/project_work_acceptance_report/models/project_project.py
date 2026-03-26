@@ -1,128 +1,573 @@
 # -*- coding: utf-8 -*-
-from odoo import fields, models,api, _
+from odoo import api, fields, models, _
 from odoo.exceptions import UserError
-
+from markupsafe import Markup, escape
+from odoo.tools import html_escape
 
 class ProjectProject(models.Model):
     _inherit = "project.project"
 
-    acceptance_report_count = fields.Integer(
-        string="Báo cáo nghiệm thu",
-        compute="_compute_acceptance_report_count",
-    )
     acceptance_user_id = fields.Many2one(
         "res.users",
         string="Người báo cáo nghiệm thu",
         tracking=True,
-        help="Người phụ trách báo cáo nghiệm thu cho dự án.",
     )
-    claim_user_id = fields.Many2one(
-        "res.users",
-        string="Người báo cáo thanh / quyết toán",
-        tracking=True,
-        help="Người phụ trách báo cáo thanh / quyết toán cho dự án.",
+
+    acceptance_count = fields.Integer(
+        string="Số hạng mục cần nghiệm thu",
+        compute="_compute_acceptance_count",
     )
-    assigned_user_id = fields.Many2one(
-        "res.users",
-        string="Người báo cáo sản lượng",
-        tracking=True,
-        help="Người phụ trách báo cáo sản lượng cho dự án.",
+
+    acceptance_closed_period_no = fields.Integer(
+        string="Kỳ chốt nghiệm thu",
+        readonly=True,
+        copy=False,
     )
-    assignment_ids = fields.One2many(
-        "project.work.assignment",
-        "project_id",
-        string="Các phân công công việc",
+    acceptance_closed_date = fields.Date(
+        string="Ngày chốt nghiệm thu",
+        readonly=True,
+        copy=False,
     )
-    acceptance_value_done = fields.Float(
-        string="Giá trị nghiệm thu lũy kế",
-        compute="_compute_acceptance_totals",
-        store=False,
+
+    value_accepted = fields.Monetary(
+        string="Giá trị đã nghiệm thu",
+        compute="_compute_acceptance_summary",
+        store=True,
     )
-    acceptance_value_remaining = fields.Float(
-        string="Giá trị nghiệm thu còn lại",
-        compute="_compute_acceptance_totals",
-        store=False,
+    value_acceptance_remaining = fields.Monetary(
+        string="Giá trị còn lại chưa nghiệm thu",
+        compute="_compute_acceptance_summary",
+        store=True,
     )
-    acceptance_progress_percent = fields.Float(
+    acceptance_percent = fields.Float(
         string="% nghiệm thu",
-        related="work_item_ids.acceptance_progress_percent",
-        store=False,
+        compute="_compute_acceptance_summary",
+        store=True,
     )
-    @api.depends("work_item_ids.acceptance_value_done", "work_item_ids.acceptance_value_remaining", "work_item_ids")
-    def _compute_acceptance_totals(self):
+    is_my_acceptance_project = fields.Boolean(
+        string="Là dự án nghiệm thu của tôi",
+        compute="_compute_is_my_acceptance_project",
+        search="_search_is_my_acceptance_project",
+    )
+    @api.depends(
+        "acceptance_user_id",
+        "work_item_ids.acceptance_user_id",
+        "work_item_ids.active",
+    )
+    def _compute_acceptance_count(self):
+        current_user = self.env.user
         for rec in self:
-            rec.acceptance_value_done = sum(rec.work_item_ids.mapped("acceptance_value_done") or [0.0])
-            rec.acceptance_value_remaining = sum(rec.work_item_ids.mapped("acceptance_value_remaining") or [0.0])
-    @api.onchange("acceptance_user_id", "assigned_user_id", "claim_user_id")
-    def _onchange_report_users(self):
-        # ✅ không tự động gán người báo cáo nghiệm thu cho assignment nữa, để tránh vỡ quy trình nếu người dùng không muốn
-        project_work_item_obj = self.env["project.work.item"]
-        for rec in self:
-            if rec.acceptance_user_id:
-                # nếu có người báo cáo nghiệm thu ở project thì gán cho tất cả work item chưa có người báo cáo
-                rec.assignment_ids.filtered(lambda a: not a.acceptance_user_id).write(
-                    {"acceptance_user_id": rec.acceptance_user_id.id}
-                )
-                rec.work_item_ids.filtered(lambda w: not w.acceptance_user_id).write(
-                    {"acceptance_user_id": rec.acceptance_user_id.id}
-                )
-            if rec.assigned_user_id:
-                # nếu có người báo cáo sản lượng ở project thì gán cho tất cả work item chưa có người báo cáo
-                rec.assignment_ids.filtered(lambda a: not a.user_id).write(
-                    {"user_id": rec.assigned_user_id.id}
-                )
-                rec.work_item_ids.filtered(lambda w: not w.assigned_user_id).write(
-                    {"assigned_user_id": rec.assigned_user_id.id}
-                )
-            if rec.claim_user_id:
-                # nếu có người báo cáo thanh / quyết toán ở project thì gán cho tất cả work item chưa có người báo cáo
-                rec.assignment_ids.filtered(lambda a: not a.claim_user_id).write(
-                    {"claim_user_id": rec.claim_user_id.id}
-                )
-                rec.work_item_ids.filtered(lambda w: not w.claim_user_id).write(
-                    {"claim_user_id": rec.claim_user_id.id}
-                )
-    def _compute_acceptance_report_count(self):
-        # sudo để không làm vỡ form project vì lỗi quyền
-        Assignment = self.env["project.work.assignment"].sudo()
-        counts = {}
-        if self.ids:
-            data = Assignment.read_group(
-                [
-                    ("project_id", "in", self.ids),
-                    ("active", "=", True),
-                    ("acceptance_user_id", "!=", False),
-                ],
-                ["project_id"],
-                ["project_id"],
-            )
-            counts = {
-                d["project_id"][0]: d["project_id_count"]
-                for d in data if d.get("project_id")
-            }
+            count = 0
+            for item in rec.work_item_ids.filtered(lambda x: x.active):
+                acceptance_user = item.acceptance_user_id or rec.acceptance_user_id
+                if acceptance_user == current_user:
+                    count += 1
+            rec.acceptance_count = count
 
+    @api.depends(
+        "work_item_ids.value_accepted_tax",
+        "work_item_ids.value_acceptance_remaining_tax",
+        "work_item_ids.active",
+    )
+    def _compute_acceptance_summary(self):
         for rec in self:
-            rec.acceptance_report_count = counts.get(rec.id, 0)
+            items = rec.work_item_ids.filtered(lambda x: x.active)
+            accepted = sum(items.mapped("value_accepted_tax") or [0.0])
+            remaining = sum(items.mapped("value_acceptance_remaining_tax") or [0.0])
+            total_done = accepted + remaining
 
-    def action_view_acceptance_reports(self):
+            rec.value_accepted = accepted
+            rec.value_acceptance_remaining = remaining
+            rec.acceptance_percent = (accepted / total_done * 100.0) if total_done else 0.0
+
+    @api.depends(
+        "acceptance_user_id",
+        "work_item_ids.acceptance_user_id",
+        "work_item_ids.active",
+    )
+    def _compute_is_my_acceptance_project(self):
+        current_user = self.env.user
+        for rec in self:
+            is_mine = False
+            for item in rec.work_item_ids.filtered(lambda x: x.active):
+                acceptance_user = item.acceptance_user_id or rec.acceptance_user_id
+                if acceptance_user == current_user:
+                    is_mine = True
+                    break
+            rec.is_my_acceptance_project = is_mine
+
+
+    def _search_is_my_acceptance_project(self, operator, value):
+        if operator not in ("=", "!="):
+            return []
+
+        current_user = self.env.user
+
+        item_project_ids = self.env["project.work.item"].search([
+            ("active", "=", True),
+            ("acceptance_user_id", "=", current_user.id),
+        ]).mapped("project_id").ids
+
+        direct_project_ids = self.search([
+            ("acceptance_user_id", "=", current_user.id),
+        ]).ids
+
+        project_ids = list(set(item_project_ids + direct_project_ids)) or [0]
+
+        if operator == "=":
+            return [("id", "in" if value else "not in", project_ids)]
+        return [("id", "not in" if value else "in", project_ids)]
+    def _get_acceptance_report_user(self, work_item):
+        self.ensure_one()
+        return work_item.acceptance_user_id or self.acceptance_user_id
+
+    def _can_edit_acceptance(self, work_item):
+        self.ensure_one()
+        user = self.env.user
+        acceptance_user = self._get_acceptance_report_user(work_item)
+
+        is_record_manager = self.user_id == user
+        is_project_group_manager = user.has_group("project.group_project_manager")
+        is_acceptance_user = acceptance_user == user if acceptance_user else False
+
+        return is_record_manager or is_project_group_manager or is_acceptance_user
+    def _is_project_completed(self):
+        self.ensure_one()
+        stage_name = (self.stage_id.name or "").strip().lower() if self.stage_id else ""
+        done_names = ["hoàn tất", "hoan tat", "done", "completed", "complete"]
+        return stage_name in done_names
+
+    def _compute_tax_included_amount(self, so_line, quantity, price_unit=None):
+        self.ensure_one()
+        if not so_line:
+            return (quantity or 0.0) * (price_unit or 0.0)
+
+        quantity = quantity or 0.0
+        price_unit = price_unit if price_unit is not None else (so_line.price_unit or 0.0)
+        taxes = so_line.tax_id
+        if not taxes:
+            return quantity * price_unit
+
+        currency = so_line.currency_id or self.company_id.currency_id
+        partner = so_line.order_id.partner_shipping_id or so_line.order_id.partner_id
+        product = so_line.product_id
+
+        tax_res = taxes.compute_all(
+            price_unit,
+            currency=currency,
+            quantity=quantity,
+            product=product,
+            partner=partner,
+        )
+        return tax_res.get("total_included", quantity * price_unit)
+
+    def _get_assignable_users(self):
+        return self.env["res.users"].search([
+            ("share", "=", False),
+            ("groups_id", "in", [
+                self.env.ref("project.group_project_user").id,
+                self.env.ref("project.group_project_manager").id,
+            ]),
+        ])
+
+    def action_assign_project_acceptance_user(self, user_id):
         self.ensure_one()
 
-        action = False
-        for xmlid in [
-            "project_work_acceptance_report.action_manager_assignment_acceptance_report",
-            "project_work_acceptance_report.action_my_assignment_acceptance_report",
-        ]:
-            try:
-                action = self.env.ref(xmlid).read()[0]
-                break
-            except Exception:
+        if not user_id:
+            raise UserError(_("Vui lòng chọn người phụ trách nghiệm thu."))
+
+        user = self.env["res.users"].browse(user_id).exists()
+        if not user:
+            raise UserError(_("Người phụ trách không tồn tại."))
+
+        # Chỉ gán theo project
+        self.acceptance_user_id = user.id
+
+        # Gửi 1 thông báo theo project
+        self._send_project_acceptance_assignment_notification(user)
+
+        return {
+            "message": _("Đã cập nhật người phụ trách nghiệm thu cho dự án và gửi thông báo.")
+        }
+    def _get_display_work_items_for_acceptance(self, manager_mode=False):
+        self.ensure_one()
+        WorkItem = self.env["project.work.item"]
+
+        items = WorkItem.search([
+            ("project_id", "=", self.id),
+            ("active", "=", True),
+        ], order="section_name, sequence, id")
+
+        if manager_mode:
+            return items
+
+        user = self.env.user
+        return items.filtered(
+            lambda item: (item.acceptance_user_id or self.acceptance_user_id) == user
+        )
+
+    def _ensure_acceptance_line(self, assignment, period_no):
+        self.ensure_one()
+        Acceptance = self.env["project.work.acceptance"]
+
+        line = Acceptance.search([
+            ("assignment_id", "=", assignment.id),
+            ("period_no", "=", period_no),
+        ], limit=1)
+
+        if line:
+            return line
+
+        return Acceptance.create({
+            "project_id": self.id,
+            "work_item_id": assignment.work_item_id.id,
+            "assignment_id": assignment.id,
+            "period_no": period_no,
+            "date_start": assignment.date_start or self.date_start,
+            "current_qty": 0.0,
+            "note": "",
+        })
+
+    def get_acceptance_report_rows(self, manager_mode=False):
+        self.ensure_one()
+
+        Acceptance = self.env["project.work.acceptance"]
+        project_completed = self._is_project_completed()
+        display_items = self._get_display_work_items_for_acceptance(manager_mode=manager_mode)
+
+        rows_by_period = {}
+        period_set = set()
+        current_period_no = 1
+
+        for work_item in display_items:
+            assignment = work_item.assignment_ids.filtered(lambda a: a.active)[:1]
+            if not assignment:
                 continue
 
-        if not action:
-            raise UserError(_("Chưa tìm thấy action báo cáo nghiệm thu."))
+            qty_plan = work_item.qty_plan or 0.0
+            qty_arise = work_item.qty_arise or 0.0
+            qty_settlement = qty_plan + qty_arise
+            contract_qty = qty_settlement
+            max_total = contract_qty
 
-        action["domain"] = [("project_id", "=", self.id), ("active", "=", True)]
-        action["context"] = {
-            "default_project_id": self.id,
+            # Sản lượng đã thực hiện thực tế
+            done_qty = work_item.qty_done or 0.0
+            if done_qty < 0:
+                done_qty = 0.0
+
+            price_unit = work_item.price_unit or 0.0
+            price_unit_tax = work_item.price_unit_tax or 0.0
+
+            current_period_no = max(current_period_no, assignment.current_period_no or 1)
+
+            acceptance_lines = Acceptance.search([
+                ("assignment_id", "=", assignment.id),
+                ("active", "=", True),
+            ], order="period_no asc, id asc")
+
+            line_map = {ln.period_no: ln for ln in acceptance_lines}
+            max_line_period = max(line_map.keys()) if line_map else 0
+            max_period = max(max_line_period, assignment.current_period_no or 1, 1)
+
+            prev_cum = 0.0
+            for period_no in range(1, max_period + 1):
+                period_set.add(period_no)
+                line = line_map.get(period_no)
+
+                current_qty = line.current_qty if line else 0.0
+                qty_cum = prev_cum + (current_qty or 0.0)
+
+                # Không cho lũy kế nghiệm thu vượt quá sản lượng đã thực hiện
+                qty_cum_limited = min(qty_cum, done_qty)
+                prev_cum_limited = min(prev_cum, done_qty)
+                current_qty_limited = max(0.0, qty_cum_limited - prev_cum_limited)
+
+                period_start = False
+                period_end = False
+                if assignment.date_start:
+                    period_start, period_end = assignment._get_period_bounds(
+                        assignment.date_start, period_no
+                    )
+
+                if work_item.so_line_id:
+                    contract_value_tax = self._compute_tax_included_amount(
+                        work_item.so_line_id, contract_qty, price_unit=price_unit
+                    )
+                    done_value_tax = self._compute_tax_included_amount(
+                        work_item.so_line_id, done_qty, price_unit=price_unit
+                    )
+                    prev_value_tax = self._compute_tax_included_amount(
+                        work_item.so_line_id, prev_cum_limited, price_unit=price_unit
+                    )
+                    current_value_tax = self._compute_tax_included_amount(
+                        work_item.so_line_id, current_qty_limited, price_unit=price_unit
+                    )
+                    current_value_cum_tax = self._compute_tax_included_amount(
+                        work_item.so_line_id, qty_cum_limited, price_unit=price_unit
+                    )
+                else:
+                    contract_value_tax = contract_qty * price_unit_tax
+                    done_value_tax = done_qty * price_unit_tax
+                    prev_value_tax = prev_cum_limited * price_unit_tax
+                    current_value_tax = current_qty_limited * price_unit_tax
+                    current_value_cum_tax = qty_cum_limited * price_unit_tax
+
+                acceptance_user = self._get_acceptance_report_user(work_item)
+                can_edit = self._can_edit_acceptance(work_item)
+
+                row = {
+                    "id": f"acc_{assignment.id}_{period_no}",
+                    "acceptance_id": line.id if line else False,
+                    "assignment_id": assignment.id,
+                    "work_item_id": work_item.id,
+                    "period_no": period_no,
+                    "section_name": work_item.section_name or "",
+                    "assignment_name": acceptance_user.name if acceptance_user else "",
+                    "work_item_name": work_item.name or "",
+                    "description": work_item.description or "",
+                    "product_name": work_item.product_id.display_name if work_item.product_id else "",
+                    "uom_name": work_item.uom_id.display_name if work_item.uom_id else "",
+                    "qty_plan": qty_plan,
+                    "qty_arise": qty_arise,
+                    "qty_settlement": qty_settlement,
+                    "contract_qty": contract_qty,
+                    "done_qty": done_qty,
+                    "max_total": max_total,
+                    "price_unit": price_unit,
+                    "price_unit_tax": price_unit_tax,
+                    "contract_value_tax": contract_value_tax,
+                    "done_value_tax": done_value_tax,
+                    "prev_qty_cum": prev_cum_limited,
+                    "current_qty_week": current_qty_limited,
+                    "current_note": (line.note if line else "") or "",
+                    "current_qty_cum": qty_cum_limited,
+                    "qty_remaining": max(0.0, done_qty - qty_cum_limited),
+                    "prev_value_tax": prev_value_tax,
+                    "current_value_tax": current_value_tax,
+                    "current_value_cum_tax": current_value_cum_tax,
+                    "value_remaining_tax": max(0.0, done_value_tax - current_value_cum_tax),
+                    "current_period_no": assignment.current_period_no or 1,
+                    "period_start": period_start and period_start.isoformat() or False,
+                    "period_end": period_end and period_end.isoformat() or False,
+                    "is_current_period": (period_no == (assignment.current_period_no or 1)) and not project_completed,
+                    "is_editable": can_edit and not project_completed,
+                    "is_unassigned": not bool(acceptance_user),
+                }
+
+                rows_by_period.setdefault(period_no, []).append(row)
+                prev_cum = qty_cum
+
+        available_periods = sorted(period_set) or [1]
+
+        return {
+            "project": {
+                "id": self.id,
+                "name": self.name,
+                "partner_name": self.partner_id.display_name if self.partner_id else "",
+                "manager_name": self.user_id.display_name if self.user_id else "",
+                "stage_name": self.stage_id.name if self.stage_id else "",
+                "date_start": self.date_start.isoformat() if self.date_start else False,
+                "date_end": self.date.isoformat() if self.date else False,
+                "contract_name": self.contract_id.display_name if self.contract_id else "",
+                "num_contract": self.contract_id.num_contract if self.contract_id else False,
+                "location": self.location if self.location else False,
+                "acceptance_count": len(display_items),
+                "is_completed": project_completed,
+                "manager_mode": bool(manager_mode),
+                "acceptance_user_id": self.acceptance_user_id.id if self.acceptance_user_id else False,
+                "acceptance_user_name": self.acceptance_user_id.name if self.acceptance_user_id else "",
+                "value_contract_tax": self.value_contract_tax or 0.0,
+                "value_settlement": self.value_settlement or 0.0,
+                "value_arise": self.value_arise or 0.0,
+                "value_accepted": self.value_accepted or 0.0,
+                "value_acceptance_remaining": self.value_acceptance_remaining or 0.0,
+                "acceptance_percent": self.acceptance_percent or 0.0,
+                "attachments": [
+                    {
+                        "id": att.id,
+                        "name": att.name or att.display_name or "Tệp đính kèm",
+                        "mimetype": att.mimetype or "",
+                        "url": f"/web/content/{att.id}?download=false",
+                    }
+                    for att in self.attachment_ids
+                ],
+            },
+            "assignable_users": [
+                {"id": user.id, "name": user.name}
+                for user in self._get_assignable_users()
+            ],
+            "rows_by_period": rows_by_period,
+            "available_periods": available_periods,
+            "current_period_no": current_period_no,
         }
-        return action
+    def save_acceptance_report_rows(self, period_no, rows, manager_mode=False):
+        self.ensure_one()
+
+        if not isinstance(rows, list):
+            raise UserError(_("Dữ liệu lưu không hợp lệ."))
+
+        if self._is_project_completed():
+            raise UserError(_("Dự án đã hoàn tất, không được nhập hoặc chỉnh sửa báo cáo nghiệm thu."))
+
+        if not period_no:
+            raise UserError(_("Chưa xác định kỳ nghiệm thu."))
+
+        row_map = {}
+        assignment_ids = []
+        for row in rows:
+            assignment_id = row.get("assignment_id")
+            if not assignment_id:
+                continue
+            row_map[assignment_id] = row
+            assignment_ids.append(assignment_id)
+
+        assignments = self.env["project.work.assignment"].browse(assignment_ids).exists()
+
+        for assignment in assignments:
+            if assignment.project_id != self:
+                raise UserError(_("Có dữ liệu không thuộc dự án hiện tại."))
+
+            work_item = assignment.work_item_id
+
+            if not self._can_edit_acceptance(work_item):
+                raise UserError(_("Bạn không có quyền cập nhật nghiệm thu cho hạng mục này."))
+
+            if int(assignment.current_period_no or 1) != int(period_no):
+                raise UserError(_("Chỉ được cập nhật kỳ hiện tại, không được sửa kỳ trước."))
+
+            vals = row_map.get(assignment.id, {})
+            current_qty = vals.get("current_qty_week", 0.0) or 0.0
+            note = vals.get("current_note", "") or ""
+
+            if current_qty < 0:
+                current_qty = 0.0
+
+            contract_qty = (work_item.qty_plan or 0.0) + (work_item.qty_arise or 0.0)
+
+            prev_accepted = sum(
+                assignment.acceptance_line_ids.filtered(
+                    lambda l: l.active and l.period_no < int(period_no)
+                ).mapped("current_qty") or [0.0]
+            )
+
+            max_allowed = max(0.0, contract_qty - prev_accepted)
+            current_qty = min(current_qty, max_allowed)
+
+            line = self._ensure_acceptance_line(assignment, int(period_no))
+            line.write({
+                "current_qty": current_qty,
+                "note": note,
+            })
+
+        self.invalidate_recordset()
+        self.work_item_ids.invalidate_recordset()
+
+        return self.get_acceptance_report_rows(manager_mode=manager_mode)
+    def _get_project_acceptance_assignment_action(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.client",
+            "name": _("Báo cáo nghiệm thu của tôi"),
+            "tag": "project_work_acceptance_report.AcceptanceReport",
+            "target": "current",
+            "context": {
+                "default_project_id": self.id,
+                "active_model": "project.project",
+                "active_id": self.id,
+                "active_ids": [self.id],
+                "from_assignment_notification": 1,
+                "manager_mode": False,
+            },
+        }
+
+
+    def action_assign_project_acceptance_user_multi(self, user_id):
+        if not self:
+            raise UserError(_("Vui lòng chọn ít nhất một dự án."))
+
+        if not user_id:
+            raise UserError(_("Vui lòng chọn người phụ trách nghiệm thu."))
+
+        user = self.env["res.users"].browse(user_id).exists()
+        if not user:
+            raise UserError(_("Người phụ trách không tồn tại."))
+
+        updated_projects = 0
+
+        for project in self:
+            # gán theo project
+            project.acceptance_user_id = user.id
+
+            # gửi notification + thêm follower + chatter
+            project._send_project_acceptance_assignment_notification(user)
+            updated_projects += 1
+
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("Phân công thành công"),
+                "message": _(
+                    "Đã phân công người báo cáo nghiệm thu cho %(count)s dự án."
+                ) % {
+                    "count": updated_projects,
+                },
+                "type": "success",
+                "sticky": False,
+            },
+        }
+    def _send_project_acceptance_assignment_notification(self, user):
+        self.ensure_one()
+        if not user or not user.partner_id:
+            return
+
+        assigner_name = self.env.user.display_name or _("Hệ thống")
+        project_name = self.display_name or self.name or _("(Không có tên dự án)")
+        acceptance_count = len(self.work_item_ids.filtered(lambda w: w.active))
+
+        message = _(
+            "%(assigner)s đã phân công bạn phụ trách báo cáo nghiệm thu cho dự án '%(project)s' (%(count)s hạng mục)."
+        ) % {
+            "assigner": assigner_name,
+            "project": project_name,
+            "count": acceptance_count,
+        }
+
+        next_action = self._get_project_acceptance_assignment_action()
+
+        # Realtime popup: chỉ gửi cho người được phân công
+        self.env["bus.bus"]._sendone(
+            user.partner_id,
+            "project_work_project_acceptance_assignment_notification",
+            {
+                "title": _("Bạn được phân công báo cáo nghiệm thu"),
+                "message": message,
+                "sticky": False,
+                "next_action": next_action,
+            }
+        )
+
+        # Inbox/mail: chỉ gửi cho người được phân công, không post vào chatter dự án
+        try:
+            href = "/project_work_assignment_notify/open_my_acceptance_report?project_id=%s" % self.id
+
+            body = Markup(
+                "<p><b>Phân công báo cáo nghiệm thu</b></p>"
+                "<p><b>%s</b> đã phân công bạn phụ trách báo cáo nghiệm thu cho dự án <b>%s</b>.</p>"
+                "<p>Số hạng mục áp dụng: <b>%s</b></p>"
+                "<p><a href='%s'>Mở báo cáo nghiệm thu</a></p>"
+            ) % (
+                escape(assigner_name),
+                escape(project_name),
+                acceptance_count,
+                escape(href),
+            )
+
+            self.message_notify(
+                partner_ids=[user.partner_id.id],
+                subject=_("Bạn được phân công báo cáo nghiệm thu"),
+                body=body,
+                email_layout_xmlid="mail.mail_notification_light",
+            )
+        except Exception:
+            pass

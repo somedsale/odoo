@@ -10,7 +10,8 @@
         "cost_estimate",
         "custom_project_expense",
         "custom_project_role",
-        "web"
+        "web",
+        "mail",
         # "your_contract_module_name",  # <- đổi thành tên module chứa model contract.management của bạn
     ],
     "data": [
@@ -18,6 +19,7 @@
         "security/project_work_rules.xml",
         "security/rules.xml",
         # "views/manager_work_item_dashboard_action.xml",
+        'wizard/project_report_assign_multi_wizard_views.xml',
         "views/project_work_dashboard_action.xml",
         "views/project_project_custom_views.xml",
         "views/my_weekly_report_assignment_views.xml",
@@ -36,9 +38,13 @@
             'project_work_from_so/static/src/form/project_work_project_form_owl.js',
             'project_work_from_so/static/src/form/project_work_project_form_owl.xml',
             'project_work_from_so/static/src/form/project_work_project_form_owl.scss',
-
+            "project_work_from_so/static/src/js/my_assignment_project_list.js",
+            'project_work_from_so/static/src/js/my_assignment_report.js',
+            'project_work_from_so/static/src/xml/my_assignment_report.xml',
+            'project_work_from_so/static/src/scss/my_assignment_report.scss',
         ],
     },
     "installable": True,
     "application": False,
+    "post_init_hook": "post_init_hook",
 }

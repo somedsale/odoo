@@ -14,12 +14,13 @@
         # thay bằng tên module thực tế
         "customer_debt",
         "project_work_from_so",  # module hiện tại của bạn (có project.project)
-        "project_work_claim_report",  # để liên kết với báo cáo thanh toán
+        "project_work_finalization_report",  # để liên kết với báo cáo thanh toán
+        "project_work_acceptance_report",  # để liên kết với báo cáo thanh toán
     ],
     "data": [
         "security/ir.model.access.csv",
         "views/project_disbursement_report_views.xml",
-        "views/project_project_inherit_views.xml",
+        # "views/project_project_inherit_views.xml",
         # "views/customer_invoice_project_summary_menu.xml",
         # "data/ir_cron.xml",
     ],

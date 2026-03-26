@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_overtime_root"
+              name="Tăng ca"
+              sequence="10"
+              parent="custom_account_menu.menu_accounting_vouchers"/>
+
+    <menuitem id="menu_overtime_request"
+              name="Phiếu đề xuất tăng ca"
+              parent="menu_overtime_root"
+              action="action_overtime_request"
+              sequence="10"
+              />
+    <!-- phiếu đề xuất tăng ca cho kh -kt -->
+    <menuitem id="menu_overtime_report_for_project"
+              name="Phiếu đề xuất tăng ca"
+              parent="project_work_from_so.menu_proposal_project"
+              action="action_overtime_request"
+              sequence="20"
+              />
+    <!-- phiếu đề xuất tăng ca cho sales -->
+    <menuitem id="menu_overtime_report_for_sale"
+              name="Phiếu đề xuất tăng ca"
+              parent="custom_quotation_content.menu_proposal_sheet_for_sale"
+              action="action_overtime_request"
+              sequence="2"
+              />
+</odoo>

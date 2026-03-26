@@ -4,7 +4,6 @@
   <t t-name="project_work_from_so.ProjectWorkProjectFormOwl" owl="1">
     <div class="o_pwf_project_form_owl d-flex flex-column h-100">
 
-      <!-- Loading -->
       <t t-if="state.loading">
         <div class="d-flex flex-grow-1 align-items-center justify-content-center py-5">
           <div class="text-muted px-4 py-4 text-center">
@@ -15,38 +14,35 @@
       </t>
 
       <t t-else="">
-        <!-- Main Card -->
         <div class="card pwf-main-card flex-grow-1 d-flex flex-column" style="min-height:0;">
           <div class="card-body overflow-auto pwf-scroll-body">
 
-            <!-- Sticky top -->
             <div class="pwf-sticky-top">
 
-              <!-- Toolbar -->
               <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2 px-1" style="min-height: 48px;">
                 <div class="d-flex flex-wrap align-items-center gap-2">
-                  <button t-if="props.onBack"
-                          class="btn btn-sm btn-outline-secondary"
-                          t-on-click="props.onBack">
+                  <button t-if="props.onBack" class="btn btn-sm btn-outline-secondary" t-on-click="props.onBack">
                     <i class="fa fa-arrow-left me-1"/>
                     <span>Quay lại</span>
                   </button>
 
                   <span class="badge rounded-pill text-bg-light border px-3 py-2 ms-1">
-                    Project ID: <t t-esc="props.projectId"/>
+                    <t t-if="props.isCreateMode">
+                      Dự án mới
+                    </t>
+                    <t t-else="">
+                      Project ID: <t t-esc="props.projectId"/>
+                    </t>
                   </span>
                 </div>
 
                 <div class="d-flex flex-wrap align-items-center gap-2">
-                  <button class="btn btn-sm btn-outline-secondary"
-                          t-on-click="openStandardForm">
+                  <button t-if="!props.isCreateMode &amp;&amp; props.projectId" class="btn btn-sm btn-outline-secondary" t-on-click="openStandardForm">
                     <i class="fa fa-external-link me-1"/>
                     <span>Mở form chuẩn</span>
                   </button>
 
-                  <button class="btn btn-sm btn-primary px-3"
-                          t-on-click="saveForm"
-                          t-att-disabled="state.saving ? true : undefined">
+                  <button class="btn btn-sm btn-primary px-3" t-on-click="saveForm" t-att-disabled="state.saving ? true : undefined">
                     <i class="fa fa-save me-1"/>
                     <t t-if="state.saving">
                       <span>Đang lưu...</span>
@@ -58,69 +54,79 @@
                 </div>
               </div>
 
-
-
-              <!-- Smart buttons -->
-              <div class="pwf-smartbar mb-3">
+              <div class="pwf-smartbar mb-3" t-if="!props.isCreateMode">
                 <div class="d-flex flex-wrap gap-2">
                   <button class="btn btn-sm btn-outline-primary" t-on-click="openTasksAction">
-                    <i class="fa fa-tasks me-1"/> Nhiệm vụ
-                    <span class="badge ms-1"><t t-esc="state.stats.task_count_custom"/></span>
+                    <i class="fa fa-tasks me-1"/>
+ Nhiệm vụ
+                    <span class="badge ms-1">
+                      <t t-esc="state.stats.task_count_custom"/>
+                    </span>
                   </button>
 
                   <button class="btn btn-sm btn-outline-primary" t-on-click="openWorkItemsAction">
-                    <i class="fa fa-list-ul me-1"/> Sản lượng / Hạng mục công việc
-                    <span class="badge ms-1"><t t-esc="state.stats.work_item_count"/></span>
+                    <i class="fa fa-list-ul me-1"/>
+ Báo cáo Sản lượng
+                    <span class="badge ms-1">
+                      <t t-esc="state.stats.work_item_count"/>
+                    </span>
+                  </button>
+                  <button class="btn btn-sm btn-outline-info" t-on-click="openAcceptanceAction">
+                    <i class="fa fa-check-square-o me-1"/>
+ Báo cáo Nghiệm thu
+                    <span class="badge ms-1">
+                      <t t-esc="state.stats.work_item_count"/>
+                    </span>
                   </button>
 
+                  <button class="btn btn-sm btn-outline-success" t-on-click="openFinalizationAction">
+                    <i class="fa fa-money me-1"/>
+ Báo cáo Hồ sơ Thanh / Quyết toán
+                    <span class="badge ms-1">
+                      <t t-esc="state.stats.work_item_count"/>
+                    </span>
+                  </button>
                   <button class="btn btn-sm btn-outline-secondary" t-on-click="openCostEstimatesAction">
-                    <i class="fa fa-calculator me-1"/> Dự toán chi phí
-                    <span class="badge ms-1"><t t-esc="state.stats.cost_estimate_count"/></span>
+                    <i class="fa fa-calculator me-1"/>
+ Dự toán chi phí
+                    <span class="badge ms-1">
+                      <t t-esc="state.stats.cost_estimate_count"/>
+                    </span>
                   </button>
 
                   <button class="btn btn-sm btn-outline-success" t-on-click="openExpenseDashboardAction">
-                    <i class="fa fa-usd me-1"/> Chi phí dự án
-                    <span class="badge ms-1"><t t-esc="state.stats.project_expense_custom_count"/></span>
+                    <i class="fa fa-usd me-1"/>
+ Chi phí dự án
+                    <span class="badge ms-1">
+                      <t t-esc="state.stats.project_expense_custom_count"/>
+                    </span>
                   </button>
-
-                  <button class="btn btn-sm btn-outline-warning" t-on-click="openAcceptanceReportsAction">
-                    <i class="fa fa-check-square-o me-1"/> Nghiệm thu
-                    <span class="badge ms-1"><t t-esc="state.stats.acceptance_report_count"/></span>
-                  </button>
-
-                  <button class="btn btn-sm btn-outline-info" t-on-click="openClaimReportsAction">
-                    <i class="fa fa-file-text-o me-1"/> Thanh / Quyết toán
-                    <span class="badge ms-1"><t t-esc="state.stats.claim_report_count"/></span>
-                  </button>
-
-                  <button class="btn btn-sm btn-outline-info" t-on-click="openInvoiceReportsAction">
-                    <i class="fa fa-file-text-o me-1"/> Hóa đơn
-                    <span class="badge ms-1"><t t-esc="state.stats.customer_invoice_count"/></span>
+                                    <button class="btn btn-sm btn-outline-success" t-on-click="openInvoiceDashboardAction">
+                    <i class="fa fa-usd me-1"/>
+Giải ngân dự án
+                    <span class="badge ms-1">
+                      <t t-esc="state.stats.project_expense_custom_count"/>
+                    </span>
                   </button>
                 </div>
               </div>
-              <!-- Project name -->
+
               <div class="card pwf-section-card mb-3">
                 <div class="card-body py-3">
                   <label class="form-label fw-semibold mb-1">Tên dự án</label>
-                  <input class="form-control form-control-lg"
-                         data-field="name"
-                         t-att-value="state.form.name || ''"
-                         t-on-input="onInput"
-                         placeholder="Tên dự án..."/>
+                  <input class="form-control form-control-lg" data-field="name" t-att-value="state.form.name || ''" t-on-input="onInput" placeholder="Tên dự án..."/>
                 </div>
               </div>
             </div>
 
-            <!-- ROW 1 -->
             <div class="row g-3 mb-3">
 
-              <!-- Basic info -->
-              <div class="col-12 col-xl-4">
+              <div class="col-12" t-att-class="props.isCreateMode ? 'col-xl-12' : 'col-xl-4'">
                 <div class="card pwf-section-card h-100">
                   <div class="card-header">
                     <span class="pwf-card-title">
-                      <i class="fa fa-info-circle text-primary"/> Thông tin cơ bản
+                      <i class="fa fa-info-circle text-primary"/>
+ Thông tin cơ bản
                     </span>
                   </div>
                   <div class="card-body">
@@ -128,16 +134,12 @@
 
                       <div class="col-12">
                         <label class="form-label">Đối tác</label>
-                        <select class="form-select"
-                                data-field="partner_id"
-                                t-on-change="onSelectMany2one"
-                                t-att-value="state.form.partner_id ? '' + state.form.partner_id : ''">
+                        <select class="form-select" data-field="partner_id" t-on-change="onSelectMany2one" t-att-value="state.form.partner_id ? '' + state.form.partner_id : ''">
                           <option value="" t-att-selected="!state.form.partner_id ? true : undefined">
                             -- Chọn đối tác --
                           </option>
                           <t t-foreach="state.partnerOptions" t-as="p" t-key="p.id">
-                            <option t-att-value="p.id"
-                                    t-att-selected="state.form.partner_id &amp;&amp; ('' + state.form.partner_id) === ('' + p.id) ? true : undefined">
+                            <option t-att-value="p.id" t-att-selected="state.form.partner_id &amp;&amp; ('' + state.form.partner_id) === ('' + p.id) ? true : undefined">
                               <t t-esc="p.name"/>
                             </option>
                           </t>
@@ -146,34 +148,22 @@
 
                       <div class="col-6">
                         <label class="form-label">Ngày bắt đầu</label>
-                        <input type="date"
-                               class="form-control"
-                               data-field="date_start"
-                               t-att-value="state.form.date_start || ''"
-                               t-on-input="onInput"/>
+                        <input type="date" class="form-control" data-field="date_start" t-att-value="state.form.date_start || ''" t-on-input="onInput"/>
                       </div>
 
                       <div class="col-6">
                         <label class="form-label">Ngày kết thúc</label>
-                        <input type="date"
-                               class="form-control"
-                               data-field="date"
-                               t-att-value="state.form.date || ''"
-                               t-on-input="onInput"/>
+                        <input type="date" class="form-control" data-field="date" t-att-value="state.form.date || ''" t-on-input="onInput"/>
                       </div>
 
                       <div class="col-12">
                         <label class="form-label">Trạng thái dự án</label>
-                        <select class="form-select"
-                                data-field="stage_id"
-                                t-on-change="onSelectMany2one"
-                                t-att-value="state.form.stage_id ? '' + state.form.stage_id : ''">
+                        <select class="form-select" data-field="stage_id" t-on-change="onSelectMany2one" t-att-value="state.form.stage_id ? '' + state.form.stage_id : ''">
                           <option value="" t-att-selected="!state.form.stage_id ? true : undefined">
                             -- Chọn trạng thái --
                           </option>
                           <t t-foreach="state.stageOptions" t-as="s" t-key="s.id">
-                            <option t-att-value="s.id"
-                                    t-att-selected="state.form.stage_id &amp;&amp; ('' + state.form.stage_id) === ('' + s.id) ? true : undefined">
+                            <option t-att-value="s.id" t-att-selected="state.form.stage_id &amp;&amp; ('' + state.form.stage_id) === ('' + s.id) ? true : undefined">
                               <t t-esc="s.name"/>
                             </option>
                           </t>
@@ -182,796 +172,558 @@
 
                       <div class="col-12">
                         <label class="form-label">Mô tả</label>
-                        <div class="pwf-html-view border rounded bg-white p-3"
-                             style="min-height:180px;"
-                             t-out="state.form.description || ''"/>
+                        <div class="pwf-html-view border rounded bg-white p-3" contenteditable="true" data-field="description" t-on-input="onInputHtmlDescription" style="min-height:180px;" t-out="state.form.description || ''"/>
                       </div>
-
                     </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Contract info -->
-              <div class="col-12 col-xl-4">
-                <div class="card pwf-section-card h-100">
-                  <div class="card-header">
-                    <span class="pwf-card-title">
-                      <i class="fa fa-file-text-o text-secondary"/> Thông tin hợp đồng
-                    </span>
-                  </div>
-                  <div class="card-body">
-                    <div class="row g-3">
+              <t t-if="!props.isCreateMode">
+                <div class="col-12 col-xl-4">
+                  <div class="card pwf-section-card h-100">
+                    <div class="card-header">
+                      <span class="pwf-card-title">
+                        <i class="fa fa-file-text-o text-secondary"/>
+ Thông tin hợp đồng
+                      </span>
+                    </div>
+                    <div class="card-body">
+                      <div class="row g-3">
 
-                      <div class="col-12">
-                        <label class="form-label">Hợp đồng</label>
-                        <select class="form-select"
-                                data-field="contract_id"
-                                t-on-change="onSelectMany2one"
-                                t-att-value="state.form.contract_id ? '' + state.form.contract_id : ''">
-                          <option value="" t-att-selected="!state.form.contract_id ? true : undefined">
-                            -- Chọn hợp đồng --
-                          </option>
-                          <t t-foreach="state.contractOptions" t-as="c" t-key="c.id">
-                            <option t-att-value="c.id"
-                                    t-att-selected="state.form.contract_id &amp;&amp; ('' + state.form.contract_id) === ('' + c.id) ? true : undefined">
-                              <t t-esc="c.name"/>
-                              <t t-if="c.sale_order_name"> - <t t-esc="c.sale_order_name"/></t>
+                        <div class="col-12">
+                          <label class="form-label">Hợp đồng</label>
+                          <select class="form-select" data-field="contract_id" t-on-change="onSelectMany2one" t-att-value="state.form.contract_id ? '' + state.form.contract_id : ''">
+                            <option value="" t-att-selected="!state.form.contract_id ? true : undefined">
+                              -- Chọn hợp đồng --
                             </option>
-                          </t>
-                        </select>
+                            <t t-foreach="state.contractOptions" t-as="c" t-key="c.id">
+                              <option t-att-value="c.id" t-att-selected="state.form.contract_id &amp;&amp; ('' + state.form.contract_id) === ('' + c.id) ? true : undefined">
+                                <t t-esc="c.name"/>
+                                <t t-if="c.sale_order_name"> -                                  <t t-esc="c.sale_order_name"/>
+                                </t>
+                              </option>
+                            </t>
+                          </select>
+                        </div>
+
+                        <div class="col-12">
+                          <label class="form-label">Ngày ký</label>
+                          <input class="form-control" readonly="1" t-att-value="state.display.signature_date || ''"/>
+                        </div>
+
+                        <div class="col-12">
+                          <label class="form-label">Địa điểm XD</label>
+                          <input class="form-control" readonly="1" t-att-value="state.display.location || ''"/>
+                        </div>
+
+                        <div class="col-12">
+                          <label class="form-label">Báo giá</label>
+                          <input class="form-control" readonly="1" t-att-value="state.display.sale_order_name || ''"/>
+                        </div>
+
+                        <div class="col-12">
+                          <label class="form-label">Giá trị hợp đồng</label>
+                          <input class="form-control text-end fw-semibold" readonly="1" t-att-value="money(state.display.value_contract_tax || 0)"/>
+                        </div>
+
+                        <div class="col-12">
+                          <label class="form-label">Hạng mục</label>
+                          <input class="form-control" readonly="1" t-att-value="state.display.sales_category_text || ''"/>
+                        </div>
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12 col-xl-4">
+                  <div class="card pwf-section-card h-100">
+                    <div class="card-header">
+                      <span class="pwf-card-title">
+                        <i class="fa fa-line-chart text-success"/>
+ Tổng quan dự án
+                      </span>
+                    </div>
+                    <div class="card-body">
+
+                      <div class="row g-2 mb-3">
+                        <div class="col-6">
+                          <div class="pwf-stat-card">
+                            <div class="pwf-stat-label">Giá trị thực tế (sau thuế)</div>
+                            <div class="pwf-stat-value">
+                              <t t-esc="money(state.display.value_settlement || 0)"/>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="pwf-stat-card">
+                            <div class="pwf-stat-label">Giá trị phát sinh (sau thuế)</div>
+                            <div class="pwf-stat-value">
+                              <t t-esc="money(state.display.value_arise || 0)"/>
+                            </div>
+                          </div>
+                        </div>
                       </div>
 
-                      <div class="col-12">
-                        <label class="form-label">Ngày ký</label>
-                        <input class="form-control" readonly="1"
-                               t-att-value="state.display.signature_date || ''"/>
+                      <div class="row g-2 mb-3">
+                        <div class="col-6">
+                          <div class="pwf-stat-card">
+                            <div class="pwf-stat-label">Giá trị hóa đơn</div>
+                            <div class="pwf-stat-value">
+                              <t t-esc="money(state.display.customer_invoice_amount_total || 0)"/>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-6">
+                          <div class="pwf-stat-card is-success">
+                            <div class="pwf-stat-label">Đã thu tiền</div>
+                            <div class="pwf-stat-value">
+                              <t t-esc="money(state.display.customer_invoice_received_total || 0)"/>
+                            </div>
+                          </div>
+                        </div>
                       </div>
 
-                      <div class="col-12">
-                        <label class="form-label">Địa điểm XD</label>
-                        <input class="form-control" readonly="1"
-                               t-att-value="state.display.location || ''"/>
+                      <div class="pwf-progress-card mb-3">
+                        <div class="pwf-progress-row">
+                          <div class="pwf-progress-label">
+                            <span>Sản lượng</span>
+                            <b t-esc="Math.round(state.display.progress_percent || 0) + '%'"/>
+                          </div>
+                          <div class="pwf-progress-meta">
+                            <span>Giá trị sản lượng đã thực hiện: <b t-esc="money(state.display.value_completed || 0)"/>
+                            </span>
+                            <span>Giá trị khối lượng còn lại: <b t-esc="money(state.display.value_remaining || 0)"/>
+                            </span>
+                          </div>
+                          <div class="pwf-progress-track">
+                            <div class="pwf-progress-fill" t-att-class="_progressToneClass(state.display.progress_percent)" t-att-style="'width:' + _clampPercent(state.display.progress_percent) + '%'"/>
+                          </div>
+                        </div>
                       </div>
 
-                      <div class="col-12">
-                        <label class="form-label">Báo giá</label>
-                        <input class="form-control" readonly="1"
-                               t-att-value="state.display.sale_order_name || ''"/>
+                      <div class="pwf-progress-card mb-3">
+                        <div class="pwf-progress-row">
+                          <div class="pwf-progress-label">
+                            <span>Nghiệm thu</span>
+                            <b t-esc="Math.round(state.display.acceptance_progress_percent || 0) + '%'"/>
+                          </div>
+                          <div class="pwf-progress-meta">
+                            <span>Giá trị khối lượng đã nghiệm thu: <b t-esc="money(state.display.value_accepted || 0)"/>
+                            </span>
+                            <span>Giá trị khối lượng chưa nghiệm thu: <b t-esc="money(state.display.value_acceptance_remaining || 0)"/>
+                            </span>
+                          </div>
+                          <div class="pwf-progress-track">
+                            <div class="pwf-progress-fill" t-att-class="_progressToneClass(state.display.acceptance_progress_percent)" t-att-style="'width:' + _clampPercent(state.display.acceptance_progress_percent) + '%'"/>
+                          </div>
+                        </div>
                       </div>
 
-                      <div class="col-12">
-                        <label class="form-label">Giá trị hợp đồng</label>
-                        <input class="form-control text-end fw-semibold" readonly="1"
-                               t-att-value="money(state.display.value_contract || 0)"/>
+                      <div class="pwf-progress-card mb-3">
+                        <div class="pwf-progress-row">
+                          <div class="pwf-progress-label">
+                            <span>Hồ sơ Thanh / Quyết toán</span>
+                            <b t-esc="Math.round(state.display.claim_progress_percent || 0) + '%'"/>
+                          </div>
+                          <div class="pwf-progress-meta">
+                            <span>Giá trị khối lượng đã thanh / quyết toán: <b t-esc="money(state.display.value_finalized || 0)"/>
+                            </span>
+                            <span>Giá trị khối lượng thanh / quyết toán còn lại: <b t-esc="money(state.display.value_finalization_remaining || 0)"/>
+                            </span>
+                          </div>
+                          <div class="pwf-progress-track">
+                            <div class="pwf-progress-fill" t-att-class="_progressToneClass(state.display.claim_progress_percent)" t-att-style="'width:' + _clampPercent(state.display.claim_progress_percent) + '%'"/>
+                          </div>
+                        </div>
                       </div>
 
-                      <div class="col-12">
-                        <label class="form-label">Hạng mục</label>
-                        <input class="form-control" readonly="1"
-                               t-att-value="state.display.sales_category_text || ''"/>
+                      <!-- <div class="pwf-progress-card mb-3">
+    <div class="pwf-progress-row">
+      <div class="pwf-progress-label">
+        <span>Hóa đơn</span>
+        <b t-esc="Math.round(state.display.payment_vs_invoice_percent || 0) + '%'"/>
+      </div>
+      <div class="pwf-progress-meta">
+        <span>Giá trị hóa đơn: <b t-esc="money(state.display.customer_invoice_amount_total || 0)"/></span>
+        <span>Chưa thu theo hóa đơn: <b t-esc="money(state.display.customer_invoice_remaining_total || 0)"/></span>
+      </div>
+      <div class="pwf-progress-track">
+        <div class="pwf-progress-fill" t-att-class="_progressToneClass(state.display.payment_vs_invoice_percent)" t-att-style="'width:' + _clampPercent(state.display.payment_vs_invoice_percent) + '%'"/>
+      </div>
+    </div>
+  </div> -->
+
+                      <div class="pwf-progress-card">
+                        <div class="pwf-progress-row">
+                          <div class="pwf-progress-label">
+                            <span>Tiền đã thu / Hồ sơ</span>
+                            <b t-esc="Math.round(state.display.payment_process_percent || 0) + '%'"/>
+                          </div>
+                          <div class="pwf-progress-meta">
+                            <span>Đã thu: <b t-esc="money(state.display.customer_invoice_received_total || 0)"/>
+                            </span>
+                            <span>Còn phải thu: <b t-esc="money(state.display.customer_invoice_remaining_total || 0)"/>
+                            </span>
+                          </div>
+                          <div class="pwf-progress-track">
+                            <div class="pwf-progress-fill" t-att-class="_progressToneClass(state.display.payment_process_percent)" t-att-style="'width:' + _clampPercent(state.display.payment_process_percent) + '%'"/>
+                          </div>
+                        </div>
                       </div>
 
                     </div>
                   </div>
                 </div>
-              </div>
-
-              <!-- Overview -->
-              <div class="col-12 col-xl-4">
-                <div class="card pwf-section-card h-100">
-                  <div class="card-header">
-                    <span class="pwf-card-title">
-                      <i class="fa fa-line-chart text-success"/> Tổng quan dự án
-                    </span>
-                  </div>
-                  <div class="card-body">
-
-                    <div class="row g-2 mb-3">
-                      <div class="col-6">
-                        <div class="pwf-stat-card">
-                          <div class="pwf-stat-label">Giá trị thực tế</div>
-                          <div class="pwf-stat-value">
-                            <t t-esc="money(state.display.value_settlement || state.display.value_contract || 0)"/>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-6">
-                        <div class="pwf-stat-card">
-                          <div class="pwf-stat-label">Giá trị phát sinh</div>
-                          <div class="pwf-stat-value">
-                            <t t-esc="money(state.display.value_arise || 0)"/>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="pwf-progress-card">
-
-                      <div class="pwf-progress-row">
-                        <div class="pwf-progress-label">
-                          <span>Sản lượng</span>
-                          <b t-esc="Math.round(state.display.progress_percent || 0) + '%'"/>
-                        </div>
-                        <div class="pwf-progress-meta">
-                          <span>Giá trị đã thực hiện: <b t-esc="money(state.display.value_completed || 0)"/></span>
-                          <span>Giá trị còn lại: <b t-esc="money(state.display.value_remaining || 0)"/></span>
-                        </div>
-                        <div class="pwf-progress-track">
-                          <div class="pwf-progress-fill"
-                               t-att-class="_progressToneClass(state.display.progress_percent)"
-                               t-att-style="'width:' + _clampPercent(state.display.progress_percent) + '%'"/>
-                        </div>
-                      </div>
-
-                      <div class="pwf-progress-row">
-                        <div class="pwf-progress-label">
-                          <span>Nghiệm thu</span>
-                          <b t-esc="Math.round(state.display.acceptance_progress_percent || 0) + '%'"/>
-                        </div>
-                        <div class="pwf-progress-meta">
-                          <span>Giá trị đã nghiệm thu: <b t-esc="money(state.display.acceptance_value_done || 0)"/></span>
-                          <span>Giá trị còn lại: <b t-esc="money(state.display.acceptance_value_remaining || 0)"/></span>
-                        </div>
-                        <div class="pwf-progress-track">
-                          <div class="pwf-progress-fill"
-                               t-att-class="_progressToneClass(state.display.acceptance_progress_percent)"
-                               t-att-style="'width:' + _clampPercent(state.display.acceptance_progress_percent) + '%'"/>
-                        </div>
-                      </div>
-
-                      <div class="pwf-progress-row">
-                        <div class="pwf-progress-label">
-                          <span>Hồ sơ Thanh / Quyết toán</span>
-                          <b t-esc="Math.round(state.display.claim_progress_percent || 0) + '%'"/>
-                        </div>
-                        <div class="pwf-progress-meta">
-                          <span>Giá trị đã thanh / quyết toán: <b t-esc="money(state.display.claim_value_done || 0)"/></span>
-                          <span>Giá trị còn lại: <b t-esc="money(state.display.claim_value_remaining || 0)"/></span>
-                        </div>
-                        <div class="pwf-progress-track">
-                          <div class="pwf-progress-fill"
-                               t-att-class="_progressToneClass(state.display.claim_progress_percent)"
-                               t-att-style="'width:' + _clampPercent(state.display.claim_progress_percent) + '%'"/>
-                        </div>
-                      </div>
-
-                      <div class="pwf-progress-row">
-                        <div class="pwf-progress-label">
-                          <span>Thu tiền / Quyết toán</span>
-                          <b t-esc="Math.round(state.display.payment_process_percent || 0) + '%'"/>
-                        </div>
-                        <div class="pwf-progress-meta">
-                          <span>Giá trị đã thu: <b t-esc="money(state.display.customer_invoice_received_total || 0)"/></span>
-                          <span>Còn phải thu theo quyết toán: <b t-esc="money(state.display.customer_invoice_remaining_total || 0)"/></span>
-                        </div>
-                        <div class="pwf-progress-track">
-                          <div class="pwf-progress-fill"
-                               t-att-class="_progressToneClass(state.display.payment_process_percent)"
-                               t-att-style="'width:' + _clampPercent(state.display.payment_process_percent) + '%'"/>
-                        </div>
-                      </div>
-
-                      <div class="pwf-progress-row">
-                        <div class="pwf-progress-label">
-                          <span>Thu tiền / Nghiệm thu</span>
-                          <b t-esc="Math.round(state.display.payment_vs_acceptance_percent || 0) + '%'"/>
-                        </div>
-                        <div class="pwf-progress-meta">
-                          <span>Giá trị đã thu: <b t-esc="money(state.display.customer_invoice_received_total || 0)"/></span>
-                          <span>Giá trị nghiệm thu: <b t-esc="money(state.display.acceptance_value_done || 0)"/></span>
-                        </div>
-                        <div class="pwf-progress-track">
-                          <div class="pwf-progress-fill"
-                               t-att-class="_progressToneClass(state.display.payment_vs_acceptance_percent)"
-                               t-att-style="'width:' + _clampPercent(state.display.payment_vs_acceptance_percent) + '%'"/>
-                        </div>
-                      </div>
-
-                      <div class="pwf-progress-row">
-                        <div class="pwf-progress-label">
-                          <span>Thu tiền / Sản lượng đã thực hiện</span>
-                          <b t-esc="Math.round(state.display.payment_vs_completed_percent || 0) + '%'"/>
-                        </div>
-                        <div class="pwf-progress-meta">
-                          <span>Giá trị đã thu: <b t-esc="money(state.display.customer_invoice_received_total || 0)"/></span>
-                          <span>Giá trị đã thực hiện: <b t-esc="money(state.display.value_completed || 0)"/></span>
-                        </div>
-                        <div class="pwf-progress-track">
-                          <div class="pwf-progress-fill"
-                               t-att-class="_progressToneClass(state.display.payment_vs_completed_percent)"
-                               t-att-style="'width:' + _clampPercent(state.display.payment_vs_completed_percent) + '%'"/>
-                        </div>
-                      </div>
-
-                      <div class="pwf-progress-row">
-                        <div class="pwf-progress-label">
-                          <span>Thu tiền / Hóa đơn</span>
-                          <b t-esc="Math.round(state.display.payment_vs_invoice_percent || 0) + '%'"/>
-                        </div>
-                        <div class="pwf-progress-meta">
-                          <span>Giá trị đã thu: <b t-esc="money(state.display.customer_invoice_received_total || 0)"/></span>
-                          <span>Tổng giá trị hóa đơn: <b t-esc="money(state.display.customer_invoice_amount_total || 0)"/></span>
-                        </div>
-                        <div class="pwf-progress-track">
-                          <div class="pwf-progress-fill"
-                               t-att-class="_progressToneClass(state.display.payment_vs_invoice_percent)"
-                               t-att-style="'width:' + _clampPercent(state.display.payment_vs_invoice_percent) + '%'"/>
-                        </div>
-                      </div>
-
-                    </div>
-
-                  </div>
-                </div>
-              </div>
+              </t>
             </div>
 
-            <!-- ROW 2 -->
-            <div class="row g-3 mb-3">
+            <t t-if="!props.isCreateMode">
 
-              <!-- Cost estimate -->
-              <div class="col-12 col-xxl-5">
-                <div class="card pwf-section-card h-100">
-                  <div class="card-header">
+              <div class="row g-3 mb-3">
+
+                <div class="col-12 col-xxl-5">
+                  <div class="card pwf-section-card h-100">
+                    <div class="card-header">
+                      <span class="pwf-card-title">
+                        <i class="fa fa-calculator text-secondary"/>
+                          Dự toán chi phí
+                      </span>
+                    </div>
+                    <div class="card-body">
+
+                      <div class="pwf-metric-panel mb-3">
+                        <div class="pwf-panel-title">Tổng giá trị Dự toán ban đầu</div>
+                        <div class="row g-2">
+                          <div class="col-6">
+                            <div class="pwf-mini-metric">
+                              <div class="pwf-mini-metric-label">Chưa thuế</div>
+                              <div class="pwf-mini-metric-value">
+                                <t t-esc="money(state.display.total_cost_estimate || 0)"/>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-6">
+                            <div class="pwf-mini-metric">
+                              <div class="pwf-mini-metric-label">Sau thuế</div>
+                              <div class="pwf-mini-metric-value">
+                                <t t-esc="money(state.display.total_cost_with_tax_estimate || 0)"/>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="pwf-metric-panel mb-3">
+                        <div class="pwf-panel-title">Tổng giá trị dự toán phát sinh</div>
+                        <div class="row g-2">
+                          <div class="col-6">
+                            <div class="pwf-mini-metric">
+                              <div class="pwf-mini-metric-label">Chưa thuế</div>
+                              <div class="pwf-mini-metric-value">
+                                <t t-esc="money(state.display.amount_additional_expense_estimate || 0)"/>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-6">
+                            <div class="pwf-mini-metric">
+                              <div class="pwf-mini-metric-label">Sau thuế</div>
+                              <div class="pwf-mini-metric-value">
+                                <t t-esc="money(state.display.amount_additional_expense_with_tax_estimate || 0)"/>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="pwf-metric-panel is-highlight">
+                        <div class="pwf-panel-title">Tổng giá trị dự toán</div>
+                        <div class="row g-2">
+                          <div class="col-6">
+                            <div class="pwf-mini-metric">
+                              <div class="pwf-mini-metric-label">Chưa thuế</div>
+                              <div class="pwf-mini-metric-value is-strong">
+                                <t t-esc="money(state.display.total_final_non_tax_estimate || 0)"/>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-6">
+                            <div class="pwf-mini-metric">
+                              <div class="pwf-mini-metric-label">Sau thuế</div>
+                              <div class="pwf-mini-metric-value is-strong">
+                                <t t-esc="money(state.display.total_final_with_tax_estimate || 0)"/>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12 col-xxl-7">
+                  <div class="card pwf-section-card h-100">
+                    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                      <span class="pwf-card-title">
+                        <i class="fa fa-usd text-success"/>
+                                Chi phí dự án
+                      </span>
+                    </div>
+                    <div class="card-body">
+
+                      <div class="row g-2 mb-3">
+                        <div class="col-12 col-md-4">
+                          <div class="pwf-stat-card">
+                            <div class="pwf-stat-label">Tổng chi phí</div>
+                            <div class="pwf-stat-value">
+                              <t t-esc="money(state.display.total_cost_expense || 0)"/>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                          <div class="pwf-stat-card is-success">
+                            <div class="pwf-stat-label">Tổng chi phí đã chi</div>
+                            <div class="pwf-stat-value">
+                              <t t-esc="money(state.display.total_spent || 0)"/>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                          <div class="pwf-stat-card is-warning">
+                            <div class="pwf-stat-label">Tổng chi phí chưa chi</div>
+                            <div class="pwf-stat-value">
+                              <t t-esc="money(state.display.total_not_spent || 0)"/>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row g-3">
+                        <div class="col-12 col-lg-4">
+                          <div class="pwf-metric-panel h-100">
+                            <div class="pwf-panel-title">Phân loại chi phí</div>
+                            <div class="pwf-stack-metric">
+                              <span>Vật tư</span>
+                              <b t-esc="money(state.display.total_material || 0)"/>
+                            </div>
+                            <div class="pwf-stack-metric">
+                              <span>Nhân công</span>
+                              <b t-esc="money(state.display.total_labor || 0)"/>
+                            </div>
+                            <div class="pwf-stack-metric">
+                              <span>Chi phí khác</span>
+                              <b t-esc="money(state.display.total_manufacturing || 0)"/>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="col-12 col-lg-4">
+                          <div class="pwf-metric-panel h-100">
+                            <div class="pwf-panel-title">Phân loại chi phí đã chi</div>
+                            <div class="pwf-stack-metric">
+                              <span>Vật tư</span>
+                              <b t-esc="money(state.display.total_spent_material || 0)"/>
+                            </div>
+                            <div class="pwf-stack-metric">
+                              <span>Nhân công</span>
+                              <b t-esc="money(state.display.total_spent_labor || 0)"/>
+                            </div>
+                            <div class="pwf-stack-metric">
+                              <span>Chi phí khác</span>
+                              <b t-esc="money(state.display.total_spent_manufacturing || 0)"/>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="col-12 col-lg-4">
+                          <div class="pwf-metric-panel h-100">
+                            <div class="pwf-panel-title">Phân loại chi phí chưa chi</div>
+                            <div class="pwf-stack-metric">
+                              <span>Vật tư</span>
+                              <b t-esc="money(state.display.total_not_spent_material || 0)"/>
+                            </div>
+                            <div class="pwf-stack-metric">
+                              <span>Nhân công</span>
+                              <b t-esc="money(state.display.total_not_spent_labor || 0)"/>
+                            </div>
+                            <div class="pwf-stack-metric">
+                              <span>Chi phí khác</span>
+                              <b t-esc="money(state.display.total_not_spent_manufacturing || 0)"/>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="pwf-metric-panel mb-3 mt-3">
+                        <div class="pwf-panel-title">Tỷ lệ sử dụng ngân sách</div>
+
+                        <div class="pwf-progress-row">
+                          <div class="pwf-progress-label">
+                            <span>Tổng Chi phí / Dự toán</span>
+                            <b t-esc="Math.round(state.display.comparison_budget_usage_percent || 0) + '%'"/>
+                          </div>
+                          <div class="pwf-progress-meta">
+                            <span>Tổng Dự toán: <b t-esc="money(state.display.comparison_budget_total || 0)"/>
+                            </span>
+                            <span>Tổng Chi phí: <b t-esc="money(state.display.comparison_actual_total || 0)"/>
+                            </span>
+                            <span>Chênh lệch: <b t-esc="money(state.display.comparison_total_diff || 0)"/>
+                            </span>
+                          </div>
+                          <div class="pwf-progress-track">
+                            <div class="pwf-progress-fill" t-att-class="state.display.comparison_budget_usage_bar_class || ''" t-att-style="'width:' + Math.min(100, Math.max(0, state.display.comparison_budget_usage_percent || 0)) + '%'"/>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card pwf-section-card mb-3">
+                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                  <div class="d-flex align-items-center gap-2 flex-wrap">
                     <span class="pwf-card-title">
-                      <i class="fa fa-calculator text-secondary"/> Dự toán chi phí
+                      <i class="fa fa-paperclip text-muted"/>
+                         Tệp đính kèm
+                    </span>
+                    <span class="badge rounded-pill text-bg-light border">
+                      <t t-esc="state.attachments.length || 0"/>
+                             tệp
                     </span>
                   </div>
-                  <div class="card-body">
 
-                    <div class="pwf-metric-panel mb-3">
-                      <div class="pwf-panel-title">Tổng giá trị Dự toán ban đầu</div>
-                      <div class="row g-2">
-                        <div class="col-6">
-                          <div class="pwf-mini-metric">
-                            <div class="pwf-mini-metric-label">Chưa thuế</div>
-                            <div class="pwf-mini-metric-value">
-                              <t t-esc="money(state.display.total_cost_estimate || 0)"/>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="col-6">
-                          <div class="pwf-mini-metric">
-                            <div class="pwf-mini-metric-label">Sau thuế</div>
-                            <div class="pwf-mini-metric-value">
-                              <t t-esc="money(state.display.total_cost_with_tax_estimate || 0)"/>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="pwf-metric-panel mb-3">
-                      <div class="pwf-panel-title">Tổng giá trị dự toán phát sinh</div>
-                      <div class="row g-2">
-                        <div class="col-6">
-                          <div class="pwf-mini-metric">
-                            <div class="pwf-mini-metric-label">Chưa thuế</div>
-                            <div class="pwf-mini-metric-value">
-                              <t t-esc="money(state.display.amount_additional_expense_estimate || 0)"/>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="col-6">
-                          <div class="pwf-mini-metric">
-                            <div class="pwf-mini-metric-label">Sau thuế</div>
-                            <div class="pwf-mini-metric-value">
-                              <t t-esc="money(state.display.amount_additional_expense_with_tax_estimate || 0)"/>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="pwf-metric-panel is-highlight">
-                      <div class="pwf-panel-title">Tổng giá trị dự toán</div>
-                      <div class="row g-2">
-                        <div class="col-6">
-                          <div class="pwf-mini-metric">
-                            <div class="pwf-mini-metric-label">Chưa thuế</div>
-                            <div class="pwf-mini-metric-value is-strong">
-                              <t t-esc="money(state.display.total_final_non_tax_estimate || 0)"/>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="col-6">
-                          <div class="pwf-mini-metric">
-                            <div class="pwf-mini-metric-label">Sau thuế</div>
-                            <div class="pwf-mini-metric-value is-strong">
-                              <t t-esc="money(state.display.total_final_with_tax_estimate || 0)"/>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-
-              <!-- Project expense -->
-              <div class="col-12 col-xxl-7">
-                <div class="card pwf-section-card h-100">
-                  <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <span class="pwf-card-title">
-                      <i class="fa fa-usd text-success"/> Chi phí dự án
-                    </span>
-                  </div>
-                  <div class="card-body">
-
-                    <div class="row g-2 mb-3">
-                      <div class="col-12 col-md-4">
-                        <div class="pwf-stat-card">
-                          <div class="pwf-stat-label">Tổng chi phí</div>
-                          <div class="pwf-stat-value">
-                            <t t-esc="money(state.display.total_cost_expense || 0)"/>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-12 col-md-4">
-                        <div class="pwf-stat-card is-success">
-                          <div class="pwf-stat-label">Tổng chi phí đã chi</div>
-                          <div class="pwf-stat-value">
-                            <t t-esc="money(state.display.total_spent || 0)"/>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-12 col-md-4">
-                        <div class="pwf-stat-card is-warning">
-                          <div class="pwf-stat-label">Tổng chi phí chưa chi</div>
-                          <div class="pwf-stat-value">
-                            <t t-esc="money(state.display.total_not_spent || 0)"/>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="row g-3">
-                      <div class="col-12 col-lg-4">
-                        <div class="pwf-metric-panel h-100">
-                          <div class="pwf-panel-title">Phân loại chi phí</div>
-                          <div class="pwf-stack-metric">
-                            <span>Vật tư</span>
-                            <b t-esc="money(state.display.total_material || 0)"/>
-                          </div>
-                          <div class="pwf-stack-metric">
-                            <span>Nhân công</span>
-                            <b t-esc="money(state.display.total_labor || 0)"/>
-                          </div>
-                          <div class="pwf-stack-metric">
-                            <span>Chi phí khác</span>
-                            <b t-esc="money(state.display.total_manufacturing || 0)"/>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="col-12 col-lg-4">
-                        <div class="pwf-metric-panel h-100">
-                          <div class="pwf-panel-title">Phân loại chi phí đã chi</div>
-                          <div class="pwf-stack-metric">
-                            <span>Vật tư</span>
-                            <b t-esc="money(state.display.total_spent_material || 0)"/>
-                          </div>
-                          <div class="pwf-stack-metric">
-                            <span>Nhân công</span>
-                            <b t-esc="money(state.display.total_spent_labor || 0)"/>
-                          </div>
-                          <div class="pwf-stack-metric">
-                            <span>Chi phí khác</span>
-                            <b t-esc="money(state.display.total_spent_manufacturing || 0)"/>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="col-12 col-lg-4">
-                        <div class="pwf-metric-panel h-100">
-                          <div class="pwf-panel-title">Phân loại chi phí chưa chi</div>
-                          <div class="pwf-stack-metric">
-                            <span>Vật tư</span>
-                            <b t-esc="money(state.display.total_not_spent_material || 0)"/>
-                          </div>
-                          <div class="pwf-stack-metric">
-                            <span>Nhân công</span>
-                            <b t-esc="money(state.display.total_not_spent_labor || 0)"/>
-                          </div>
-                          <div class="pwf-stack-metric">
-                            <span>Chi phí khác</span>
-                            <b t-esc="money(state.display.total_not_spent_manufacturing || 0)"/>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="pwf-metric-panel mb-3 mt-3">
-                      <div class="pwf-panel-title">Tỷ lệ sử dụng ngân sách</div>
-
-                      <div class="pwf-progress-row">
-                        <div class="pwf-progress-label">
-                          <span>Tổng Chi phí / Dự toán</span>
-                          <b t-esc="Math.round(state.display.comparison_budget_usage_percent || 0) + '%'"/>
-                        </div>
-                        <div class="pwf-progress-meta">
-                          <span>Tổng Dự toán: <b t-esc="money(state.display.comparison_budget_total || 0)"/></span>
-                          <span>Tổng Chi phí: <b t-esc="money(state.display.comparison_actual_total || 0)"/></span>
-                          <span>Chênh lệch: <b t-esc="money(state.display.comparison_total_diff || 0)"/></span>
-                        </div>
-                        <div class="pwf-progress-track">
-                          <div class="pwf-progress-fill"
-                               t-att-class="state.display.comparison_budget_usage_bar_class || ''"
-                               t-att-style="'width:' + Math.min(100, Math.max(0, state.display.comparison_budget_usage_percent || 0)) + '%'"/>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Attachments -->
-            <div class="card pwf-section-card mb-3">
-              <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-                <div class="d-flex align-items-center gap-2 flex-wrap">
-                  <span class="pwf-card-title">
-                    <i class="fa fa-paperclip text-muted"/> Tệp đính kèm
-                  </span>
-                  <span class="badge rounded-pill text-bg-light border">
-                    <t t-esc="state.attachments.length || 0"/> tệp
-                  </span>
+                  <label class="btn btn-sm btn-outline-primary mb-0" t-att-class="state.uploadingAttachments ? 'disabled' : ''">
+                    <i class="fa fa-upload me-1"/>
+                    <t t-if="state.uploadingAttachments">Đang tải lên...</t>
+                    <t t-else="">Thêm tệp</t>
+                    <input type="file" class="d-none" multiple="multiple" t-on-change="onPickAttachments" t-att-disabled="state.uploadingAttachments ? true : undefined"/>
+                  </label>
                 </div>
 
-                <label class="btn btn-sm btn-outline-primary mb-0"
-                       t-att-class="state.uploadingAttachments ? 'disabled' : ''">
-                  <i class="fa fa-upload me-1"/>
-                  <t t-if="state.uploadingAttachments">Đang tải lên...</t>
-                  <t t-else="">Thêm tệp</t>
-                  <input type="file"
-                         class="d-none"
-                         multiple="multiple"
-                         t-on-change="onPickAttachments"
-                         t-att-disabled="state.uploadingAttachments ? true : undefined"/>
-                </label>
-              </div>
+                <div class="card-body p-0">
+                  <t t-if="state.attachments.length">
+                    <div class="list-group list-group-flush">
+                      <t t-foreach="state.attachments" t-as="att" t-key="att.id">
+                        <div class="list-group-item">
+                          <div class="d-flex flex-column gap-3">
 
-              <div class="card-body p-0">
-                <t t-if="state.attachments.length">
-                  <div class="list-group list-group-flush">
-                    <t t-foreach="state.attachments" t-as="att" t-key="att.id">
-                      <div class="list-group-item">
-                        <div class="d-flex flex-column gap-3">
+                            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                              <div class="d-flex align-items-start gap-3 flex-grow-1" style="min-width:0;">
+                                <div class="pwf-attach-icon flex-shrink-0">
+                                  <i t-att-class="
+                                      isImageAttachment(att) ? 'fa fa-file-image-o' :
+                                      (isPdfAttachment(att) ? 'fa fa-file-pdf-o' : 'fa fa-file-o')
+                                    "/>
+                                </div>
 
-                          <!-- File row -->
-                          <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
-                            <div class="d-flex align-items-start gap-3 flex-grow-1" style="min-width:0;">
-                              <div class="pwf-attach-icon flex-shrink-0">
-                                <i t-att-class="
-                                    isImageAttachment(att) ? 'fa fa-file-image-o' :
-                                    (isPdfAttachment(att) ? 'fa fa-file-pdf-o' : 'fa fa-file-o')
-                                  "/>
+                                <div class="flex-grow-1" style="min-width:0;">
+                                  <div class="fw-semibold text-truncate mb-1" t-att-title="att.name || ''">
+                                    <a t-att-href="attachmentUrl(att.id, false)" target="_blank" class="text-decoration-none">
+                                      <t t-esc="att.name || ('Tệp #' + att.id)"/>
+                                    </a>
+                                  </div>
+
+                                  <div class="small text-muted d-flex flex-wrap gap-2">
+                                    <span t-if="att.mimetype">
+                                      <t t-esc="att.mimetype"/>
+                                    </span>
+                                    <span t-if="att.mimetype">•</span>
+                                    <span>
+                                      <t t-esc="formatFileSize(att.file_size)"/>
+                                    </span>
+                                    <span t-if="att.create_date">•</span>
+                                    <span t-if="att.create_date">
+                                      <t t-esc="formatDateTime(att.create_date)"/>
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
 
-                              <div class="flex-grow-1" style="min-width:0;">
-                                <div class="fw-semibold text-truncate mb-1" t-att-title="att.name || ''">
-                                  <a t-att-href="attachmentUrl(att.id, false)"
-                                     target="_blank"
-                                     class="text-decoration-none">
-                                    <t t-esc="att.name || ('Tệp #' + att.id)"/>
+                              <div class="d-flex flex-wrap gap-2">
+                                <button t-if="hasInlinePreview(att)" class="btn btn-sm btn-outline-secondary" t-att-data-attachment-id="att.id" t-on-click="toggleAttachmentPreview">
+                                  <i t-att-class="isAttachmentPreviewOpen(att.id) ? 'fa fa-chevron-up me-1' : 'fa fa-chevron-down me-1'"/>
+                                  <t t-if="isAttachmentPreviewOpen(att.id)">Ẩn preview</t>
+                                  <t t-else="">Xem trước</t>
+                                </button>
+
+                                <a class="btn btn-sm btn-outline-secondary" t-att-href="attachmentUrl(att.id, false)" target="_blank" title="Mở xem">
+                                  <i class="fa fa-eye me-1"/>
+                                             Xem
+                                </a>
+
+                                <a class="btn btn-sm btn-outline-secondary" t-att-href="attachmentUrl(att.id, true)" target="_blank" title="Tải xuống">
+                                  <i class="fa fa-download me-1"/>
+                                       Tải xuống
+                                </a>
+
+                                <button class="btn btn-sm btn-outline-danger" t-att-data-attachment-id="att.id" t-on-click="removeAttachment" title="Xóa tệp">
+                                  <i class="fa fa-trash me-1"/>
+                                         Xóa
+                                </button>
+                              </div>
+                            </div>
+
+                            <div t-if="hasInlinePreview(att) and isAttachmentPreviewOpen(att.id)" class="border rounded-3 bg-light p-2">
+
+                              <t t-if="isImageAttachment(att)">
+                                <div class="text-center">
+                                  <a t-att-href="attachmentUrl(att.id, false)" target="_blank" class="text-decoration-none">
+                                    <img t-att-src="attachmentUrl(att.id, false)" t-att-alt="att.name || 'image preview'" style="max-width:100%; max-height:420px; object-fit:contain; border-radius:10px;"/>
                                   </a>
                                 </div>
+                              </t>
 
-                                <div class="small text-muted d-flex flex-wrap gap-2">
-                                  <span t-if="att.mimetype"><t t-esc="att.mimetype"/></span>
-                                  <span t-if="att.mimetype">•</span>
-                                  <span><t t-esc="formatFileSize(att.file_size)"/></span>
-                                  <span t-if="att.create_date">•</span>
-                                  <span t-if="att.create_date"><t t-esc="formatDateTime(att.create_date)"/></span>
+                              <t t-elif="isPdfAttachment(att)">
+                                <div class="pwf-inline-pdf-preview">
+                                  <iframe t-att-src="attachmentPreviewUrl(att.id) + '#toolbar=1&amp;navpanes=0&amp;scrollbar=1&amp;page=1'" loading="lazy" title="PDF preview" style="width:100%; height:520px; border:0; border-radius:10px; background:#fff;"/>
                                 </div>
-                              </div>
+                              </t>
+
                             </div>
-
-                            <div class="d-flex flex-wrap gap-2">
-                              <button t-if="hasInlinePreview(att)"
-                                      class="btn btn-sm btn-outline-secondary"
-                                      t-att-data-attachment-id="att.id"
-                                      t-on-click="toggleAttachmentPreview">
-                                <i t-att-class="isAttachmentPreviewOpen(att.id) ? 'fa fa-chevron-up me-1' : 'fa fa-chevron-down me-1'"/>
-                                <t t-if="isAttachmentPreviewOpen(att.id)">Ẩn preview</t>
-                                <t t-else="">Xem trước</t>
-                              </button>
-
-                              <a class="btn btn-sm btn-outline-secondary"
-                                 t-att-href="attachmentUrl(att.id, false)"
-                                 target="_blank"
-                                 title="Mở xem">
-                                <i class="fa fa-eye me-1"/> Xem
-                              </a>
-
-                              <a class="btn btn-sm btn-outline-secondary"
-                                 t-att-href="attachmentUrl(att.id, true)"
-                                 target="_blank"
-                                 title="Tải xuống">
-                                <i class="fa fa-download me-1"/> Tải xuống
-                              </a>
-
-                              <button class="btn btn-sm btn-outline-danger"
-                                      t-att-data-attachment-id="att.id"
-                                      t-on-click="removeAttachment"
-                                      title="Xóa tệp">
-                                <i class="fa fa-trash me-1"/> Xóa
-                              </button>
-                            </div>
-                          </div>
-
-                          <!-- Preview panel -->
-                          <div t-if="hasInlinePreview(att) and isAttachmentPreviewOpen(att.id)"
-                               class="border rounded-3 bg-light p-2">
-
-                            <t t-if="isImageAttachment(att)">
-                              <div class="text-center">
-                                <a t-att-href="attachmentUrl(att.id, false)"
-                                   target="_blank"
-                                   class="text-decoration-none">
-                                  <img t-att-src="attachmentUrl(att.id, false)"
-                                       t-att-alt="att.name || 'image preview'"
-                                       style="max-width:100%; max-height:420px; object-fit:contain; border-radius:10px;"/>
-                                </a>
-                              </div>
-                            </t>
-
-                            <t t-elif="isPdfAttachment(att)">
-                              <div class="pwf-inline-pdf-preview">
-                                <iframe t-att-src="attachmentPreviewUrl(att.id) + '#toolbar=1&amp;navpanes=0&amp;scrollbar=1&amp;page=1'"
-                                        loading="lazy"
-                                        title="PDF preview"
-                                        style="width:100%; height:520px; border:0; border-radius:10px; background:#fff;"/>
-                              </div>
-                            </t>
-
                           </div>
                         </div>
+                      </t>
+                    </div>
+                  </t>
+
+                  <t t-else="">
+                    <div class="p-4 text-center text-muted">
+                      <div class="mb-2">
+                        <i class="fa fa-paperclip" style="font-size:20px;"/>
                       </div>
-                    </t>
-                  </div>
-                </t>
-
-                <t t-else="">
-                  <div class="p-4 text-center text-muted">
-                    <div class="mb-2">
-                      <i class="fa fa-paperclip" style="font-size:20px;"/>
+                      <div>Chưa có tệp đính kèm.</div>
                     </div>
-                    <div>Chưa có tệp đính kèm.</div>
-                  </div>
-                </t>
-              </div>
-            </div>
-
-            <!-- Work items -->
-            <div class="card pwf-section-card mb-3">
-              <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-                <span class="pwf-card-title">
-                  <i class="fa fa-list-ul text-muted"/> Hạng mục công việc
-                </span>
-                <div class="d-flex gap-2 flex-wrap">
-                  <button class="btn btn-sm btn-outline-primary" t-on-click="syncWorkItemsFromSO">
-                    <i class="fa fa-refresh me-1"/> Lấy hạng mục từ Đơn bán
-                  </button>
-                  <button class="btn btn-sm btn-outline-secondary" t-on-click="openWorkItemsAction">
-                    <i class="fa fa-list-ul me-1"/> Mở danh sách đầy đủ
-                  </button>
+                  </t>
                 </div>
               </div>
 
-              <div class="card-body p-0">
-                <div class="pwf-batchbar px-3 py-2 border-bottom">
-                  <div class="d-flex flex-wrap align-items-center gap-2">
-                    <div class="small text-muted me-1">
-                      Đã chọn: <b><t t-esc="selectedWorkItemCount"/></b> hạng mục
-                    </div>
+            <div class="card pwf-section-card mb-3" t-if="!props.isCreateMode and props.projectId">
+  <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <span class="pwf-card-title">
+      <i class="fa fa-comments text-primary"/>
+      Trao đổi / Chatter dự án
+    </span>
+  </div>
 
-                    <select class="form-select form-select-sm"
-                            style="width:220px;"
-                            data-field="assigned_user_id"
-                            t-on-change="onChangeBatchAssignUser"
-                            t-att-value="state.batchAssign.assigned_user_id ? '' + state.batchAssign.assigned_user_id : ''">
-                      <option value="">Người báo cáo sản lượng (batch)</option>
-                      <t t-foreach="state.userOptions" t-as="u" t-key="'b_assigned_' + u.id">
-                        <option t-att-value="u.id"><t t-esc="u.name"/></option>
-                      </t>
-                    </select>
+  <div class="card-body p-0">
+    <View
+      t-if="embeddedProjectFormProps"
+      t-props="embeddedProjectFormProps"
+    />
+  </div>
+</div>
+          </t>
 
-                    <select class="form-select form-select-sm"
-                            style="width:240px;"
-                            data-field="claim_user_id"
-                            t-on-change="onChangeBatchAssignUser"
-                            t-att-value="state.batchAssign.claim_user_id ? '' + state.batchAssign.claim_user_id : ''">
-                      <option value="">Người báo cáo quyết toán (batch)</option>
-                      <t t-foreach="state.userOptions" t-as="u" t-key="'b_claim_' + u.id">
-                        <option t-att-value="u.id"><t t-esc="u.name"/></option>
-                      </t>
-                    </select>
-
-                    <select class="form-select form-select-sm"
-                            style="width:240px;"
-                            data-field="acceptance_user_id"
-                            t-on-change="onChangeBatchAssignUser"
-                            t-att-value="state.batchAssign.acceptance_user_id ? '' + state.batchAssign.acceptance_user_id : ''">
-                      <option value="">Người báo cáo nghiệm thu (batch)</option>
-                      <t t-foreach="state.userOptions" t-as="u" t-key="'b_acceptance_' + u.id">
-                        <option t-att-value="u.id"><t t-esc="u.name"/></option>
-                      </t>
-                    </select>
-
-                    <button class="btn btn-sm btn-primary"
-                            t-on-click="applyBatchAssignSelectedWorkItems"
-                            t-att-disabled="selectedWorkItemCount ? undefined : true">
-                      <i class="fa fa-users me-1"/> Áp dụng
-                    </button>
-
-                    <button class="btn btn-sm btn-outline-secondary"
-                            t-on-click="clearSelectedWorkItems"
-                            t-att-disabled="selectedWorkItemCount ? undefined : true">
-                      Bỏ chọn
-                    </button>
-                  </div>
-                </div>
-
-                <div class="table-responsive" style="max-height:520px;">
-                  <table class="table table-sm table-hover table-striped align-middle m-0">
-                    <thead class="table-light" style="position: sticky; top: 0; z-index: 2;">
-                      <tr>
-                        <th style="width:42px;" class="text-center">
-                          <input type="checkbox"
-                                 class="form-check-input m-0"
-                                 t-att-checked="allWorkItemsSelected ? true : undefined"
-                                 t-on-click.stop="noop"
-                                 t-on-change="onToggleSelectAllWorkItems"/>
-                        </th>
-                        <th style="width:60px;">STT</th>
-                        <th style="min-width:220px;">Tên hạng mục</th>
-                        <th style="min-width:180px;">Sản phẩm</th>
-                        <th style="min-width:280px;">Mô tả</th>
-                        <th style="min-width:220px;">Người báo cáo sản lượng</th>
-                        <th style="min-width:220px;">Người báo cáo quyết toán</th>
-                        <th style="min-width:220px;">Người báo cáo nghiệm thu</th>
-                        <th class="text-end" style="min-width:140px;">KH theo HĐ</th>
-                        <th class="text-end" style="min-width:140px;">Phát sinh</th>
-                        <th class="text-end" style="min-width:140px;">Quyết toán/ Thực tế</th>
-                        <th class="text-end" style="min-width:120px;">Sản lượng đã thực hiện</th>
-                        <th class="text-end" style="min-width:120px;">Khối lượng còn lại</th>
-                        <th class="text-end" style="min-width:90px;">%</th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      <t t-if="state.work_items.length">
-                        <t t-foreach="state.work_items" t-as="wi" t-key="wi.id">
-                          <tr>
-                            <td class="text-center" t-on-click.stop="noop">
-                              <input type="checkbox"
-                                     class="form-check-input m-0"
-                                     t-att-data-work-item-id="wi.id"
-                                     t-att-checked="isWorkItemSelected(wi.id) ? true : undefined"
-                                     t-on-click.stop="noop"
-                                     t-on-change="onToggleSelectWorkItem"/>
-                            </td>
-
-                            <td class="fw-semibold" t-esc="wi.sequence"/>
-
-                            <td>
-                              <div style="white-space: normal; line-height: 1.25;" t-att-title="wi.name || ''">
-                                <t t-esc="wi.name || ''"/>
-                              </div>
-                            </td>
-
-                            <td>
-                              <div style="white-space: normal; line-height: 1.25;" t-att-title="wi.product_id ? wi.product_id[1] : ''">
-                                <t t-esc="wi.product_id ? wi.product_id[1] : ''"/>
-                              </div>
-                            </td>
-
-                            <td>
-                              <textarea class="form-control form-control-sm pwf-wi-desc"
-                                        rows="2"
-                                        t-att-data-work-item-id="wi.id"
-                                        data-field="description"
-                                        t-on-change="onChangeWorkItemTextField"
-                                        placeholder="Nhập mô tả hạng mục..."><t t-esc="wi.description || ''"/></textarea>
-                            </td>
-
-                            <td>
-                              <select class="form-select form-select-sm"
-                                      t-att-data-work-item-id="wi.id"
-                                      t-on-change="onChangeWorkItemAssignedUser"
-                                      t-att-value="wi.assigned_user_id ? '' + wi.assigned_user_id[0] : ''">
-                                <option value="">-- Chọn --</option>
-                                <t t-foreach="state.userOptions" t-as="u" t-key="'assigned_' + wi.id + '_' + u.id">
-                                  <option t-att-value="u.id"
-                                          t-att-selected="wi.assigned_user_id &amp;&amp; ('' + wi.assigned_user_id[0]) === ('' + u.id) ? true : undefined">
-                                    <t t-esc="u.name"/>
-                                  </option>
-                                </t>
-                              </select>
-                            </td>
-
-                            <td>
-                              <select class="form-select form-select-sm"
-                                      t-att-data-work-item-id="wi.id"
-                                      t-on-change="onChangeWorkItemClaimUser"
-                                      t-att-value="wi.claim_user_id ? '' + wi.claim_user_id[0] : ''">
-                                <option value="">-- Chọn --</option>
-                                <t t-foreach="state.userOptions" t-as="u" t-key="'claim_' + wi.id + '_' + u.id">
-                                  <option t-att-value="u.id"
-                                          t-att-selected="wi.claim_user_id &amp;&amp; ('' + wi.claim_user_id[0]) === ('' + u.id) ? true : undefined">
-                                    <t t-esc="u.name"/>
-                                  </option>
-                                </t>
-                              </select>
-                            </td>
-
-                            <td>
-                              <select class="form-select form-select-sm"
-                                      t-att-data-work-item-id="wi.id"
-                                      t-on-change="onChangeWorkItemAcceptanceUser"
-                                      t-att-value="wi.acceptance_user_id ? '' + wi.acceptance_user_id[0] : ''">
-                                <option value="">-- Chọn --</option>
-                                <t t-foreach="state.userOptions" t-as="u" t-key="'acceptance_' + wi.id + '_' + u.id">
-                                  <option t-att-value="u.id"
-                                          t-att-selected="wi.acceptance_user_id &amp;&amp; ('' + wi.acceptance_user_id[0]) === ('' + u.id) ? true : undefined">
-                                    <t t-esc="u.name"/>
-                                  </option>
-                                </t>
-                              </select>
-                            </td>
-
-                            <td class="text-end">
-                              <input type="number"
-                                     step="any"
-                                     class="form-control form-control-sm text-end"
-                                     style="min-width:120px;"
-                                     t-att-data-work-item-id="wi.id"
-                                     data-field="qty_plan"
-                                     t-att-value="wi.qty_plan || 0"
-                                     t-on-change="onChangeWorkItemNumberField"/>
-                            </td>
-
-                            <td class="text-end">
-                              <input type="number"
-                                     step="any"
-                                     class="form-control form-control-sm text-end"
-                                     style="min-width:120px;"
-                                     t-att-data-work-item-id="wi.id"
-                                     data-field="qty_arise"
-                                     t-att-value="wi.qty_arise || 0"
-                                     t-on-change="onChangeWorkItemNumberField"/>
-                            </td>
-
-                            <td class="text-end fw-medium" t-esc="wi.qty_settlement || 0"/>
-                            <td class="text-end" t-esc="wi.qty_done || 0"/>
-                            <td class="text-end" t-esc="wi.qty_remaining || 0"/>
-                            <td class="text-end">
-                              <span class="badge rounded-pill text-bg-light border">
-                                <t t-esc="Math.round(wi.progress_percent || 0) + '%'"/>
-                              </span>
-                            </td>
-                          </tr>
-                        </t>
-                      </t>
-
-                      <t t-else="">
-                        <tr>
-                          <td colspan="14" class="text-muted p-4 text-center">Chưa có hạng mục công việc.</td>
-                        </tr>
-                      </t>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-          </div>
         </div>
-      </t>
-    </div>
-  </t>
+      </div>
+
+    </t>
+
+  </div>
+</t>
 
 </templates>
