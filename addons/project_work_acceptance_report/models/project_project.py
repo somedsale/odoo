@@ -520,11 +520,7 @@ class ProjectProject(models.Model):
         self.ensure_one()
         if not user or not user.partner_id:
             return
-        # thêm follower cho dự án
-        try:
-            self.message_subscribe(partner_ids=[user.partner_id.id])
-        except Exception:
-            pass
+
         assigner_name = self.env.user.display_name or _("Hệ thống")
         project_name = self.display_name or self.name or _("(Không có tên dự án)")
         acceptance_count = len(self.work_item_ids.filtered(lambda w: w.active))
@@ -539,6 +535,7 @@ class ProjectProject(models.Model):
 
         next_action = self._get_project_acceptance_assignment_action()
 
+        # Realtime popup: chỉ gửi cho người được phân công
         self.env["bus.bus"]._sendone(
             user.partner_id,
             "project_work_project_acceptance_assignment_notification",
@@ -550,24 +547,27 @@ class ProjectProject(models.Model):
             }
         )
 
+        # Inbox/mail: chỉ gửi cho người được phân công, không post vào chatter dự án
         try:
             href = "/project_work_assignment_notify/open_my_acceptance_report?project_id=%s" % self.id
 
-            self.message_post(
-                body=Markup(
-                    "<p><b>Phân công báo cáo nghiệm thu</b></p>"
-                    "<p><b>%s</b> đã phân công bạn phụ trách báo cáo nghiệm thu cho dự án <b>%s</b>.</p>"
-                    "<p>Số hạng mục áp dụng: <b>%s</b></p>"
-                    "<p><a href='%s'>Mở báo cáo nghiệm thu</a></p>"
-                ) % (
-                    escape(assigner_name),
-                    escape(project_name),
-                    acceptance_count,
-                    escape(href),
-                ),
+            body = Markup(
+                "<p><b>Phân công báo cáo nghiệm thu</b></p>"
+                "<p><b>%s</b> đã phân công bạn phụ trách báo cáo nghiệm thu cho dự án <b>%s</b>.</p>"
+                "<p>Số hạng mục áp dụng: <b>%s</b></p>"
+                "<p><a href='%s'>Mở báo cáo nghiệm thu</a></p>"
+            ) % (
+                escape(assigner_name),
+                escape(project_name),
+                acceptance_count,
+                escape(href),
+            )
+
+            self.message_notify(
                 partner_ids=[user.partner_id.id],
-                subtype_xmlid="mail.mt_comment",
-                message_type="comment",
+                subject=_("Bạn được phân công báo cáo nghiệm thu"),
+                body=body,
+                email_layout_xmlid="mail.mail_notification_light",
             )
         except Exception:
             pass

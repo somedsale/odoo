@@ -574,216 +574,232 @@ export class ProjectWorkProjectFormOwl extends Component {
     if (!ids.size) return;
     await Promise.all([...ids].map((id) => this._ensureSelectedUserOption(id)));
   }
+async _safeRead(model, ids, fields) {
+  try {
+    return await this.orm.read(model, ids, fields);
+  } catch (e) {
+    console.warn(`[PWF Owl Form] read fail on ${model}, retry field by field`, e);
 
+    const goodFields = [];
+    for (const field of fields) {
+      try {
+        await this.orm.read(model, ids, [field]);
+        goodFields.push(field);
+      } catch (_err) {
+        console.warn(`[PWF Owl Form] skip bad field: ${model}.${field}`);
+      }
+    }
+
+    if (!goodFields.length) {
+      throw e;
+    }
+
+    return await this.orm.read(model, ids, goodFields);
+  }
+}
   // =========================
   // Load project
   // =========================
-  async _loadProject() {
-    const pid = this.props.projectId;
-    if (!pid) {
-      this._initCreateForm();
-      return;
-    }
-
-    const fields = [
-      "name",
-      "partner_id",
-      "date_start",
-      "date",
-      "contract_id",
-      "stage_id",
-      "description",
-      "signature_date",
-      "location",
-      "sale_order_id",
-
-      "value_contract_tax",
-      "value_settlement",
-      "value_completed",
-      "value_remaining",
-      "value_arise",
-
-      "progress_percent",
-
-      "sales_category_ids",
-
-      "task_count_custom",
-      "work_item_count",
-      "cost_estimate_count",
-      "project_expense_custom_count",
-
-      "total_cost_estimate",
-      "total_cost_with_tax_estimate",
-      "amount_additional_expense_estimate",
-      "amount_additional_expense_with_tax_estimate",
-      "total_final_non_tax_estimate",
-      "total_final_with_tax_estimate",
-
-      "total_spent",
-      "total_not_spent",
-      "total_cost_expense",
-      "total_spent_material",
-      "total_spent_labor",
-      "total_spent_manufacturing",
-      "total_material",
-      "total_labor",
-      "total_manufacturing",
-      "total_not_spent_material",
-      "total_not_spent_labor",
-      "total_not_spent_manufacturing",
-
-      "value_accepted",
-      "value_acceptance_remaining",
-      "acceptance_percent",
-
-      "value_finalized",
-      "value_finalization_remaining",
-      "finalization_percent",
-
-      "customer_invoice_amount_total",
-      "customer_invoice_received_total",
-      "customer_invoice_untaxed_total",
-      "customer_invoice_remaining_total",
-      "payment_process_percent",
-      "payment_vs_acceptance_percent",
-      "payment_vs_completed_percent",
-      "payment_vs_invoice_percent",
-    ];
-
-    const [rec] = await this.orm.read("project.project", [pid], fields);
-    if (!rec) return;
-
-    this.state.project = rec;
-
-    const partnerId = this._m2oId(rec.partner_id);
-    const contractId = this._m2oId(rec.contract_id);
-    const stageId = this._m2oId(rec.stage_id);
-
-    await Promise.all([
-      this._ensureSelectedPartnerOption(partnerId),
-      this._ensureSelectedContractOption(contractId),
-      this._ensureSelectedStageOption(stageId),
-    ]);
-
-    let contractDisplayName = this._m2oName(rec.contract_id);
-    if (contractId) {
-      try {
-        const [c] = await this.orm.read(
-          "contract.management",
-          [contractId],
-          ["num_contract", "name"],
-        );
-        if (c) {
-          contractDisplayName = c.num_contract || c.name || contractDisplayName;
-        }
-      } catch {
-        // noop
-      }
-    }
-
-    this.state.form = {
-      name: rec.name || "",
-      partner_id: partnerId,
-      date_start: rec.date_start || false,
-      date: rec.date || false,
-      contract_id: contractId,
-      stage_id: stageId,
-      description: markup(rec.description || ""),
-    };
-
-    this.state.stats = {
-      task_count_custom: num(rec.task_count_custom),
-      work_item_count: num(rec.work_item_count),
-      cost_estimate_count: num(rec.cost_estimate_count),
-      project_expense_custom_count: num(rec.project_expense_custom_count),
-    };
-
-    let salesCategoryText = "";
-    try {
-      if (rec.sales_category_ids?.length) {
-        const pairs = await this.orm.call(
-          "sale.order.category",
-          "name_get",
-          [rec.sales_category_ids],
-          {},
-        );
-        salesCategoryText = (pairs || []).map((x) => x[1]).join(", ");
-      }
-    } catch {
-      salesCategoryText = "";
-    }
-
-    const baseDisplay = {
-      signature_date: rec.signature_date || false,
-      location: rec.location || "",
-      sale_order_name: this._m2oName(rec.sale_order_id),
-      partner_name: this._m2oName(rec.partner_id),
-      contract_name: contractDisplayName,
-
-      value_contract_tax: num(rec.value_contract_tax),
-      value_settlement: num(rec.value_settlement),
-      value_completed: num(rec.value_completed),
-      value_remaining: num(rec.value_remaining),
-      value_arise: num(rec.value_arise),
-
-      progress_percent: num(rec.progress_percent),
-
-      sales_category_text: salesCategoryText,
-
-      total_cost_estimate: num(rec.total_cost_estimate),
-      total_cost_with_tax_estimate: num(rec.total_cost_with_tax_estimate),
-      amount_additional_expense_estimate: num(
-        rec.amount_additional_expense_estimate,
-      ),
-      amount_additional_expense_with_tax_estimate: num(
-        rec.amount_additional_expense_with_tax_estimate,
-      ),
-      total_final_non_tax_estimate: num(rec.total_final_non_tax_estimate),
-      total_final_with_tax_estimate: num(rec.total_final_with_tax_estimate),
-
-      total_spent: num(rec.total_spent),
-      total_not_spent: num(rec.total_not_spent),
-      total_cost_expense: num(rec.total_cost_expense),
-      total_spent_material: num(rec.total_spent_material),
-      total_spent_labor: num(rec.total_spent_labor),
-      total_spent_manufacturing: num(rec.total_spent_manufacturing),
-      total_material: num(rec.total_material),
-      total_labor: num(rec.total_labor),
-      total_manufacturing: num(rec.total_manufacturing),
-      total_not_spent_material: num(rec.total_not_spent_material),
-      total_not_spent_labor: num(rec.total_not_spent_labor),
-      total_not_spent_manufacturing: num(rec.total_not_spent_manufacturing),
-      value_accepted: num(rec.value_accepted),
-      value_acceptance_remaining: num(rec.value_acceptance_remaining),
-      acceptance_progress_percent: num(rec.acceptance_percent),
-
-      value_finalized: num(rec.value_finalized),
-      value_finalization_remaining: num(rec.value_finalization_remaining),
-      claim_progress_percent: num(rec.finalization_percent),
-
-      customer_invoice_amount_total: num(rec.customer_invoice_amount_total),
-      customer_invoice_received_total: num(rec.customer_invoice_received_total),
-      customer_invoice_untaxed_total: num(rec.customer_invoice_untaxed_total),
-      customer_invoice_remaining_total: num(
-        rec.customer_invoice_remaining_total,
-      ),
-      payment_process_percent: num(rec.payment_process_percent),
-      payment_vs_acceptance_percent: num(rec.payment_vs_acceptance_percent),
-      payment_vs_completed_percent: num(rec.payment_vs_completed_percent),
-      payment_vs_invoice_percent: num(rec.payment_vs_invoice_percent),
-    };
-
-    this.state.display = {
-      ...baseDisplay,
-      ...this._buildComparisonDisplay(baseDisplay),
-    };
-
-    await Promise.all([
-      this._loadWorkItems(),
-      this._loadTasks(),
-      this._loadAttachments(),
-    ]);
+async _loadProject() {
+  const pid = this.props.projectId;
+  if (!pid) {
+    this._initCreateForm();
+    return;
   }
+
+  const fields = [
+    "name",
+    "partner_id",
+    "date_start",
+    "date",
+    "contract_id",
+    "stage_id",
+    "description",
+    "signature_date",
+    "location",
+    "sale_order_id",
+
+    "value_contract_tax",
+    "value_settlement",
+    "value_completed",
+    "value_remaining",
+    "value_arise",
+
+    "progress_percent",
+
+    "sales_category_ids",
+
+    "task_count_custom",
+    "work_item_count",
+    "cost_estimate_count",
+    "project_expense_custom_count",
+
+    "total_cost_estimate",
+    "total_cost_with_tax_estimate",
+    "amount_additional_expense_estimate",
+    "amount_additional_expense_with_tax_estimate",
+    "total_final_non_tax_estimate",
+    "total_final_with_tax_estimate",
+
+    "total_spent",
+    "total_not_spent",
+    "total_cost_expense",
+    "total_spent_material",
+    "total_spent_labor",
+    "total_spent_manufacturing",
+    "total_material",
+    "total_labor",
+    "total_manufacturing",
+    "total_not_spent_material",
+    "total_not_spent_labor",
+    "total_not_spent_manufacturing",
+
+    "value_accepted",
+    "value_acceptance_remaining",
+    "acceptance_percent",
+
+    "value_finalized",
+    "value_finalization_remaining",
+    "finalization_percent",
+
+    "customer_invoice_amount_total",
+    "customer_invoice_received_total",
+    "customer_invoice_untaxed_total",
+    "customer_invoice_remaining_total",
+    "payment_process_percent",
+    "payment_vs_acceptance_percent",
+    "payment_vs_completed_percent",
+    "payment_vs_invoice_percent",
+  ];
+
+  const records = await this._safeRead("project.project", [pid], fields);
+  const rec = records?.[0];
+  if (!rec) return;
+
+  this.state.project = rec;
+
+  const partnerId = this._m2oId(rec.partner_id);
+  const contractId = this._m2oId(rec.contract_id);
+  const stageId = this._m2oId(rec.stage_id);
+
+  await Promise.allSettled([
+    this._ensureSelectedPartnerOption(partnerId),
+    this._ensureSelectedContractOption(contractId),
+    this._ensureSelectedStageOption(stageId),
+  ]);
+
+  let contractDisplayName = this._m2oName(rec.contract_id);
+  if (contractId) {
+    try {
+      const [c] = await this._safeRead(
+        "contract.management",
+        [contractId],
+        ["num_contract", "name"]
+      );
+      if (c) {
+        contractDisplayName = c.num_contract || c.name || contractDisplayName;
+      }
+    } catch (_e) {}
+  }
+
+  this.state.form = {
+    name: rec.name || "",
+    partner_id: partnerId,
+    date_start: rec.date_start || false,
+    date: rec.date || false,
+    contract_id: contractId,
+    stage_id: stageId,
+    description: markup(rec.description || ""),
+  };
+
+  this.state.stats = {
+    task_count_custom: num(rec.task_count_custom),
+    work_item_count: num(rec.work_item_count),
+    cost_estimate_count: num(rec.cost_estimate_count),
+    project_expense_custom_count: num(rec.project_expense_custom_count),
+  };
+
+  let salesCategoryText = "";
+  try {
+    if (rec.sales_category_ids?.length) {
+      const pairs = await this.orm.call(
+        "sale.order.category",
+        "name_get",
+        [rec.sales_category_ids],
+        {}
+      );
+      salesCategoryText = (pairs || []).map((x) => x[1]).join(", ");
+    }
+  } catch (_e) {
+    salesCategoryText = "";
+  }
+
+  const baseDisplay = {
+    signature_date: rec.signature_date || false,
+    location: rec.location || "",
+    sale_order_name: this._m2oName(rec.sale_order_id),
+    partner_name: this._m2oName(rec.partner_id),
+    contract_name: contractDisplayName,
+
+    value_contract_tax: num(rec.value_contract_tax),
+    value_settlement: num(rec.value_settlement),
+    value_completed: num(rec.value_completed),
+    value_remaining: num(rec.value_remaining),
+    value_arise: num(rec.value_arise),
+
+    progress_percent: num(rec.progress_percent),
+
+    sales_category_text: salesCategoryText,
+
+    total_cost_estimate: num(rec.total_cost_estimate),
+    total_cost_with_tax_estimate: num(rec.total_cost_with_tax_estimate),
+    amount_additional_expense_estimate: num(rec.amount_additional_expense_estimate),
+    amount_additional_expense_with_tax_estimate: num(rec.amount_additional_expense_with_tax_estimate),
+    total_final_non_tax_estimate: num(rec.total_final_non_tax_estimate),
+    total_final_with_tax_estimate: num(rec.total_final_with_tax_estimate),
+
+    total_spent: num(rec.total_spent),
+    total_not_spent: num(rec.total_not_spent),
+    total_cost_expense: num(rec.total_cost_expense),
+    total_spent_material: num(rec.total_spent_material),
+    total_spent_labor: num(rec.total_spent_labor),
+    total_spent_manufacturing: num(rec.total_spent_manufacturing),
+    total_material: num(rec.total_material),
+    total_labor: num(rec.total_labor),
+    total_manufacturing: num(rec.total_manufacturing),
+    total_not_spent_material: num(rec.total_not_spent_material),
+    total_not_spent_labor: num(rec.total_not_spent_labor),
+    total_not_spent_manufacturing: num(rec.total_not_spent_manufacturing),
+
+    value_accepted: num(rec.value_accepted),
+    value_acceptance_remaining: num(rec.value_acceptance_remaining),
+    acceptance_progress_percent: num(rec.acceptance_percent),
+
+    value_finalized: num(rec.value_finalized),
+    value_finalization_remaining: num(rec.value_finalization_remaining),
+    claim_progress_percent: num(rec.finalization_percent),
+
+    customer_invoice_amount_total: num(rec.customer_invoice_amount_total),
+    customer_invoice_received_total: num(rec.customer_invoice_received_total),
+    customer_invoice_untaxed_total: num(rec.customer_invoice_untaxed_total),
+    customer_invoice_remaining_total: num(rec.customer_invoice_remaining_total),
+    payment_process_percent: num(rec.payment_process_percent),
+    payment_vs_acceptance_percent: num(rec.payment_vs_acceptance_percent),
+    payment_vs_completed_percent: num(rec.payment_vs_completed_percent),
+    payment_vs_invoice_percent: num(rec.payment_vs_invoice_percent),
+  };
+
+  this.state.display = {
+    ...baseDisplay,
+    ...this._buildComparisonDisplay(baseDisplay),
+  };
+
+  await Promise.allSettled([
+    this._loadWorkItems(),
+    this._loadTasks(),
+    this._loadAttachments(),
+  ]);
+}
 
   // =========================
   // Load options
