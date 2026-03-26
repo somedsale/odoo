@@ -1100,11 +1100,6 @@ class ProjectProject(models.Model):
         self.ensure_one()
         if not user or not user.partner_id:
             return
-        # thêm follower cho dự án
-        try:
-            self.message_subscribe(partner_ids=[user.partner_id.id])
-        except Exception:
-            pass
 
         assigner_name = self.env.user.display_name or _("Hệ thống")
         project_name = self.display_name or self.name or _("(Không có tên dự án)")
@@ -1120,7 +1115,7 @@ class ProjectProject(models.Model):
 
         next_action = self._get_project_assignment_action()
 
-        # popup realtime
+        # popup realtime: chỉ gửi cho người được phân công
         self.env["bus.bus"]._sendone(
             user.partner_id,
             "project_work_project_assignment_notification",
@@ -1132,7 +1127,7 @@ class ProjectProject(models.Model):
             },
         )
 
-        # link trong chatter/inbox
+        # inbox/mail: chỉ gửi cho người được phân công, không post vào chatter dự án
         open_url = "/project_work_assignment_notify/open_my_assignment_report?project_id=%s" % self.id
 
         body = Markup("""
@@ -1147,9 +1142,9 @@ class ProjectProject(models.Model):
             html_escape(open_url),
         )
 
-        self.message_post(
-            body=body,
+        self.message_notify(
             partner_ids=[user.partner_id.id],
-            subtype_xmlid="mail.mt_comment",
-            message_type="comment",
+            subject=_("Bạn được phân công báo cáo sản lượng"),
+            body=body,
+            email_layout_xmlid="mail.mail_notification_light",
         )
