@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Action report HTML -->
     <record id="action_supplier_debt_real_report" model="ir.actions.report">
         <field name="name">BC Công nợ NCC thực tế (theo hóa đơn)</field>
         <field name="model">supplier.invoice</field>
@@ -12,7 +11,6 @@
         <field name="paperformat_id" ref="vendor_debt_management.custom_sale_report_a4_portrait"/>
     </record>
 
-    <!-- Action report PDF -->
     <record id="action_supplier_debt_real_report_pdf" model="ir.actions.report">
         <field name="name">BC Công nợ NCC thực tế (PDF)</field>
         <field name="model">supplier.invoice</field>
@@ -23,47 +21,32 @@
         <field name="paperformat_id" ref="vendor_debt_management.custom_sale_report_a4_portrait"/>
     </record>
 
-    <!-- Menu -->
-    <menuitem id="menu_supplier_debt_real_report"
-              name="BC Công nợ NCC thực tế"
-              parent="vendor_debt_management.menu_supplier_summary_root"
-              action="vendor_debt_management.action_supplier_debt_real_report"/>
+    <menuitem id="menu_supplier_debt_real_report" name="BC Công nợ NCC thực tế" parent="vendor_debt_management.menu_supplier_summary_root" action="vendor_debt_management.action_supplier_debt_real_report"/>
 
-    <!-- ===================================================== -->
-    <!-- HELPER: render monetary cell (hiện cả 0, đỏ nếu âm) -->
-    <!-- INPUT VARS: val, cur, redneg (bool) -->
-    <!-- ===================================================== -->
     <template id="report_supplier_debt_real_money_cell">
         <t t-set="cur" t-value="cur or company_currency"/>
         <t t-set="redneg" t-value="redneg or False"/>
         <t t-if="val is not None and val is not False">
             <t t-if="redneg and (val &lt; 0)">
-                <span style="color:#d9534f;font-weight:bold;"
-                      t-esc="val"
-                      t-options="{'widget':'monetary', 'display_currency': cur}"/>
+                <span style="color:#d9534f;font-weight:bold;" t-esc="val" t-options="{'widget':'monetary', 'display_currency': cur}"/>
             </t>
             <t t-else="">
-                <span t-esc="val"
-                      t-options="{'widget':'monetary', 'display_currency': cur}"/>
+                <span t-esc="val" t-options="{'widget':'monetary', 'display_currency': cur}"/>
             </t>
         </t>
         <t t-else="">-</t>
     </template>
 
-    <!-- ===================================================== -->
-    <!-- HELPER: render group header + details -->
-    <!-- INPUT VARS: rows, title, row_class -->
-    <!-- ===================================================== -->
     <template id="report_supplier_debt_real_group_detail">
         <t t-set="rows" t-value="rows or []"/>
         <t t-set="row_class" t-value="row_class or 'group-sub'"/>
 
         <t t-if="rows">
-            <!-- subtotal -->
             <t t-set="sub_contract" t-value="0.0"/>
             <t t-set="sub_invoice" t-value="0.0"/>
             <t t-set="sub_paid_hd" t-value="0.0"/>
             <t t-set="sub_advance" t-value="0.0"/>
+            <t t-set="sub_old_debt" t-value="0.0"/>
             <t t-set="sub_residual" t-value="0.0"/>
 
             <t t-foreach="rows" t-as="x">
@@ -71,6 +54,7 @@
                 <t t-set="sub_invoice" t-value="sub_invoice + (x.get('invoice_amount') or 0.0)"/>
                 <t t-set="sub_paid_hd" t-value="sub_paid_hd + (x.get('paid_hd') or 0.0)"/>
                 <t t-set="sub_advance" t-value="sub_advance + (x.get('advance_amount') or 0.0)"/>
+                <t t-set="sub_old_debt" t-value="sub_old_debt + (x.get('old_debt') or 0.0)"/>
                 <t t-set="sub_residual" t-value="sub_residual + (x.get('residual_amount') or 0.0)"/>
             </t>
 
@@ -110,6 +94,13 @@
                 </td>
 
                 <td class="text-right num">
+                    <t t-set="val" t-value="sub_old_debt"/>
+                    <t t-set="cur" t-value="sub_currency"/>
+                    <t t-set="redneg" t-value="False"/>
+                    <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+                </td>
+
+                <td class="text-right num">
                     <t t-set="val" t-value="sub_residual"/>
                     <t t-set="cur" t-value="sub_currency"/>
                     <t t-set="redneg" t-value="True"/>
@@ -119,7 +110,6 @@
                 <td></td>
             </tr>
 
-            <!-- details -->
             <t t-set="stt" t-value="0"/>
             <t t-foreach="rows" t-as="l">
                 <t t-set="stt" t-value="stt + 1"/>
@@ -163,6 +153,13 @@
                     </td>
 
                     <td class="text-right num">
+                        <t t-set="val" t-value="l.get('old_debt')"/>
+                        <t t-set="cur" t-value="l.get('currency') or company_currency"/>
+                        <t t-set="redneg" t-value="False"/>
+                        <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+                    </td>
+
+                    <td class="text-right num">
                         <t t-set="val" t-value="l.get('residual_amount')"/>
                         <t t-set="cur" t-value="l.get('currency') or company_currency"/>
                         <t t-set="redneg" t-value="True"/>
@@ -177,10 +174,6 @@
         </t>
     </template>
 
-    <!-- ===================================================== -->
-    <!-- HELPER: render 1 section (DONE / PENDING) -->
-    <!-- INPUT VARS: section_title, labor_rows, material_rows, foreign_rows, empty_message -->
-    <!-- ===================================================== -->
     <template id="report_supplier_debt_real_section">
         <t t-set="labor_rows" t-value="labor_rows or []"/>
         <t t-set="material_rows" t-value="material_rows or []"/>
@@ -189,17 +182,17 @@
 
         <t t-if="not all_rows">
             <tr>
-                <td colspan="9" class="text-center">
+                <td colspan="10" class="text-center">
                     <t t-esc="empty_message"/>
                 </td>
             </tr>
         </t>
         <t t-else="">
-            <!-- section totals -->
             <t t-set="sec_contract" t-value="0.0"/>
             <t t-set="sec_invoice" t-value="0.0"/>
             <t t-set="sec_paid_hd" t-value="0.0"/>
             <t t-set="sec_advance" t-value="0.0"/>
+            <t t-set="sec_old_debt" t-value="0.0"/>
             <t t-set="sec_residual" t-value="0.0"/>
 
             <t t-foreach="all_rows" t-as="x">
@@ -207,6 +200,7 @@
                 <t t-set="sec_invoice" t-value="sec_invoice + (x.get('invoice_amount') or 0.0)"/>
                 <t t-set="sec_paid_hd" t-value="sec_paid_hd + (x.get('paid_hd') or 0.0)"/>
                 <t t-set="sec_advance" t-value="sec_advance + (x.get('advance_amount') or 0.0)"/>
+                <t t-set="sec_old_debt" t-value="sec_old_debt + (x.get('old_debt') or 0.0)"/>
                 <t t-set="sec_residual" t-value="sec_residual + (x.get('residual_amount') or 0.0)"/>
             </t>
 
@@ -246,6 +240,13 @@
                 </td>
 
                 <td class="text-right num">
+                    <t t-set="val" t-value="sec_old_debt"/>
+                    <t t-set="cur" t-value="sec_currency"/>
+                    <t t-set="redneg" t-value="False"/>
+                    <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+                </td>
+
+                <td class="text-right num">
                     <t t-set="val" t-value="sec_residual"/>
                     <t t-set="cur" t-value="sec_currency"/>
                     <t t-set="redneg" t-value="True"/>
@@ -255,13 +256,13 @@
                 <td></td>
             </tr>
 
-            <!-- DOMESTIC main -->
             <t t-if="labor_rows or material_rows">
                 <t t-set="dom_rows" t-value="labor_rows + material_rows"/>
                 <t t-set="dom_contract" t-value="0.0"/>
                 <t t-set="dom_invoice" t-value="0.0"/>
                 <t t-set="dom_paid_hd" t-value="0.0"/>
                 <t t-set="dom_advance" t-value="0.0"/>
+                <t t-set="dom_old_debt" t-value="0.0"/>
                 <t t-set="dom_residual" t-value="0.0"/>
 
                 <t t-foreach="dom_rows" t-as="x">
@@ -269,6 +270,7 @@
                     <t t-set="dom_invoice" t-value="dom_invoice + (x.get('invoice_amount') or 0.0)"/>
                     <t t-set="dom_paid_hd" t-value="dom_paid_hd + (x.get('paid_hd') or 0.0)"/>
                     <t t-set="dom_advance" t-value="dom_advance + (x.get('advance_amount') or 0.0)"/>
+                    <t t-set="dom_old_debt" t-value="dom_old_debt + (x.get('old_debt') or 0.0)"/>
                     <t t-set="dom_residual" t-value="dom_residual + (x.get('residual_amount') or 0.0)"/>
                 </t>
 
@@ -306,6 +308,13 @@
                     </td>
 
                     <td class="text-right num">
+                        <t t-set="val" t-value="dom_old_debt"/>
+                        <t t-set="cur" t-value="dom_currency"/>
+                        <t t-set="redneg" t-value="False"/>
+                        <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+                    </td>
+
+                    <td class="text-right num">
                         <t t-set="val" t-value="dom_residual"/>
                         <t t-set="cur" t-value="dom_currency"/>
                         <t t-set="redneg" t-value="True"/>
@@ -315,7 +324,6 @@
                     <td></td>
                 </tr>
 
-                <!-- labor -->
                 <t t-if="labor_rows">
                     <t t-set="rows" t-value="labor_rows"/>
                     <t t-set="title" t-value="'NCC Nhân công'"/>
@@ -323,7 +331,6 @@
                     <t t-call="vendor_debt_management.report_supplier_debt_real_group_detail"/>
                 </t>
 
-                <!-- material -->
                 <t t-if="material_rows">
                     <t t-set="rows" t-value="material_rows"/>
                     <t t-set="title" t-value="'NCC Vật tư, dịch vụ'"/>
@@ -332,7 +339,6 @@
                 </t>
             </t>
 
-            <!-- FOREIGN -->
             <t t-if="foreign_rows">
                 <t t-set="rows" t-value="foreign_rows"/>
                 <t t-set="title" t-value="'II. NCC NƯỚC NGOÀI'"/>
@@ -342,14 +348,9 @@
         </t>
     </template>
 
-    <!-- ===================================================== -->
-    <!-- TEMPLATE CHÍNH -->
-    <!-- ===================================================== -->
     <template id="report_supplier_debt_real_view">
         <t t-call="vendor_debt_management.report_supplier_summary_layout">
             <div class="page">
-
-                <!-- always have currency + user -->
                 <t t-set="company_currency" t-value="env.company.currency_id"/>
                 <t t-set="user_id" t-value="env.user"/>
 
@@ -401,6 +402,7 @@
                         <col style="width:10%"/>
                         <col style="width:10%"/>
                         <col style="width:10%"/>
+                        <col style="width:10%"/>
                     </colgroup>
 
                     <thead>
@@ -412,16 +414,13 @@
                             <th>Tổng giá trị Hóa đơn</th>
                             <th>Đã Thanh toán</th>
                             <th>Tạm ứng/ Chưa Hóa đơn</th>
+                            <th>Công nợ cũ</th>
                             <th>Còn nợ</th>
                             <th>Hạn thanh toán</th>
                         </tr>
                     </thead>
 
                     <tbody>
-
-                        <!-- ===================================================== -->
-                        <!-- GRAND TOTAL (DONE + PENDING) -->
-                        <!-- ===================================================== -->
                         <t t-set="done_rows" t-value="(done_domestic_labor or []) + (done_domestic_material or []) + (done_foreign or [])"/>
                         <t t-set="pending_rows" t-value="(pending_domestic_labor or []) + (pending_domestic_material or []) + (pending_foreign or [])"/>
                         <t t-set="all_rows" t-value="done_rows + pending_rows"/>
@@ -430,6 +429,7 @@
                         <t t-set="grand_invoice" t-value="0.0"/>
                         <t t-set="grand_paid_hd" t-value="0.0"/>
                         <t t-set="grand_advance" t-value="0.0"/>
+                        <t t-set="grand_old_debt" t-value="0.0"/>
                         <t t-set="grand_residual" t-value="0.0"/>
 
                         <t t-foreach="all_rows" t-as="g">
@@ -437,6 +437,7 @@
                             <t t-set="grand_invoice" t-value="grand_invoice + (g.get('invoice_amount') or 0.0)"/>
                             <t t-set="grand_paid_hd" t-value="grand_paid_hd + (g.get('paid_hd') or 0.0)"/>
                             <t t-set="grand_advance" t-value="grand_advance + (g.get('advance_amount') or 0.0)"/>
+                            <t t-set="grand_old_debt" t-value="grand_old_debt + (g.get('old_debt') or 0.0)"/>
                             <t t-set="grand_residual" t-value="grand_residual + (g.get('residual_amount') or 0.0)"/>
                         </t>
 
@@ -474,18 +475,21 @@
                             </td>
 
                             <td class="text-right num">
+                                <t t-set="val" t-value="grand_old_debt"/>
+                                <t t-set="cur" t-value="grand_currency"/>
+                                <t t-set="redneg" t-value="False"/>
+                                <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+                            </td>
+
+                            <td class="text-right num">
                                 <t t-set="val" t-value="grand_residual"/>
                                 <t t-set="cur" t-value="grand_currency"/>
                                 <t t-set="redneg" t-value="True"/>
                                 <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
                             </td>
-
                             <td></td>
                         </tr>
 
-                        <!-- ===================================================== -->
-                        <!-- SECTION: DONE -->
-                        <!-- ===================================================== -->
                         <t t-set="section_title" t-value="'ĐÃ ĐỐI CHIẾU'"/>
                         <t t-set="labor_rows" t-value="done_domestic_labor"/>
                         <t t-set="material_rows" t-value="done_domestic_material"/>
@@ -493,20 +497,15 @@
                         <t t-set="empty_message" t-value="'Không có công nợ đã đối chiếu.'"/>
                         <t t-call="vendor_debt_management.report_supplier_debt_real_section"/>
 
-                        <!-- ===================================================== -->
-                        <!-- SECTION: PENDING -->
-                        <!-- ===================================================== -->
                         <t t-set="section_title" t-value="'CHỜ ĐỐI CHIẾU'"/>
                         <t t-set="labor_rows" t-value="pending_domestic_labor"/>
                         <t t-set="material_rows" t-value="pending_domestic_material"/>
                         <t t-set="foreign_rows" t-value="pending_foreign"/>
                         <t t-set="empty_message" t-value="'Không có công nợ chờ đối chiếu.'"/>
                         <t t-call="vendor_debt_management.report_supplier_debt_real_section"/>
-
                     </tbody>
                 </table>
 
-                <!-- SIGNATURE -->
                 <div style="page-break-inside: avoid; font-weight: bold">
                     <div class="row">
                         <div class="col-6" style="text-align:center;line-height:1.8">
@@ -514,14 +513,17 @@
                                 TP Hồ Chí Minh ngày &#160;&#160; tháng &#160;&#160; năm
                                 <span t-esc="datetime.datetime.today().year"/>
                             </div>
-                            <div><span>Người lập biểu</span></div>
+                            <div>
+                                <span>Người lập biểu</span>
+                            </div>
                             <div style="height:65px">
                                 <t t-if="user_id and user_id.digital_signature">
-                                    <img t-att-src="'data:image/png;base64,' + (user_id.digital_signature.decode() if isinstance(user_id.digital_signature, bytes) else user_id.digital_signature)"
-                                         style="max-height:65px; max-width:150px;"/>
+                                    <img t-att-src="'data:image/png;base64,' + (user_id.digital_signature.decode() if isinstance(user_id.digital_signature, bytes) else user_id.digital_signature)" style="max-height:65px; max-width:150px;"/>
                                 </t>
                             </div>
-                            <div><span t-field="user_id.name"/></div>
+                            <div>
+                                <span t-field="user_id.name"/>
+                            </div>
                         </div>
 
                         <div class="col-6" style="text-align:center;line-height:1.8">
@@ -534,15 +536,15 @@
                                 <t t-set="director_group" t-value="env.ref('custom_director_role.group_director')"/>
                                 <t t-set="director" t-value="env['res.users'].search([('groups_id', 'in', director_group.id)], limit=1)"/>
                                 <t t-if="director and director.digital_signature">
-                                    <img t-att-src="'data:image/png;base64,' + (director.digital_signature.decode() if isinstance(director.digital_signature, bytes) else director.digital_signature)"
-                                         style="max-height:65px; max-width:150px;"/>
+                                    <img t-att-src="'data:image/png;base64,' + (director.digital_signature.decode() if isinstance(director.digital_signature, bytes) else director.digital_signature)" style="max-height:65px; max-width:150px;"/>
                                 </t>
                             </div>
-                            <div><span> Đỗ Minh Toàn </span></div>
+                            <div>
+                                <span> Đỗ Minh Toàn </span>
+                            </div>
                         </div>
                     </div>
                 </div>
-
             </div>
         </t>
     </template>

@@ -11,13 +11,66 @@
                 </div> -->
                 <div class="wt-filters">
                     <div class="wt-filter-item">
-                        <label>Từ ngày</label>
-                        <input type="date" class="wt-date" t-model="state.filters.date_from"/>
+                        <label>Kiểu lọc</label>
+                        <select class="wt-select" t-att-value="state.filters.period_type" t-on-change="onPeriodTypeChange">
+                            <option value="custom">Tùy chọn</option>
+                            <option value="month">Theo tháng</option>
+                            <option value="quarter">Theo quý</option>
+                            <option value="year">Theo năm</option>
+                        </select>
                     </div>
-                    <div class="wt-filter-item">
-                        <label>Đến ngày</label>
-                        <input type="date" class="wt-date" t-model="state.filters.date_to"/>
-                    </div>
+
+                    <t t-if="state.filters.period_type === 'month' or state.filters.period_type === 'quarter' or state.filters.period_type === 'year'">
+                        <div class="wt-filter-item">
+                            <label>Năm</label>
+                            <select class="wt-select" t-att-value="state.filters.year" t-on-change="onYearChange">
+                                <t t-foreach="yearOptions" t-as="year" t-key="year">
+                                    <option t-att-value="year">
+                                        <t t-esc="year"/>
+                                    </option>
+                                </t>
+                            </select>
+                        </div>
+                    </t>
+
+                    <t t-if="state.filters.period_type === 'month'">
+                        <div class="wt-filter-item">
+                            <label>Tháng</label>
+                            <select class="wt-select" t-att-value="state.filters.month" t-on-change="onMonthChange">
+                                <t t-foreach="monthOptions" t-as="m" t-key="m.value">
+                                    <option t-att-value="m.value">
+                                        <t t-esc="m.label"/>
+                                    </option>
+                                </t>
+                            </select>
+                        </div>
+                    </t>
+
+                    <t t-if="state.filters.period_type === 'quarter'">
+                        <div class="wt-filter-item">
+                            <label>Quý</label>
+                            <select class="wt-select" t-att-value="state.filters.quarter" t-on-change="onQuarterChange">
+                                <t t-foreach="quarterOptions" t-as="q" t-key="q.value">
+                                    <option t-att-value="q.value">
+                                        <t t-esc="q.label"/>
+                                    </option>
+                                </t>
+                            </select>
+                        </div>
+                    </t>
+
+                    <t t-if="state.filters.period_type === 'custom'">
+                        <div class="wt-filter-item">
+                            <label>Từ ngày</label>
+                            <input type="date" class="wt-date" t-att-value="state.filters.date_from" t-on-change="onDateFromChange"/>
+                        </div>
+
+                        <div class="wt-filter-item">
+                            <label>Đến ngày</label>
+                            <input type="date" class="wt-date" t-att-value="state.filters.date_to" t-on-change="onDateToChange"/>
+                        </div>
+                    </t>
+
                     <button class="wt-btn wt-btn--primary" t-on-click="applyFilter">Áp dụng</button>
                 </div>
             </div>

@@ -10,13 +10,65 @@
                 </div>
                 <div class="ad-header__filters">
                     <label>
-                        <span>Từ:</span>
-                        <input type="date" t-model="state.filters.date_from" />
+                        <span>Kiểu lọc:</span>
+                        <select class="ad-select" t-att-value="state.filters.period_type" t-on-change="onPeriodTypeChange">
+                            <option value="custom">Tùy chọn</option>
+                            <option value="month">Theo tháng</option>
+                            <option value="quarter">Theo quý</option>
+                            <option value="year">Theo năm</option>
+                        </select>
                     </label>
-                    <label>
-                        <span>Đến:</span>
-                        <input type="date" t-model="state.filters.date_to" />
-                    </label>
+
+                    <t t-if="state.filters.period_type === 'month' or state.filters.period_type === 'quarter' or state.filters.period_type === 'year'">
+                        <label>
+                            <span>Năm:</span>
+                            <select class="ad-select" t-att-value="state.filters.year" t-on-change="onYearChange">
+                                <t t-foreach="yearOptions" t-as="year" t-key="year">
+                                    <option t-att-value="year">
+                                        <t t-esc="year"/>
+                                    </option>
+                                </t>
+                            </select>
+                        </label>
+                    </t>
+
+                    <t t-if="state.filters.period_type === 'month'">
+                        <label>
+                            <span>Tháng:</span>
+                            <select class="ad-select" t-att-value="state.filters.month" t-on-change="onMonthChange">
+                                <t t-foreach="monthOptions" t-as="m" t-key="m.value">
+                                    <option t-att-value="m.value">
+                                        <t t-esc="m.label"/>
+                                    </option>
+                                </t>
+                            </select>
+                        </label>
+                    </t>
+
+                    <t t-if="state.filters.period_type === 'quarter'">
+                        <label>
+                            <span>Quý:</span>
+                            <select class="ad-select" t-att-value="state.filters.quarter" t-on-change="onQuarterChange">
+                                <t t-foreach="quarterOptions" t-as="q" t-key="q.value">
+                                    <option t-att-value="q.value">
+                                        <t t-esc="q.label"/>
+                                    </option>
+                                </t>
+                            </select>
+                        </label>
+                    </t>
+
+                    <t t-if="state.filters.period_type === 'custom'">
+                        <label>
+                            <span>Từ:</span>
+                            <input type="date" t-att-value="state.filters.date_from" t-on-change="onDateFromChange"/>
+                        </label>
+                        <label>
+                            <span>Đến:</span>
+                            <input type="date" t-att-value="state.filters.date_to" t-on-change="onDateToChange"/>
+                        </label>
+                    </t>
+
                     <button class="ad-btn" t-on-click="applyFilter">
                         <i class="fa fa-filter me-1"></i>
                         <span class="btn-filter-text">Áp dụng</span>

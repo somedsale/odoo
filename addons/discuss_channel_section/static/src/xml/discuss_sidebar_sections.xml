@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-inherit="mail.DiscussSidebarCategory" t-inherit-mode="extension" owl="1">
+        <xpath expr="." position="replace">
+            <t t-name="mail.DiscussSidebarCategory">
+                <t t-set="hover_class" t-value="'btn p-0 text-start text-700 opacity-100-hover opacity-75'"/>
+
+                <div class="o-mail-DiscussSidebarCategory d-flex align-items-center my-1" t-att-class="category.extraClass">
+                    <div t-attf-class="d-flex align-items-baseline mx-1 {{ hover_class }}" t-on-click="() => this.toggleCategory(category)">
+                        <i class="o-mail-DiscussSidebarCategory-icon small me-1" t-att-class="category.isOpen ? 'oi oi-chevron-down' : 'oi oi-chevron-right'"/>
+                        <span class="btn-sm p-0 text-uppercase fw-bolder">
+                            <t t-esc="category.name"/>
+                        </span>
+                    </div>
+
+                    <div class="flex-grow-1"/>
+
+                    <div class="d-flex me-3">
+                        <i t-if="category.canView" t-attf-class="fa fa-cog {{ hover_class }}" title="View or join channels" t-on-click="() => this.openCategory(category)" role="img"/>
+
+                        <i t-if="category.canAdd and category.isOpen" class="o-mail-DiscussSidebarCategory-add" t-attf-class="fa fa-plus {{ hover_class }} ms-1" t-on-click="() => this.addToCategory(category)" t-att-title="category.addTitle" role="img" t-att-data-hotkey="category.addHotkey"/>
+
+                        <i t-if="category.id === 'channels' and category.isOpen" t-attf-class="fa fa-plus-square-o {{ hover_class }} ms-1" title="Tạo section" t-on-click.stop="() => this.onCreateSection()" role="img"/>
+
+                        <i t-if="category.id === 'channels' and category.isOpen and filteredThreads(category).length" t-attf-class="fa {{ state.bulkSelecting ? 'fa-times-circle' : 'fa-check-square-o' }} {{ hover_class }} ms-1" t-att-title="state.bulkSelecting ? 'Thoát chọn nhiều' : 'Chọn nhiều kênh'" t-on-click.stop="() => this.toggleBulkSelectMode()" role="img"/>
+                    </div>
+
+                    <div t-if="!category.isOpen and threadService.getDiscussSidebarCategoryCounter(category.id) > 0" class="o-mail-DiscussSidebar-badge badge rounded-pill me-3 o-discuss-badge fw-bold">
+                        <t t-esc="threadService.getDiscussSidebarCategoryCounter(category.id)"/>
+                    </div>
+                </div>
+
+                <t t-if="category.isOpen">
+                    <div t-if="state.editing === category.id" class="p-2" t-ref="selector">
+                        <ChannelSelector category="category" onValidate.bind="stopEditing" autofocus="true" close.bind="stopEditing"/>
+                    </div>
+
+                    <t t-if="category.id === 'channels' and state.bulkSelecting and filteredThreads(category).length">
+                        <div class="o_discuss_bulk_bar ms-4 me-3 mb-2">
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="text-muted small">
+                                    <t t-esc="state.selectedThreadIds.length"/>
+                                    kênh đã chọn
+                                </span>
+
+                                <select class="form-select form-select-sm w-auto" t-on-change="(ev) => this.setBulkTargetSection(ev.target.value)">
+                                    <option value="">Chọn section...</option>
+                                    <t t-foreach="state.sections || []" t-as="section" t-key="section.id">
+                                        <option t-att-value="section.id" t-att-selected="'' + section.id === '' + state.bulkTargetSectionId ? true : undefined">
+                                            <t t-esc="section.name"/>
+                                        </option>
+                                    </t>
+                                </select>
+
+                                <button type="button" class="btn btn-sm btn-primary" t-on-click="() => this.onConfirmBulkAssign()">
+                                    Xác nhận
+                                </button>
+
+                                <button type="button" class="btn btn-sm btn-light" t-on-click="() => this.clearBulkSelection()">
+                                    Bỏ chọn
+                                </button>
+
+                                <button type="button" class="btn btn-sm btn-secondary" t-on-click="() => this.toggleBulkSelectMode()">
+                                    Hủy
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+
+                    <t t-if="category.id === 'channels'">
+                        <t t-if="state.sectionsLoading">
+                            <div class="px-4 py-1 text-muted small">Đang tải section...</div>
+                        </t>
+
+                        <t t-foreach="sidebarSectionsWithThreads || []" t-as="section" t-key="section.id">
+                            <div class="o-mail-DiscussSidebarSection ms-4" t-att-class="{'o_drag_over_section': this.isDragOverSection(section)}" t-on-dragover="(ev) => this.onSectionDragOver(ev, section)" t-on-drop="(ev) => this.onSectionDrop(ev, section)">
+                                <div class="d-flex align-items-center my-1">
+                                    <div class="d-flex align-items-baseline ms-2 btn p-0 text-start text-700 opacity-100-hover opacity-75" t-on-click="() => this.onToggleSection(section)">
+                                        <i class="small me-1" t-att-class="section.is_folded ? 'oi oi-chevron-right' : 'oi oi-chevron-down'"/>
+                                        <span class="btn-sm p-0 fw-bolder text-uppercase">
+                                            <t t-esc="section.name"/>
+                                        </span>
+                                    </div>
+
+                                    <div class="flex-grow-1"/>
+
+                                    <div class="d-flex me-3">
+                                        <i class="fa fa-pencil btn p-0 text-start text-700 opacity-100-hover opacity-75 me-2" title="Đổi tên section" t-on-click.stop="() => this.onRenameSection(section)" role="img"/>
+
+                                        <i class="fa fa-trash btn p-0 text-start text-700 opacity-100-hover opacity-75" title="Xóa section" t-on-click.stop="() => this.onDeleteSection(section)" role="img"/>
+                                    </div>
+                                </div>
+
+                                <t t-if="!section.is_folded">
+                                    <t t-if="(section.threads || []).length">
+                                        <t t-foreach="section.threads || []" t-as="thread" t-key="'section_thread_' + thread.localId">
+                                            <button class="o-mail-DiscussSidebarChannel o-mail-DiscussSidebar-item btn btn-secondary d-flex align-items-center w-100 px-0 py-2 border-0 rounded-0 text-reset" t-att-class="{
+                                                        'bg-inherit': thread.notEq(store.discuss.thread),
+                                                        'o-active': thread.eq(store.discuss.thread),
+                                                        'o-unread': thread.message_unread_counter > 0 and !thread.muteUntilDateTime,
+                                                        'opacity-50': thread.muteUntilDateTime,
+                                                        'o-drop-before': this.isDropBeforeThread(thread),
+                                                        'o-drop-after': this.isDropAfterThread(thread)
+                                                    }" draggable="true" t-on-dragstart="(ev) => this.onThreadDragStart(ev, thread)" t-on-dragend="() => this.onThreadDragEnd()" t-on-dragover="(ev) => this.onThreadDragOver(ev, thread)" t-on-drop="(ev) => this.onThreadDrop(ev, thread)" t-on-click="(ev) => this.openThread(ev, thread)">
+                                                <div class="bg-inherit position-relative d-flex flex-shrink-0" style="width:30px;height:30px; margin-left: 3.25rem;">
+                                                    <img class="w-100 h-100 rounded o_object_fit_cover" t-att-src="thread.imgUrl" alt="Thread Image"/>
+                                                    <ThreadIcon t-if="thread.type === 'chat' or (thread.type === 'channel' and !thread.authorizedGroupFullName)" thread="thread" size="'small'" className="'o-mail-DiscussSidebarChannel-threadIcon position-absolute bottom-0 end-0 p-1 me-n1 mb-n1 d-flex align-items-center justify-content-center rounded-circle bg-inherit'"/>
+                                                </div>
+
+                                                <span class="ms-3 me-2 text-truncate" t-att-class="{ 'o-item-unread fw-bolder': thread.message_unread_counter > 0 and !thread.muteUntilDateTime }">
+                                                    <t t-esc="thread.displayName"/>
+                                                </span>
+
+                                                <div class="flex-grow-1"/>
+
+                                                <div class="me-3 d-flex align-items-center">
+                                                    <span class="text-muted opacity-75" title="Bỏ khỏi section" t-on-click.stop="() => this.onUnassignThreadFromSection(thread)">
+                                                        <i class="fa fa-times"/>
+                                                    </span>
+                                                </div>
+                                            </button>
+                                        </t>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="px-5 py-1 text-muted small">Chưa có kênh</div>
+                                    </t>
+                                </t>
+                            </div>
+                        </t>
+                    </t>
+
+                    <t t-foreach="filteredThreads(category) || []" t-as="thread" t-key="thread.localId">
+                        <button class="o-mail-DiscussSidebarChannel o-mail-DiscussSidebar-item btn btn-secondary d-flex align-items-center w-100 px-0 py-2 border-0 rounded-0 text-reset" t-att-class="{
+                                    'bg-inherit': thread.notEq(store.discuss.thread),
+                                    'o-active': thread.eq(store.discuss.thread),
+                                    'o-unread': thread.message_unread_counter > 0 and !thread.muteUntilDateTime,
+                                    'opacity-50': thread.muteUntilDateTime,
+                                    'o-bulk-selected': category.id === 'channels' and state.bulkSelecting and this.isThreadSelected(thread),
+                                    'o-drop-before': this.isDropBeforeThread(thread),
+                                    'o-drop-after': this.isDropAfterThread(thread)
+                                }" draggable="true" t-on-dragstart="(ev) => this.onThreadDragStart(ev, thread)" t-on-dragend="() => this.onThreadDragEnd()" t-on-dragover="(ev) => this.onThreadDragOver(ev, thread)" t-on-drop="(ev) => this.onThreadDrop(ev, thread)" t-on-click="(ev) => category.id === 'channels' and state.bulkSelecting ? this.toggleThreadSelection(thread) : this.openThread(ev, thread)">
+
+                            <t t-if="category.id === 'channels' and state.bulkSelecting">
+                                <div class="o_bulk_checkbox_wrap ms-3 me-2" t-on-click.stop="() => this.toggleThreadSelection(thread)">
+                                    <input type="checkbox" class="form-check-input" t-att-checked="this.isThreadSelected(thread) ? true : undefined"/>
+                                </div>
+                            </t>
+
+                            <div class="bg-inherit position-relative d-flex ms-4 flex-shrink-0" style="width:30px;height:30px">
+                                <img class="w-100 h-100 rounded o_object_fit_cover" t-att-src="thread.imgUrl" alt="Thread Image"/>
+                                <ThreadIcon t-if="thread.type === 'chat' or (thread.type === 'channel' and !thread.authorizedGroupFullName)" thread="thread" size="'small'" className="'o-mail-DiscussSidebarChannel-threadIcon position-absolute bottom-0 end-0 p-1 me-n1 mb-n1 d-flex align-items-center justify-content-center rounded-circle bg-inherit'"/>
+                            </div>
+
+                            <span class="ms-3 me-2 text-truncate" t-att-class="{ 'o-item-unread fw-bolder': thread.message_unread_counter > 0 and !thread.muteUntilDateTime }">
+                                <t t-esc="thread.displayName"/>
+                            </span>
+
+                            <div class="flex-grow-1"/>
+
+                            <div class="o-mail-DiscussSidebarChannel-commands ms-1 me-3 d-flex align-items-center">
+                                <i t-if="thread.type === 'channel'" t-attf-class="fa fa-cog {{ hover_class }}" title="Channel settings" t-on-click.stop="() => this.openSettings(thread)" role="img"/>
+
+                                <div t-if="threadService.canLeave(thread)" class="fa fa-times ms-1" t-attf-class="{{ hover_class }}" t-on-click.stop="() => this.leaveChannel(thread)" title="Leave this channel" role="img"/>
+
+                                <div t-if="threadService.canUnpin(thread)" t-attf-class="fa fa-times ms-1 {{ hover_class }}" t-on-click.stop="() => threadService.unpin(thread)" title="Unpin Conversation" role="img"/>
+
+                                <div t-if="category.id === 'channels' and !state.bulkSelecting and (state.sections || []).length" class="dropdown d-inline-block ms-1">
+                                    <button type="button" class="btn p-0 text-start text-700 opacity-100-hover opacity-75" data-bs-toggle="dropdown" title="Đưa vào section">
+                                        <i class="fa fa-folder-open"/>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-end">
+                                        <t t-foreach="state.sections || []" t-as="section" t-key="section.id">
+                                            <a href="#" class="dropdown-item" t-on-click.prevent="() => this.onAssignThreadToSection(thread, section)">
+                                                <t t-esc="section.name"/>
+                                            </a>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <t t-foreach="channelIndicators || []" t-as="indicator" t-key="indicator_index" t-component="indicator" t-props="{ thread }"/>
+
+                            <t t-set="counter" t-value="threadService.getCounter(thread)"/>
+                            <div t-if="counter > 0">
+                                <span t-attf-class="o-mail-DiscussSidebar-badge badge rounded-pill o-discuss-badge ms-1 me-3 fw-bold {{thread.muteUntilDateTime ? 'o-muted' : ''}}" t-esc="counter"/>
+                            </div>
+                        </button>
+                    </t>
+                </t>
+
+                <t t-elif="store.discuss.thread and store.discuss.thread.in(category.threads || [])">
+                    <t t-set="thread" t-value="store.discuss.thread"/>
+                    <button class="o-mail-DiscussSidebarChannel o-mail-DiscussSidebar-item btn btn-secondary d-flex align-items-center w-100 px-0 py-2 border-0 rounded-0 text-reset" t-att-class="{
+                                'bg-inherit': thread.notEq(store.discuss.thread),
+                                'o-active': thread.eq(store.discuss.thread),
+                                'o-unread': thread.message_unread_counter > 0 and !thread.muteUntilDateTime,
+                                'opacity-50': thread.muteUntilDateTime
+                            }" t-on-click="(ev) => this.openThread(ev, thread)">
+                        <div class="bg-inherit position-relative d-flex ms-4 flex-shrink-0" style="width:30px;height:30px">
+                            <img class="w-100 h-100 rounded o_object_fit_cover" t-att-src="thread.imgUrl" alt="Thread Image"/>
+                            <ThreadIcon t-if="thread.type === 'chat' or (thread.type === 'channel' and !thread.authorizedGroupFullName)" thread="thread" size="'small'" className="'o-mail-DiscussSidebarChannel-threadIcon position-absolute bottom-0 end-0 p-1 me-n1 mb-n1 d-flex align-items-center justify-content-center rounded-circle bg-inherit'"/>
+                        </div>
+                        <span class="ms-3 me-2 text-truncate">
+                            <t t-esc="thread.displayName"/>
+                        </span>
+                        <div class="flex-grow-1"/>
+                    </button>
+                </t>
+            </t>
+        </xpath>
+    </t>
+
+</templates>

@@ -134,6 +134,20 @@ class ProposalSheet(models.Model):
     show_button_reset_draft = fields.Boolean(compute='_compute_show_buttons')
     show_button_withdraw_submit = fields.Boolean(compute="_compute_show_buttons")
     is_type_readonly = fields.Boolean(compute='_compute_is_type_readonly', store=False)
+    cost_estimate_line_id = fields.Many2one(
+        'cost.estimate.line',
+        string='Hạng mục dự toán',
+        domain="[('cost_estimate_id.project_id', '=', project_id)]"
+    )
+    other_estimate_item = fields.Many2one(
+        comodel_name="estimate.item.other",
+        string="Hạng mục khác",
+    )
+    estimate_choice = fields.Selection([
+        ("estimate", "Chọn từ dự toán"),
+        ("other", "Khác"),
+    ], string="Loại hạng mục", default="estimate", required=True)
+
     
 
     @api.model
@@ -423,36 +437,6 @@ class ProposalSheet(models.Model):
         self._send_notification(message, partner_ids)
 
         return {'type': 'ir.actions.client', 'tag': 'reload'}
-        self.ensure_one()
-
-        # ✅ Chỉ được rút lại khi đang chờ Quản lý duyệt
-        if self.state != 'reviewed_manager':
-            raise UserError(_("Chỉ phiếu đang chờ Quản lý duyệt mới được hủy gửi."))
-
-        # ✅ Chỉ người tạo phiếu mới được rút lại
-        if self.requested_by != self.env.user:
-            raise UserError(_("Chỉ người đề xuất mới có quyền hủy gửi phiếu này."))
-
-        # Reset về nháp để sửa
-        self.state = 'draft'
-
-        # (Tuỳ bạn) có thể reset lại ngày gửi để khỏi “dính lịch sử”
-        self.date_proposal = False
-        self.date_reviewed_manager = False
-
-        # Notify cho người tạo + quản lý (để quản lý biết phiếu đã bị rút)
-        partner_ids = [self.requested_by.partner_id.id]
-        if self.manager_id and self.manager_id.user_id and self.manager_id.user_id.partner_id:
-            partner_ids.append(self.manager_id.user_id.partner_id.id)
-
-        message = (
-            f"<p>Người đề xuất <em>{self.env.user.name}</em> đã <strong>hủy gửi</strong> "
-            f"phiếu <strong>{self.name}</strong> để chỉnh sửa và sẽ gửi lại sau.</p>"
-        )
-        self._send_notification(message, partner_ids)
-
-        return {'type': 'ir.actions.client', 'tag': 'reload'}
-
     def action_waiting_accounting_paid(self):
         if self.state != 'waiting_accounting_paid':
             raise UserError("Chỉ phiếu đã phê duyệt mới được hoàn tất.")
