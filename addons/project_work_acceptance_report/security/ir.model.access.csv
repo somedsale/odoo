@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_project_work_acceptance_user,project.work.acceptance user,model_project_work_acceptance,project.group_project_user,1,1,1,1
+access_project_work_acceptance_manager,project.work.acceptance manager,model_project_work_acceptance,project.group_project_manager,1,1,1,1
+access_project_work_acceptance_all,project.work.acceptance all,model_project_work_acceptance,,1,0,0,0
+
+access_project_acceptance_assign_multi_wizard_manager,access.project.acceptance.assign.multi.wizard.manager,model_project_acceptance_assign_multi_wizard,project.group_project_manager,1,1,1,1

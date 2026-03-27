@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <menuitem id="menu_project_work_acceptance_root"
+              name="Báo cáo nghiệm thu"
+              parent="project.menu_main_pm"
+              sequence="30"/>
+
+    <menuitem id="menu_my_acceptance_project_report"
+              name="Báo cáo Nghiệm thu của tôi"
+              parent="menu_project_work_acceptance_root"
+              action="action_my_acceptance_project_report"
+              sequence="10"/>
+
+    <menuitem id="menu_manager_acceptance_project_report"
+              name="Quản lý Báo cáo Nghiệm thu"
+              parent="menu_project_work_acceptance_root"
+              action="action_manager_acceptance_project_report"
+              groups="project.group_project_manager"
+              sequence="20"/>
+</odoo>

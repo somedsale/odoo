@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_manager_assignment_project_report_tree" model="ir.ui.view">
+        <field name="name">project.project.manager.assignment.report.tree</field>
+        <field name="model">project.project</field>
+        <field name="arch" type="xml">
+            <tree string="Dự án cần duyệt báo cáo"
+                  create="0"
+                  delete="0"
+                  js_class="manager_assignment_project_list"
+                  default_order="create_date desc, id desc"
+                  decoration-success="progress_percent &gt;= 100"
+                  decoration-warning="progress_percent &gt; 0 and progress_percent &lt; 100">
+                <header>
+                    <button name="%(project_work_from_so.action_project_report_assign_multi_wizard)d"
+                            string="Phân công người báo cáo sản lượng"
+                            type="action"
+                            class="btn btn-primary"/>
+                </header>
+
+                <field name="name" string="Dự án"/>
+                <field name="partner_id" string="Khách hàng"/>
+                <field name="contract_id" string="Hợp đồng"/>
+                <field name="assignment_user_id" string="Người báo cáo"/>
+                <field name="date_start" string="Ngày bắt đầu"/>
+                <field name="date" string="Ngày kết thúc"/>
+                <field name="value_settlement"
+                       string="Giá trị theo HĐ/thực tế"
+                       sum="Tổng"
+                       widget="monetary"
+                       options="{'currency_field': 'currency_id'}"/>
+                <field name="value_completed"
+                       string="Giá trị đã thực hiện"
+                       sum="Tổng"
+                       widget="monetary"
+                       options="{'currency_field': 'currency_id'}"/>
+                <field name="value_remaining"
+                       string="Giá trị còn lại"
+                       sum="Tổng"
+                       widget="monetary"
+                       options="{'currency_field': 'currency_id'}"/>
+                <field name="progress_percent" column_invisible="1" string="% HT"/>
+                <field name="currency_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_manager_assignment_project_report_search" model="ir.ui.view">
+        <field name="name">project.project.manager.assignment.report.search</field>
+        <field name="model">project.project</field>
+        <field name="arch" type="xml">
+            <search string="Tìm dự án cần duyệt báo cáo">
+                <field name="name" string="Dự án"/>
+                <field name="partner_id" string="Khách hàng"/>
+                <field name="contract_id" string="Hợp đồng"/>
+                <field name="assignment_user_id" string="Người báo cáo"/>
+
+                <separator/>
+
+                <filter string="Dự án mới nhất"
+                        name="newest_projects"
+                        domain="[]"
+                        context="{'order': 'create_date desc, id desc'}"/>
+
+                <filter string="Đang thực hiện"
+                        name="in_progress"
+                        domain="[('stage_id.name', '=', 'Đang thực hiện')]"/>
+
+                <filter string="Hoàn tất"
+                        name="done"
+                        domain="[('stage_id.name', '=', 'Hoàn tất')]"/>
+
+                <filter string="Dự án cũ"
+                        name="old_project"
+                        domain="[('stage_id.name', '=', 'Dự án cũ')]"/>
+
+                <filter string="Đã hủy"
+                        name="cancelled"
+                        domain="[('stage_id.name', '=', 'Đã hủy')]"/>
+
+                <filter string="Tạm ngừng"
+                        name="paused"
+                        domain="[('stage_id.name', '=', 'Đang tạm ngừng')]"/>
+
+                <filter string="Còn giá trị"
+                        name="has_remaining"
+                        domain="[('value_remaining', '&gt;', 0)]"/>
+
+                <separator/>
+
+                <filter string="Ngày bắt đầu hôm nay"
+                        name="date_start_today"
+                        domain="[('date_start', '=', context_today())]"/>
+
+                <filter string="Kết thúc hôm nay"
+                        name="date_end_today"
+                        domain="[('date', '=', context_today())]"/>
+
+                <filter string="Quá hạn"
+                        name="overdue"
+                        domain="[('date', '&lt;', context_today()), ('progress_percent', '&lt;', 100)]"/>
+
+                <group expand="0" string="Nhóm theo">
+                    <filter string="Khách hàng"
+                            name="group_partner"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter string="Người báo cáo"
+                            name="group_assignment_user"
+                            context="{'group_by': 'assignment_user_id'}"/>
+                    <filter string="Hợp đồng"
+                            name="group_contract"
+                            context="{'group_by': 'contract_id'}"/>
+                    <filter string="Giai đoạn"
+                            name="group_stage"
+                            context="{'group_by': 'stage_id'}"/>
+                    <filter string="Ngày bắt đầu"
+                            name="group_date_start"
+                            context="{'group_by': 'date_start'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_manager_assignment_project_report" model="ir.actions.act_window">
+        <field name="name">Báo cáo sản lượng quản lý</field>
+        <field name="res_model">project.project</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_manager_assignment_project_report_tree"/>
+        <field name="search_view_id" ref="view_manager_assignment_project_report_search"/>
+        <field name="context">{'search_default_newest_projects': 1}</field>
+    </record>
+
+    <menuitem id="menu_project_work_item_manager"
+              name="Quản lý sản lượng công việc"
+              parent="project_work_from_so.menu_assignment_report"
+              action="action_manager_assignment_project_report"
+              sequence="2"
+              groups="project.group_project_manager"/>
+
+</odoo>

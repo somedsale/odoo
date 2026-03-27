@@ -204,7 +204,20 @@ class SaleOrderCategory(models.Model):
 
     name = fields.Char(string='Tên hạng mục', required=True)
     color = fields.Integer(string='Màu sắc')
+    def _format_name_title(self, name):
+        return (name or "").strip().title()
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get("name"):
+                vals["name"] = self._format_name_title(vals["name"])
+        return super().create(vals_list)
+
+    def write(self, vals):
+        if vals.get("name"):
+            vals["name"] = self._format_name_title(vals["name"])
+        return super().write(vals)
 
 
 

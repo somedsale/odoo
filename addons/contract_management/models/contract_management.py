@@ -114,10 +114,25 @@ class ContractManagement(models.Model):
     signature_date = fields.Date(string='Ngày ký hợp đồng')
     planned_start_date = fields.Date(string='Ngày bắt đầu')
     planned_end_date = fields.Date(string='Ngày kết thúc')
-    description = fields.Text(string='Mô tả')
+    description = fields.Html(string='Mô tả')
     attachment_ids = fields.Many2many('ir.attachment', string='Tài liệu')
     warranty_time = fields.Integer(string="Thời gian bảo hành (tháng)", store=True)
     activity_ids = fields.One2many('mail.activity', 'res_id', domain=[('res_model', '=', 'contract.management')], string='Hoạt động liên quan')
+    location = fields.Char(string='Địa điểm thực hiện')
+    sales_category_ids = fields.Many2many(
+        'sale.order.category',
+        'contract_sale_order_category_rel',  # tên bảng quan hệ (bắt buộc để tránh None)
+        'contract_id',                       # FK tới contract.management
+        'category_id',                       # FK tới sale.order.category
+        string='Hạng mục bán hàng',
+        compute='_compute_sales_category_ids',
+        store=True,
+        readonly=True,
+    )
+    @api.depends('sale_order_id', 'sale_order_id.sales_category_ids')
+    def _compute_sales_category_ids(self):
+        for rec in self:
+            rec.sales_category_ids = rec.sale_order_id.sales_category_ids
 
     # ---------- Computed Fields ----------
 
@@ -530,6 +545,49 @@ class ProjectProject(models.Model):
         string='Số hợp đồng',
         related='contract_id.num_contract', store=True, readonly=True
     )
+    location = fields.Char(
+        string='Địa điểm thực hiện',
+        related='contract_id.location', store=True, readonly=True
+    )
+    value_contract = fields.Monetary(
+        string='Giá trị hợp đồng trước thuế',
+        related='contract_id.amount_untaxed', store=True, readonly=True
+    )
+    value_contract_tax = fields.Monetary(
+        string='Giá trị hợp đồng',
+        related='contract_id.contract_value', store=True, readonly=True
+    )
+    signature_date = fields.Date(
+        string='Ngày ký hợp đồng',
+        related='contract_id.signature_date', store=True, readonly=True
+    )
+
+    sales_category_ids = fields.Many2many(
+        'sale.order.category',
+        'project_project_sale_category_rel',   # tên bảng quan hệ (tự đặt)
+        'project_project_id',                  # cột FK về project.project
+        'category_id',                    # cột FK về sale.order.category
+        string='Hạng mục',
+        compute='_compute_sales_category_ids',
+        store=True,
+        readonly=True,
+    )
+    signature_year = fields.Char(
+        string="Năm ký",
+        compute="_compute_signature_year",
+        store=False,     # QUAN TRỌNG: không lưu DB => record cũ vẫn có ngay
+        readonly=True,
+    )
+
+    @api.depends("signature_date")
+    def _compute_signature_year(self):
+        for rec in self:
+            rec.signature_year = str(rec.signature_date.year) if rec.signature_date else ""
+    @api.depends('contract_id.sales_category_ids')
+    def _compute_sales_category_ids(self):
+        for rec in self:
+            rec.sales_category_ids = rec.contract_id.sales_category_ids
+
     @api.model_create_multi
     def create(self, vals_list):
         projects = super().create(vals_list)

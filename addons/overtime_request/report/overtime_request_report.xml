@@ -1,0 +1,533 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Paper Format -->
+    <record id="paperformat_overtime_request" model="report.paperformat">
+        <field name="name">Overtime Request A4</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">10</field>
+        <field name="margin_bottom">12</field>
+        <field name="margin_left">2</field>
+        <field name="margin_right">2</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">8</field>
+        <field name="dpi">100</field>
+    </record>
+
+    <!-- Report Action: nằm trong bánh răng > Hành động -->
+    <record id="action_report_overtime_request" model="ir.actions.report">
+        <field name="name">In phiếu đề xuất tăng ca</field>
+        <field name="model">overtime.request</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">overtime_request.report_overtime_request_template</field>
+        <field name="report_file">overtime_request.report_overtime_request_template</field>
+        <field name="print_report_name">'Phieu_Tang_Ca_%s' % (object.name or '')</field>
+        <field name="paperformat_id" ref="overtime_request.paperformat_overtime_request"/>
+        <field name="binding_model_id" ref="model_overtime_request"/>
+        <field name="binding_type">action</field>
+    </record>
+
+    <!-- Layout riêng -->
+    <template id="report_overtime_request_layout">
+        <t t-call="web.html_container">
+            <div class="header" style="display:flex; justify-content:space-between; font-family:'Times New Roman';">
+                <table style="width:100%; border-collapse:collapse; border:1px solid #fff;">
+                    <tr>
+                        <td style="text-align:left; width:50%;">
+                            <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id" alt="Company Logo" style="max-width:160px;"/>
+                        </td>
+                        <td style="text-align:right; width:50%; font-size:11px;">
+                            <span t-esc="res_company.name" style="text-transform:uppercase;"/>
+                            <br/>
+                            MST: <span t-esc="res_company.partner_id.vat or ''"/>
+                            <br/>
+                            Địa chỉ: <span t-esc="res_company.partner_id.street or ''"/>
+                            <br/>
+                            SĐT: <span t-esc="res_company.phone_accounting"/>
+                            <br/>
+                            Email: <span style="text-transform: lowercase;" t-esc="res_company.account_email"/>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="article" style="font-family:'Times New Roman'; font-size:14pt; padding-top:20px;">
+                <t t-raw="0"/>
+            </div>
+
+            <div class="footer" style="text-align:center; font-size:13pt; padding-top:4px; border-top:1px solid #000;">
+                <i>SOUTH MEDICAL TECHNOLOGY SOLUTIONS CO., LTD — All rights reserved © Somed Co., Ltd</i>
+            </div>
+        </t>
+    </template>
+
+    <!-- Template chính -->
+    <template id="report_overtime_request_template">
+        <t t-call="overtime_request.report_overtime_request_layout">
+            <main class="o_main">
+                <div class="page" style="font-family:'Times New Roman', serif;">
+
+                    <style>
+                        table.report-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            border: 1.5px solid black;
+                            font-size: 16px;
+                            table-layout: fixed;
+                            margin-top: 10px;
+                        }
+
+                        table.report-table th,
+                        table.report-table td {
+                            border: 1.5px solid black;
+                            padding: 10px 8px;
+                            vertical-align: middle !important;
+                        }
+
+                        table.report-table th {
+                            background: #f2f2f2;
+                            text-align: center;
+                            font-weight: bold;
+                            font-size: 15px !important;
+                            line-height: 1.35;
+                        }
+
+                        table.report-table td.text-center { text-align: center; }
+                        table.report-table td.text-left { text-align: left; }
+                        table.report-table td.text-end { text-align: right !important; }
+
+                        table.report-table tbody td {
+                            font-size: 14px !important;
+                            line-height: 1.45;
+                        }
+
+                        table.report-table thead tr:nth-child(2) th {
+                            font-size: 14px !important;
+                            font-weight: 700;
+                            padding-top: 6px;
+                            padding-bottom: 6px;
+                        }
+
+                        table.report-table th.col-stt,
+                        table.report-table td.col-stt {
+                            width: 6%;
+                        }
+
+                        table.report-table th.col-employee,
+                        table.report-table td.col-employee {
+                            width: 18%;
+                        }
+
+                        table.report-table th.col-work,
+                        table.report-table td.col-work {
+                            width: 28%;
+                            word-break: break-word;
+                            white-space: normal;
+                        }
+
+                        table.report-table th.col-time,
+                        table.report-table td.col-time {
+                            width: 6%;
+                        }
+
+                        table.report-table th.col-hours,
+                        table.report-table td.col-hours {
+                            width: 6%;
+                        }
+
+                        table.report-table th.col-ot,
+                        table.report-table td.col-ot {
+                            width: 10%;
+                            word-break: break-word;
+                            white-space: normal;
+                        }
+
+                        table.report-table th.col-note,
+                        table.report-table td.col-note {
+                            width: 9%;
+                            word-break: break-word;
+                            white-space: normal;
+                        }
+
+                        table.general_information {
+                            width: 100%;
+                            border: none;
+                            font-size: 14px;
+                            margin-bottom: 15px;
+                            font-family: "Times New Roman", serif;
+                            border-collapse: collapse;
+                        }
+
+                        table.general_information td {
+                            width: 50%;
+                            vertical-align: top;
+                            padding: 5px 10px;
+                            background-color: white;
+                            border: none;
+                        }
+
+                        table.general_information p {
+                            margin: 4px 0;
+                            line-height: 1.4;
+                        }
+
+                        table.general_information .label {
+                            font-weight: bold !important;
+                            color: #000 !important;
+                        }
+
+                        table.general_information .info-value {
+                            font-weight: normal;
+                            margin-left: 4px;
+                            color: #000 !important;
+                        }
+
+                        .reason-box {
+                            min-height: 60px;
+                            border: 1px solid #000;
+                            padding: 8px 10px;
+                            font-size: 14px;
+                            line-height: 1.45;
+                            margin-top: 6px;
+                            margin-bottom: 14px;
+                        }
+
+                        .signature table {
+                            table-layout: fixed;
+                            border-color: white;
+                            border-style: none;
+                            outline: none;
+                            border-collapse: collapse;
+                            width: 100%;
+                        }
+
+                        .signature td {
+                            border-color: white !important;
+                            border-style: none;
+                            outline: none;
+                            border-collapse: collapse;
+                        }
+
+                        .signature tr {
+                            border-color: white !important;
+                            border-style: none;
+                            outline: none;
+                            border-collapse: collapse;
+                        }
+
+                        .signature td.sig-cell {
+                            width: 25%;
+                            vertical-align: top !important;
+                            text-align: center;
+                            padding: 12px 8px !important;
+                        }
+
+                        .signature .sign-slot {
+                            min-height: 80px;
+                            margin-top: 8px;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: flex-start;
+                            gap: 10px;
+                        }
+
+                        .signature .sign-hint {
+                            font-style: italic;
+                            line-height: 1.4;
+                            margin-bottom: 6px;
+                        }
+
+                        .signature .confirm-stamp {
+                            font-weight: bold;
+                            text-transform: capitalize;
+                            line-height: 1.4;
+                            height: 40px;
+                        }
+
+                        .signature .sign-name {
+                            font-style: italic;
+                            line-height: 1.4;
+                        }
+
+                        .report-note {
+                            margin-top: 12px;
+                            font-size: 14px;
+                            line-height: 1.6;
+                        }
+
+                        .report-note .note-title {
+                            font-weight: bold;
+                        }
+                    </style>
+
+                    <h2 style="text-align:center; padding:10px 0; font-weight:bold; margin-top:50px; font-size:32px;">
+                        PHIẾU ĐỀ XUẤT TĂNG CA
+                    </h2>
+
+                    <t t-foreach="enumerate(docs)" t-as="doc_with_index">
+                        <t t-set="idx" t-value="doc_with_index[0]"/>
+                        <t t-set="o" t-value="doc_with_index[1]"/>
+
+                        <!-- Thông tin chung -->
+                        <div style="margin-bottom: 15px; font-size: 15px;">
+                            <span class="label">Mã Phiếu:</span>
+                            <span class="info-value">
+                                <t t-esc="o.name or ''"/>
+                            </span>
+                        </div>
+
+                        <div style="margin-bottom: 15px; font-size: 15px;">
+                            <span class="label">Phòng ban:</span>
+                            <span class="info-value">
+                                <t t-esc="o.department_id.name or ''"/>
+                            </span>
+                        </div>
+
+                        <div style="margin-bottom: 15px; font-size: 15px;">
+                            <span class="label">Dự Án:</span>
+                            <span class="info-value">
+                                <t t-esc="o.project_id.display_name or ''"/>
+                            </span>
+                        </div>
+
+                        <div style="margin-bottom: 15px; font-size: 15px;">
+                            <span class="label">Ngày tăng ca:</span>
+                            <span class="info-value">
+                                <span t-field="o.overtime_date"/>
+                            </span>
+                        </div>
+
+                        <!-- Lý do -->
+                        <div style="margin-top: 8px; font-size: 15px;">
+                            <strong style="font-weight:bold !important;">Lý do tăng ca:</strong>
+                            <span class="info-value">
+                                <t t-esc="o.reason or ''"/>
+                            </span>
+                        </div>
+
+                        <!-- Bảng chi tiết -->
+                        <table class="report-table">
+                            <thead style="background-color:#27B1FC !important;">
+                                <tr style="color:#000 !important; font-weight:bold;">
+                                    <th class="col-stt">STT</th>
+                                    <th class="col-employee">Nhân viên</th>
+                                    <th class="col-work">Nội dung công việc</th>
+                                    <th class="col-time">Bắt đầu</th>
+                                    <th class="col-time">Kết thúc</th>
+                                    <th class="col-hours">Số giờ</th>
+                                    <th class="col-ot">Nhân viên ký nhận</th>
+                                    <th class="col-ot">Người xác nhận</th>
+                                    <th class="col-note">Ghi chú</th>
+                                </tr>
+                                <tr>
+                                    <th class="col-stt" style="text-align:center; vertical-align:middle; font-weight:bold;">(1)</th>
+                                    <th class="col-employee" style="text-align:center; vertical-align:middle; font-weight:bold;">(2)</th>
+                                    <th class="col-work" style="text-align:center; vertical-align:middle; font-weight:bold;">(3)</th>
+                                    <th class="col-time" style="text-align:center; vertical-align:middle; font-weight:bold;">(4)</th>
+                                    <th class="col-time" style="text-align:center; vertical-align:middle; font-weight:bold;">(5)</th>
+                                    <th class="col-hours" style="text-align:center; vertical-align:middle; font-weight:bold;">(6)</th>
+                                    <th class="col-ot" style="text-align:center; vertical-align:middle; font-weight:bold;">(7)</th>
+                                    <th class="col-ot" style="text-align:center; vertical-align:middle; font-weight:bold;">(8)</th>
+                                    <th class="col-note" style="text-align:center; vertical-align:middle; font-weight:bold;">(9)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="enumerate(o.line_ids)" t-as="line_with_index">
+                                    <t t-set="line_index" t-value="line_with_index[0]"/>
+                                    <t t-set="line" t-value="line_with_index[1]"/>
+
+                                    <tr>
+                                        <td class="text-center col-stt">
+                                            <t t-esc="line_index + 1"/>
+                                        </td>
+
+                                        <td class="col-employee">
+                                            <t t-esc="line.employee_id.name or ''"/>
+                                        </td>
+
+                                        <td class="col-work">
+                                            <t t-esc="line.work_content or ''"/>
+                                        </td>
+
+                                        <td class="text-center col-time">
+                                            <t t-if="line.time_start and line.time_start > 0">
+                                                <t t-set="start_h" t-value="int(line.time_start)"/>
+                                                <t t-set="start_m" t-value="int(round((line.time_start - int(line.time_start)) * 60))"/>
+                                                <t t-esc="'%02d:%02d' % (start_h, start_m)"/>
+                                            </t>
+                                        </td>
+
+                                        <td class="text-center col-time">
+                                            <t t-if="line.time_end and line.time_end > 0">
+                                                <t t-set="end_h" t-value="int(line.time_end)"/>
+                                                <t t-set="end_m" t-value="int(round((line.time_end - int(line.time_end)) * 60))"/>
+                                                <t t-esc="'%02d:%02d' % (end_h, end_m)"/>
+                                            </t>
+                                        </td>
+
+                                        <td class="text-center col-hours">
+                                            <t t-if="line.hours and line.hours > 0">
+                                                <t t-set="hours_h" t-value="int(line.hours)"/>
+                                                <t t-set="hours_m" t-value="int(round((line.hours - int(line.hours)) * 60))"/>
+                                                <t t-esc="'%02d:%02d' % (hours_h, hours_m)"/>
+                                            </t>
+                                        </td>
+
+                                        <td class="col-ot"></td>
+                                        <td class="col-ot"></td>
+
+                                        <td class="col-note">
+                                            <t t-esc="line.note or ''"/>
+                                        </td>
+                                    </tr>
+                                </t>
+
+                                <tr t-if="not o.line_ids">
+                                    <td colspan="9" class="text-center">
+                                        Không có dữ liệu
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Chú thích -->
+                        <div class="report-note">
+                            <div class="note-title">Chú thích:</div>
+                            <div style="font-style: italic; padding-left: 20px;">(7): Nhân viên ký xác nhận sau khi tăng ca</div>
+                            <div style="font-style: italic; padding-left: 20px;">(8): Người đề nghị/ Trưởng bộ phận xác nhận sau tăng ca</div>
+                        </div>
+
+                        <!-- Lý do từ chối -->
+                        <div t-if="o.reject_reason" style="margin-top: 15px; font-size: 14px;">
+                            <p>
+                                <strong style="font-weight:bold !important;">Lý do từ chối:</strong>
+                                <span class="info-value">
+                                    <t t-esc="o.reject_reason"/>
+                                </span>
+                            </p>
+                        </div>
+
+                        <!-- Chữ ký -->
+                        <div class="signature" style="margin-top:50px; border:none; font-size:16px;">
+    <table style="width:100%; text-align:center; border-color:white; border-style:none; outline:none; border-collapse:collapse; table-layout:fixed;">
+        <t t-set="fmt_date_or_placeholder" t-value="lambda d: d.strftime('%d/%m/%Y') if d else '...../...../%s' % (context_timestamp(o.create_date).strftime('%Y') if o.create_date else '2026')"/>
+
+        <tr style="border:none; height:38px;">
+            <td style="vertical-align:middle !important; text-align:center; padding:0 8px 10px 8px;">
+                <t t-esc="fmt_date_or_placeholder(o.date_submitted)"/>
+            </td>
+            <td style="vertical-align:middle !important; text-align:center; padding:0 8px 10px 8px;">
+                <t t-esc="fmt_date_or_placeholder(o.date_reviewed_manager)"/>
+            </td>
+            <td style="vertical-align:middle !important; text-align:center; padding:0 8px 10px 8px;">
+                <t t-esc="fmt_date_or_placeholder(o.date_reviewed_hr)"/>
+            </td>
+            <td style="vertical-align:middle !important; text-align:center; padding:0 8px 10px 8px;">
+                <t t-esc="fmt_date_or_placeholder(o.date_approved)"/>
+            </td>
+        </tr>
+
+        <tr style="border:none; height:32px;">
+            <td style="vertical-align:middle !important; text-align:center; padding:4px 8px;">
+                <strong>NGƯỜI ĐỀ XUẤT</strong>
+            </td>
+            <td style="vertical-align:middle !important; text-align:center; padding:4px 8px;">
+                <strong>TRƯỞNG BỘ PHẬN</strong>
+            </td>
+            <td style="vertical-align:middle !important; text-align:center; padding:4px 8px;">
+                <strong>NHÂN SỰ</strong>
+            </td>
+            <td style="vertical-align:middle !important; text-align:center; padding:4px 8px;">
+                <strong>GIÁM ĐỐC</strong>
+            </td>
+        </tr>
+
+        <tr style="border:none;">
+            <td class="sig-cell">
+                <div class="sign-hint">(Ký, họ tên)</div>
+                <div class="sign-slot">
+                    <div class="confirm-stamp">
+                        <t t-set="proposer_ok" t-value="o.state in ['reviewed_manager','reviewed_hr','approved','done','rejected'] or o.date_submitted"/>
+                        <t t-if="proposer_ok">
+                            <i>(Đã xác nhận)</i>
+                        </t>
+                        <t t-else="">
+                            <span>&#160;</span>
+                        </t>
+                    </div>
+                    <div class="sign-name">
+                        <t t-esc="o.requested_by.name or ''"/>
+                    </div>
+                </div>
+            </td>
+
+            <td class="sig-cell">
+                <div class="sign-hint">(Ký, họ tên)</div>
+                <div class="sign-slot">
+                    <div class="confirm-stamp">
+                        <t t-set="manager_ok" t-value="o.state in ['reviewed_hr','approved','done'] or o.date_reviewed_manager"/>
+                        <t t-if="manager_ok">
+                            <i>(Đã xác nhận)</i>
+                        </t>
+                        <t t-else="">
+                            <span>&#160;</span>
+                        </t>
+                    </div>
+                    <div class="sign-name">
+                        <t t-esc="(o.manager_approved_by and o.manager_approved_by.name) or (o.manager_id and o.manager_id.name) or ''"/>
+                    </div>
+                </div>
+            </td>
+
+            <td class="sig-cell">
+                <div class="sign-hint">(Ký, họ tên)</div>
+                <div class="sign-slot">
+                    <div class="confirm-stamp">
+                        <t t-set="hr_ok" t-value="o.state in ['approved','done'] or o.date_reviewed_hr"/>
+                        <t t-if="hr_ok">
+                            <i>(Đã xác nhận)</i>
+                        </t>
+                        <t t-else="">
+                            <span>&#160;</span>
+                        </t>
+                    </div>
+                    <div class="sign-name">
+                        <t t-esc="(o.hr_approved_by and o.hr_approved_by.name) or ''"/>
+                    </div>
+                </div>
+            </td>
+
+            <td class="sig-cell">
+                <div class="sign-hint">(Ký, họ tên)</div>
+                <div class="sign-slot">
+                    <div class="confirm-stamp">
+                        <t t-set="boss_ok" t-value="o.state in ['done'] or o.date_approved"/>
+                        <t t-if="boss_ok">
+                            <i>(Đã xác nhận)</i>
+                        </t>
+                        <t t-else="">
+                            <span>&#160;</span>
+                        </t>
+                    </div>
+                    <div class="sign-name">
+                        <t t-esc="(o.director_approved_by and o.director_approved_by.name) or (o.director_user_id and o.director_user_id.name) or ''"/>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+                        <t t-if="(idx + 1) &lt; len(docs)">
+                            <div style="page-break-before: always;"></div>
+                        </t>
+                    </t>
+                </div>
+            </main>
+        </t>
+    </template>
+
+</odoo>

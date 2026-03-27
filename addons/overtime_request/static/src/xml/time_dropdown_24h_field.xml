@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="overtime_request.TimeDropdown24hField">
+        <div class="overtime_time_dropdown_field">
+            <select
+                class="o_input overtime_time_dropdown_input"
+                t-att-disabled="props.readonly"
+                t-att-value="currentValue"
+                t-on-change="onChange"
+            >
+                <option value="">-- Chọn giờ --</option>
+                <t t-foreach="state.options" t-as="opt" t-key="opt.value">
+                    <option t-att-value="opt.value">
+                        <t t-esc="opt.label"/>
+                    </option>
+                </t>
+            </select>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+  <!-- TREE: Báo cáo tuần -->
+  <record id="view_project_work_weekly_progress_tree" model="ir.ui.view">
+    <field name="name">project.work.weekly.progress.tree</field>
+    <field name="model">project.work.weekly.progress</field>
+    <field name="arch" type="xml">
+      <tree string="Báo cáo sản lượng tuần" editable="bottom">
+        <!-- các field dùng trong domain/context nên cho vào view -->
+        <field name="assignment_id"/>
+        <field name="project_id"/>
+        <field name="work_item_id"/>
+        <field name="product_id"/>
+        <field name="qty_plan"/>
+        <field name="week_no"/>
+        <field name="period_start" readonly="1"/>
+        <field name="period_end" readonly="1"/>
+        <field name="qty"/>
+        <field name="uom_id"/>
+        <field name="note"/>
+        <field name="user_id" invisible="1"/>
+        <field name="company_id" invisible="1"/>
+      </tree>
+    </field>
+  </record>
+
+  <!-- FORM -->
+  <record id="view_project_work_weekly_progress_form" model="ir.ui.view">
+    <field name="name">project.work.weekly.progress.form</field>
+    <field name="model">project.work.weekly.progress</field>
+    <field name="arch" type="xml">
+      <form string="Báo cáo sản lượng tuần">
+        <sheet>
+          <group invisible="1">
+            <field name="user_id"/>
+            <field name="company_id"/>
+          </group>
+
+          <group>
+            <group>
+              <field name="assignment_id" options="{'no_create': True}"/>
+              <field name="project_id" readonly="1"/>
+              <field name="work_item_id" readonly="1"/>
+            </group>
+            <group>
+              <field name="week_no"/>
+              <field name="period_start" readonly="1"/>
+              <field name="period_end" readonly="1"/>
+            </group>
+          </group>
+
+          <group>
+            <group>
+              <field name="product_id" readonly="1"/>
+              <field name="qty_plan" readonly="1"/>
+              <field name="uom_id" readonly="1"/>
+            </group>
+            <group>
+              <field name="qty"/>
+              <field name="note"/>
+            </group>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <!-- ACTION: chỉ hiển thị báo cáo của chính user -->
+  <record id="action_my_weekly_progress" model="ir.actions.act_window">
+    <field name="name">Báo cáo sản lượng tuần của tôi</field>
+    <field name="res_model">project.work.weekly.progress</field>
+    <field name="view_mode">tree,form</field>
+    <field name="domain">[('user_id', '=', uid)]</field>
+    <field name="context">{}</field>
+    <field name="view_ids" eval="[
+      (5,0,0),
+      (0,0, {'sequence': 1, 'view_mode':'tree', 'view_id': ref('view_project_work_weekly_progress_tree')}),
+      (0,0, {'sequence': 2, 'view_mode':'form', 'view_id': ref('view_project_work_weekly_progress_form')})
+    ]"/>
+  </record>
+
+  <!-- MENU RIÊNG -->
+  <menuitem id="menu_my_weekly_progress"
+            name="Báo cáo sản lượng tuần"
+            parent="project.menu_main_pm"
+            action="action_my_weekly_progress"
+            sequence="96"/>
+</odoo>

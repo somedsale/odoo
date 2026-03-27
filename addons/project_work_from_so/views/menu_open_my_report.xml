@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="server_action_open_my_assignment_report" model="ir.actions.server">
+        <field name="name">Open My Period Report</field>
+        <field name="model_id" ref="model_project_work_assignment"/>
+        <field name="state">code</field>
+        <field name="code">
+assigns = env['project.work.assignment'].search([('user_id','=',env.uid), ('active','=',True)])
+assigns.action_prepare_periods_upto_current()
+action = env.ref('project_work_from_so.action_my_assignment_report').read()[0]
+action
+        </field>
+    </record>
+
+    <menuitem id="menu_my_assignment_report"
+              name="Báo cáo lũy kế theo kỳ"
+              parent="project.menu_main_pm"
+              action="server_action_open_my_assignment_report"
+              sequence="96"/>
+</odoo>
