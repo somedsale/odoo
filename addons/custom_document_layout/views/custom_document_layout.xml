@@ -36,13 +36,22 @@
         <xpath expr="//div[@class=&apos;pt-5&apos;]" position="replace">
             <div></div>
         </xpath>
-        <xpath expr="//div[@t-attf-class=&apos;footer o_boxed_footer o_company_#{company.id}_layout&apos;]" position="replace">
+        <xpath expr="//div[@t-attf-class='footer o_boxed_footer o_company_#{company.id}_layout']" position="replace">
             <div>
-                <div class="footer" style="position: running(footer); height: 30px; width: 100%; font-family: Arial, sans-serif; text-align: center; border-top: 1px solid #ddd;padding-top:5px">
-                    <span><i>SOUTH MEDICAL TECHNOLOGY SOLUTIONS COMPANY LIMITED - All rights reserved © Somed Co., Ltd</i>
-                    </span>
-                </div>
+                <div class="footer" style="position: running(footer); height: 30px; width: 100%; font-family: Arial, sans-serif; border-top: 1px solid #ddd; padding-top:5px;">
+                    <table style="width:100%;">
+                        <tr>
+                            <td style="text-align:center;">
+                                <i>SOUTH MEDICAL TECHNOLOGY SOLUTIONS COMPANY LIMITED - All rights reserved © Somed Co., Ltd</i>
+                            </td>
+                            <td style="text-align:right; width:100px; white-space:nowrap;">
+                        Page <span class="page"/>
+ /                            <span class="topage"/>
+                        </td>
+                    </tr>
+                </table>
             </div>
-        </xpath>
-    </template>
+        </div>
+    </xpath>
+</template>
 </odoo>

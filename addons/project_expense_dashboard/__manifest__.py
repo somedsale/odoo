@@ -7,7 +7,7 @@
         'views/project_expense_dashboard_views.xml',
         'views/cost_estimate_line_view.xml',
         'views/account_payment_reqeust_inherit.xml',
-        'views/proposal_sheet_view_inherit.xml',
+        # 'views/proposal_sheet_view_inherit.xml',
         'views/estimate_item_other_views.xml',
     ],
     'assets': {

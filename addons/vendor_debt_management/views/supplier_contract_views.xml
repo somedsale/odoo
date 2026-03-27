@@ -67,10 +67,13 @@
                         <page string="Hóa đơn">
                             <field name="invoice_ids">
                                 <tree editable="bottom">
-                                    <field name="name" width="150"/>
+                                    <field name="invoice_number" width="150" required="1"/>
                                     <field name="date" width="100"/>
                                     <field name="due_date" width="100"/>
-                                    <field name="amount" widget="monetary" class="o_list_number" width="120"/>
+                                    <field name="amount_untaxed" widget="monetary" class="o_list_number" width="120"/>
+                                    <field name="account_tax_id" />
+                                    <field name="amount_tax" widget="monetary" class="o_list_number" width="120" readonly="1"/>
+                                    <field name="amount" widget="monetary" class="o_list_number" width="120" readonly="1"/>
                                     <field name="note" width="250"/>
                                     <field name="currency_id" invisible="1" optional="hide"/>
                                 </tree>
@@ -108,9 +111,47 @@
         <field name="model">supplier.contract</field>
         <field name="arch" type="xml">
             <search string="Tìm hợp đồng mua">
+                <!-- Search fields -->
+                <field name="name" string="Tên hợp đồng"/>
+                <field name="number_contract" string="Số hợp đồng"/>
+                <field name="partner_id" string="Nhà cung cấp"/>
+                <field name="project_id" string="Dự án"/>
+                <field name="interpretation" string="Diễn giải"/>
+
+                <!-- Quick filters -->
                 <filter string="Hợp đồng còn nợ" name="has_residual" domain="[('residual_amount','&gt;',0)]" help="Lọc các hợp đồng còn nợ"/>
+
+                <filter string="Có công nợ cũ" name="has_old_debt" domain="[('old_debt','&gt;',0)]" help="Lọc các hợp đồng có công nợ cũ"/>
+
+                <filter string="Đã thanh toán hết" name="paid_full" domain="[('residual_amount','&lt;=',0)]" help="Lọc các hợp đồng đã thanh toán hết"/>
+
+                <filter string="Có tạm ứng / đã chi" name="has_paid" domain="[('paid_amount','&gt;',0)]" help="Lọc các hợp đồng đã có thanh toán"/>
+
+                <filter string="Có hóa đơn" name="has_invoice" domain="[('total_invoices','&gt;',0)]" help="Lọc các hợp đồng đã có hóa đơn"/>
+
+                <separator/>
+
+                <!-- Date filters -->
+                <filter string="Đến hạn" name="due_today" domain="[('due_date','=',context_today())]"/>
+
+                <filter string="Quá hạn" name="overdue" domain="[('due_date','&lt;',context_today()), ('residual_amount','&gt;',0)]"/>
+
+                <filter string="Sắp đến hạn 7 ngày" name="due_7_days" domain="[('due_date','&gt;=',context_today()), ('due_date','&lt;=', (context_today() + relativedelta(days=7)).strftime('%%Y-%%m-%%d')), ('residual_amount','&gt;',0)]"/>
+
+                <separator/>
+
+                <!-- Group by -->
+                <filter string="Nhóm theo Nhà cung cấp" name="group_partner" context="{'group_by':'partner_id'}"/>
+
+                <filter string="Nhóm theo Dự án" name="group_project" context="{'group_by':'project_id'}"/>
+
+                <filter string="Nhóm theo Ngày hợp đồng" name="group_contract_date" context="{'group_by':'contract_date'}"/>
+
+                <filter string="Nhóm theo Hạn thanh toán" name="group_due_date" context="{'group_by':'due_date'}"/>
+
                 <searchpanel>
                     <field name="partner_id" string="Nhà cung cấp" icon="fa-user" select="multi" enable_counters="1"/>
+
                     <field name="project_id" string="Dự án" icon="fa-folder" select="multi" enable_counters="1"/>
                 </searchpanel>
             </search>

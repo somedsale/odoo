@@ -229,7 +229,21 @@ class DailyCashFlowWizard(models.TransientModel):
         for w in self:
             try:
                 df, dt = w._resolve_dates()
-                w.period_label = f"Từ {w._format_ddmmyyyy(df)} đến {w._format_ddmmyyyy(dt)}"
+                df_str = w._format_ddmmyyyy(df)
+                dt_str = w._format_ddmmyyyy(dt)
+
+                if w.period_type == "month":
+                    w.period_label = f"Tháng {int(w.month)} Năm {w.year}"
+                elif w.period_type == "quarter":
+                    w.period_label = f"Quý {int(w.quarter)} Năm {w.year}"
+                elif w.period_type == "year":
+                    w.period_label = f"Năm {w.year}"
+                else:
+                    # custom
+                    if df == dt:
+                        w.period_label = f"ngày {df_str}"
+                    else:
+                        w.period_label = f"từ {df_str} đến {dt_str}"
             except Exception:
                 w.period_label = ""
 
@@ -308,18 +322,22 @@ class DailyCashFlowWizard(models.TransientModel):
         self.ensure_one()
 
         if self.period_type == "month":
-            return f"Báo cáo thu chi tháng {int(self.month)} năm {self.year}"
+            return f"Báo cáo thu chi Tháng {int(self.month)} Năm {self.year}"
 
         if self.period_type == "quarter":
-            return f"Báo cáo thu chi quý {int(self.quarter)} năm {self.year}"
+            return f"Báo cáo thu chi Quý {int(self.quarter)} Năm {self.year}"
 
         if self.period_type == "year":
-            return f"Báo cáo thu chi năm {self.year}"
+            return f"Báo cáo thu chi Năm {self.year}"
 
         # custom range
-        df = self.date_from.strftime("%d/%m/%Y") if self.date_from else ""
-        dt = self.date_to.strftime("%d/%m/%Y") if self.date_to else ""
-        return f"Báo cáo thu chi từ {df} đến {dt}"
+        df, dt = self._resolve_dates()
+        df_str = self._format_ddmmyyyy(df)
+        dt_str = self._format_ddmmyyyy(dt)
+
+        if df == dt:
+            return f"Báo cáo thu chi ngày {df_str}"
+        return f"Báo cáo thu chi từ {df_str} đến {dt_str}"
     def action_export_excel(self):
         self.ensure_one()
 
