@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- FORM VIEW -->
+        <record id="view_module_form_confirm_uninstall_inherit" model="ir.ui.view">
+            <field name="name">ir.module.module.form.confirm.uninstall.inherit</field>
+            <field name="model">ir.module.module</field>
+            <field name="inherit_id" ref="base.module_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='button_uninstall_wizard']" position="attributes">
+                    <attribute name="confirm">Bạn có chắc chắn muốn gỡ cài đặt module này không? Thao tác này có thể làm mất dữ liệu liên quan.</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- KANBAN VIEW -->
+        <record id="view_module_kanban_confirm_uninstall_inherit" model="ir.ui.view">
+            <field name="name">ir.module.module.kanban.confirm.uninstall.inherit</field>
+            <field name="model">ir.module.module</field>
+            <field name="inherit_id" ref="base.module_view_kanban"/>
+            <field name="arch" type="xml">
+                <xpath expr="//a[@name='button_uninstall_wizard']" position="attributes">
+                    <attribute name="confirm">Bạn có chắc chắn muốn gỡ cài đặt module này không? Thao tác này có thể làm mất dữ liệu liên quan.</attribute>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

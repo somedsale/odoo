@@ -47,7 +47,10 @@
   border-radius: var(--wt-radius);
   box-shadow: var(--wt-shadow);
   padding: 1rem;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
 }
 .wt-card--click {
   cursor: pointer;
@@ -393,4 +396,17 @@
 .wt-kpi-badge--success {
   background: #ecfdf5; /* xanh lá nhạt */
   color: #065f46;
+}
+
+.wt-select {
+  height: 34px;
+  min-width: 130px;
+  border: 1px solid #e6e8ec;
+  border-radius: 8px;
+  padding: 0 0.5rem;
+  background: #fff;
+}
+.wt-filter-item .wt-select,
+.wt-filter-item .wt-date {
+  min-width: 140px;
 }

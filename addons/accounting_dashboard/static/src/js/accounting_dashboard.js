@@ -5,7 +5,8 @@ import { useService } from "@web/core/utils/hooks";
 import { registry } from "@web/core/registry";
 import { _t } from "@web/core/l10n/translation";
 
-const STORAGE_KEY = "ad_accounting_dashboard_filters_v4";
+const STORAGE_KEY = "ad_accounting_dashboard_filters_v5";
+
 const fmtVND = (n) => `${(Number(n) || 0).toLocaleString("vi-VN")} đ`;
 const fmtDate = (dateStr) => {
   if (!dateStr) return "";
@@ -30,10 +31,14 @@ class AccountingDashboard extends Component {
     this.fmtDate = fmtDate;
 
     const today = new Date();
-    const toISO = (d) => d.toISOString().slice(0, 10);
+    const toISO = (d) => this._toISODateLocal(d);
 
     this.state = useState({
       filters: {
+        period_type: "custom", // custom | month | quarter | year
+        year: String(today.getFullYear()),
+        month: String(today.getMonth() + 1).padStart(2, "0"),
+        quarter: String(Math.floor(today.getMonth() / 3) + 1),
         date_from: toISO(new Date(today.getTime() - 29 * 24 * 3600 * 1000)),
         date_to: toISO(today),
       },
@@ -59,8 +64,100 @@ class AccountingDashboard extends Component {
     this._rendering = false;
 
     this._restoreFiltersFromStorage();
+    this._syncDatesFromPreset(false);
+
     onWillStart(async () => await this.fetchData());
     onMounted(() => this.renderCharts());
+  }
+
+  // -----------------------------
+  // Date utils
+  // -----------------------------
+  _toISODateLocal(date) {
+    if (!(date instanceof Date) || isNaN(date.getTime())) return "";
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  _getPeriodRange(periodType, year, month, quarter) {
+    const y = parseInt(year, 10) || new Date().getFullYear();
+    let from;
+    let to;
+
+    if (periodType === "month") {
+      const m = Math.min(Math.max(parseInt(month, 10) || 1, 1), 12);
+      from = new Date(y, m - 1, 1);
+      to = new Date(y, m, 0);
+    } else if (periodType === "quarter") {
+      const q = Math.min(Math.max(parseInt(quarter, 10) || 1, 1), 4);
+      const startMonth = (q - 1) * 3;
+      from = new Date(y, startMonth, 1);
+      to = new Date(y, startMonth + 3, 0);
+    } else if (periodType === "year") {
+      from = new Date(y, 0, 1);
+      to = new Date(y, 11, 31);
+    } else {
+      return null;
+    }
+
+    return {
+      date_from: this._toISODateLocal(from),
+      date_to: this._toISODateLocal(to),
+    };
+  }
+
+  _syncDatesFromPreset(notify = false) {
+    const { period_type, year, month, quarter } = this.state.filters;
+    if (period_type === "custom") return;
+
+    const range = this._getPeriodRange(period_type, year, month, quarter);
+    if (range) {
+      this.state.filters.date_from = range.date_from;
+      this.state.filters.date_to = range.date_to;
+
+      if (notify) {
+        this.notification.add(_t("Đã cập nhật khoảng ngày theo bộ lọc thời gian."), {
+          type: "info",
+        });
+      }
+    }
+  }
+
+  get yearOptions() {
+    const current = new Date().getFullYear();
+    const years = [];
+    for (let y = current + 2; y >= current - 2; y--) {
+      years.push(String(y));
+    }
+    return years;
+  }
+
+  get monthOptions() {
+    return [
+      { value: "01", label: _t("Tháng 1") },
+      { value: "02", label: _t("Tháng 2") },
+      { value: "03", label: _t("Tháng 3") },
+      { value: "04", label: _t("Tháng 4") },
+      { value: "05", label: _t("Tháng 5") },
+      { value: "06", label: _t("Tháng 6") },
+      { value: "07", label: _t("Tháng 7") },
+      { value: "08", label: _t("Tháng 8") },
+      { value: "09", label: _t("Tháng 9") },
+      { value: "10", label: _t("Tháng 10") },
+      { value: "11", label: _t("Tháng 11") },
+      { value: "12", label: _t("Tháng 12") },
+    ];
+  }
+
+  get quarterOptions() {
+    return [
+      { value: "1", label: _t("Quý 1") },
+      { value: "2", label: _t("Quý 2") },
+      { value: "3", label: _t("Quý 3") },
+      { value: "4", label: _t("Quý 4") },
+    ];
   }
 
   // -----------------------------
@@ -69,26 +166,74 @@ class AccountingDashboard extends Component {
   _restoreFiltersFromStorage() {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-      if (saved?.date_from && saved?.date_to) {
-        this.state.filters.date_from = saved.date_from;
-        this.state.filters.date_to = saved.date_to;
-      }
+      if (!saved) return;
+
+      this.state.filters.period_type = saved.period_type || this.state.filters.period_type;
+      this.state.filters.year = saved.year || this.state.filters.year;
+      this.state.filters.month = saved.month || this.state.filters.month;
+      this.state.filters.quarter = saved.quarter || this.state.filters.quarter;
+      this.state.filters.date_from = saved.date_from || this.state.filters.date_from;
+      this.state.filters.date_to = saved.date_to || this.state.filters.date_to;
     } catch (_) { }
   }
 
   _saveFiltersToStorage() {
-    const { date_from, date_to } = this.state.filters;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ date_from, date_to }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...this.state.filters }));
   }
 
   // -----------------------------
   // Helpers
   // -----------------------------
   get periodLabel() {
-    const { date_from, date_to } = this.state.filters;
+    const { period_type, year, month, quarter, date_from, date_to } = this.state.filters;
+
+    if (period_type === "month") {
+      return `Tháng ${parseInt(month || "1", 10)}/${year}`;
+    }
+    if (period_type === "quarter") {
+      return `Quý ${quarter}/${year}`;
+    }
+    if (period_type === "year") {
+      return `Năm ${year}`;
+    }
+
     if (!date_from || !date_to) return _t("Không xác định");
-    const fmt = (s) => new Date(s).toLocaleDateString("vi-VN");
-    return `${fmt(date_from)} → ${fmt(date_to)}`;
+    return `${fmtDate(date_from)} → ${fmtDate(date_to)}`;
+  }
+
+  // -----------------------------
+  // Filter events
+  // -----------------------------
+  onPeriodTypeChange(ev) {
+    this.state.filters.period_type = ev.target.value;
+    if (this.state.filters.period_type !== "custom") {
+      this._syncDatesFromPreset();
+    }
+  }
+
+  onYearChange(ev) {
+    this.state.filters.year = ev.target.value;
+    this._syncDatesFromPreset();
+  }
+
+  onMonthChange(ev) {
+    this.state.filters.month = ev.target.value;
+    this._syncDatesFromPreset();
+  }
+
+  onQuarterChange(ev) {
+    this.state.filters.quarter = ev.target.value;
+    this._syncDatesFromPreset();
+  }
+
+  onDateFromChange(ev) {
+    this.state.filters.date_from = ev.target.value;
+    this.state.filters.period_type = "custom";
+  }
+
+  onDateToChange(ev) {
+    this.state.filters.date_to = ev.target.value;
+    this.state.filters.period_type = "custom";
   }
 
   // -----------------------------
@@ -99,7 +244,6 @@ class AccountingDashboard extends Component {
     try {
       const data = await this.orm.call("wt.account.dashboard", "get_dashboard_data", [], { date_from, date_to });
 
-      // KPI
       const cashIn = Number(data?.cash_in ?? 0);
       const cashOut = Number(data?.cash_out ?? 0);
       const net = Number(data?.net_cash ?? cashIn - cashOut);
@@ -116,22 +260,17 @@ class AccountingDashboard extends Component {
         total_customer_invoice: fmtVND(totalCust),
       };
 
-      // Dư tạm ứng
       const empRemain = data?.employees_with_remain || [];
       this.state.employees_with_remain = empRemain
         .sort((a, b) => b.remain_total - a.remain_total)
         .slice(0, 10);
 
-      // ✅ Các bảng dữ liệu
       this.state.proposal_pending_count = data?.proposal_pending_count || 0;
       this.state.payment_proposals_pending_count = data?.payment_proposals_pending_count || 0;
       this.state.supplier_invoices = data?.supplier_invoices || [];
       this.state.customer_invoices = data?.customer_invoices || [];
-
-      // ✅ Dữ liệu dòng tiền thu–chi
       this.state.daily_cash_flow = data?.daily_cash_flow || [];
 
-      // Render biểu đồ
       this.renderCharts();
     } catch (e) {
       console.error(e);
@@ -157,7 +296,7 @@ class AccountingDashboard extends Component {
   // -----------------------------
   _destroyCharts() {
     Object.values(this._charts).forEach((ch) => ch?.destroy());
-    this._charts = {};
+    this._charts = { remain: null, dailyFlow: null };
   }
 
   renderCharts() {
@@ -165,7 +304,6 @@ class AccountingDashboard extends Component {
     this._rendering = true;
     this._destroyCharts();
 
-    // 1️⃣ Biểu đồ nhân viên còn dư (ngang)
     const list = this.state.employees_with_remain || [];
     if (window.Chart && this.remainChartRef.el && list.length) {
       const labels = list.map((e) => e.employee_name);
@@ -176,18 +314,16 @@ class AccountingDashboard extends Component {
         type: "bar",
         data: {
           labels,
-          datasets: [
-            {
-              label: _t("Còn dư tạm ứng"),
-              data,
-              backgroundColor: [
-                "#3B82F6", "#10B981", "#F59E0B", "#EF4444",
-                "#6366F1", "#84CC16", "#EC4899", "#F97316",
-                "#06B6D4", "#8B5CF6",
-              ],
-              borderRadius: 6,
-            },
-          ],
+          datasets: [{
+            label: _t("Còn dư tạm ứng"),
+            data,
+            backgroundColor: [
+              "#3B82F6", "#10B981", "#F59E0B", "#EF4444",
+              "#6366F1", "#84CC16", "#EC4899", "#F97316",
+              "#06B6D4", "#8B5CF6",
+            ],
+            borderRadius: 6,
+          }],
         },
         options: {
           indexAxis: "y",
@@ -202,9 +338,7 @@ class AccountingDashboard extends Component {
             },
           },
           scales: {
-            x: {
-              ticks: { callback: (v) => fmtVND(v) },
-            },
+            x: { ticks: { callback: (v) => fmtVND(v) } },
             y: { ticks: { autoSkip: false } },
           },
           onClick: (evt, elements) => {
@@ -225,7 +359,6 @@ class AccountingDashboard extends Component {
       });
     }
 
-    // 2️⃣ Biểu đồ dòng tiền thu – chi – ròng
     const dailyData = this.state.daily_cash_flow || [];
     if (window.Chart && this.dailyFlowChartRef?.el && dailyData.length) {
       const labels = dailyData.map((r) => new Date(r.date).toLocaleDateString("vi-VN"));
@@ -272,10 +405,9 @@ class AccountingDashboard extends Component {
           onClick: (evt, activeEls) => {
             if (!activeEls.length) return;
             const idx = activeEls[0].index;
-            const clickedDate = dailyData[idx].date; // YYYY-MM-DD
+            const clickedDate = dailyData[idx].date;
             const datasetLabel = activeEls[0].datasetIndex === 0 ? "receipt" : "payment";
 
-            // Gọi hàm mở action tương ứng
             if (datasetLabel === "receipt") {
               this.openDailyReceipts(clickedDate);
             } else {
@@ -299,10 +431,15 @@ class AccountingDashboard extends Component {
       name: _t("Tất cả phiếu chi trong kỳ"),
       res_model: "account.payment.request",
       views: [[false, "list"], [false, "form"]],
-      domain: [["date_payment", ">=", date_from], ["date_payment", "<=", date_to], ['status_expense', 'in', ['paid']]],
+      domain: [
+        ["date_payment", ">=", date_from],
+        ["date_payment", "<=", date_to],
+        ["status_expense", "in", ["paid"]],
+      ],
       target: "current",
     });
   }
+
   openReceipts() {
     const { date_from, date_to } = this.state.filters;
     this.action.doAction({
@@ -310,10 +447,15 @@ class AccountingDashboard extends Component {
       name: _t("Tất cả phiếu thu trong kỳ"),
       res_model: "account.receipt",
       views: [[false, "list"], [false, "form"]],
-      domain: [["date", ">=", date_from], ["date", "<=", date_to], ['state', 'in', ['posted']]],
+      domain: [
+        ["date", ">=", date_from],
+        ["date", "<=", date_to],
+        ["state", "in", ["posted"]],
+      ],
       target: "current",
     });
   }
+
   openProposals() {
     const { date_from, date_to } = this.state.filters;
     this.action.doAction({
@@ -356,13 +498,14 @@ class AccountingDashboard extends Component {
       target: "current",
     });
   }
+
   async openDailyReceipts(dateStr) {
     await this.action.doAction({
       type: "ir.actions.act_window",
       name: _t("Phiếu thu ngày ") + dateStr,
       res_model: "account.receipt",
       target: "current",
-      views: [[false, "list"], [false, "form"]], // 👈 thêm dòng này
+      views: [[false, "list"], [false, "form"]],
       domain: [["date", "=", dateStr], ["state", "in", ["posted"]]],
     });
   }
@@ -373,13 +516,14 @@ class AccountingDashboard extends Component {
       name: _t("Phiếu chi ngày ") + dateStr,
       res_model: "account.payment.request",
       target: "current",
-      views: [[false, "list"], [false, "form"]], // 👈 thêm dòng này
+      views: [[false, "list"], [false, "form"]],
       domain: [
         ["date_payment", "=", dateStr],
         ["state", "in", ["approved", "post", "paid", "done"]],
       ],
     });
   }
+
   openCustomerInvoices() {
     const { date_from, date_to } = this.state.filters;
     this.action.doAction({
@@ -392,7 +536,6 @@ class AccountingDashboard extends Component {
         ["date", ">=", date_from],
         ["date", "<=", date_to],
       ],
-
     });
   }
 
@@ -410,6 +553,7 @@ class AccountingDashboard extends Component {
       ],
     });
   }
+
   openDetailSupplierInvoice(invId) {
     this.action.doAction({
       type: "ir.actions.act_window",

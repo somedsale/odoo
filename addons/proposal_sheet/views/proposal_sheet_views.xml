@@ -63,6 +63,10 @@
                     </div>
                     <group>
                         <group>
+                            <field name="project_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft' " force_save="context.get('from_task', False)"/>
+                            <field name="estimate_choice" readonly="state != 'draft'"/>
+                            <field name="cost_estimate_line_id" invisible="estimate_choice == 'other'" options="{'no_create': True}" domain="[('project_id', '=', project_id)]" string="Hạng mục dự toán duy nhất" readonly="state != 'draft'"/>
+                            <field name="other_estimate_item" invisible="estimate_choice != 'other'" required="estimate_choice == 'other'" string="abc"/>
                             <field name="project_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft' " force_save="context.get('from_task', False)" context="{'tree_view_ref': 'proposal_sheet.view_project_project_tree_popup_simple'}"/>
                             <field name="contract_num" string="Số hợp đồng" invisible="not project_id"/>
                             <field name="cost_additional_expense_line_id" string="Hạng mục dự toán chi phí gián tiếp" domain="[('project_id', '=', project_id)]"/>

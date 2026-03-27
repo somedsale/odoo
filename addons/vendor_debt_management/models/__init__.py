@@ -7,3 +7,4 @@ from . import supplier_summary
 from . import supplier_invoice_summary
 from . import res_partner
 from . import supplier_invoice_summary
+from . import report_supplier_debt_real

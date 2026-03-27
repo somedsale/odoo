@@ -75,20 +75,84 @@
         <field name="model">account.payment.request</field>
         <field name="arch" type="xml">
             <search string="Tìm kiếm phiếu chi">
-                <field name="project_id"/>
-                <field name="name"/>
-                <field name="note"/>
-                <field name="date_payment"/>
-                <field name="bank_id"/>
-                <filter string="Đã xác nhận" name="confirmed" domain="[('state','=','confirmed')]" />
-                <filter string="Không có dự án" name="no_project" domain="[('project_id','=',False)]"/>
+
+                <!-- Search fields -->
+                <field name="name" string="Mã phiếu chi"/>
+                <field name="note" string="Nội dung chi"/>
+                <field name="proposal_sheet_id" string="Phiếu đề xuất"/>
+                <field name="project_id" string="Dự án"/>
+                <field name="receive_person" string="Người nhận tiền"/>
+                <field name="payment_person" string="Người tạo chi"/>
+                <field name="bank_id" string="Ngân hàng"/>
+                <field name="date" string="Ngày đề xuất"/>
+                <field name="date_payment" string="Ngày chi"/>
+
+                <!-- Quick filters -->
+                <separator/>
+
+                <filter string="Nháp" name="filter_draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Đã xác nhận" name="filter_confirmed" domain="[('state', '=', 'confirmed')]"/>
+                <filter string="Đã vào sổ" name="filter_post" domain="[('state', '=', 'post')]"/>
+                <filter string="Hoàn tất" name="filter_done" domain="[('state', '=', 'done')]"/>
+                <filter string="Đã hủy" name="filter_cancelled" domain="[('state', '=', 'cancelled')]"/>
+
+                <separator/>
+
+                <filter string="Chưa chi" name="filter_not_paid" domain="[('status_expense', '=', 'not yet')]"/>
+                <filter string="Đã chi" name="filter_paid" domain="[('status_expense', '=', 'paid')]"/>
+
+                <separator/>
+
+                <filter string="Tiền mặt" name="filter_cash" domain="[('payment_type', '=', 'cash')]"/>
+                <filter string="Chuyển khoản" name="filter_bank" domain="[('payment_type', '=', 'bank')]"/>
+
+                <separator/>
+
+                <filter string="Có dự án" name="filter_has_project" domain="[('project_id', '!=', False)]"/>
+                <filter string="Không có dự án" name="filter_no_project" domain="[('project_id', '=', False)]"/>
+                <filter string="Chi công trình" name="filter_project_cost" domain="[('cost_classification', '=', 'project')]"/>
+                <filter string="Chi công ty" name="filter_office_cost" domain="[('cost_classification', '=', 'office')]"/>
+
+                <separator/>
+
+                <!-- Date filters -->
+                <filter string="Hôm nay" name="filter_today" domain="[('date', '=', context_today().strftime('%%Y-%%m-%%d'))]"/>
+                <filter string="Tháng này" name="filter_this_month" domain="[
+                        ('date', '&gt;=', context_today().strftime('%%Y-%%m-01')),
+                        ('date', '&lt;=', context_today().strftime('%%Y-%%m-31'))
+                    ]"/>
+                <filter string="Đã chi hôm nay" name="filter_paid_today" domain="[('date_payment', '=', context_today().strftime('%%Y-%%m-%%d'))]"/>
+
+                <separator/>
+
+                <!-- Group by -->
+                <group expand="0" string="Nhóm theo">
+                    <filter string="Dự án" name="group_project" context="{'group_by': 'project_id'}"/>
+                    <filter string="Phiếu đề xuất" name="group_proposal" context="{'group_by': 'proposal_sheet_id'}"/>
+                    <filter string="Trạng thái" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Trạng thái chi" name="group_status_expense" context="{'group_by': 'status_expense'}"/>
+                    <filter string="Phân loại chi phí" name="group_cost_classification" context="{'group_by': 'cost_classification'}"/>
+                    <filter string="Loại chi phí" name="group_expense_type" context="{'group_by': 'expense_type'}"/>
+                    <filter string="Loại thanh toán" name="group_payment_type" context="{'group_by': 'payment_type'}"/>
+                    <filter string="Ngân hàng" name="group_bank" context="{'group_by': 'bank_id'}"/>
+                    <filter string="Người nhận tiền" name="group_receive_person" context="{'group_by': 'receive_person'}"/>
+                    <filter string="Ngày đề xuất" name="group_date" context="{'group_by': 'date'}"/>
+                    <filter string="Tháng đề xuất" name="group_date_month" context="{'group_by': 'date:month'}"/>
+                    <filter string="Ngày chi" name="group_date_payment" context="{'group_by': 'date_payment'}"/>
+                    <filter string="Tháng chi" name="group_date_payment_month" context="{'group_by': 'date_payment:month'}"/>
+                </group>
+
+                <!-- Search panel -->
                 <searchpanel>
-                    <field name="project_id" string="Dự án" enable_counters="1" />
-                    <field name="state" string="Trạng thái" icon="fa-bullseye" select="multi" enable_counters="1"/>
-                    <field name="status_expense" string="Trạng thái chi" icon="fa-bullseye" select="multi" enable_counters="1"/>
-                    <field name="cost_classification" string="Phân loại chi phí" icon="fa fa-money" select="multi" enable_counters="1"/>
-                    <field name="bank_id" string="Ngân hàng" icon="fa fa-university" select="multi" enable_counters="1"/>
+                    <field name="project_id" string="Dự án" enable_counters="1"/>
+                    <field name="state" string="Trạng thái" select="multi" enable_counters="1"/>
+                    <field name="status_expense" string="Trạng thái chi" select="multi" enable_counters="1"/>
+                    <field name="cost_classification" string="Phân loại chi phí" select="multi" enable_counters="1"/>
+                    <field name="payment_type" string="Loại thanh toán" select="multi" enable_counters="1"/>
+                    <field name="expense_type" string="Loại chi phí" select="multi" enable_counters="1"/>
+                    <field name="bank_id" string="Ngân hàng" select="multi" enable_counters="1"/>
                 </searchpanel>
+
             </search>
         </field>
     </record>
@@ -102,6 +166,7 @@
             </search>
         </field>
     </record>
+
     <record id="action_account_payment_request" model="ir.actions.act_window">
         <field name="name">Phiếu Chi</field>
         <field name="res_model">account.payment.request</field>

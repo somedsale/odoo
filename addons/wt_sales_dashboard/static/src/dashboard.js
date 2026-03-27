@@ -5,7 +5,7 @@ import { useService } from "@web/core/utils/hooks";
 import { registry } from "@web/core/registry";
 import { _t } from "@web/core/l10n/translation";
 
-const STORAGE_KEY = "wt_sales_dashboard_filters_v1"; // đổi version nếu schema khác
+const STORAGE_KEY = "wt_sales_dashboard_filters_v2";
 
 class SalesDashboard extends Component {
     static template = "wt_sales_dashboard.SalesDashboard";
@@ -16,101 +16,265 @@ class SalesDashboard extends Component {
         this.notification = useService("notification");
 
         const today = new Date();
-        const toISO = (d) => d.toISOString().slice(0, 10);
+        const toISO = (d) => this._toISODateLocal(d);
 
-        // 1) Khởi tạo state
         this.state = useState({
             kpis: {
-                total_sales: 0, avg_order_value: 0, order_count: 0, category_count: 0, total_quotations: 0, quotation_count: 0,
-                close_rate_value: 0.0, close_rate_count: 0.0,
+                total_sales: 0,
+                avg_order_value: 0,
+                order_count: 0,
+                category_count: 0,
+                total_quotations: 0,
+                quotation_count: 0,
+                close_rate_value: 0.0,
+                close_rate_count: 0.0,
             },
             charts: {
                 sales_trend: { labels: [], data: [] },
-                top_products: { labels: [], data: [], uoms: [] },
+                top_products: { labels: [], data: [], uoms: [], ids: [] },
+                sale_categories: { labels: [], data: [], colors: [], ids: [] },
             },
             recent_orders: [],
             filters: {
-                date_from: toISO(new Date(today.getTime() - 29 * 24 * 3600 * 1000)), // mặc định 30 ngày
+                period_type: "custom", // custom | month | quarter | year
+                year: String(today.getFullYear()),
+                month: String(today.getMonth() + 1).padStart(2, "0"),
+                quarter: String(Math.floor(today.getMonth() / 3) + 1),
+                date_from: toISO(new Date(today.getTime() - 29 * 24 * 3600 * 1000)),
                 date_to: toISO(today),
             },
         });
 
-        // 2) Thử phục hồi bộ lọc từ localStorage trước khi fetch
         this._restoreFiltersFromStorage();
+        this._syncDatesFromPreset(false);
 
         this.salesTrendChartRef = useRef("salesTrendChart");
         this.topProductsChartRef = useRef("topProductsChart");
         this.categoryChartRef = useRef("categoryChart");
-        this._charts = { sales: null, top: null };
+        this._charts = { sales: null, top: null, cat: null };
 
-        onWillStart(async () => { await this.fetchData(); });
-        onMounted(() => { this.renderCharts(); });
+        onWillStart(async () => {
+            await this.fetchData();
+        });
+        onMounted(() => {
+            this.renderCharts();
+        });
     }
 
-    // ===== Persist filters =====
+    // =========================
+    // Utils date
+    // =========================
+    _toISODateLocal(date) {
+        if (!(date instanceof Date) || isNaN(date.getTime())) return "";
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        const d = String(date.getDate()).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+    }
+
+    _getPeriodRange(periodType, year, month, quarter) {
+        const y = parseInt(year, 10) || new Date().getFullYear();
+        let from;
+        let to;
+
+        if (periodType === "month") {
+            const m = Math.min(Math.max(parseInt(month, 10) || 1, 1), 12);
+            from = new Date(y, m - 1, 1);
+            to = new Date(y, m, 0);
+        } else if (periodType === "quarter") {
+            const q = Math.min(Math.max(parseInt(quarter, 10) || 1, 1), 4);
+            const startMonth = (q - 1) * 3;
+            from = new Date(y, startMonth, 1);
+            to = new Date(y, startMonth + 3, 0);
+        } else if (periodType === "year") {
+            from = new Date(y, 0, 1);
+            to = new Date(y, 11, 31);
+        } else {
+            return null;
+        }
+
+        return {
+            date_from: this._toISODateLocal(from),
+            date_to: this._toISODateLocal(to),
+        };
+    }
+
+    _syncDatesFromPreset(notify = false) {
+        const { period_type, year, month, quarter } = this.state.filters;
+        if (period_type === "custom") {
+            return;
+        }
+        const range = this._getPeriodRange(period_type, year, month, quarter);
+        if (range) {
+            this.state.filters.date_from = range.date_from;
+            this.state.filters.date_to = range.date_to;
+            if (notify) {
+                this.notification.add(_t("Đã cập nhật khoảng ngày theo bộ lọc thời gian."), {
+                    type: "info",
+                });
+            }
+        }
+    }
+
+    get yearOptions() {
+        const current = new Date().getFullYear();
+        const years = [];
+        for (let y = current + 1; y >= current - 5; y--) {
+            years.push(String(y));
+        }
+        return years;
+    }
+
+    get monthOptions() {
+        return [
+            { value: "01", label: _t("Tháng 1") },
+            { value: "02", label: _t("Tháng 2") },
+            { value: "03", label: _t("Tháng 3") },
+            { value: "04", label: _t("Tháng 4") },
+            { value: "05", label: _t("Tháng 5") },
+            { value: "06", label: _t("Tháng 6") },
+            { value: "07", label: _t("Tháng 7") },
+            { value: "08", label: _t("Tháng 8") },
+            { value: "09", label: _t("Tháng 9") },
+            { value: "10", label: _t("Tháng 10") },
+            { value: "11", label: _t("Tháng 11") },
+            { value: "12", label: _t("Tháng 12") },
+        ];
+    }
+
+    get quarterOptions() {
+        return [
+            { value: "1", label: _t("Quý 1") },
+            { value: "2", label: _t("Quý 2") },
+            { value: "3", label: _t("Quý 3") },
+            { value: "4", label: _t("Quý 4") },
+        ];
+    }
+
+    // =========================
+    // Persist filters
+    // =========================
     _restoreFiltersFromStorage() {
         try {
             const raw = localStorage.getItem(STORAGE_KEY);
             if (!raw) return;
             const saved = JSON.parse(raw);
-            if (saved && saved.date_from && saved.date_to) {
-                // Optionally: validate format 'YYYY-MM-DD'
-                this.state.filters.date_from = saved.date_from;
-                this.state.filters.date_to = saved.date_to;
-            }
-        } catch (_) {
-        }
+            if (!saved) return;
+
+            this.state.filters.period_type = saved.period_type || this.state.filters.period_type;
+            this.state.filters.year = saved.year || this.state.filters.year;
+            this.state.filters.month = saved.month || this.state.filters.month;
+            this.state.filters.quarter = saved.quarter || this.state.filters.quarter;
+            this.state.filters.date_from = saved.date_from || this.state.filters.date_from;
+            this.state.filters.date_to = saved.date_to || this.state.filters.date_to;
+        } catch (_) { }
     }
+
     _saveFiltersToStorage() {
         try {
-            const { date_from, date_to } = this.state.filters;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({ date_from, date_to }));
-        } catch (_) {
-        }
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...this.state.filters }));
+        } catch (_) { }
     }
 
     get periodLabel() {
         const { date_from, date_to } = this.state.filters;
         if (!date_from || !date_to) return _t("Không xác định");
-        const fmt = (s) => new Date(s).toLocaleDateString("vi-VN");
+        const fmt = (s) => {
+            const [y, m, d] = String(s).split("-");
+            return `${d}/${m}/${y}`;
+        };
         return `${fmt(date_from)} → ${fmt(date_to)}`;
     }
 
+    // =========================
+    // Events filter
+    // =========================
+    onPeriodTypeChange(ev) {
+        this.state.filters.period_type = ev.target.value;
+        this._syncDatesFromPreset();
+    }
+
+    onYearChange(ev) {
+        this.state.filters.year = ev.target.value;
+        this._syncDatesFromPreset();
+    }
+
+    onMonthChange(ev) {
+        this.state.filters.month = ev.target.value;
+        this._syncDatesFromPreset();
+    }
+
+    onQuarterChange(ev) {
+        this.state.filters.quarter = ev.target.value;
+        this._syncDatesFromPreset();
+    }
+
+    onDateFromChange(ev) {
+        this.state.filters.date_from = ev.target.value;
+        this.state.filters.period_type = "custom";
+    }
+
+    onDateToChange(ev) {
+        this.state.filters.date_to = ev.target.value;
+        this.state.filters.period_type = "custom";
+    }
+
+    // =========================
+    // Data
+    // =========================
     async fetchData() {
         const { date_from, date_to } = this.state.filters;
         try {
-            const data = await this.orm.call("wt.sales.dashboard", "get_dashboard_data", [], { date_from, date_to });
+            const data = await this.orm.call("wt.sales.dashboard", "get_dashboard_data", [], {
+                date_from,
+                date_to,
+            });
             this.state.kpis = data.kpis || this.state.kpis;
             this.state.charts = data.charts || this.state.charts;
             this.state.recent_orders = data.recent_orders || [];
             this.renderCharts();
         } catch (e) {
             console.error(e);
-            this.notification.add(_t("Không thể tải dữ liệu bảng điều khiển."), { type: "danger" });
+            this.notification.add(_t("Không thể tải dữ liệu bảng điều khiển."), {
+                type: "danger",
+            });
         }
     }
 
     applyFilter() {
         const { date_from, date_to } = this.state.filters;
         if (date_from && date_to && date_from > date_to) {
-            this.notification.add(_t("Ngày bắt đầu phải ≤ ngày kết thúc."), { type: "warning" });
+            this.notification.add(_t("Ngày bắt đầu phải ≤ ngày kết thúc."), {
+                type: "warning",
+            });
             return;
         }
-        this._saveFiltersToStorage();   // <-- LƯU trước khi gọi
+        this._saveFiltersToStorage();
         this.fetchData();
     }
 
+    // =========================
+    // Charts
+    // =========================
     _destroyCharts() {
-        if (this._charts.sales) { this._charts.sales.destroy(); this._charts.sales = null; }
-        if (this._charts.top) { this._charts.top.destroy(); this._charts.top = null; }
-        if (this._charts.cat) { this._charts.cat.destroy(); this._charts.cat = null; }
+        if (this._charts.sales) {
+            this._charts.sales.destroy();
+            this._charts.sales = null;
+        }
+        if (this._charts.top) {
+            this._charts.top.destroy();
+            this._charts.top = null;
+        }
+        if (this._charts.cat) {
+            this._charts.cat.destroy();
+            this._charts.cat = null;
+        }
     }
 
     renderCharts() {
         this._destroyCharts();
         const { date_from, date_to } = this.state.filters;
 
-        // 1) Sales trend (click 1 điểm -> mở đơn của ngày đó)
         const fmtVN = (s) => {
             if (!s) return "";
             const [y, m, d] = String(s).split("-");
@@ -121,20 +285,19 @@ class SalesDashboard extends Component {
             this._charts.sales = new Chart(this.salesTrendChartRef.el, {
                 type: "line",
                 data: {
-                    labels: this.state.charts.sales_trend.labels, // vẫn là YYYY-MM-DD
+                    labels: this.state.charts.sales_trend.labels,
                     datasets: [{
                         label: _t("Doanh thu"),
                         data: this.state.charts.sales_trend.data,
                         borderColor: "#4F46E5",
                         backgroundColor: "rgba(79, 70, 229, 0.1)",
-                        fill: true, tension: 0.3,
+                        fill: true,
+                        tension: 0.3,
                     }],
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-
-                    // ✅ format nhãn trục X thành dd/mm/yyyy
                     scales: {
                         x: {
                             ticks: {
@@ -142,8 +305,6 @@ class SalesDashboard extends Component {
                             },
                         },
                     },
-
-                    // ✅ format tiêu đề tooltip thành dd/mm/yyyy
                     plugins: {
                         tooltip: {
                             callbacks: {
@@ -154,12 +315,10 @@ class SalesDashboard extends Component {
                             },
                         },
                     },
-
-                    // ✅ khi click, tiêu đề action hiển thị dd/mm/yyyy; domain vẫn dùng YYYY-MM-DD
                     onClick: (evt, elements) => {
                         if (!elements?.length) return;
-                        const idx = elements[0].index;               // v4 vẫn hợp lệ
-                        const day = this.state.charts.sales_trend.labels[idx]; // "YYYY-MM-DD"
+                        const idx = elements[0].index;
+                        const day = this.state.charts.sales_trend.labels[idx];
                         this.action.doAction({
                             type: "ir.actions.act_window",
                             name: _t("Đơn bán ngày ") + fmtVN(day),
@@ -177,13 +336,12 @@ class SalesDashboard extends Component {
             });
         }
 
-        // 2) Top products (click 1 thanh -> mở đơn chứa sản phẩm đó)
         if (this.topProductsChartRef.el) {
             const tp = this.state.charts.top_products || {};
             const labels = tp.labels || [];
             const data = tp.data || [];
             const uoms = tp.uoms || [];
-            const ids = tp.ids || []; // <-- NEW
+            const ids = tp.ids || [];
 
             this._charts.top = new Chart(this.topProductsChartRef.el, {
                 type: "bar",
@@ -196,7 +354,9 @@ class SalesDashboard extends Component {
                     }],
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false, indexAxis: "y",
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: "y",
                     layout: { padding: { left: 20 } },
                     plugins: {
                         tooltip: {
@@ -206,7 +366,9 @@ class SalesDashboard extends Component {
                                     const idx = ctx.dataIndex;
                                     const val = ctx.parsed.x ?? 0;
                                     const unit = uoms[idx] || "";
-                                    const n = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 2 }).format(val);
+                                    const n = new Intl.NumberFormat("vi-VN", {
+                                        maximumFractionDigits: 2,
+                                    }).format(val);
                                     return _t("Số lượng: ") + `${n} ${unit}`;
                                 },
                             },
@@ -217,6 +379,7 @@ class SalesDashboard extends Component {
                         const idx = elements[0].index;
                         const productId = ids[idx];
                         if (!productId) return;
+
                         this.action.doAction({
                             type: "ir.actions.act_window",
                             name: _t("Đơn chứa sản phẩm: ") + labels[idx],
@@ -226,7 +389,7 @@ class SalesDashboard extends Component {
                                 ["date_order", ">=", date_from],
                                 ["date_order", "<=", date_to],
                                 ["state", "in", ["sale", "done"]],
-                                ["order_line.product_id", "=", productId], // lọc theo SP
+                                ["order_line.product_id", "=", productId],
                             ],
                             target: "current",
                         });
@@ -235,19 +398,35 @@ class SalesDashboard extends Component {
             });
         }
 
-        // 3) Sale categories (click 1 phần -> mở đơn thuộc hạng mục đó)
         if (this.categoryChartRef.el) {
-            const sc = this.state.charts.sale_categories || { labels: [], data: [], colors: [], ids: [] };
+            const sc = this.state.charts.sale_categories || {
+                labels: [],
+                data: [],
+                colors: [],
+                ids: [],
+            };
             const labels = sc.labels || [];
             const data = sc.data || [];
-            const colors = (sc.colors && sc.colors.length ? sc.colors : ["#6366F1", "#3B82F6", "#06B6D4", "#10B981", "#84CC16", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#22C55E", "#F97316", "#0EA5E9"]);
-            const ids = sc.ids || []; // <-- NEW (category ids)
+            const colors = sc.colors?.length
+                ? sc.colors
+                : ["#6366F1", "#3B82F6", "#06B6D4", "#10B981", "#84CC16", "#F59E0B", "#EF4444", "#8B5CF6"];
+            const ids = sc.ids || [];
 
             this._charts.cat = new Chart(this.categoryChartRef.el, {
                 type: "doughnut",
-                data: { labels, datasets: [{ label: _t("Số đơn theo hạng mục"), data, backgroundColor: colors, borderWidth: 1 }] },
+                data: {
+                    labels,
+                    datasets: [{
+                        label: _t("Số đơn theo hạng mục"),
+                        data,
+                        backgroundColor: colors,
+                        borderWidth: 1,
+                    }],
+                },
                 options: {
-                    responsive: true, maintainAspectRatio: false, cutout: "55%",
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: "55%",
                     plugins: {
                         tooltip: {
                             callbacks: {
@@ -260,13 +439,17 @@ class SalesDashboard extends Component {
                                 },
                             },
                         },
-                        legend: { position: "right", labels: { usePointStyle: true } },
+                        legend: {
+                            position: "right",
+                            labels: { usePointStyle: true },
+                        },
                     },
                     onClick: (evt, elements) => {
                         if (!elements?.length) return;
                         const idx = elements[0].index;
                         const catId = ids[idx];
                         if (!catId) return;
+
                         this.action.doAction({
                             type: "ir.actions.act_window",
                             name: _t("Đơn theo hạng mục: ") + labels[idx],
@@ -276,7 +459,7 @@ class SalesDashboard extends Component {
                                 ["date_order", ">=", date_from],
                                 ["date_order", "<=", date_to],
                                 ["state", "in", ["draft", "sent", "sale", "done"]],
-                                ["sales_category_ids", "in", [catId]], // lọc theo hạng mục
+                                ["sales_category_ids", "in", [catId]],
                             ],
                             target: "current",
                         });
@@ -286,7 +469,9 @@ class SalesDashboard extends Component {
         }
     }
 
-
+    // =========================
+    // Actions
+    // =========================
     openSaleOrder(orderId) {
         this.action.doAction({
             type: "ir.actions.act_window",
@@ -299,7 +484,6 @@ class SalesDashboard extends Component {
 
     openTotalSales() {
         const { date_from, date_to } = this.state.filters;
-        // TIP: đã lưu filters vào localStorage rồi, nên back lại vẫn khôi phục được
         this.action.doAction({
             type: "ir.actions.act_window",
             name: _t("Đơn bán theo khoảng ngày"),
@@ -314,7 +498,10 @@ class SalesDashboard extends Component {
         });
     }
 
-    openTotalOrders() { this.openTotalSales(); }
+    openTotalOrders() {
+        this.openTotalSales();
+    }
+
     openTotalAmountQuotations() {
         const { date_from, date_to } = this.state.filters;
         this.action.doAction({
@@ -330,7 +517,11 @@ class SalesDashboard extends Component {
             target: "current",
         });
     }
-    openTotalQuotations() { this.openTotalAmountQuotations(); }
+
+    openTotalQuotations() {
+        this.openTotalAmountQuotations();
+    }
+
     openCategories() {
         this.action.doAction({
             type: "ir.actions.act_window",
@@ -340,9 +531,9 @@ class SalesDashboard extends Component {
             target: "current",
         });
     }
+
     openContracts() {
         const { date_from, date_to } = this.state.filters;
-
         this.action.doAction({
             type: "ir.actions.act_window",
             name: _t("Hợp đồng theo khoảng ngày"),
@@ -355,7 +546,6 @@ class SalesDashboard extends Component {
             target: "current",
         });
     }
-
 }
 
 registry.category("actions").add("wt_sales_dashboard.dashboard", SalesDashboard);

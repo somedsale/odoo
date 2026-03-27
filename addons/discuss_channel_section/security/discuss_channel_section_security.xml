@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="discuss_sidebar_section_rule_user" model="ir.rule">
+        <field name="name">Discuss Sidebar Section - own records</field>
+        <field name="model_id" ref="model_discuss_sidebar_section"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="discuss_sidebar_section_line_rule_user" model="ir.rule">
+        <field name="name">Discuss Sidebar Section Line - own records</field>
+        <field name="model_id" ref="model_discuss_sidebar_section_line"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+</odoo>
