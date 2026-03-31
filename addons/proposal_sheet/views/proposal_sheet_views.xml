@@ -97,8 +97,8 @@
                                     <field name="price_unit_taxed" string="Giá đề xuất (sau thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" optional="show" />
                                     <field name="price_total_taxed" string="Thành tiền (sau thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" optional="show" sum="Tổng"/>
                                     <field name="vendor_id" placeholder="Nhà cung cấp đề xuất" required="1"/>
-                                    <!-- <field name="other_estimate_item" string="Hạng mục"/> -->
-                                    <field name="cost_estimate_line_id" string="Hạng mục dự toán" domain="[('project_id', '=', parent.project_id)]"/>
+                                    <field name="other_estimate_item" string="Hạng mục khác" placeholder="Chọn hoặc tạo hạng mục khác nếu PDX chọn hạng mục khác" column_invisible="parent.estimate_choice != 'other'"/>
+                                    <field name="cost_estimate_line_id" string="Hạng mục dự toán" domain="[('project_id', '=', parent.project_id)]" placeholder="Chọn hoặc tạo hạng mục khác nếu PDX chọn hạng mục Dự toán" column_invisible="parent.estimate_choice != 'estimate'"/>
                                     <field name="description"/>
                                     <field name="currency_id" invisible="1" optional="hide"/>
                                 </tree>
