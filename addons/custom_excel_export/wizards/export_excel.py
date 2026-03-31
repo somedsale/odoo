@@ -111,7 +111,7 @@ class ExportExcelWizard(models.TransientModel):
             ws.cell(row=current_row, column=2).font = font_normal
             ws.cell(row=current_row, column=6).value = "Nhân viên kinh doanh:"
             ws.cell(row=current_row, column=6).font = font_header
-            ws.cell(row=current_row, column=7).value = doc.user_id.name
+            ws.cell(row=current_row, column=7).value = (doc.write_uid or doc.user_id).name
             ws.cell(row=current_row, column=7).font = font_normal
             current_row += 1
 
@@ -145,7 +145,7 @@ class ExportExcelWizard(models.TransientModel):
             ws.cell(row=current_row, column=2).font = font_normal
             ws.cell(row=current_row, column=6).value = "Email:"
             ws.cell(row=current_row, column=6).font = font_header
-            ws.cell(row=current_row, column=7).value = doc.user_id.email or ''
+            ws.cell(row=current_row, column=7).value = (doc.write_uid or doc.user_id).email or ''
             ws.cell(row=current_row, column=7).font = font_normal
             current_row += 1
 
