@@ -5,6 +5,10 @@ import { Component, useState, onWillStart } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { View } from "@web/views/view";
 import { ProjectWorkProjectFormOwl } from "../form/project_work_project_form_owl";
+import { CostEstimateStandardScreen } from "../js/cost_estimate_standard_screen";
+import { ProjectExpenseStandardScreen } from "../js/project_expense_standard_screen";
+import { ProjectInvoiceStandardScreen } from "../js/project_invoice_standard_screen";
+import { ProjectTaskStandardScreen } from "../js/project_task_standard_screen";
 
 function num(x) {
   const n = Number(x);
@@ -13,7 +17,14 @@ function num(x) {
 
 export class ProjectWorkDashboard extends Component {
   static template = "project_work_from_so.ProjectWorkDashboard";
-  static components = { View, ProjectWorkProjectFormOwl };
+  static components = {
+    View,
+    ProjectWorkProjectFormOwl,
+    CostEstimateStandardScreen,
+    ProjectExpenseStandardScreen,
+    ProjectInvoiceStandardScreen,
+    ProjectTaskStandardScreen,
+  };
 
   setup() {
     this.orm = useService("orm");
@@ -131,7 +142,27 @@ export class ProjectWorkDashboard extends Component {
   money(v) {
     return this._nf0.format(num(v));
   }
-
+  formatDate(value) {
+    if (!value) return "";
+    try {
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return value;
+      const dd = String(d.getDate()).padStart(2, "0");
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const yyyy = d.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    } catch {
+      return value || "";
+    }
+  }
+  pickFirstDate(r, names = []) {
+    for (const name of names) {
+      if (r && r[name]) {
+        return this.formatDate(r[name]);
+      }
+    }
+    return "";
+  }
   // ========= Pagination + Filter =========
   get filteredProjects() {
     const q = (this.state.query || "").trim().toLowerCase();
@@ -142,15 +173,23 @@ export class ProjectWorkDashboard extends Component {
 
     if (q) {
       rows = rows.filter((p) =>
-        [p.name, p.partner_name, p.stage_name, p.location, p.category_text]
+        [
+          p.name,
+          p.partner_name,
+          p.stage_name,
+          p.location,
+          p.category_text,
+          p.signature_date,
+          p.date_start,
+          p.date,
+        ]
           .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q))
+          .some((v) => String(v).toLowerCase().includes(q)),
       );
     }
-
     if (partnerId) {
       rows = rows.filter(
-        (p) => Number(p.partner_id || 0) === Number(partnerId)
+        (p) => Number(p.partner_id || 0) === Number(partnerId),
       );
     }
 
@@ -176,6 +215,9 @@ export class ProjectWorkDashboard extends Component {
         "stage_name",
         "location",
         "category_text",
+        "signature_date",
+        "date_start",
+        "date",
       ].includes(sortBy);
 
       if (isTextField) {
@@ -331,6 +373,10 @@ export class ProjectWorkDashboard extends Component {
       "location",
       "sales_category_ids",
 
+      "signature_date",
+      "date_start",
+      "date",
+
       "value_contract_tax",
       "value_settlement",
       "value_remaining",
@@ -367,7 +413,7 @@ export class ProjectWorkDashboard extends Component {
         "project.project",
         "fields_get",
         [wanted, ["type"]],
-        {}
+        {},
       );
       for (const f of wanted) {
         if (fg && fg[f]) available.add(f);
@@ -378,10 +424,9 @@ export class ProjectWorkDashboard extends Component {
 
     this.state.projectFields = Array.from(available);
   }
-
   async _resolveCategoryNames(ids) {
     const need = [...new Set(ids)].filter(
-      (id) => id && !this.state.catNameCache.has(id)
+      (id) => id && !this.state.catNameCache.has(id),
     );
     if (!need.length) return;
 
@@ -390,7 +435,7 @@ export class ProjectWorkDashboard extends Component {
         "sale.order.category",
         "name_get",
         [need],
-        {}
+        {},
       );
       for (const [id, name] of pairs || []) {
         this.state.catNameCache.set(id, name);
@@ -421,7 +466,7 @@ export class ProjectWorkDashboard extends Component {
         "project.project",
         domain,
         fields,
-        { order: "id desc", limit: 300 }
+        { order: "id desc", limit: 300 },
       );
 
       const validIds = new Set((rows || []).map((r) => r.id));
@@ -454,11 +499,15 @@ export class ProjectWorkDashboard extends Component {
           ? num(r.value_accepted)
           : num(r.value_accepted);
 
-        const value_acceptance_remaining = fields.includes("value_acceptance_remaining")
+        const value_acceptance_remaining = fields.includes(
+          "value_acceptance_remaining",
+        )
           ? num(r.value_acceptance_remaining)
           : num(r.value_acceptance_remaining);
 
-        const acceptance_progress_percent = fields.includes("acceptance_percent")
+        const acceptance_progress_percent = fields.includes(
+          "acceptance_percent",
+        )
           ? num(r.acceptance_percent)
           : num(r.acceptance_progress_percent);
 
@@ -466,7 +515,9 @@ export class ProjectWorkDashboard extends Component {
           ? num(r.value_finalized)
           : num(r.claim_value_done);
 
-        const claim_value_remaining = fields.includes("value_finalization_remaining")
+        const claim_value_remaining = fields.includes(
+          "value_finalization_remaining",
+        )
           ? num(r.value_finalization_remaining)
           : num(r.claim_value_remaining);
 
@@ -475,26 +526,28 @@ export class ProjectWorkDashboard extends Component {
           : num(r.claim_progress_percent);
 
         const customer_invoice_amount_total = num(
-          r.customer_invoice_amount_total
+          r.customer_invoice_amount_total,
         );
         const customer_invoice_received_total = num(
-          r.customer_invoice_received_total
+          r.customer_invoice_received_total,
         );
         const customer_invoice_untaxed_total = num(
-          r.customer_invoice_untaxed_total
+          r.customer_invoice_untaxed_total,
         );
         const customer_invoice_remaining_total = num(
-          r.customer_invoice_remaining_total
+          r.customer_invoice_remaining_total,
         );
         const payment_process_percent = num(r.payment_process_percent);
         const payment_vs_acceptance_percent = num(
-          r.payment_vs_acceptance_percent
+          r.payment_vs_acceptance_percent,
         );
         const payment_vs_completed_percent = num(
-          r.payment_vs_completed_percent
+          r.payment_vs_completed_percent,
         );
         const payment_vs_invoice_percent = num(r.payment_vs_invoice_percent);
-
+        const signature_date = this.formatDate(r.signature_date);
+        const date_start = this.formatDate(r.date_start);
+        const date = this.formatDate(r.date);
         return {
           id: r.id,
           stt: idx + 1,
@@ -528,6 +581,10 @@ export class ProjectWorkDashboard extends Component {
           payment_vs_acceptance_percent,
           payment_vs_completed_percent,
           payment_vs_invoice_percent,
+
+          signature_date,
+          date_start,
+          date,
         };
       });
 
@@ -652,16 +709,16 @@ export class ProjectWorkDashboard extends Component {
       totals.value_accepted += num(r.value_accepted);
       totals.value_acceptance_remaining += num(r.value_acceptance_remaining);
       totals.customer_invoice_untaxed_total += num(
-        r.customer_invoice_untaxed_total
+        r.customer_invoice_untaxed_total,
       );
       totals.customer_invoice_amount_total += num(
-        r.customer_invoice_amount_total
+        r.customer_invoice_amount_total,
       );
       totals.customer_invoice_received_total += num(
-        r.customer_invoice_received_total
+        r.customer_invoice_received_total,
       );
       totals.customer_invoice_remaining_total += num(
-        r.customer_invoice_remaining_total
+        r.customer_invoice_remaining_total,
       );
     }
     return totals;
@@ -792,6 +849,27 @@ export class ProjectWorkDashboard extends Component {
     this.state.page = 1;
     this._syncUrl();
   }
+  openTaskScreen(projectId) {
+    this.state.selectedId = Number(projectId || 0);
+    this.state.mode = "task_standard";
+  }
+  openCostEstimateScreen(projectId) {
+    this.state.selectedId = Number(projectId || 0);
+    this.state.mode = "cost_estimate_standard";
+  }
+
+  backToProjectDetail() {
+    this.state.mode = "detail";
+  }
+
+  openExpenseDashboardScreen(projectId) {
+    this.state.selectedId = Number(projectId || 0);
+    this.state.mode = "expense_standard";
+  }
+  openInvoiceDashboardScreen(projectId) {
+    this.state.selectedId = Number(projectId || 0);
+    this.state.mode = "invoice_standard";
+  }
 
   async openTasksAction() {
     try {
@@ -805,7 +883,7 @@ export class ProjectWorkDashboard extends Component {
       const action = await this.orm.call(
         "project.project",
         "action_view_tasks_custom",
-        [[this.state.selectedId]]
+        [[this.state.selectedId]],
       );
 
       if (!action) return;

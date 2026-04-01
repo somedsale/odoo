@@ -11,6 +11,12 @@ class ProjectProject(models.Model):
         string="Hóa đơn khách hàng",
     )
 
+    account_receipt_ids = fields.One2many(
+        "account.receipt",
+        "project_id",
+        string="Phiếu thu",
+    )
+
     customer_invoice_count = fields.Integer(
         string="Số hóa đơn",
         compute="_compute_customer_invoice_stats",
@@ -37,11 +43,12 @@ class ProjectProject(models.Model):
         compute="_compute_customer_invoice_stats",
         currency_field="currency_id",
     )
+
     payment_process_percent = fields.Float(
         string="% Tiền đã thu so với giá trị quyết toán",
         compute="_compute_customer_invoice_stats",
-        store=False,    )
-    # Mới
+        store=False,
+    )
     payment_vs_acceptance_percent = fields.Float(
         string="% Tiền đã thu so với nghiệm thu",
         compute="_compute_customer_invoice_stats",
@@ -57,28 +64,37 @@ class ProjectProject(models.Model):
         compute="_compute_customer_invoice_stats",
         store=False,
     )
+    receivable_by_finalization_total = fields.Monetary(
+        string="Phải thu theo thanh/quyết toán",
+        compute="_compute_customer_invoice_stats",
+        currency_field="currency_id",
+    )
     @api.depends(
         "customer_invoice_ids",
         "customer_invoice_ids.amount_total",
         "customer_invoice_ids.amount_untaxed",
-        "customer_invoice_ids.account_receipt_ids",
+        "account_receipt_ids",
+        "account_receipt_ids.amount",
+        "account_receipt_ids.state",
         "work_item_ids.value_finalized_tax",
         "work_item_ids.value_accepted_tax",
         "work_item_ids.value_completed",
         "work_item_ids.value_done_tax",
+        "value_finalized",
+        "value_accepted",
+        "value_completed",
     )
     def _compute_customer_invoice_stats(self):
         """
-        Dùng sudo để tránh lỗi quyền khi render form project.
-        Nếu customer.invoice đã có field:
-        - receipt_amount_total
-        thì dùng luôn. Nếu chưa có thì fallback cộng từ account_receipt_ids.
+        Tổng hóa đơn: lấy từ customer.invoice theo project
+        Tổng đã thu: lấy trực tiếp từ account.receipt theo project, KHÔNG phụ thuộc invoice
 
-        customer_invoice_remaining_total = value_finalized_tax - customer_invoice_received_total
+        - customer_invoice_remaining_total: còn phải thu theo hóa đơn
+        - receivable_by_finalization_total: phải thu theo thanh/quyết toán
         """
         Invoice = self.env["customer.invoice"].sudo()
+        Receipt = self.env["account.receipt"].sudo()
 
-        # Đếm nhanh theo batch
         counts = {}
         if self.ids:
             data = Invoice.read_group(
@@ -96,34 +112,27 @@ class ProjectProject(models.Model):
             rec.customer_invoice_count = counts.get(rec.id, 0)
 
             invoices = Invoice.search([("project_id", "=", rec.id)])
+            receipts = Receipt.search([
+                ("project_id", "=", rec.id),
+                ("state", "=", "posted"),
+            ])
+
             total_invoice = sum(invoices.mapped("amount_total") or [0.0])
             total_untaxed = sum(invoices.mapped("amount_untaxed") or [0.0])
+            total_received = sum(receipts.mapped("amount") or [0.0])
 
-            total_received = 0.0
+            # Còn phải thu theo hóa đơn
+            total_remaining_invoice = total_invoice - total_received
 
-            for inv in invoices:
-                # Ưu tiên field tổng đã thu nếu đã có trên customer.invoice
-                if "receipt_amount_total" in inv._fields:
-                    total_received += inv.receipt_amount_total or 0.0
-                else:
-                    # fallback cộng từ phiếu thu
-                    receipt_sum = 0.0
-                    for r in inv.account_receipt_ids:
-                        if "state" in r._fields and r.state in ("draft", "cancel"):
-                            continue
-                        if "amount" in r._fields:
-                            receipt_sum += r.amount or 0.0
-                        elif "amount_total" in r._fields:
-                            receipt_sum += r.amount_total or 0.0
-                    total_received += receipt_sum
-
-            # ✅ MỚI: Còn lại = Giá trị quyết toán - Đã thu
-            total_remaining = (rec.value_finalized or 0.0) - (total_received or 0.0)
+            # Phải thu theo thanh/quyết toán
+            total_remaining_finalization = (rec.value_finalized or 0.0) - total_received
 
             rec.customer_invoice_amount_total = total_invoice
             rec.customer_invoice_received_total = total_received
-            rec.customer_invoice_remaining_total = total_remaining
+            rec.customer_invoice_remaining_total = total_remaining_invoice
+            rec.receivable_by_finalization_total = total_remaining_finalization
             rec.customer_invoice_untaxed_total = total_untaxed
+
             rec.payment_process_percent = (
                 (total_received / rec.value_finalized) * 100.0
                 if rec.value_finalized else 0.0
@@ -140,7 +149,6 @@ class ProjectProject(models.Model):
                 (total_received / total_invoice) * 100.0
                 if total_invoice else 0.0
             )
-
     def action_view_customer_invoices(self):
         """Mở màn hình báo cáo giải ngân và lọc đúng dự án hiện tại."""
         self.ensure_one()
@@ -149,11 +157,10 @@ class ProjectProject(models.Model):
             "project_disbursement_report.action_project_disbursement_dashboard"
         ).read()[0]
 
-        action["domain"] = [("id", "=", self.id)]
+        action["domain"] = [("project_id", "=", self.id)]
         action["context"] = {
             "default_project_id": self.id,
             "search_default_group_partner": 0,
         }
 
         return action
-        

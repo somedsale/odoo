@@ -19,7 +19,6 @@ class ProjectDisbursementReport(models.Model):
         "res.currency", string="Tiền tệ",
         related="company_id.currency_id", store=True, readonly=True
     )
-
     partner_id = fields.Many2one(
         "res.partner", string="Khách hàng",
         related="project_id.partner_id", store=True, readonly=True
@@ -41,7 +40,15 @@ class ProjectDisbursementReport(models.Model):
         compute_sudo=True,
     )
 
+    account_receipt_ids = fields.Many2many(
+        "account.receipt",
+        string="Chi tiết phiếu thu",
+        compute="_compute_account_receipt_ids",
+        compute_sudo=True,
+    )
+
     invoice_count = fields.Integer(string="Số hóa đơn", compute="_compute_totals", store=False)
+    receipt_count = fields.Integer(string="Số phiếu thu", compute="_compute_totals", store=False)
     amount_invoice_total = fields.Monetary(string="Tổng giá trị hóa đơn", compute="_compute_totals", store=False)
     amount_received_total = fields.Monetary(string="Tổng đã thu", compute="_compute_totals", store=False)
     amount_remaining_total = fields.Monetary(string="Còn phải thu", compute="_compute_totals", store=False)
@@ -70,6 +77,18 @@ class ProjectDisbursementReport(models.Model):
             domain.append(("date", "<=", self.date_to))
         return domain
 
+    def _get_receipt_domain(self):
+        self.ensure_one()
+        domain = [
+            ("project_id", "=", self.project_id.id),
+            ("state", "=", "posted"),
+        ]
+        if self.date_from:
+            domain.append(("date", ">=", self.date_from))
+        if self.date_to:
+            domain.append(("date", "<=", self.date_to))
+        return domain
+
     @api.depends("project_id", "date_from", "date_to")
     def _compute_invoice_ids(self):
         Invoice = self.env["customer.invoice"].sudo()
@@ -81,22 +100,37 @@ class ProjectDisbursementReport(models.Model):
             invoices = Invoice.search(rec._get_invoice_domain(), order="date asc, id asc")
             rec.invoice_ids = [(6, 0, invoices.ids)]
 
+    @api.depends("project_id", "date_from", "date_to")
+    def _compute_account_receipt_ids(self):
+        Receipt = self.env["account.receipt"].sudo()
+        for rec in self:
+            if not rec.project_id:
+                rec.account_receipt_ids = [(5, 0, 0)]
+                continue
+
+            receipts = Receipt.search(rec._get_receipt_domain(), order="date asc, id asc")
+            rec.account_receipt_ids = [(6, 0, receipts.ids)]
+
     @api.depends(
         "project_id",
         "date_from",
         "date_to",
         "invoice_ids",
         "invoice_ids.amount_total",
-        "invoice_ids.receipt_amount_total",
-        "invoice_ids.receivable_remaining",
+        "account_receipt_ids",
+        "account_receipt_ids.amount",
+        "account_receipt_ids.state",
     )
     def _compute_totals(self):
         for rec in self:
             invoices = rec.invoice_ids
+            receipts = rec.account_receipt_ids.filtered(lambda r: r.state == "posted")
+
             rec.invoice_count = len(invoices)
+            rec.receipt_count = len(receipts)
             rec.amount_invoice_total = sum(invoices.mapped("amount_total") or [0.0])
-            rec.amount_received_total = sum(invoices.mapped("receipt_amount_total") or [0.0])
-            rec.amount_remaining_total = sum(invoices.mapped("receivable_remaining") or [0.0])
+            rec.amount_received_total = sum(receipts.mapped("amount") or [0.0])
+            rec.amount_remaining_total = rec.amount_invoice_total - rec.amount_received_total
             rec.receipt_percent_total = (
                 (rec.amount_received_total / rec.amount_invoice_total) * 100.0
                 if rec.amount_invoice_total else 0.0

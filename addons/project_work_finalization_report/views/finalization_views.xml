@@ -77,8 +77,8 @@
                 <field name="name" string="Dự án"/>
                 <field name="partner_id" string="Khách hàng"/>
                 <field name="contract_id" string="Hợp đồng"/>
-                <field name="user_id" string="Quản lý dự án"/>
                 <field name="finalization_user_id" string="Người báo cáo thanh/quyết toán"/>
+                <field name="signature_date" string="Ngày ký hợp đồng"/>
                 <field name="date_start" string="Ngày bắt đầu"/>
                 <field name="date" string="Ngày kết thúc"/>
                 <field name="value_contract_tax" string="Giá trị hợp đồng" sum="Tổng"/>

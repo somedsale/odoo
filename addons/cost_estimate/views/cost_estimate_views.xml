@@ -8,13 +8,25 @@
         <field name="priority" eval="5"/>
         <field name="arch" type="xml">
             <tree>
-                <field name="code"/>
-                <field name="create_date" string="Ngày tạo"/>
-                <field name="name"/>
-                <field name="sale_order_id"/>
+                <!-- <field name="code"/> -->
+                <!-- <field name="create_date" string="Ngày tạo"/> -->
+                <field name="name" column_invisible="1"/>
                 <field name="project_id"/>
-                <field name="total_final_non_tax" string="Tổng dự toán (TT)" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                <field name="total_final_tax" string="Tổng dự toán (ST)" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="sale_order_partner"/>
+                <field name="contract_id"/>
+                <field name="signature_date"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="estimate_material_total" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="estimate_labor_total" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="estimate_manufacturing_total" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="estimate_total_breakdown" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="estimate_material_total_with_tax" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="estimate_labor_total_with_tax" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="estimate_manufacturing_total_with_tax" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="estimate_total_breakdown_with_tax" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="total_final_non_tax" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="total_final_tax" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="state" widget="badge" decoration-muted="state == 'draft'" decoration-primary="state == 'submitted'" decoration-success="state == 'approved'"/>
                 <field name="currency_id" optional="hide"/>
                 <field name="activity_ids" widget="list_activity" string="Hoạt động" optional="hide"/>

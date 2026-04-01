@@ -367,9 +367,27 @@ recomputeRowValues(row) {
     }
 
     backToProjectList() {
+        const currentHref = window.location.href;
+
+        if (window.history.length > 1) {
+            window.history.back();
+
+            setTimeout(() => {
+                if (window.location.href === currentHref) {
+                    const fallbackActionXmlId = this.state.managerMode
+                        ? "project_work_finalization_report.action_manager_finalization_project_report"
+                        : "project_work_finalization_report.action_my_finalization_project_report";
+
+                    this.action.doAction(fallbackActionXmlId);
+                }
+            }, 300);
+            return;
+        }
+
         const fallbackActionXmlId = this.state.managerMode
             ? "project_work_finalization_report.action_manager_finalization_project_report"
             : "project_work_finalization_report.action_my_finalization_project_report";
+
         this.action.doAction(fallbackActionXmlId);
     }
 

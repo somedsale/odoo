@@ -6,7 +6,7 @@
     "description": "Wizard to generate project.task records from selected sale.order.line",
     "category": "Sales",
     "author": "Your Name",
-    "depends": ["sale", "project","base",'web'],
+    "depends": ["sale", "project","base",'web','contract_management'],
     "data": [
         "security/ir.model.access.csv",
         "views/wizard_create_tasks_views.xml",
@@ -14,7 +14,7 @@
         "views/add_button_assign_user_multitask.xml",
         "views/wizard_assign_user_task.xml",
         "views/hide_menu.xml",
-        "views/hide_item_in_task_project.xml",
+        # "views/hide_item_in_task_project.xml",
     ],
     "installable": True,
     "application": False,

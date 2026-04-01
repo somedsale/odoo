@@ -105,6 +105,7 @@ class ContractManagement(models.Model):
     stage = fields.Selection([
         ('negotiating', 'Đang thương thảo hợp đồng'),
         ('executing', 'Đang thực hiện'),
+        ('paused', 'Đang tạm ngưng'),
         ('completed', 'Hoàn thành'),
         ('canceled', 'Đã hủy'),
     ], string='Giai đoạn', default='negotiating', required=True, tracking=True)
@@ -599,29 +600,76 @@ class ProjectProject(models.Model):
     def write(self, vals):
         res = super().write(vals)
 
-        # 🔹 Khi Project chuyển sang stage "Hoàn tất" hoặc "Đã hoàn thành"
+        # Đồng bộ stage Project -> Contract
         if 'stage_id' in vals:
-            done_stage = self.env['project.project.stage'].search(
-                [('name', 'in', ['Hoàn tất', 'Đã hoàn thành'])], limit=1
-            )
-            if done_stage:
-                for pr in self.filtered(lambda p: p.stage_id.id == done_stage.id and p.contract_id):
-                    contract = pr.contract_id.sudo()
-                    if contract.stage not in ('completed', 'canceled'):
-                        contract.write({
-                            'stage': 'completed',
-                            'date_completion': fields.Datetime.now(),
-                        })
+            self._sync_contract_stage_from_project()
 
-                        # 💬 Thông báo đẹp bằng Markup, có link đến contract
-                        msg = Markup(
-                            f"📦 Dự án <b>{escape(pr.name)}</b> đã <b>Hoàn tất</b>.<br/>"
-                            f"<a href='/web#id={contract.id}&model=contract.management&view_type=form' target='_blank'>"
-                            f"{escape(contract.display_name)}</a>"
-                        )
-
-                        contract.message_post(body=msg)
-                        _logger.info("✅ Auto-completed Contract %s (from Project %s)", contract.name, pr.name)
-            else:
-                _logger.warning("⚠️ Không tìm thấy stage 'Hoàn tất' hoặc 'Đã hoàn thành' trong ProjectProjectStage.")
         return res
+    def _map_project_stage_to_contract_stage(self, project_stage_name):
+        """Map tên stage của Project sang stage của Contract."""
+        if not project_stage_name:
+            return False
+
+        stage_name = (project_stage_name or '').strip().lower()
+
+        # Hoàn thành
+        if stage_name in ['hoàn tất', 'hoan tat', 'đã hoàn thành', 'da hoan thanh', 'hoàn thành', 'hoan thanh']:
+            return 'completed'
+
+        # Đã hủy
+        if stage_name in ['đã hủy', 'da huy', 'hủy', 'huy']:
+            return 'canceled'
+
+        # Tạm ngưng
+        if stage_name in ['đang tạm ngưng', 'dang tam ngung', 'tạm ngưng', 'tam ngung']:
+            return 'paused'
+
+        # Đang thực hiện
+        if stage_name in ['đang thực hiện', 'dang thuc hien', 'thực hiện', 'thuc hien', 'đang triển khai', 'dang trien khai']:
+            return 'executing'
+
+        return False
+
+
+    def _sync_contract_stage_from_project(self):
+        """Đồng bộ stage Contract theo stage hiện tại của Project."""
+        for pr in self:
+            contract = pr.contract_id.sudo()
+            if not contract or not pr.stage_id:
+                continue
+
+            new_contract_stage = pr._map_project_stage_to_contract_stage(pr.stage_id.name)
+            if not new_contract_stage:
+                continue
+
+            vals = {}
+            if contract.stage != new_contract_stage:
+                vals['stage'] = new_contract_stage
+
+                if new_contract_stage == 'completed' and not contract.date_completion:
+                    vals['date_completion'] = fields.Datetime.now()
+
+                if new_contract_stage == 'executing' and not contract.date_execution:
+                    vals['date_execution'] = fields.Datetime.now()
+
+                contract.write(vals)
+
+                msg_map = {
+                    'executing': "Đang thực hiện",
+                    'paused': "Đang tạm ngưng",
+                    'completed': "Hoàn thành",
+                    'canceled': "Đã hủy",
+                }
+
+                contract.message_post(
+                    body=Markup(
+                        f"📦 Dự án <b>{escape(pr.name)}</b> đã chuyển sang trạng thái "
+                        f"<b>{escape(pr.stage_id.name or '')}</b>.<br/>"
+                        f"Hợp đồng được đồng bộ sang <b>{escape(msg_map.get(new_contract_stage, new_contract_stage))}</b>."
+                    )
+                )
+
+                _logger.info(
+                    "✅ Sync Contract %s -> %s from Project %s (stage: %s)",
+                    contract.name, new_contract_stage, pr.name, pr.stage_id.name
+                )
