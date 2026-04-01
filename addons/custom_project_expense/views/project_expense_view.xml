@@ -7,7 +7,11 @@
         <field name="arch" type="xml">
             <tree string="Chi phí dự án" default_order="create_date desc" decoration-bf="1">
                 <field name="project_id"/>
-                <field name="contract_number"/>
+                <field name="partner_id" string="Khách hàng"/>
+                <field name="contract_number" string="Hợp đồng"/>
+                <field name="signature_date" string="Ngày ký hợp đồng"/>
+                <field name="date_start" string="Ngày bắt đầu"/>
+                <field name="date_end" string="Ngày kết thúc"/>
                 <!-- Đã chi theo phân loại (xanh khi > 0) -->
                 <field name="total_spent_material" string="Đã chi NVL" sum="Đã chi NVL" widget="monetary" options="{'currency_field': 'currency_id'}" decoration-success="total_spent_material &gt; 0" decoration-bf="total_spent_material &gt; 0" decoration-muted="total_spent_material == 0"/>
 
@@ -39,7 +43,65 @@
             </tree>
         </field>
     </record>
+<!-- Search View -->
+<record id="project_expense_custom_search_view" model="ir.ui.view">
+    <field name="name">project.expense.custom.search</field>
+    <field name="model">project.expense.custom</field>
+    <field name="arch" type="xml">
+        <search string="Tìm kiếm chi phí dự án">
+            <!-- Search chính -->
+            <field name="project_id" string="Dự án"/>
+            <field name="partner_id" string="Khách hàng"/>
+            <field name="contract_number" string="Hợp đồng"/>
 
+            <!-- Search mở rộng -->
+            <filter string="Có đã chi"
+                    name="has_spent"
+                    domain="[('total_spent', '>', 0)]"/>
+
+            <filter string="Còn chưa chi"
+                    name="has_not_spent"
+                    domain="[('total_not_spent', '>', 0)]"/>
+
+            <filter string="Có NVL"
+                    name="has_material"
+                    domain="[('total_material', '>', 0)]"/>
+
+            <filter string="Có Nhân công"
+                    name="has_labor"
+                    domain="[('total_labor', '>', 0)]"/>
+
+            <filter string="Có SXC"
+                    name="has_manufacturing"
+                    domain="[('total_manufacturing', '>', 0)]"/>
+
+            <separator/>
+
+            <!-- Nhóm -->
+            <group expand="0" string="Nhóm theo">
+                <filter string="Dự án"
+                        name="group_by_project"
+                        context="{'group_by': 'project_id'}"/>
+
+                <filter string="Khách hàng"
+                        name="group_by_partner"
+                        context="{'group_by': 'partner_id'}"/>
+
+                <filter string="Ngày ký HĐ"
+                        name="group_by_signature_date"
+                        context="{'group_by': 'signature_date'}"/>
+
+                <filter string="Ngày bắt đầu"
+                        name="group_by_date_start"
+                        context="{'group_by': 'date_start'}"/>
+
+                <filter string="Ngày kết thúc"
+                        name="group_by_date_end"
+                        context="{'group_by': 'date_end'}"/>
+            </group>
+        </search>
+    </field>
+</record>
     <!-- Form View -->
     <record id="project_expense_custom_form_view" model="ir.ui.view">
         <field name="name">project.expense.custom.form</field>
@@ -120,6 +182,7 @@
         <field name="name">Chi phí dự án</field>
         <field name="res_model">project.expense.custom</field>
         <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="project_expense_custom_search_view"/>
         <field name="help" type="html">
             <p class="oe_view_nocontent_create">
                 Nhấn vào đây để tạo mới một bản ghi chi phí dự án.
@@ -130,6 +193,7 @@
         <field name="name">Chi phí dự án</field>
         <field name="res_model">project.expense.custom</field>
         <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="project_expense_custom_search_view"/>
         <!-- Context ép readonly -->
         <field name="context">{'readonly_by_ctx': True}</field>
     </record>

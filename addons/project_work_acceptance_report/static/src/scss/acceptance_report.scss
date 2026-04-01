@@ -384,4 +384,36 @@
             }
         }
     }
+        .o_report_table {
+        td.o_input_cell_required {
+            background: #fff8db !important;
+            position: relative;
+        }
+
+        td.o_input_cell_required::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #f59e0b;
+            border-radius: 4px 0 0 4px;
+        }
+
+        .o_required_input {
+            background-color: #fffdf0 !important;
+            border: 1.5px solid #f59e0b !important;
+            font-weight: 600;
+        }
+
+        .o_required_input:focus {
+            border-color: #d97706 !important;
+            box-shadow: 0 0 0 0.2rem rgba(245, 158, 11, 0.18) !important;
+        }
+
+        .o_required_input:hover {
+            background-color: #fffbea !important;
+        }
+    }
 }

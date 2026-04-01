@@ -101,7 +101,7 @@
                       <t t-esc="state.stats.project_expense_custom_count"/>
                     </span>
                   </button>
-                                    <button class="btn btn-sm btn-outline-success" t-on-click="openInvoiceDashboardAction">
+                  <button class="btn btn-sm btn-outline-success" t-on-click="openInvoiceDashboardAction">
                     <i class="fa fa-usd me-1"/>
 Giải ngân dự án
                     <span class="badge ms-1">
@@ -111,12 +111,48 @@ Giải ngân dự án
                 </div>
               </div>
 
-              <div class="card pwf-section-card mb-3">
-                <div class="card-body py-3">
-                  <label class="form-label fw-semibold mb-1">Tên dự án</label>
-                  <input class="form-control form-control-lg" data-field="name" t-att-value="state.form.name || ''" t-on-input="onInput" placeholder="Tên dự án..."/>
-                </div>
-              </div>
+<div class="card pwf-section-card mb-3">
+  <div class="card-body py-3">
+    <div class="pwf-project-hero">
+      <div class="pwf-project-hero-main">
+        <label class="form-label fw-semibold mb-1">Tên dự án</label>
+        <input
+          class="form-control form-control-lg"
+          data-field="name"
+          t-att-value="state.form.name || ''"
+          t-on-input="onInput"
+          placeholder="Tên dự án..."
+        />
+      </div>
+
+      <div class="pwf-project-status-wrap">
+        <label class="form-label fw-semibold mb-1">Trạng thái</label>
+
+        <div class="pwf-project-status-box">
+
+          <select
+            class="form-select pwf-status-select"
+            data-field="stage_id"
+            t-on-change="onSelectMany2one"
+            t-att-value="state.form.stage_id ? '' + state.form.stage_id : ''"
+          >
+            <option value="" t-att-selected="!state.form.stage_id ? true : undefined">
+              -- Chọn trạng thái --
+            </option>
+            <t t-foreach="state.stageOptions" t-as="s" t-key="s.id">
+              <option
+                t-att-value="s.id"
+                t-att-selected="state.form.stage_id &amp;&amp; ('' + state.form.stage_id) === ('' + s.id) ? true : undefined"
+              >
+                <t t-esc="s.name"/>
+              </option>
+            </t>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
             </div>
 
             <div class="row g-3 mb-3">
@@ -156,19 +192,6 @@ Giải ngân dự án
                         <input type="date" class="form-control" data-field="date" t-att-value="state.form.date || ''" t-on-input="onInput"/>
                       </div>
 
-                      <div class="col-12">
-                        <label class="form-label">Trạng thái dự án</label>
-                        <select class="form-select" data-field="stage_id" t-on-change="onSelectMany2one" t-att-value="state.form.stage_id ? '' + state.form.stage_id : ''">
-                          <option value="" t-att-selected="!state.form.stage_id ? true : undefined">
-                            -- Chọn trạng thái --
-                          </option>
-                          <t t-foreach="state.stageOptions" t-as="s" t-key="s.id">
-                            <option t-att-value="s.id" t-att-selected="state.form.stage_id &amp;&amp; ('' + state.form.stage_id) === ('' + s.id) ? true : undefined">
-                              <t t-esc="s.name"/>
-                            </option>
-                          </t>
-                        </select>
-                      </div>
 
                       <div class="col-12">
                         <label class="form-label">Mô tả</label>
@@ -701,29 +724,26 @@ Giải ngân dự án
                 </div>
               </div>
 
-            <div class="card pwf-section-card mb-3" t-if="!props.isCreateMode and props.projectId">
-  <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <span class="pwf-card-title">
-      <i class="fa fa-comments text-primary"/>
+              <div class="card pwf-section-card mb-3" t-if="!props.isCreateMode and props.projectId">
+                <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                  <span class="pwf-card-title">
+                    <i class="fa fa-comments text-primary"/>
       Trao đổi / Chatter dự án
-    </span>
-  </div>
+                  </span>
+                </div>
 
-  <div class="card-body p-0">
-    <View
-      t-if="embeddedProjectFormProps"
-      t-props="embeddedProjectFormProps"
-    />
-  </div>
-</div>
-          </t>
+                <div class="card-body p-0">
+                  <View t-if="embeddedProjectFormProps" t-props="embeddedProjectFormProps" />
+                </div>
+              </div>
+            </t>
 
+          </div>
         </div>
-      </div>
 
-    </t>
+      </t>
 
-  </div>
-</t>
+    </div>
+  </t>
 
 </templates>

@@ -22,8 +22,8 @@
 
                     <div class="text-end ms-auto">
                         <h2 class="mb-1 o_page_title">
-                            <t t-if="state.project.manager_mode">Báo cáo thanh/quyết toán quản lý</t>
-                            <t t-else="">Báo cáo thanh/quyết toán của tôi</t>
+                            <t t-if="state.project.manager_mode">Báo cáo hồ sơ thanh/quyết toán quản lý</t>
+                            <t t-else="">Báo cáo hồ sơ thanh/quyết toán của tôi</t>
                         </h2>
                     </div>
                 </div>
@@ -100,46 +100,82 @@
                         <div class="o_info_value" t-esc="state.project.location|| ''"/>
                     </div>
                 </div>
+                    <div class="col-12" t-if="state.project.attachments &amp;&amp; state.project.attachments.length">
+        <div class="o_info_box">
+            <div class="o_info_label">Tệp đính kèm</div>
+            <div class="o_info_value">
+                <div class="d-flex flex-wrap gap-2">
+                    <t t-foreach="state.project.attachments" t-as="att" t-key="att.id">
+                        <a
+                            class="btn btn-sm btn-outline-primary"
+                            t-att-href="att.url"
+                            target="_blank"
+                        >
+                            <i class="fa fa-paperclip me-1"/>
+                            <t t-esc="att.name"/>
+                        </a>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </div>
             </div>
         </div>
     </div>
 </div>
 
-                    <div class="col-12 col-xxl-5">
-                        <div class="card o_summary_card h-100">
-                            <div class="card-body p-3 p-lg-4">
-                                <div class="o_section_title mb-3">Tổng quan giá trị thanh/quyết toán</div>
-                                <div class="row g-3">
-                                    <div class="col-12 col-sm-6">
-                                        <div class="o_metric_box">
-                                            <div class="o_metric_label">Giá trị hợp đồng</div>
-                                            <div class="o_metric_value" t-esc="formatMoney(state.project.value_contract_tax)"/>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-sm-6">
-                                        <div class="o_metric_box">
-                                            <div class="o_metric_label">Giá trị đã thanh/quyết toán</div>
-                                            <div class="o_metric_value" t-esc="formatMoney(state.project.value_finalized)"/>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-sm-6">
-                                        <div class="o_metric_box">
-                                            <div class="o_metric_label">Giá trị còn lại</div>
-                                            <div class="o_metric_value" t-esc="formatMoney(state.project.value_finalization_remaining)"/>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-sm-6">
-                                        <div class="o_metric_box o_metric_box_highlight">
-                                            <div class="o_metric_label">% thanh/quyết toán</div>
-                                            <div class="o_metric_value">
-                                                <t t-esc="Math.round(state.project.finalization_percent || 0)"/>%
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+<div class="col-12 col-xxl-5">
+    <div class="card o_summary_card h-100">
+        <div class="card-body p-3 p-lg-4">
+            <div class="o_section_title mb-3">Tổng quan giá trị thanh/quyết toán</div>
+            <div class="row g-3">
+                <div class="col-12 col-sm-6">
+                    <div class="o_metric_box">
+                        <div class="o_metric_label">Giá trị hợp đồng</div>
+                        <div class="o_metric_value" t-esc="formatMoney(state.project.value_contract_tax)"/>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6">
+                    <div class="o_metric_box">
+                        <div class="o_metric_label">Giá trị thực tế</div>
+                        <div class="o_metric_value" t-esc="formatMoney(state.project.value_settlement)"/>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6">
+                    <div class="o_metric_box">
+                        <div class="o_metric_label">Giá trị phát sinh</div>
+                        <div class="o_metric_value" t-esc="formatMoney(state.project.value_arise)"/>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6">
+                    <div class="o_metric_box">
+                        <div class="o_metric_label">Giá trị đã thanh/quyết toán</div>
+                        <div class="o_metric_value" t-esc="formatMoney(state.project.value_finalized)"/>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6">
+                    <div class="o_metric_box">
+                        <div class="o_metric_label">Giá trị còn lại so với giá trị nghiệm thu</div>
+                        <div class="o_metric_value" t-esc="formatMoney(state.project.value_finalization_remaining)"/>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6">
+                    <div class="o_metric_box o_metric_box_highlight">
+                        <div class="o_metric_label">% thanh/quyết toán / nghiệm thu</div>
+                        <div class="o_metric_value">
+                            <t t-esc="Math.round(state.project.finalization_percent || 0)"/>%
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
                     <div class="col-12" t-if="state.project.manager_mode">
                         <div class="card o_filter_card">
@@ -160,7 +196,7 @@
                                         <button class="btn btn-primary"
                                                 t-on-click="assignProjectUser"
                                                 t-att-disabled="!state.projectAssignUserId">
-                                            Áp dụng cho toàn bộ hạng mục
+                                            Áp dụng
                                         </button>
                                     </div>
                                 </div>
@@ -220,7 +256,7 @@
             <th style="min-width: 160px;">GT Thanh/Quyết toán đến hết kỳ trước</th>
             <th style="min-width: 145px;">GT Thanh/Quyết toán kỳ này</th>
             <th style="min-width: 160px;">GT Thanh/Quyết toán đến hết kỳ này</th>
-            <th style="min-width: 150px;">GT Thanh/Quyết toán còn lại</th>
+            <th style="min-width: 150px;">GT Thanh/Quyết toán còn lại / nghiệm thu</th>
         </tr>
     </thead>
 
@@ -245,19 +281,19 @@
                     <td class="text-end" t-esc="formatQty(row.qty_arise)"/>
                     <td class="text-end" t-esc="formatQty(row.prev_qty_cum)"/>
 
-                    <td>
-                        <t t-if="!isReadonlyPeriod and row.is_editable">
-                            <input type="number"
-                            min="0"
-                                   step="any"
-                                   class="form-control form-control-sm text-end"
-                                   t-att-value="row.current_qty_week || 0"
-                                   t-on-input="(ev) => this.onQtyInput(row, ev)"/>
-                        </t>
-                        <t t-else="">
-                            <div class="text-end" t-esc="formatQty(row.current_qty_week)"/>
-                        </t>
-                    </td>
+<td t-att-class="!isReadonlyPeriod and row.is_editable ? 'o_input_cell o_input_cell_required' : ''">
+    <t t-if="!isReadonlyPeriod and row.is_editable">
+        <input type="number"
+               min="0"
+               step="any"
+               t-att-class="'form-control form-control-sm text-end o_required_input'"
+               t-att-value="row.current_qty_week || 0"
+               t-on-input="(ev) => this.onQtyInput(row, ev)"/>
+    </t>
+    <t t-else="">
+        <div class="text-end" t-esc="formatQty(row.current_qty_week)"/>
+    </t>
+</td>
 
                     <td class="text-end" t-esc="formatQty(row.current_qty_cum)"/>
                     <td class="text-end" t-esc="formatMoney(row.price_unit_tax)"/>

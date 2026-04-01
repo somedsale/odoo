@@ -8,24 +8,17 @@
             <div class="o_report_sticky_header mb-3 pt-3">
                 <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
                     <div class="d-flex gap-2 flex-wrap">
-                        <button class="btn btn-outline-secondary"
-                                t-on-click="backToProjectList"
-                                t-att-disabled="state.loading or state.saving">
+                        <button class="btn btn-outline-secondary" t-on-click="backToProjectList" t-att-disabled="state.loading or state.saving">
                             <i class="fa fa-arrow-left me-1"/>
                             Quay lại
                         </button>
 
-                        <button class="btn btn-outline-secondary"
-                                t-on-click="reload"
-                                t-att-disabled="state.loading or state.saving">
+                        <button class="btn btn-outline-secondary" t-on-click="reload" t-att-disabled="state.loading or state.saving">
                             <i class="fa fa-refresh me-1"/>
                             Tải lại
                         </button>
 
-                        <button class="btn btn-primary"
-                                t-if="!isReadonlyPeriod and !state.project.is_completed"
-                                t-on-click="saveAll"
-                                t-att-disabled="state.loading or state.saving">
+                        <button class="btn btn-primary" t-if="!isReadonlyPeriod and !state.project.is_completed" t-on-click="saveAll" t-att-disabled="state.loading or state.saving">
                             <t t-if="state.saving">
                                 <i class="fa fa-spinner fa-spin me-1"/>
                                 Đang lưu...
@@ -66,76 +59,91 @@
                 <div class="row g-3 mb-3">
 
                     <!-- Project info -->
-<div class="col-12 col-xxl-7">
-    <div class="card o_project_info h-100">
-        <div class="card-body p-3 p-lg-4">
-            <div class="o_project_info_head mb-3">
-                <div class="o_project_info_label">Dự án</div>
-                <div class="o_project_info_title" t-esc="state.project.name || ''"/>
-            </div>
+                    <div class="col-12 col-xxl-7">
+                        <div class="card o_project_info h-100">
+                            <div class="card-body p-3 p-lg-4">
+                                <div class="o_project_info_head mb-3">
+                                    <div class="o_project_info_label">Dự án</div>
+                                    <div class="o_project_info_title" t-esc="state.project.name || ''"/>
+                                </div>
 
-            <div class="row g-3">
+                                <div class="row g-3">
 
-                <div class="col-12 col-md-6">
-                    <div class="o_info_box">
-                        <div class="o_info_label">Khách hàng</div>
-                        <div class="o_info_value" t-esc="state.project.partner_name || ''"/>
-                    </div>
-                </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="o_info_box">
+                                            <div class="o_info_label">Khách hàng</div>
+                                            <div class="o_info_value" t-esc="state.project.partner_name || ''"/>
+                                        </div>
+                                    </div>
 
+                                    <div class="col-12 col-md-6">
+                                        <div class="o_info_box">
+                                            <div class="o_info_label">Số hợp đồng</div>
+                                            <div class="o_info_value" t-esc="state.project.num_contract || ''"/>
+                                        </div>
+                                    </div>
 
-                <div class="col-12 col-md-6">
-                    <div class="o_info_box">
-                        <div class="o_info_label">Số hợp đồng</div>
-                        <div class="o_info_value" t-esc="state.project.num_contract || ''"/>
-                    </div>
-                </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="o_info_box">
+                                            <div class="o_info_label">Người báo cáo</div>
+                                            <div class="o_info_value" t-esc="state.project.assignment_user_name || ''"/>
+                                        </div>
+                                    </div>
 
-                <div class="col-12 col-md-6">
-                    <div class="o_info_box">
-                        <div class="o_info_label">Người báo cáo</div>
-                        <div class="o_info_value" t-esc="state.project.assignment_user_name || ''"/>
-                    </div>
-                </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="o_info_box">
+                                            <div class="o_info_label">Ngày bắt đầu</div>
+                                            <div class="o_info_value" t-esc="state.project.date_start || ''"/>
+                                        </div>
+                                    </div>
 
-                <div class="col-12 col-md-6">
-                    <div class="o_info_box">
-                        <div class="o_info_label">Ngày bắt đầu</div>
-                        <div class="o_info_value" t-esc="state.project.date_start || ''"/>
-                    </div>
-                </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="o_info_box">
+                                            <div class="o_info_label">Ngày kết thúc</div>
+                                            <div class="o_info_value" t-esc="state.project.date_end || state.project.date || ''"/>
+                                        </div>
+                                    </div>
 
-                <div class="col-12 col-md-6">
-                    <div class="o_info_box">
-                        <div class="o_info_label">Ngày kết thúc</div>
-                        <div class="o_info_value" t-esc="state.project.date_end || state.project.date || ''"/>
-                    </div>
-                </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="o_info_box">
+                                            <div class="o_info_label">Trạng thái</div>
+                                            <div class="o_info_value">
+                                                <span class="badge bg-success" t-if="state.project.is_completed">Đã hoàn thành</span>
+                                                <span class="badge bg-warning text-dark" t-elif="state.project.stage_name">
+                                                    <t t-esc="state.project.stage_name"/>
+                                                </span>
+                                                <span class="badge bg-secondary" t-else="">Đang thực hiện</span>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                <div class="col-12 col-md-6">
-                    <div class="o_info_box">
-                        <div class="o_info_label">Trạng thái</div>
-                        <div class="o_info_value">
-                            <span class="badge bg-success" t-if="state.project.is_completed">Đã hoàn thành</span>
-                            <span class="badge bg-warning text-dark" t-elif="state.project.stage_name">
-                                <t t-esc="state.project.stage_name"/>
-                            </span>
-                            <span class="badge bg-secondary" t-else="">Đang thực hiện</span>
+                                    <div class="col-12">
+                                        <div class="o_info_box">
+                                            <div class="o_info_label">Địa điểm</div>
+                                            <div class="o_info_value" t-esc="state.project.location || ''"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12" t-if="state.project.attachments &amp;&amp; state.project.attachments.length">
+                                        <div class="o_info_box">
+                                            <div class="o_info_label">Tệp đính kèm</div>
+                                            <div class="o_info_value">
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    <t t-foreach="state.project.attachments" t-as="att" t-key="att.id">
+                                                        <a class="btn btn-sm btn-outline-primary" t-att-href="att.url" target="_blank">
+                                                            <i class="fa fa-paperclip me-1"/>
+                                                            <t t-esc="att.name"/>
+                                                        </a>
+                                                    </t>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="col-12">
-                    <div class="o_info_box">
-                        <div class="o_info_label">Địa điểm</div>
-                        <div class="o_info_value" t-esc="state.project.location|| ''"/>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
                     <!-- Project overview -->
                     <div class="col-12 col-xxl-5">
                         <div class="card o_summary_card h-100">
@@ -182,7 +190,8 @@
                                         <div class="o_metric_box o_metric_box_highlight">
                                             <div class="o_metric_label">% hoàn thành</div>
                                             <div class="o_metric_value">
-                                                <t t-esc="Math.round(state.project.progress_percent || 0)"/>%
+                                                <t t-esc="Math.round(state.project.progress_percent || 0)"/>
+%
                                             </div>
                                         </div>
                                     </div>
@@ -203,8 +212,7 @@
                                                 Chọn người phụ trách
                                             </option>
                                             <t t-foreach="state.assignableUsers" t-as="user" t-key="user.id">
-                                                <option t-att-value="user.id"
-                                                        t-att-selected="user.id == state.projectAssignUserId">
+                                                <option t-att-value="user.id" t-att-selected="user.id == state.projectAssignUserId">
                                                     <t t-esc="user.name"/>
                                                 </option>
                                             </t>
@@ -213,10 +221,8 @@
 
                                     <div class="col-12 col-md-7 col-xl-8">
                                         <div class="d-flex flex-wrap gap-2 align-items-center">
-                                            <button class="btn btn-primary"
-                                                    t-on-click="assignProjectUser"
-                                                    t-att-disabled="state.loading or state.saving or !state.projectAssignUserId">
-                                                Áp dụng cho toàn bộ hạng mục
+                                            <button class="btn btn-primary" t-on-click="assignProjectUser" t-att-disabled="state.loading or state.saving or !state.projectAssignUserId">
+                                                Áp dụng
                                             </button>
 
                                             <div class="text-muted small">
@@ -236,19 +242,15 @@
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                                     <div class="d-flex align-items-center flex-wrap gap-2">
                                         <label class="fw-semibold mb-0">Chọn kỳ báo cáo:</label>
-                                        <select class="form-select form-select-sm"
-                                                style="width: 180px;"
-                                                t-on-change="onPeriodChange">
+                                        <select class="form-select form-select-sm" style="width: 180px;" t-on-change="onPeriodChange">
                                             <t t-foreach="state.availablePeriods" t-as="periodNo" t-key="periodNo">
-                                                <option t-att-value="periodNo"
-                                                        t-att-selected="periodNo == state.selectedPeriod">
+                                                <option t-att-value="periodNo" t-att-selected="periodNo == state.selectedPeriod">
                                                     Kỳ <t t-esc="periodNo"/>
                                                 </option>
                                             </t>
                                         </select>
 
-                                        <span class="text-muted small"
-                                              t-if="selectedRows.length and selectedRows[0].period_start and selectedRows[0].period_end">
+                                        <span class="text-muted small" t-if="selectedRows.length and selectedRows[0].period_start and selectedRows[0].period_end">
                                             (
                                             <t t-esc="formatDate(selectedRows[0].period_start)"/>
                                             -
@@ -344,35 +346,20 @@
                                             </td>
 
                                             <!-- KL phát sinh -->
-                                            <td>
-                                                <input t-if="state.project.manager_mode"
-                                                       type="number"
-                                                       step="any"
-                                                       class="form-control form-control-sm text-end"
-                                                       t-att-value="row.qty_arise"
-                                                       t-att-readonly="isReadonlyPeriod"
-                                                       t-att-disabled="isReadonlyPeriod"
-                                                       t-on-input="(ev) => this.onQtyAriseInput(row, ev)"/>
+                                            <td t-att-class="state.project.manager_mode and !isReadonlyPeriod ? 'o_input_cell o_input_cell_required' : ''">
+                                                <input t-if="state.project.manager_mode" type="number" step="any" t-att-class="'form-control form-control-sm text-end ' + (!isReadonlyPeriod ? 'o_required_input' : '')" t-att-value="row.qty_arise" t-att-readonly="isReadonlyPeriod" t-att-disabled="isReadonlyPeriod" t-on-input="(ev) => this.onQtyAriseInput(row, ev)"/>
                                                 <span t-else="" class="d-block text-end">
                                                     <t t-esc="formatQty(row.qty_arise)"/>
                                                 </span>
                                             </td>
-
                                             <!-- SL đến hết kỳ trước -->
                                             <td class="text-end">
                                                 <t t-esc="formatQty(row.prev_qty_cum)"/>
                                             </td>
 
                                             <!-- SL kỳ này -->
-                                            <td>
-                                                <input type="number"
-                                                       min="0"
-                                                       step="any"
-                                                       class="form-control form-control-sm text-end"
-                                                       t-att-value="row.current_qty_week"
-                                                       t-att-readonly="isReadonlyPeriod or !row.is_editable"
-                                                       t-att-disabled="isReadonlyPeriod or !row.is_editable"
-                                                       t-on-input="(ev) => this.onQtyInput(row, ev)"/>
+                                            <td t-att-class="!isReadonlyPeriod and row.is_editable ? 'o_input_cell o_input_cell_required' : ''">
+                                                <input type="number" min="0" step="any" t-att-class="'form-control form-control-sm text-end ' + (!isReadonlyPeriod and row.is_editable ? 'o_required_input' : '')" t-att-value="row.current_qty_week" t-att-readonly="isReadonlyPeriod or !row.is_editable" t-att-disabled="isReadonlyPeriod or !row.is_editable" t-on-input="(ev) => this.onQtyInput(row, ev)"/>
                                             </td>
 
                                             <!-- SL đến hết kỳ này -->
@@ -425,19 +412,15 @@
 
             </t>
             <div class="col-12 mt-3" t-if="!state.loading and state.projectId">
-    <div class="card o_embedded_project_form_card">
-        <div class="card-header">
-            <h5 class="mb-0">Trao đổi dự án</h5>
-        </div>
-        <div class="card-body p-0">
-            <View
-                t-if="embeddedProjectFormProps"
-                t-key="state.embeddedFormKey"
-                t-props="embeddedProjectFormProps"
-            />
-        </div>
-    </div>
-</div>
+                <div class="card o_embedded_project_form_card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Trao đổi dự án</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <View t-if="embeddedProjectFormProps" t-key="state.embeddedFormKey" t-props="embeddedProjectFormProps" />
+                    </div>
+                </div>
+            </div>
         </div>
     </t>
 

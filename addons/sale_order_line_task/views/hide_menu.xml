@@ -1,6 +1,6 @@
 <odoo>
     <record id="crm.crm_menu_root" model="ir.ui.menu">
-        <field name="active" eval="True"/>
+        <field name="active" eval="False"/>
     </record>
 
     <!-- Ẩn Chi phí -->

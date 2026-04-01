@@ -30,13 +30,18 @@
         <tree string="Báo cáo giải ngân dự án" create="0" delete="0">
           <field name="name" string="Dự án"/>
           <field name="partner_id" string="Khách hàng"/>
+          <field name="contract_id" string="Hợp đồng"/>
+          <field name="signature_date" string="Ngày ký hợp đồng"/>
+          <field name="date_start" string="Ngày bắt đầu"/>
+          <field name="date" string="Ngày kết thúc"/>
           <field name="value_finalized" string="Giá trị Thanh / quyết toán" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng giá trị"/>
           <field name="customer_invoice_count" string="Số Hóa đơn"/>
           <field name="customer_invoice_untaxed_total" string="Tổng chưa thuế" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng trước thuế"/>
           <field name="customer_invoice_amount_total" string="Tổng hóa đơn sau thuế" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng sau thuế"/>
           <field name="customer_invoice_received_total" string="Tổng tiền đã thu" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng đã thu"/>
-          <field name="customer_invoice_remaining_total" string="Tổng còn phải thu" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng còn phải thu"/>
-          <field name="payment_process_percent" readonly="1" widget="progressbar" string="% Tiền đã thu"/>
+          <field name="customer_invoice_remaining_total" string="Tổng còn phải thu theo hóa đơn" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng còn phải thu theo hóa đơn"/>
+          <field name="receivable_by_finalization_total" string="Tổng còn phải thu theo HS thanh/quyết toán" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng còn phải thu theo HS thanh/quyết toán"/>
+          <field name="payment_process_percent" readonly="1" widget="progressbar" string="% Tiền đã thu theo HS thanh/quyết toán"/>
           <field name="currency_id" invisible="1" column_invisible="1"/>
 
         </tree>
@@ -75,7 +80,7 @@
                                widget="monetary"
                                options="{'currency_field': 'currency_id'}"/>
                         <field name="customer_invoice_count" readonly="1"/>
-                        <field name="payment_process_percent" readonly="1" widget="progressbar" string="% Tiền đã thu"/>
+                        <field name="payment_process_percent" readonly="1" widget="progressbar" string="% Tiền đã thu theo HS thanh/quyết toán"/>
                     </group>
                 </group>
 
@@ -99,9 +104,15 @@
                                widget="monetary"
                                options="{'currency_field': 'currency_id'}"/>
                     </group>
-                    <group>
+                    <group >
                         <field name="customer_invoice_remaining_total"
                                readonly="1"
+                               string="Còn phải thu theo hóa đơn"
+                               widget="monetary"
+                               options="{'currency_field': 'currency_id'}"/>
+                                                       <field name="receivable_by_finalization_total"
+                               readonly="1"
+                                 string="Còn phải thu theo HS thanh/quyết toán"
                                widget="monetary"
                                options="{'currency_field': 'currency_id'}"/>
                     </group>

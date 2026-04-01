@@ -3,7 +3,7 @@
     'version': '1.0',
     'summary': 'Dự toán chi phí dự án',
     'category': 'Project',
-    'depends': ['project', 'sale', 'project_material'],
+    'depends': ['project', 'sale', 'project_material','contract_management'],
     'data': [
         'data/cost_estimate_sequence.xml',
         'security/ir.model.access.csv',

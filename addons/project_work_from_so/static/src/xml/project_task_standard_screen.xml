@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+  <t t-name="project_work_from_so.ProjectTaskStandardScreen" owl="1">
+    <div class="o_pwf_project_task_standard_screen d-flex flex-column h-100">
+
+      <t t-if="state.loading">
+        <div class="d-flex flex-grow-1 align-items-center justify-content-center py-5">
+          <div class="text-muted px-4 py-4 text-center">
+            <i class="fa fa-spinner fa-spin me-2"/>
+            <span>Đang tải nhiệm vụ...</span>
+          </div>
+        </div>
+      </t>
+
+      <t t-else="">
+        <div class="card pwf-main-card flex-grow-1 d-flex flex-column" style="min-height:0;">
+          <div class="card-body overflow-auto pwf-scroll-body">
+
+            <div class="pwf-sticky-top">
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 px-1" style="min-height:48px;">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                  <button t-if="props.onBack"
+                          class="btn btn-sm btn-outline-secondary"
+                          t-on-click="props.onBack">
+                    <i class="fa fa-arrow-left me-1"/>
+                    <span>Quay lại</span>
+                  </button>
+
+                  <span class="badge rounded-pill text-bg-light border px-3 py-2 ms-1">
+                    Nhiệm vụ
+                  </span>
+
+                  <span t-if="state.projectName"
+                        class="badge rounded-pill text-bg-light border px-3 py-2 ms-1">
+                    <t t-esc="state.projectName"/>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card pwf-section-card">
+              <div class="card-body p-0">
+                <View t-if="state.embeddedViewProps" t-props="state.embeddedViewProps" />
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </t>
+
+    </div>
+  </t>
+
+</templates>

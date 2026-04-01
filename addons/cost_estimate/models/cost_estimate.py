@@ -123,6 +123,23 @@ class CostEstimate(models.Model):
         compute="_compute_contract_id",
         store=False,
     )
+    signature_date = fields.Date(
+        related="project_id.signature_date",
+        string="Ngày ký hợp đồng",
+        store=False,
+        readonly=True,
+    )
+    date_start = fields.Date(
+        related="project_id.date_start",
+        string="Ngày bắt đầu",
+        store=False,
+        readonly=True,
+    )
+    date_end = fields.Date(
+        related="project_id.date",
+        string="Ngày kết thúc",
+        store=False,        readonly=True,
+    )
     contract_value = fields.Monetary(
         string="Giá trị hợp đồng",
         compute="_compute_contract_value",

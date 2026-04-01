@@ -14,7 +14,7 @@
           <!-- Header / Search / Filter -->
           <div class="card-header pwf-toolbar">
             <div class="pwf-toolbar-top d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                          <div class="d-flex align-items-center gap-2">
+              <div class="d-flex align-items-center gap-2">
                 <button class="btn btn-sm btn-outline-primary" t-on-click="loadProjects">
                   <i class="fa fa-refresh me-1"/>
  Làm mới
@@ -25,9 +25,9 @@
  Xóa lọc
                 </button>
                 <button class="btn btn-primary" t-on-click="createProject">
-    <i class="fa fa-plus me-1"/>
+                  <i class="fa fa-plus me-1"/>
     Tạo dự án
-</button>
+                </button>
               </div>
               <div class="pwf-toolbar-title">
                 <h1 class="fw-bold-title">Danh sách dự án</h1>
@@ -82,7 +82,7 @@
                   <option value="name">Tên dự án</option>
                   <option value="partner_name">Đối tác</option>
                   <option value="stage_name">Trạng thái dự án</option>
-                  <option value="value_contract_tax">GT theo HĐ</option>
+                  <option value="value_settlement">GT theo HĐ</option>
                   <option value="value_completed">GT SL đã thực hiện</option>
                   <option value="progress_percent">% SL</option>
 
@@ -135,6 +135,14 @@
                   <!-- Tên dự án -->
 
                   <!-- Thông tin -->
+                  <col style="width:180px;"/>
+                  <!-- Trạng thái dự án -->
+                  <col style="width:180px;"/>
+                  <!-- Ngày ký HĐ -->
+                  <col style="width:160px;"/>
+                  <!-- Ngày bắt đầu -->
+                  <col style="width:160px;"/>
+                  <!-- Ngày kết thúc -->
                   <col style="width:220px;"/>
                   <!-- Địa điểm -->
                   <col style="width:220px;"/>
@@ -186,26 +194,27 @@
                 </colgroup>
 
                 <thead class="pwf-thead">
-                  <!-- Header nhóm -->
                   <tr class="pwf-group-head">
-                    <!-- Checkbox select current page -->
                     <th rowspan="2" class="text-center sticky-col sticky-col-0">
                       <input type="checkbox" class="form-check-input m-0" t-att-checked="allPageSelected ? true : undefined" t-on-click.stop="noop" t-on-change="onToggleSelectPage" title="Chọn tất cả dòng trong trang hiện tại"/>
                     </th>
 
                     <th rowspan="2" class="text-center sticky-col sticky-col-1">STT</th>
 
-                    <th colspan="4" class="text-center">Thông tin dự án</th>
+                    <th colspan="8" class="text-center">Thông tin dự án</th>
                     <th colspan="4" class="text-center">Sản lượng / Giá trị</th>
                     <th colspan="3" class="text-center">Nghiệm thu</th>
                     <th colspan="3" class="text-center">Hồ sơ Thanh / Quyết toán</th>
                     <th colspan="8" class="text-center">GT Hóa đơn / Tiền thu</th>
                   </tr>
 
-                  <!-- Header chi tiết -->
                   <tr>
                     <th class="sticky-col sticky-col-2">Đối tác</th>
                     <th class="sticky-col sticky-col-3">Tên dự án</th>
+                    <th>Trạng thái dự án</th>
+                    <th>Ngày ký HĐ</th>
+                    <th>Ngày bắt đầu</th>
+                    <th>Ngày kết thúc</th>
                     <th>Địa điểm XD</th>
                     <th>Hạng mục</th>
 
@@ -230,7 +239,6 @@
                     <th class="text-end">% Tiền đã thu / Nghiệm thu</th>
                     <th class="text-end">% Tiền đã thu / Sản lượng đã thực hiện</th>
                     <th class="text-end">% Tiền đã thu / Hóa đơn</th>
-
                   </tr>
                 </thead>
 
@@ -239,64 +247,67 @@
                     <t t-foreach="pagedProjects" t-as="pr" t-key="pr.id">
                       <tr class="cursor-pointer pwf-row" t-att-class="isSelected(pr.id) ? ' is-selected' : ''" t-on-click="openDetail" t-att-data-project-id="pr.id" t-att-title="'Mở dashboard dự án: ' + (pr.name || '')">
 
-                        <!-- Checkbox -->
                         <td class="text-center sticky-col sticky-col-0" t-on-click.stop="noop">
                           <input type="checkbox" class="form-check-input m-0" t-att-data-id="pr.id" t-att-checked="isSelected(pr.id) ? true : undefined" t-on-click.stop="noop" t-on-change="onToggleRowSelect"/>
                         </td>
 
-                        <!-- STT -->
                         <td class="text-center fw-semibold sticky-col sticky-col-1" t-esc="pageStart + pr_index"/>
 
-                        <!-- Đối tác -->
                         <td class="sticky-col sticky-col-2 pwf-cell-partner">
-                          <div class="pwf-text-wrap" t-att-title="pr.partner_name || ''" t-esc="pr.partner_name || ''"/>
+                          <span class="pwf-text-wrap" t-esc="pr.partner_name || '-'"/>
                         </td>
 
-                        <!-- Tên dự án + stage -->
                         <td class="sticky-col sticky-col-3 pwf-cell-project">
-                          <div class="fw-semibold pwf-text-wrap" t-att-title="pr.name || ''" t-esc="pr.name || ''"/>
-                          <div class="mt-1">
-                            <span class="pwf-stage-badge" t-att-class="stageBadgeClass(pr.stage_name)" t-att-title="pr.stage_name || ''" t-esc="pr.stage_name || 'Chưa có trạng thái'"/>
-                          </div>
+                          <span class="pwf-text-wrap fw-semibold" t-esc="pr.name || '-'"/>
                         </td>
 
-                        <!-- Địa điểm -->
                         <td>
-                          <div class="pwf-ellipsis" t-att-title="pr.location || ''" t-esc="pr.location || ''"/>
+                          <span class="pwf-stage-badge" t-att-class="stageBadgeClass(pr.stage_name)" t-esc="pr.stage_name || '-'"/>
                         </td>
 
-                        <!-- Hạng mục -->
                         <td>
-                          <div class="pwf-ellipsis" t-att-title="pr.category_text || ''" t-esc="pr.category_text || ''"/>
+                          <span t-esc="pr.signature_date || '-'"/>
                         </td>
 
-                        <!-- Sản lượng / giá trị -->
-                        <td class="text-end fw-medium" t-esc="money(pr.value_settlement)"/>
+                        <td>
+                          <span t-esc="pr.date_start || '-'"/>
+                        </td>
+
+                        <td>
+                          <span t-esc="pr.date || '-'"/>
+                        </td>
+
+                        <td>
+                          <span class="pwf-text-wrap" t-esc="pr.location || '-'"/>
+                        </td>
+
+                        <td>
+                          <span class="pwf-text-wrap" t-esc="pr.category_text || '-'"/>
+                        </td>
+
+                        <td class="text-end" t-esc="money(pr.value_settlement)"/>
                         <td class="text-end" t-esc="money(pr.value_completed)"/>
                         <td class="text-end" t-esc="money(pr.value_remaining)"/>
                         <td class="text-end">
                           <span class="pwf-percent-badge" t-att-class="(pr.progress_percent || 0) >= 100 ? ' is-done' : ((pr.progress_percent || 0) >= 70 ? ' is-good' : ((pr.progress_percent || 0) >= 30 ? ' is-mid' : ' is-low'))" t-esc="Math.round(pr.progress_percent || 0) + '%'"/>
                         </td>
 
-                        <!-- Nghiệm thu -->
                         <td class="text-end" t-esc="money(pr.value_accepted)"/>
                         <td class="text-end" t-esc="money(pr.value_acceptance_remaining)"/>
                         <td class="text-end">
                           <span class="pwf-percent-badge" t-att-class="(pr.acceptance_progress_percent || 0) >= 100 ? ' is-done' : ((pr.acceptance_progress_percent || 0) >= 70 ? ' is-good' : ((pr.acceptance_progress_percent || 0) >= 30 ? ' is-mid' : ' is-low'))" t-esc="Math.round(pr.acceptance_progress_percent || 0) + '%'"/>
                         </td>
 
-                        <!-- Thanh / Quyết toán -->
                         <td class="text-end" t-esc="money(pr.claim_value_done)"/>
                         <td class="text-end" t-esc="money(pr.claim_value_remaining)"/>
                         <td class="text-end">
                           <span class="pwf-percent-badge" t-att-class="(pr.claim_progress_percent || 0) >= 100 ? ' is-done' : ((pr.claim_progress_percent || 0) >= 70 ? ' is-good' : ((pr.claim_progress_percent || 0) >= 30 ? ' is-mid' : ' is-low'))" t-esc="Math.round(pr.claim_progress_percent || 0) + '%'"/>
                         </td>
 
-                        <!-- Hóa đơn -->
                         <td class="text-end" t-esc="money(pr.customer_invoice_untaxed_total)"/>
                         <td class="text-end" t-esc="money(pr.customer_invoice_amount_total)"/>
-                        <td class="text-end fw-semibold" t-esc="money(pr.customer_invoice_received_total)"/>
-                        <td class="text-end fw-semibold" t-esc="money(pr.customer_invoice_remaining_total)"/>
+                        <td class="text-end" t-esc="money(pr.customer_invoice_received_total)"/>
+                        <td class="text-end" t-esc="money(pr.customer_invoice_remaining_total)"/>
                         <td class="text-end">
                           <span class="pwf-percent-badge" t-att-class="(pr.payment_process_percent || 0) >= 100 ? ' is-done' : ((pr.payment_process_percent || 0) >= 70 ? ' is-good' : ((pr.payment_process_percent || 0) >= 30 ? ' is-mid' : ' is-low'))" t-esc="Math.round(pr.payment_process_percent || 0) + '%'"/>
                         </td>
@@ -316,14 +327,14 @@
 
                   <t t-else="">
                     <tr>
-                      <td colspan="21" class="p-0">
+                      <td colspan="30" class="p-0">
                         <div class="pwf-empty-state">
                           <div class="pwf-empty-icon">
                             <i class="fa fa-folder-open-o"/>
                           </div>
                           <div class="fw-semibold mb-1">Không có dự án phù hợp</div>
                           <div class="text-muted small">
-                            Hãy thử thay đổi từ khóa tìm kiếm, bộ lọc đối tác / trạng thái hoặc bấm “Xóa lọc”.
+              Hãy thử thay đổi từ khóa tìm kiếm, bộ lọc đối tác / trạng thái hoặc bấm “Xóa lọc”.
                           </div>
                         </div>
                       </td>
@@ -349,11 +360,11 @@
             </div>
 
             <div class="d-flex flex-wrap gap-3 small">
-              <div>GT theo HĐ: <b>
-                <t t-esc="money(selectedTotals.value_contract_tax)"/>
+              <div>GT theo Hợp đồng/ Thực tế : <b>
+                <t t-esc="money(selectedTotals.value_settlement)"/>
               </b>
             </div>
-            <div>GT còn lại theo HĐ: <b>
+            <div>GT còn lại theo Hợp đồng/ Thực tế: <b>
               <t t-esc="money(selectedTotals.value_remaining)"/>
             </b>
           </div>
@@ -377,12 +388,16 @@
     <t t-esc="money(selectedTotals.customer_invoice_untaxed_total)"/>
   </b>
 </div>
-<div>Tổng HĐ: <b>
+<div>Tổng giá trị hóa đơn: <b>
   <t t-esc="money(selectedTotals.customer_invoice_amount_total)"/>
 </b>
 </div>
-<div>Đã thu: <b>
+<div>Tổng tiền đã thu: <b>
 <t t-esc="money(selectedTotals.customer_invoice_received_total)"/>
+</b>
+</div>
+<div>Tổng tiền còn lại / Hồ sơ: <b>
+<t t-esc="money(selectedTotals.customer_invoice_remaining_total)"/>
 </b>
 </div>
 </div>
@@ -454,12 +469,26 @@
 <div class="card flex-grow-1" style="min-height:0;">
 <div class="card-body p-0" style="overflow:auto;">
 <ProjectWorkProjectFormOwl
-    t-if="state.mode === 'detail'"
-    projectId="state.selectedId || 0"
-    isCreateMode="state.isCreateMode"
-    onBack.bind="backToList"
-    onSaved.bind="onProjectSaved"
-    formViewId="formViewId"
+  t-if="state.mode === 'detail'"
+  projectId="state.selectedId || 0"
+  isCreateMode="state.isCreateMode"
+  onBack.bind="backToList"
+  onSaved.bind="onProjectSaved"
+  openTaskScreen.bind="openTaskScreen"
+  openCostEstimateScreen.bind="openCostEstimateScreen"
+  openExpenseDashboardScreen.bind="openExpenseDashboardScreen"
+  openInvoiceDashboardScreen.bind="openInvoiceDashboardScreen"
+  formViewId="formViewId"
+/>
+<CostEstimateStandardScreen t-elif="state.mode === 'cost_estimate_standard'" projectId="state.selectedId || 0" onBack.bind="backToProjectDetail" />
+
+<ProjectExpenseStandardScreen t-elif="state.mode === 'expense_standard'" projectId="state.selectedId || 0" onBack.bind="backToProjectDetail" />
+
+<ProjectInvoiceStandardScreen t-elif="state.mode === 'invoice_standard'" projectId="state.selectedId || 0" onBack.bind="backToProjectDetail" />
+<ProjectTaskStandardScreen
+  t-elif="state.mode === 'task_standard'"
+  projectId="state.selectedId || 0"
+  onBack.bind="backToProjectDetail"
 />
 </div>
 </div>
