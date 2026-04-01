@@ -9,7 +9,11 @@ class ProjectExpenseCustom(models.Model):
 
     name = fields.Char(string="Tên dự án", related="project_id.name", store=True, readonly=True)
     project_id = fields.Many2one('project.project', string="Dự án", required=True, index=True)
+    partner_id = fields.Many2one('res.partner', string="Khách hàng", related="project_id.partner_id", store=True, readonly=True,index=True)
     contract_number = fields.Char(string="Số hợp đồng", related="project_id.num_contract", store=True, readonly=True,index=True)
+    signature_date = fields.Date(string="Ngày ký hợp đồng", related="project_id.signature_date", store=True, readonly=True,index=True)
+    date_start = fields.Date(string="Ngày bắt đầu", related="project_id.date_start", store=True, readonly=True,index=True)
+    date_end = fields.Date(string="Ngày kết thúc", related="project_id.date", store=True, readonly=True,index=True)
     currency_id = fields.Many2one('res.currency', string="Tiền tệ", default=lambda self: self.env.company.currency_id)
     payment_request_ids = fields.One2many(
         'account.payment.request',

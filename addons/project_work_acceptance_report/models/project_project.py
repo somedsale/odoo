@@ -516,6 +516,18 @@ class ProjectProject(models.Model):
                 "sticky": False,
             },
         }
+    def action_open_acceptance_report_owl(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.client",
+            "name": "Quản lý báo cáo nghiệm thu",
+            "tag": "project_work_acceptance_report.AcceptanceReport",
+            "target": "current",
+            "context": {
+                "default_project_id": self.id,
+                "manager_mode": True,
+            },
+        }
     def _send_project_acceptance_assignment_notification(self, user):
         self.ensure_one()
         if not user or not user.partner_id:

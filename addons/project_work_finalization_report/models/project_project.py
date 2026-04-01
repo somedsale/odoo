@@ -529,6 +529,18 @@ class ProjectProject(models.Model):
             )
         except Exception:
             pass
+    def action_open_finalization_report_owl(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.client",
+            "name": "Quản lý báo cáo thanh/quyết toán",
+            "tag": "project_work_finalization_report.FinalizationReport",
+            "target": "current",
+            "context": {
+                "default_project_id": self.id,
+                "manager_mode": True,
+            },
+        }
     def action_assign_project_finalization_user_multi(self, user_id):
         if not self:
             raise UserError(_("Vui lòng chọn ít nhất một dự án."))

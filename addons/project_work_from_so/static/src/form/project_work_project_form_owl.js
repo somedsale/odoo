@@ -11,13 +11,17 @@ function num(x) {
 export class ProjectWorkProjectFormOwl extends Component {
   static template = "project_work_from_so.ProjectWorkProjectFormOwl";
   static components = { View };
-  static props = {
-    projectId: { type: Number, optional: true },
-    isCreateMode: { type: Boolean, optional: true },
-    onBack: { type: Function, optional: true },
-    onSaved: { type: Function, optional: true },
-    formViewId: { type: Number, optional: true },
-  };
+static props = {
+  projectId: { type: Number, optional: true },
+  isCreateMode: { type: Boolean, optional: true },
+  onBack: { type: Function, optional: true },
+  onSaved: { type: Function, optional: true },
+  openTaskScreen: { type: Function, optional: true },
+  openCostEstimateScreen: { type: Function, optional: true },
+  openExpenseDashboardScreen: { type: Function, optional: true },
+  openInvoiceDashboardScreen: { type: Function, optional: true },
+  formViewId: { type: Number, optional: true },
+};
   setup() {
     this.orm = useService("orm");
     this.action = useService("action");
@@ -1301,34 +1305,21 @@ async _loadProject() {
   // =========================
   // Smart button actions
   // =========================
-  async openTasksAction() {
-    if (!this.props.projectId) {
-      this.notification.add("Bạn cần lưu dự án trước.", { type: "warning" });
-      return;
-    }
-
-    try {
-      const action = await this.orm.call(
-        "project.project",
-        "action_view_tasks_custom",
-        [[this.props.projectId]],
-      );
-      await this._doActionSafe(
-        action,
-        [
-          [false, "list"],
-          [false, "form"],
-        ],
-        "list,form",
-      );
-    } catch (e) {
-      console.error(e);
-      this.notification.add("Không mở được danh sách nhiệm vụ.", {
-        type: "danger",
-      });
-    }
+async openTasksAction() {
+  if (!this.props.projectId) {
+    this.notification.add("Bạn cần lưu dự án trước.", { type: "warning" });
+    return;
   }
 
+  if (typeof this.props.openTaskScreen === "function") {
+    this.props.openTaskScreen(this.props.projectId);
+    return;
+  }
+
+  this.notification.add("Chưa cấu hình màn hình Nhiệm vụ.", {
+    type: "warning",
+  });
+}
   async openWorkItemsAction() {
     if (!this.props.projectId) {
       this.notification.add("Bạn cần lưu dự án trước.", { type: "warning" });
@@ -1350,90 +1341,68 @@ async _loadProject() {
     }
   }
 
-  async openCostEstimatesAction() {
-    if (!this.props.projectId) {
-      this.notification.add("Bạn cần lưu dự án trước.", { type: "warning" });
+async openCostEstimatesAction() {
+  if (!this.props.projectId) {
+    this.notification.add("Bạn cần lưu dự án trước.", { type: "warning" });
+    return;
+  }
+
+  try {
+    if (this.props.openCostEstimateScreen) {
+      this.props.openCostEstimateScreen(this.props.projectId);
       return;
     }
 
-    try {
-      const action = await this.orm.call(
-        "project.project",
-        "action_view_cost_estimates",
-        [[this.props.projectId]],
-      );
-      await this._doActionSafe(
-        action,
-        [
-          [false, "list"],
-          [false, "form"],
-        ],
-        "list,form",
-      );
-    } catch (e) {
-      console.error(e);
-      this.notification.add("Không mở được danh sách dự toán chi phí.", {
-        type: "danger",
-      });
-    }
+    this.notification.add("Chưa cấu hình màn hình Dự toán chi phí.", {
+      type: "warning",
+    });
+  } catch (e) {
+    console.error("[PWF Owl Form] openCostEstimatesAction error:", e);
+    this.notification.add("Không mở được Dự toán chi phí.", {
+      type: "danger",
+    });
+  }
+}
+
+async openExpenseDashboardAction() {
+  if (!this.props.projectId) {
+    this.notification.add("Bạn cần lưu dự án trước.", { type: "warning" });
+    return;
   }
 
-  async openExpenseDashboardAction() {
-    if (!this.props.projectId) {
-      this.notification.add("Bạn cần lưu dự án trước.", { type: "warning" });
+  try {
+    if (this.props.openExpenseDashboardScreen) {
+      this.props.openExpenseDashboardScreen(this.props.projectId);
       return;
     }
 
-    try {
-      const action = await this.orm.call(
-        "project.project",
-        "action_view_project_expense_custom",
-        [[this.props.projectId]],
-      );
-      await this._doActionSafe(
-        action,
-        [
-          [false, "list"],
-          [false, "form"],
-        ],
-        "list,form",
-      );
-    } catch (e) {
-      console.warn(e);
-      this.notification.add(
-        "Chưa có method action_view_project_expense_custom hoặc đang lỗi.",
-        { type: "warning" },
-      );
-    }
+    this.notification.add("Chưa cấu hình màn hình Chi phí dự án.", {
+      type: "warning",
+    });
+  } catch (e) {
+    console.error("[PWF Owl Form] openExpenseDashboardAction error:", e);
+    this.notification.add("Không mở được Chi phí dự án.", {
+      type: "danger",
+    });
   }
-  async openInvoiceDashboardAction() {
-    if (!this.props.projectId) {
-      this.notification.add("Bạn cần lưu dự án trước.", { type: "warning" });
-      return;
-    }
+}
+async openInvoiceDashboardAction() {
+  console.log("[PWF] openInvoiceDashboardAction props =", this.props);
 
-    try {
-      const action = await this.orm.call(
-        "project.project",
-        "action_view_customer_invoices",
-        [[this.props.projectId]],
-      );
-      await this._doActionSafe(
-        action,
-        [
-          [false, "list"],
-          [false, "form"],
-        ],
-        "list,form",
-      );
-    } catch (e) {
-      console.warn(e);
-      this.notification.add(
-        "Chưa có method action_view_customer_invoices hoặc đang lỗi.",
-        { type: "warning" },
-      );
-    }
+  if (!this.props.projectId) {
+    this.notification.add("Bạn cần lưu dự án trước.", { type: "warning" });
+    return;
   }
+
+  if (typeof this.props.openInvoiceDashboardScreen === "function") {
+    this.props.openInvoiceDashboardScreen(this.props.projectId);
+    return;
+  }
+
+  this.notification.add("Chưa cấu hình màn hình Giải ngân dự án.", {
+    type: "warning",
+  });
+}
   async syncWorkItemsFromSO() {
     const pid = this.props.projectId;
     if (!pid) {
@@ -1491,44 +1460,18 @@ async _loadProject() {
   get progressPercentRounded() {
     return Math.round(num(this.state.display.progress_percent));
   }
-  async openAcceptanceAction() {
+    async openAcceptanceAction() {
     if (!this.props.projectId) {
       this.notification.add("Bạn cần lưu dự án trước.", { type: "warning" });
       return;
     }
 
     try {
-      let action = null;
-
-      try {
-        action = await this.orm.call(
-          "project.project",
-          "action_open_acceptance_report_owl",
-          [[this.props.projectId]],
-        );
-      } catch (_e) {
-        action = null;
-      }
-
-      if (!action) {
-        action = {
-          type: "ir.actions.act_window",
-          name: "Nghiệm thu",
-          res_model: "project.work.item",
-          view_mode: "list,form",
-          views: [
-            [false, "list"],
-            [false, "form"],
-          ],
-          target: "current",
-          domain: [["project_id", "=", this.props.projectId]],
-          context: {
-            default_project_id: this.props.projectId,
-            acceptance_mode: true,
-          },
-        };
-      }
-
+      const action = await this.orm.call(
+        "project.project",
+        "action_open_acceptance_report_owl",
+        [[this.props.projectId]],
+      );
       await this.action.doAction(action);
     } catch (e) {
       console.error(e);
@@ -1538,6 +1481,7 @@ async _loadProject() {
     }
   }
 
+
   async openFinalizationAction() {
     if (!this.props.projectId) {
       this.notification.add("Bạn cần lưu dự án trước.", { type: "warning" });
@@ -1545,37 +1489,11 @@ async _loadProject() {
     }
 
     try {
-      let action = null;
-
-      try {
-        action = await this.orm.call(
-          "project.project",
-          "action_open_finalization_report_owl",
-          [[this.props.projectId]],
-        );
-      } catch (_e) {
-        action = null;
-      }
-
-      if (!action) {
-        action = {
-          type: "ir.actions.act_window",
-          name: "Thanh / Quyết toán",
-          res_model: "project.work.item",
-          view_mode: "list,form",
-          views: [
-            [false, "list"],
-            [false, "form"],
-          ],
-          target: "current",
-          domain: [["project_id", "=", this.props.projectId]],
-          context: {
-            default_project_id: this.props.projectId,
-            finalization_mode: true,
-          },
-        };
-      }
-
+      const action = await this.orm.call(
+        "project.project",
+        "action_open_finalization_report_owl",
+        [[this.props.projectId]],
+      );
       await this.action.doAction(action);
     } catch (e) {
       console.error(e);

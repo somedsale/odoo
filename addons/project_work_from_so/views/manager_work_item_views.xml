@@ -23,6 +23,7 @@
                 <field name="partner_id" string="Khách hàng"/>
                 <field name="contract_id" string="Hợp đồng"/>
                 <field name="assignment_user_id" string="Người báo cáo"/>
+                <field name="signature_date" string="Ngày ký hợp đồng"/>
                 <field name="date_start" string="Ngày bắt đầu"/>
                 <field name="date" string="Ngày kết thúc"/>
                 <field name="value_settlement"
