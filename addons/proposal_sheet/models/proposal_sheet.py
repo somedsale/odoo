@@ -134,11 +134,21 @@ class ProposalSheet(models.Model):
     show_button_reset_draft = fields.Boolean(compute='_compute_show_buttons')
     show_button_withdraw_submit = fields.Boolean(compute="_compute_show_buttons")
     is_type_readonly = fields.Boolean(compute='_compute_is_type_readonly', store=False)
-    cost_estimate_line_id = fields.Many2one(
-        'cost.estimate.line',
-        string='Hạng mục dự toán',
-        domain="[('cost_estimate_id.project_id', '=', project_id)]"
-    )
+    cost_estimate_line_ids = fields.Many2many(
+    'cost.estimate.line',
+    'proposal_sheet_cost_estimate_line_rel',
+    'proposal_sheet_id',
+    'cost_estimate_line_id',
+    string='Hạng mục dự toán',
+    domain="[('cost_estimate_id.project_id', '=', project_id)]",
+)
+    auto_cost_estimate_line_ids = fields.Many2many(
+    'cost.estimate.line',
+    'proposal_sheet_auto_cost_estimate_line_rel',
+    'proposal_sheet_id',
+    'cost_estimate_line_id',
+    string='Auto hạng mục dự toán',
+)
     other_estimate_item = fields.Many2one(
         comodel_name="estimate.item.other",
         string="Hạng mục khác",
@@ -148,7 +158,21 @@ class ProposalSheet(models.Model):
         ("other", "Khác"),
     ], string="Loại hạng mục", default="estimate", required=True)
 
-    
+    @api.onchange('material_line_ids', 'material_line_ids.cost_estimate_line_id')
+    def _onchange_cost_estimate_line_ids(self):
+        for sheet in self:
+            old_auto_ids = set(sheet.auto_cost_estimate_line_ids.ids)
+            current_header_ids = set(sheet.cost_estimate_line_ids.ids)
+            new_auto_ids = set(sheet.material_line_ids.mapped('cost_estimate_line_id').ids)
+
+            # Phần user chọn tay = header hiện tại trừ phần auto cũ
+            manual_ids = current_header_ids - old_auto_ids
+
+            # Header cuối cùng = phần user chọn tay + phần auto mới từ line
+            final_ids = manual_ids | new_auto_ids
+
+            sheet.auto_cost_estimate_line_ids = [(6, 0, list(new_auto_ids))]
+            sheet.cost_estimate_line_ids = [(6, 0, list(final_ids))]
 
     @api.model
     def create(self, vals):

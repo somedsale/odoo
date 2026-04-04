@@ -5,7 +5,7 @@ import { useService } from "@web/core/utils/hooks";
 import { registry } from "@web/core/registry";
 import { _t } from "@web/core/l10n/translation";
 
-const STORAGE_KEY = "executive_dashboard_filters_v3";
+const STORAGE_KEY = "executive_dashboard_filters_sidebar_v1";
 
 const fmtNum = (n) => Number(n || 0).toLocaleString("vi-VN");
 const fmtMoney = (n) => `${fmtNum(n)} ₫`;
@@ -31,24 +31,34 @@ export class ExecutiveDashboard extends Component {
             loading: false,
             showFilters: false,
             filter_label: "",
+            selectedDept: "overview",
         });
 
+        this.departments = [
+            { key: "overview", label: _t("Tổng quan"), icon: "fa fa-th-large" },
+            { key: "sales", label: _t("Phòng Kinh doanh"), icon: "fa fa-line-chart" },
+            { key: "finance", label: _t("Phòng Kế Toán"), icon: "fa fa-money" },
+            { key: "project", label: _t("Phòng KH-KT"), icon: "fa fa-briefcase" },
+            { key: "approval", label: _t("Duyệt phiếu"), icon: "fa fa-check-square-o" },
+        ];
+
         this.filterPanelRef = useRef("filterPanel");
-        this.productChartRef = useRef("productChart");
+
         this.customerChartRef = useRef("customerChart");
+        this.productChartRef = useRef("productChart");
         this.projectExpenseChartRef = useRef("projectExpenseChart");
         this.invoiceChartRef = useRef("invoiceChart");
 
-        this._charts = {
-            product: null,
-            customer: null,
-            projectExpense: null,
-            invoice: null,
-        };
+        this.salesCustomerChartRef = useRef("salesCustomerChart");
+        this.salesProductChartRef = useRef("salesProductChart");
+        this.financeInvoiceChartRef = useRef("financeInvoiceChart");
+        this.projectOnlyChartRef = useRef("projectOnlyChart");
+
+        this._charts = {};
 
         this.years = Array.from({ length: 10 }, (_, i) => 2022 + i);
 
-        this._restoreFiltersFromStorage();
+        this._restoreStateFromStorage();
 
         onWillStart(async () => {
             await this.fetchData();
@@ -91,17 +101,26 @@ export class ExecutiveDashboard extends Component {
         return "Kỳ báo cáo: Toàn bộ dữ liệu";
     }
 
-    _restoreFiltersFromStorage() {
+    _restoreStateFromStorage() {
         try {
             const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-            if (saved) {
-                Object.assign(this.state.filters, saved);
+            if (saved?.filters) {
+                Object.assign(this.state.filters, saved.filters);
+            }
+            if (saved?.selectedDept) {
+                this.state.selectedDept = saved.selectedDept;
             }
         } catch (_) { }
     }
 
-    _saveFiltersToStorage() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state.filters));
+    _saveStateToStorage() {
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({
+                filters: this.state.filters,
+                selectedDept: this.state.selectedDept,
+            })
+        );
     }
 
     _destroyCharts() {
@@ -118,6 +137,96 @@ export class ExecutiveDashboard extends Component {
         return val.length > max ? `${val.slice(0, max - 1)}…` : val;
     }
 
+    get currentData() {
+        return this.state.data || {};
+    }
+
+    get kpis() {
+        return this.currentData.kpis || {};
+    }
+
+    get quotationKpi() {
+        return this.kpis.quotation || { count: 0, total_amount: 0 };
+    }
+
+    get orderKpi() {
+        return this.kpis.order || { count: 0, total_amount: 0 };
+    }
+
+    get conversionRate() {
+        return this.currentData.conversion_rate || 0;
+    }
+
+    get cashIn() {
+        return this.kpis.cash_in || 0;
+    }
+
+    get cashOut() {
+        return this.kpis.cash_out || 0;
+    }
+
+    get netCash() {
+        return this.kpis.net_cash || 0;
+    }
+
+    get topOrder() {
+        return this.currentData.top_order || null;
+    }
+
+    get topCustomers() {
+        return this.currentData.top_customers || [];
+    }
+
+    get topProducts() {
+        return this.currentData.top_products || [];
+    }
+
+    get projectExpense() {
+        return this.currentData.project_expense || [];
+    }
+
+    get invoiceOverview() {
+        return this.currentData.invoice_overview || {
+            supplier_total: 0,
+            customer_total: 0,
+            net_invoice: 0,
+        };
+    }
+    get projectSummary() {
+        return {
+            total_projects: this.currentData.project_total || 0,
+            done_projects: this.currentData.project_done_count || 0,
+            in_progress_projects: this.currentData.project_in_progress_count || 0,
+            total_budget: this.currentData.khkt_total_budget || 0,
+            total_spent: this.currentData.khkt_total_spent || 0,
+            total_remaining: this.currentData.khkt_total_remaining || 0,
+        };
+    }
+
+    get hrSummary() {
+        return {
+            total_employees: this.currentData.hr_total_employees || 0,
+            active_employees: this.currentData.hr_active_employees || 0,
+            departments: this.currentData.hr_departments || 0,
+            absent_today: this.currentData.hr_absent_today || 0,
+        };
+    }
+    get approvalSummary() {
+        const s = this.currentData.approval_summary || {};
+        return {
+            proposal_count: s.proposal_pending_count || 0,
+            payment_count: s.payment_pending_count || 0,
+            pending_count: s.pending_count || 0,
+            pending_amount: s.pending_amount || 0,
+            proposal_pending_amount: s.proposal_pending_amount || 0,
+            payment_pending_amount: s.payment_pending_amount || 0,
+        };
+    }
+
+    get approvalItems() {
+        return this.currentData.approval_pending_items || [];
+    }
+
     async fetchData() {
         this.state.loading = true;
         try {
@@ -128,8 +237,7 @@ export class ExecutiveDashboard extends Component {
             );
             this.state.data = data;
             this.state.filter_label = this._buildFilterLabel(data || this.state.filters);
-            this._saveFiltersToStorage();
-
+            this._saveStateToStorage();
             setTimeout(() => this.renderCharts(), 0);
         } catch (err) {
             console.error("Executive Dashboard Error:", err);
@@ -139,6 +247,12 @@ export class ExecutiveDashboard extends Component {
         } finally {
             this.state.loading = false;
         }
+    }
+
+    selectDept(deptKey) {
+        this.state.selectedDept = deptKey;
+        this._saveStateToStorage();
+        setTimeout(() => this.renderCharts(), 0);
     }
 
     // =========================
@@ -181,7 +295,7 @@ export class ExecutiveDashboard extends Component {
     }
 
     openTopOrder() {
-        const topOrder = this.state.data?.top_order;
+        const topOrder = this.topOrder;
         if (!topOrder?.id) {
             this.notification.add(_t("Không có đơn hàng nổi bật trong kỳ này."), {
                 type: "warning",
@@ -395,279 +509,264 @@ export class ExecutiveDashboard extends Component {
 
         this._destroyCharts();
 
-        // ===== 1. Top khách hàng =====
-        const customers = this.state.data.top_customers || [];
-        if (this.customerChartRef.el && customers.length) {
-            this._charts.customer = new Chart(this.customerChartRef.el, {
-                type: "bar",
-                data: {
-                    labels: customers.map((c) => this._truncateLabel(c.name, 24)),
-                    datasets: [
-                        {
-                            label: _t("Báo giá"),
-                            data: customers.map((c) => c.quotation_amount || 0),
-                            backgroundColor: "#cbd5e1",
-                            borderColor: "#111827",
-                            borderWidth: 2,
-                            borderRadius: 0,
-                        },
-                        {
-                            label: _t("Đơn hàng"),
-                            data: customers.map((c) => c.order_amount || 0),
-                            backgroundColor: "#2563eb",
-                            borderColor: "#111827",
-                            borderWidth: 2,
-                            borderRadius: 0,
-                        },
-                    ],
-                },
-                options: {
-                    indexAxis: "y",
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: "bottom",
-                            labels: {
-                                color: "#111827",
-                                font: { size: 12, weight: "700" },
-                            },
-                        },
-                        tooltip: {
-                            callbacks: {
-                                title: (items) => customers[items[0].dataIndex]?.name || "",
-                                afterBody: (items) => {
-                                    const item = customers[items[0].dataIndex];
-                                    return [
-                                        `${_t("Tổng chứng từ")}: ${fmtNum(item.total_docs)}`,
-                                        `${_t("Tổng giá trị")}: ${fmtMoney(item.total_amount)}`,
-                                    ];
-                                },
-                            },
-                        },
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: (v) => fmtNum(v),
-                                color: "#111827",
-                            },
-                            grid: { color: "#d1d5db" },
-                            border: { color: "#111827", width: 2 },
-                        },
-                        y: {
-                            ticks: { color: "#111827", font: { size: 12, weight: "700" } },
-                            grid: { display: false },
-                            border: { color: "#111827", width: 2 },
-                        },
-                    },
-                    onClick: (evt, elements) => {
-                        if (!elements?.length) return;
-                        const item = customers[elements[0].index];
-                        this.openOrdersByIds(item.order_ids || []);
-                    },
-                },
-            });
-        }
+        this._renderCustomerChart(this.customerChartRef.el, this.topCustomers, "customer_main");
+        this._renderProductChart(this.productChartRef.el, this.topProducts, "product_main");
+        this._renderProjectExpenseChart(this.projectExpenseChartRef.el, this.projectExpense, "project_main");
+        this._renderInvoiceChart(this.invoiceChartRef.el, this.invoiceOverview, "invoice_main");
 
-        // ===== 2. Top sản phẩm =====
-        const products = this.state.data.top_products || [];
-        if (this.productChartRef.el && products.length) {
-            this._charts.product = new Chart(this.productChartRef.el, {
-                type: "bar",
-                data: {
-                    labels: products.map((p) => this._truncateLabel(p.name, 24)),
-                    datasets: [{
-                        label: _t("Giá trị"),
-                        data: products.map((p) => p.total_amount || 0),
-                        backgroundColor: "#facc15",
+        this._renderCustomerChart(this.salesCustomerChartRef.el, this.topCustomers, "customer_sales");
+        this._renderProductChart(this.salesProductChartRef.el, this.topProducts, "product_sales");
+        this._renderInvoiceChart(this.financeInvoiceChartRef.el, this.invoiceOverview, "invoice_finance");
+        this._renderProjectExpenseChart(this.projectOnlyChartRef.el, this.projectExpense, "project_only");
+    }
+
+    _renderCustomerChart(el, customers, chartKey) {
+        if (!el || !customers?.length) return;
+
+        this._charts[chartKey] = new Chart(el, {
+            type: "bar",
+            data: {
+                labels: customers.map((c) => this._truncateLabel(c.name, 24)),
+                datasets: [
+                    {
+                        label: _t("Báo giá"),
+                        data: customers.map((c) => c.quotation_amount || 0),
+                        backgroundColor: "#cbd5e1",
                         borderColor: "#111827",
                         borderWidth: 2,
                         borderRadius: 0,
-                        maxBarThickness: 34,
-                    }],
-                },
-                options: {
-                    indexAxis: "y",
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false,
-                        },
-                        tooltip: {
-                            callbacks: {
-                                title: (items) => products[items[0].dataIndex]?.name || "",
-                                label: (ctx) => {
-                                    const item = products[ctx.dataIndex];
-                                    return [
-                                        `${_t("Giá trị")}: ${fmtMoney(item.total_amount)}`,
-                                        `${_t("Số chứng từ")}: ${fmtNum(item.doc_count)}`,
-                                        `${_t("Số lượng")}: ${fmtNum(item.total_qty)}`,
-                                    ];
-                                },
-                            },
-                        },
                     },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: (v) => fmtNum(v),
-                                color: "#111827",
-                            },
-                            grid: { color: "#d1d5db" },
-                            border: { color: "#111827", width: 2 },
-                        },
-                        y: {
-                            ticks: { color: "#111827", font: { size: 12, weight: "700" } },
-                            grid: { display: false },
-                            border: { color: "#111827", width: 2 },
-                        },
-                    },
-                    onClick: (evt, elements) => {
-                        if (!elements?.length) return;
-                        const item = products[elements[0].index];
-                        this.openOrdersByIds(item.order_ids || []);
-                    },
-                },
-            });
-        }
-
-        // ===== 3. Chi phí dự án =====
-        const expenses = this.state.data.project_expense || [];
-        if (this.projectExpenseChartRef.el && expenses.length) {
-            this._charts.projectExpense = new Chart(this.projectExpenseChartRef.el, {
-                type: "bar",
-                data: {
-                    labels: expenses.map((e) => this._truncateLabel(e.name, 18)),
-                    datasets: [
-                        {
-                            label: _t("Đã chi"),
-                            data: expenses.map((e) => e.spent || 0),
-                            backgroundColor: "#2563eb",
-                            borderColor: "#111827",
-                            borderWidth: 2,
-                            borderRadius: 0,
-                        },
-                        {
-                            label: _t("Chưa chi"),
-                            data: expenses.map((e) => e.not_spent || 0),
-                            backgroundColor: "#f59e0b",
-                            borderColor: "#111827",
-                            borderWidth: 2,
-                            borderRadius: 0,
-                        },
-                    ],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: "bottom",
-                            labels: {
-                                color: "#111827",
-                                font: { size: 12, weight: "700" },
-                            },
-                        },
-                        tooltip: {
-                            callbacks: {
-                                title: (items) => expenses[items[0].dataIndex]?.name || "",
-                                afterBody: (items) => {
-                                    const item = expenses[items[0].dataIndex];
-                                    return [
-                                        `${_t("Tổng dự toán")}: ${fmtMoney(item.total)}`,
-                                    ];
-                                },
-                            },
-                        },
-                    },
-                    scales: {
-                        x: {
-                            stacked: false,
-                            ticks: {
-                                color: "#111827",
-                                font: { size: 11, weight: "700" },
-                                maxRotation: 0,
-                                minRotation: 0,
-                            },
-                            grid: { display: false },
-                            border: { color: "#111827", width: 2 },
-                        },
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: (v) => fmtNum(v),
-                                color: "#111827",
-                            },
-                            grid: { color: "#d1d5db" },
-                            border: { color: "#111827", width: 2 },
-                        },
-                    },
-                    onClick: (evt, elements) => {
-                        if (!elements?.length) return;
-                        const item = expenses[elements[0].index];
-                        this.openProject(item.project_id);
-                    },
-                },
-            });
-        }
-
-        // ===== 4. Hóa đơn =====
-        const invoice = this.state.data.invoice_overview;
-        if (this.invoiceChartRef.el && invoice) {
-            this._charts.invoice = new Chart(this.invoiceChartRef.el, {
-                type: "doughnut",
-                data: {
-                    labels: [_t("Đầu vào"), _t("Đầu ra")],
-                    datasets: [{
-                        data: [invoice.supplier_total || 0, invoice.customer_total || 0],
-                        backgroundColor: ["#ef4444", "#22c55e"],
+                    {
+                        label: _t("Đơn hàng"),
+                        data: customers.map((c) => c.order_amount || 0),
+                        backgroundColor: "#2563eb",
                         borderColor: "#111827",
                         borderWidth: 2,
-                    }],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: "58%",
-                    plugins: {
-                        legend: {
-                            position: "bottom",
-                            labels: {
-                                color: "#111827",
-                                font: { size: 12, weight: "700" },
-                            },
+                        borderRadius: 0,
+                    },
+                ],
+            },
+            options: {
+                indexAxis: "y",
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: "bottom",
+                        labels: {
+                            color: "#111827",
+                            font: { size: 12, weight: "700" },
                         },
-                        tooltip: {
-                            callbacks: {
-                                label: (ctx) => {
-                                    const idx = ctx.dataIndex;
-                                    const amount = idx === 0 ? invoice.supplier_total : invoice.customer_total;
-                                    const count = idx === 0 ? invoice.supplier_count : invoice.customer_count;
-                                    return [
-                                        `${ctx.label}: ${fmtMoney(amount)}`,
-                                        `${_t("Số hóa đơn")}: ${fmtNum(count)}`,
-                                    ];
-                                },
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: (items) => customers[items[0].dataIndex]?.name || "",
+                            afterBody: (items) => {
+                                const item = customers[items[0].dataIndex];
+                                return [
+                                    `${_t("Tổng chứng từ")}: ${fmtNum(item.total_docs)}`,
+                                    `${_t("Tổng giá trị")}: ${fmtMoney(item.total_amount)}`,
+                                ];
                             },
                         },
                     },
-                    onClick: (evt, elements) => {
-                        if (!elements?.length) return;
-                        if (elements[0].index === 0) {
-                            this.openSupplierInvoices();
-                        } else {
-                            this.openCustomerInvoices();
-                        }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: (v) => fmtNum(v),
+                            color: "#111827",
+                        },
+                        grid: { color: "#d1d5db" },
+                        border: { color: "#111827", width: 2 },
+                    },
+                    y: {
+                        ticks: { color: "#111827", font: { size: 12, weight: "700" } },
+                        grid: { display: false },
+                        border: { color: "#111827", width: 2 },
                     },
                 },
-            });
-        }
+                onClick: (evt, elements) => {
+                    if (!elements?.length) return;
+                    const item = customers[elements[0].index];
+                    this.openOrdersByIds(item.order_ids || []);
+                },
+            },
+        });
+    }
+
+    _renderProductChart(el, products, chartKey) {
+        if (!el || !products?.length) return;
+
+        this._charts[chartKey] = new Chart(el, {
+            type: "bar",
+            data: {
+                labels: products.map((p) => this._truncateLabel(p.name, 24)),
+                datasets: [{
+                    label: _t("Giá trị"),
+                    data: products.map((p) => p.total_amount || 0),
+                    backgroundColor: "#facc15",
+                    borderColor: "#111827",
+                    borderWidth: 2,
+                    borderRadius: 0,
+                    maxBarThickness: 34,
+                }],
+            },
+            options: {
+                indexAxis: "y",
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: (items) => products[items[0].dataIndex]?.name || "",
+                            label: (ctx) => {
+                                const item = products[ctx.dataIndex];
+                                return [
+                                    `${_t("Giá trị")}: ${fmtMoney(item.total_amount)}`,
+                                    `${_t("Số chứng từ")}: ${fmtNum(item.doc_count)}`,
+                                    `${_t("Số lượng")}: ${fmtNum(item.total_qty)}`,
+                                ];
+                            },
+                        },
+                    },
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: (v) => fmtNum(v),
+                            color: "#111827",
+                        },
+                        grid: { color: "#d1d5db" },
+                        border: { color: "#111827", width: 2 },
+                    },
+                    y: {
+                        ticks: { color: "#111827", font: { size: 12, weight: "700" } },
+                        grid: { display: false },
+                        border: { color: "#111827", width: 2 },
+                    },
+                },
+                onClick: (evt, elements) => {
+                    if (!elements?.length) return;
+                    const item = products[elements[0].index];
+                    this.openOrdersByIds(item.order_ids || []);
+                },
+            },
+        });
+    }
+
+    _renderProjectExpenseChart(el, expenses, chartKey) {
+        if (!el || !expenses?.length) return;
+
+        this._charts[chartKey] = new Chart(el, {
+            type: "bar",
+            data: {
+                labels: expenses.map((e) => this._truncateLabel(e.name, 18)),
+                datasets: [
+                    {
+                        label: _t("Đã chi"),
+                        data: expenses.map((e) => e.spent || 0),
+                        backgroundColor: "#2563eb",
+                        borderColor: "#111827",
+                        borderWidth: 2,
+                        borderRadius: 0,
+                    },
+                    {
+                        label: _t("Chưa chi"),
+                        data: expenses.map((e) => e.not_spent || 0),
+                        backgroundColor: "#cbd5e1",
+                        borderColor: "#111827",
+                        borderWidth: 2,
+                        borderRadius: 0,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: "bottom",
+                        labels: {
+                            color: "#111827",
+                            font: { size: 12, weight: "700" },
+                        },
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: (items) => expenses[items[0].dataIndex]?.name || "",
+                            afterBody: (items) => {
+                                const item = expenses[items[0].dataIndex];
+                                return [`${_t("Tổng chi phí")}: ${fmtMoney(item.total)}`];
+                            },
+                        },
+                    },
+                },
+                scales: {
+                    x: {
+                        ticks: { color: "#111827", font: { size: 12, weight: "700" } },
+                        grid: { display: false },
+                        border: { color: "#111827", width: 2 },
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: (v) => fmtNum(v),
+                            color: "#111827",
+                        },
+                        grid: { color: "#d1d5db" },
+                        border: { color: "#111827", width: 2 },
+                    },
+                },
+                onClick: (evt, elements) => {
+                    if (!elements?.length) return;
+                    const item = expenses[elements[0].index];
+                    this.openProject(item.project_id || false);
+                },
+            },
+        });
+    }
+
+    _renderInvoiceChart(el, invoiceOverview, chartKey) {
+        if (!el) return;
+
+        this._charts[chartKey] = new Chart(el, {
+            type: "doughnut",
+            data: {
+                labels: [_t("Đầu vào"), _t("Đầu ra")],
+                datasets: [{
+                    data: [
+                        invoiceOverview.supplier_total || 0,
+                        invoiceOverview.customer_total || 0,
+                    ],
+                    backgroundColor: ["#cbd5e1", "#2563eb"],
+                    borderColor: "#ffffff",
+                    borderWidth: 2,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: "bottom",
+                        labels: {
+                            color: "#111827",
+                            font: { size: 12, weight: "700" },
+                        },
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => `${ctx.label}: ${fmtMoney(ctx.raw)}`,
+                        },
+                    },
+                },
+            },
+        });
     }
 }
 
 registry.category("actions").add("executive_dashboard", ExecutiveDashboard);
-export default ExecutiveDashboard;

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import models, api
+from odoo import models, api, fields
 
 
 class ExecutiveDashboard(models.AbstractModel):
@@ -17,6 +17,9 @@ class ExecutiveDashboard(models.AbstractModel):
         PayReq = self.env["account.payment.request"]
         SupplierInvoice = self.env["supplier.invoice"]
         CustomerInvoice = self.env["customer.invoice"]
+        Project = self.env["project.project"]
+        ProposalSheet = self.env["proposal.sheet"]
+        PaymentProposal = self.env["account.payment.proposal"]
 
         # =========================
         # 1. Resolve filter dates
@@ -207,7 +210,7 @@ class ExecutiveDashboard(models.AbstractModel):
         top_customers = top_customers[:5]
 
         # =========================
-        # 5. Project expenses
+        # 5. KH-KT / Project data
         # =========================
         expense_records = Expense.search(
             [("total_spent", ">", 0), ("total_cost", ">", 0)],
@@ -224,6 +227,31 @@ class ExecutiveDashboard(models.AbstractModel):
                 "total": rec.total_cost or 0.0,
                 "project_id": rec.project_id.id or False,
             })
+
+        project_domain = []
+        if "create_date" in Project._fields:
+            project_domain = apply_date_domain([], "create_date")
+
+        all_projects = Project.search(project_domain)
+        project_total = len(all_projects)
+
+        project_done = all_projects.filtered(
+            lambda p: (
+                (getattr(p, "stage_id", False) and (
+                    "done" in (p.stage_id.name or "").lower()
+                    or "hoàn tất" in (p.stage_id.name or "").lower()
+                    or "hoan tat" in (p.stage_id.name or "").lower()
+                    or "complete" in (p.stage_id.name or "").lower()
+                ))
+                or bool(getattr(p, "is_completed", False))
+            )
+        )
+        project_done_count = len(project_done)
+        project_in_progress_count = max(project_total - project_done_count, 0)
+
+        khkt_total_budget = sum(x.get("total", 0.0) for x in project_expense)
+        khkt_total_spent = sum(x.get("spent", 0.0) for x in project_expense)
+        khkt_total_remaining = sum(x.get("not_spent", 0.0) for x in project_expense)
 
         # =========================
         # 6. Cash flow
@@ -263,6 +291,122 @@ class ExecutiveDashboard(models.AbstractModel):
             "net_invoice": total_customer_invoice - total_supplier_invoice,
         }
 
+        # =========================
+        # 8. HR data
+        # =========================
+        hr_total_employees = 0
+        hr_active_employees = 0
+        hr_departments = 0
+        hr_absent_today = 0
+
+        if "hr.employee" in self.env:
+            Employee = self.env["hr.employee"]
+            employee_domain = []
+            if "create_date" in Employee._fields:
+                employee_domain = apply_date_domain([], "create_date")
+
+            employees = Employee.search(employee_domain)
+            hr_total_employees = len(employees)
+
+            if "active" in Employee._fields:
+                hr_active_employees = Employee.search_count(employee_domain + [("active", "=", True)])
+            else:
+                hr_active_employees = hr_total_employees
+
+            if "department_id" in Employee._fields:
+                dept_ids = employees.mapped("department_id").ids
+                hr_departments = len(dept_ids)
+
+            # nghỉ phép / vắng hôm nay
+            if "hr.leave" in self.env:
+                Leave = self.env["hr.leave"]
+                today = fields.Date.context_today(self)
+
+                leave_domain = [
+                    ("state", "=", "validate"),
+                    ("request_date_from", "<=", today),
+                    ("request_date_to", ">=", today),
+                ]
+                if "employee_id" in Leave._fields and hr_total_employees:
+                    hr_absent_today = Leave.search_count(leave_domain)
+
+        elif "res.users" in self.env:
+            Users = self.env["res.users"]
+            users = Users.search([("share", "=", False)])
+            hr_total_employees = len(users)
+            hr_active_employees = len(users.filtered(lambda u: u.active))
+            hr_departments = 0
+            hr_absent_today = 0
+        # =========================
+        # 8. Approval / Chờ giám đốc duyệt
+        # =========================
+        proposal_pending_domain = apply_date_domain(
+            [("state", "=", "approved")],
+            "create_date",
+        )
+
+        payment_pending_domain = apply_date_domain(
+            [("state", "=", "account_approved")],
+            "create_date",
+        )
+
+        proposal_pending_records = ProposalSheet.search(
+            proposal_pending_domain,
+            order="create_date desc",
+            limit=5,
+        )
+
+        payment_pending_records = PaymentProposal.search(
+            payment_pending_domain,
+            order="create_date desc",
+            limit=5,
+        )
+
+        proposal_pending_count = ProposalSheet.search_count(proposal_pending_domain)
+        payment_pending_count = PaymentProposal.search_count(payment_pending_domain)
+
+        proposal_pending_amount = sum(proposal_pending_records.mapped("amount_total_taxes")) if proposal_pending_records else 0.0
+        payment_pending_amount = sum(payment_pending_records.mapped("amount_remain")) if payment_pending_records else 0.0
+
+        approval_pending_count = proposal_pending_count + payment_pending_count
+        approval_pending_amount = proposal_pending_amount + payment_pending_amount
+
+        approval_pending_items = []
+
+        for rec in proposal_pending_records:
+            approval_pending_items.append({
+                "type": "proposal_sheet",
+                "type_label": "Phiếu đề xuất",
+                "id": rec.id,
+                "name": rec.name,
+                "date": rec.create_date.strftime("%Y-%m-%d") if rec.create_date else "",
+                "user_name": rec.requested_by.name if rec.requested_by else "",
+                "department_name": rec.department_id.name if rec.department_id else "",
+                "project_name": rec.project_id.name if rec.project_id else "",
+                "state": rec.state,
+                "state_label": "Chờ giám đốc duyệt",
+                "amount": rec.amount_total_taxes or rec.amount_total or 0.0,
+            })
+
+        for rec in payment_pending_records:
+            approval_pending_items.append({
+                "type": "payment_proposal",
+                "type_label": "Phiếu giải chi",
+                "id": rec.id,
+                "name": rec.name,
+                "date": rec.create_date.strftime("%Y-%m-%d") if rec.create_date else "",
+                "user_name": rec.user_id.name if rec.user_id else "",
+                "department_name": rec.department_id.name if rec.department_id else "",
+                "project_name": rec.project_id.name if rec.project_id else "",
+                "state": rec.state,
+                "state_label": "Chờ giám đốc duyệt",
+                "amount": rec.amount_remain or rec.total_amount or 0.0,
+            })
+
+        approval_pending_items.sort(key=lambda x: x.get("date") or "", reverse=True)
+        approval_pending_items = approval_pending_items[:10]
+        
+
         return {
             "kpis": {
                 "quotation": {
@@ -283,6 +427,30 @@ class ExecutiveDashboard(models.AbstractModel):
             "project_expense": project_expense,
             "top_order": top_order_info,
             "conversion_rate": conversion_rate,
+
+            # KH-KT
+            "project_total": project_total,
+            "project_done_count": project_done_count,
+            "project_in_progress_count": project_in_progress_count,
+            "khkt_total_budget": khkt_total_budget,
+            "khkt_total_spent": khkt_total_spent,
+            "khkt_total_remaining": khkt_total_remaining,
+
+            # HR
+            "hr_total_employees": hr_total_employees,
+            "hr_active_employees": hr_active_employees,
+            "hr_departments": hr_departments,
+            "hr_absent_today": hr_absent_today,
+            "approval_summary": {
+                "proposal_pending_count": proposal_pending_count,
+                "payment_pending_count": payment_pending_count,
+                "pending_count": approval_pending_count,
+                "proposal_pending_amount": proposal_pending_amount,
+                "payment_pending_amount": payment_pending_amount,
+                "pending_amount": approval_pending_amount,
+            },
+            "approval_pending_items": approval_pending_items,
+
             "date_from": date_from,
             "date_to": date_to,
             "year": year,
