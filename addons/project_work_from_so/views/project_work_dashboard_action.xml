@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+  <!-- Client Action -->
+  <record id="action_project_work_project_dashboard" model="ir.actions.client">
+    <field name="name">Hợp đồng - Dự án</field>
+    <field name="tag">project_work_project_dashboard</field>
+  </record>
+
+  <!-- Menu riêng cho PM -->
+  <menuitem id="menu_project_work_project_dashboard"
+            name="Hợp đồng - Dự án"
+            parent="project.menu_main_pm"
+            action="action_project_work_project_dashboard"
+            sequence="2"
+            groups="project.group_project_manager"/>
+
+  <!-- (Tuỳ chọn) Smart button trong form project chuẩn để mở dashboard -->
+  <record id="view_project_project_form_add_dashboard_btn" model="ir.ui.view">
+    <field name="name">project.project.form.add.dashboard.btn</field>
+    <field name="model">project.project</field>
+    <field name="inherit_id" ref="project.edit_project"/>
+    <field name="arch" type="xml">
+      <xpath expr="//div[contains(@class,'oe_button_box')]" position="inside">
+        <button type="object" name="action_open_work_dashboard"
+                class="oe_stat_button" icon="fa-dashboard"
+                groups="project.group_project_manager">
+          <div class="o_stat_info">
+            <span class="o_stat_text">Dashboard</span>
+          </div>
+        </button>
+      </xpath>
+    </field>
+  </record>
+
+</odoo>

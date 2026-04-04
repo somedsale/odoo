@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+  <!-- Client Action -->
+  <record id="action_project_work_item_manager_dashboard" model="ir.actions.client">
+    <field name="name">Dashboard hạng mục công việc</field>
+    <field name="tag">project_work_item_manager_dashboard</field>
+  </record>
+
+  <!-- Menu: chỉ Project Manager thấy -->
+  <menuitem id="menu_project_work_item_manager_dashboard"
+            name="Dashboard hạng mục công việc"
+            parent="project.menu_main_pm"
+            action="action_project_work_item_manager_dashboard"
+            sequence="97"
+            groups="project.group_project_manager"/>
+</odoo>

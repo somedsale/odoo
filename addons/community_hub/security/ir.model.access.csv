@@ -4,3 +4,5 @@ access_community_hub_channel_user,community.hub.channel user,model_community_hub
 access_community_hub_member_user,community.hub.member user,model_community_hub_member,base.group_user,1,1,0,0
 access_community_hub_post_user,community.hub.post user,model_community_hub_post,base.group_user,1,1,1,0
 access_community_hub_comment_user,community.hub.comment user,model_community_hub_comment,base.group_user,1,1,1,0
+access_community_hub_channel_read,community.hub.channel.read,model_community_hub_channel_read,base.group_user,1,1,1,0
+access_community_hub_reaction_user,community.hub.reaction user,model_community_hub_reaction,base.group_user,1,1,1,0

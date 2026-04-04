@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <data>
+
+    <!-- SEARCH VIEW -->
+    <record id="view_project_disbursement_dashboard_search" model="ir.ui.view">
+      <field name="name">project.project.disbursement.search</field>
+      <field name="model">project.project</field>
+      <field name="arch" type="xml">
+        <search string="Báo cáo giải ngân dự án">
+          <field name="name"/>
+          <field name="partner_id"/>
+
+          <filter string="Có hóa đơn" name="has_invoice" domain="[('customer_invoice_ids', '!=', False)]"/>
+
+          <group expand="0" string="Nhóm theo">
+            <filter string="Khách hàng" name="group_partner" context="{'group_by': 'partner_id'}"/>
+            <filter string="Công ty" name="group_company" context="{'group_by': 'company_id'}"/>
+            <filter string="Giai đoạn" name="group_stage" context="{'group_by': 'stage_id'}"/>
+          </group>
+        </search>
+      </field>
+    </record>
+
+    <!-- TREE VIEW -->
+    <record id="view_project_disbursement_dashboard_tree" model="ir.ui.view">
+      <field name="name">project.project.disbursement.tree</field>
+      <field name="model">project.project</field>
+      <field name="arch" type="xml">
+        <tree string="Báo cáo giải ngân dự án" create="0" delete="0">
+          <field name="name" string="Dự án"/>
+          <field name="partner_id" string="Khách hàng"/>
+          <field name="value_finalized" string="Giá trị Thanh / quyết toán" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng giá trị"/>
+          <field name="customer_invoice_count" string="Số Hóa đơn"/>
+          <field name="customer_invoice_untaxed_total" string="Tổng chưa thuế" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng trước thuế"/>
+          <field name="customer_invoice_amount_total" string="Tổng hóa đơn sau thuế" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng sau thuế"/>
+          <field name="customer_invoice_received_total" string="Tổng tiền đã thu" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng đã thu"/>
+          <field name="customer_invoice_remaining_total" string="Tổng còn phải thu" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng còn phải thu"/>
+          <field name="payment_process_percent" readonly="1" widget="progressbar" string="% Tiền đã thu"/>
+          <field name="currency_id" invisible="1" column_invisible="1"/>
+
+        </tree>
+      </field>
+    </record>
+
+    <!-- FORM VIEW RIÊNG CHO BÁO CÁO -->
+<!-- FORM VIEW RIÊNG CHO BÁO CÁO -->
+<record id="view_project_disbursement_dashboard_form" model="ir.ui.view">
+    <field name="name">project.project.disbursement.form</field>
+    <field name="model">project.project</field>
+    <field name="arch" type="xml">
+        <form string="Báo cáo giải ngân dự án" create="0" delete="0">
+
+
+            <sheet>
+                <div class="oe_title">
+                    <h1>
+                        <field name="name" readonly="1"/>
+                    </h1>
+                    <div class="text-muted">
+                        Báo cáo giải ngân / công nợ khách hàng theo dự án
+                    </div>
+                </div>
+
+                <!-- THÔNG TIN CHUNG -->
+                <group string="Thông tin dự án" col="2">
+                    <group>
+                        <field name="partner_id" readonly="1"/>
+                        <field name="company_id" readonly="1"/>
+                        <field name="currency_id" invisible="1"/>
+                    </group>
+                    <group>
+                        <field name="value_finalized"
+                               readonly="1"
+                               widget="monetary"
+                               options="{'currency_field': 'currency_id'}"/>
+                        <field name="customer_invoice_count" readonly="1"/>
+                        <field name="payment_process_percent" readonly="1" widget="progressbar" string="% Tiền đã thu"/>
+                    </group>
+                </group>
+
+                <!-- TỔNG HỢP -->
+                <group string="Tổng hợp giải ngân" col="4">
+                    <group>
+                        <field name="customer_invoice_untaxed_total"
+                               readonly="1"
+                               widget="monetary"
+                               options="{'currency_field': 'currency_id'}"/>
+                    </group>
+                    <group>
+                        <field name="customer_invoice_amount_total"
+                               readonly="1"
+                               widget="monetary"
+                               options="{'currency_field': 'currency_id'}"/>
+                    </group>
+                    <group>
+                        <field name="customer_invoice_received_total"
+                               readonly="1"
+                               widget="monetary"
+                               options="{'currency_field': 'currency_id'}"/>
+                    </group>
+                    <group>
+                        <field name="customer_invoice_remaining_total"
+                               readonly="1"
+                               widget="monetary"
+                               options="{'currency_field': 'currency_id'}"/>
+                    </group>
+                </group>
+
+                <notebook>
+                    <page string="Chi tiết hóa đơn">
+                        <field name="customer_invoice_ids" nolabel="1" readonly="1">
+                            <tree create="0" delete="0" edit="0">
+                                <field name="date" string="Ngày HĐ"/>
+                                <field name="name" string="Tên hóa đơn"/>
+                                <field name="invoice_number" string="Số HĐ"/>
+                                <field name="partner_id" string="Khách hàng"/>
+                                <field name="amount_untaxed"
+                                       string="Hóa đơn chưa thuế"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}" sum="Tổng trước thuế"/>
+                                <field name="amount_total"
+                                       string="Hóa đơn sau thuế"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}" sum="Tổng Hóa đơn sau thuế"/>
+                                <field name="currency_id" invisible="1" column_invisible="1"/>
+                                
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
+            </sheet>
+        </form>
+    </field>
+</record>
+
+    <!-- ACTION -->
+    <record id="action_project_disbursement_dashboard" model="ir.actions.act_window">
+      <field name="name">Báo cáo giải ngân dự án</field>
+      <field name="res_model">project.project</field>
+      <field name="view_mode">tree,form</field>
+      <field name="search_view_id" ref="view_project_disbursement_dashboard_search"/>
+      <field name="domain">[('customer_invoice_ids', '!=', False)]</field>
+      <field name="context">{}</field>
+      <field name="view_ids" eval="[
+        (5, 0, 0),
+        (0, 0, {'sequence': 1, 'view_mode': 'tree', 'view_id': ref('view_project_disbursement_dashboard_tree')}),
+        (0, 0, {'sequence': 2, 'view_mode': 'form', 'view_id': ref('view_project_disbursement_dashboard_form')})
+    ]"/>
+    </record>
+
+    <!-- MENU -->
+    <menuitem id="menu_project_disbursement_root" name="Giải ngân dự án" parent="project.menu_main_pm" sequence="80" groups="project.group_project_manager"/>
+
+    <menuitem id="menu_project_disbursement_dashboard" name="Báo cáo giải ngân" parent="menu_project_disbursement_root" action="action_project_disbursement_dashboard" sequence="1"/>
+
+  </data>
+</odoo>

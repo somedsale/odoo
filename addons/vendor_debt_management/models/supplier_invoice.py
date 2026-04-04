@@ -6,6 +6,7 @@ from odoo.exceptions import ValidationError
 class SupplierInvoice(models.Model):
     _name = "supplier.invoice"
     _description = "Supplier Invoice"
+    _order = "date desc, create_date desc"
     # _rec_name = "invoice_number"
     # Mã hóa đơn (sequence)
     name = fields.Char(

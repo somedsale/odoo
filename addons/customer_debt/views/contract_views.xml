@@ -7,7 +7,7 @@
         <field name="name">customer.contract.tree</field>
         <field name="model">customer.contract</field>
         <field name="arch" type="xml">
-            <tree>
+            <tree default_order="date desc">
                 <field name="name"/>
                 <field name="contract_id"/>
                 <field name="date"/>
@@ -65,8 +65,8 @@
                                 <tree editable="bottom">
                                     <field name="name"/>
                                     <field name="invoice_number"/>
-                                    <field name="project_id"/>
-                                    <field name="partner_id"/>
+                                    <!-- <field name="project_id"/>
+                                    <field name="partner_id"/> -->
                                     <field name="date"/>
                                     <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}" optional="show"/>
                                     <field name="account_tax_id" optional="show"/>
@@ -81,9 +81,14 @@
                                 <tree>
                                     <field name="name"/>
                                     <field name="date"/>
+<<<<<<< HEAD
                                     <field name="note" string="Nội dung thu"/>
                                     <field name="partner_id"/>
                                     <field name="project_id"/>
+=======
+                                    <!-- <field name="partner_id"/>
+                                    <field name="project_id"/> -->
+>>>>>>> 92eff21330cafcc982ecc988fdd8e51a1fa41672
                                     <field name="amount" sum="Tổng tiền" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                                     <field name="payment_method"/>
                                     <field name="state"/>
@@ -96,8 +101,8 @@
                                 <tree editable="bottom">
                                     <field name="name"/>
                                     <field name="settlement_number"/>
-                                    <field name="project_id"/>
-                                    <field name="partner_id"/>
+                                    <!-- <field name="project_id"/>
+                                    <field name="partner_id"/> -->
                                     <field name="date"/>
                                     <field name="amount_untaxed" widget="monetary" options="{'currency_field': 'currency_id'}" optional="show"/>
                                     <field name="tax_id" optional="show"/>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Đổi tên menu gốc Project -->
+    <record id="project.menu_main_pm" model="ir.ui.menu">
+        <field name="name">KH-KT</field>
+    </record>
+
+    <!-- (Tuỳ chọn) đổi tên action chính -->
+    <record id="project.open_view_project_all" model="ir.actions.act_window">
+        <field name="name">KH-KT</field>
+    </record>
+
+    <!-- Ẩn menu Dự án (nếu xmlid này tồn tại trên hệ của bạn) -->
+    <record id="project.menu_projects" model="ir.ui.menu">
+        <field name="active" eval="1"/>
+    </record>
+    <record id="custom_project_role.menu_main_pm_user" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+    <record id="project.menu_projects" model="ir.ui.menu">
+        <field name="active" eval="1"/>
+    </record>
+
+    <record id="project.menu_project_management" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+    <record id="proposal_sheet.menu_proposal_sheet_root" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+    <record id="contract_management.menu_project_contract_readonly" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+    <record id="project.menu_project_report" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+    <record id="project.menu_project_config" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+    <!-- <record id="project.menu_projects_group_stage" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record> -->
+    <record id="cost_estimate.menu_cost_estimate_root" model="ir.ui.menu">
+        <field name="groups_id" eval="[(6, 0, [ref('project.group_project_manager')])]"/>
+    </record>
+    <record id="project.menu_main_pm" model="ir.ui.menu">
+        <field name="name">KH-KT</field>
+        <field name="groups_id" eval="[(6, 0, [ref('project.group_project_user')])]"/>
+    </record>
+    <record id="custom_project_expense.menu_project_expense_in_project" model="ir.ui.menu">
+        <field name="groups_id" eval="[(6, 0, [ref('project.group_project_manager')])]"/>
+    </record>
+    <!-- Action: Danh sách nhân viên phòng KH_KT -->
+    <record id="action_khkt_employee_list" model="ir.actions.act_window">
+        <field name="name">Nhân viên phòng KH-KT</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">tree,form</field>
+
+        <!-- ✅ Lọc theo tên phòng ban (sửa đúng tên nếu hệ bạn là KH-KT) -->
+        <field name="domain">[('department_id.name', '=', 'Kế Hoạch - Sản Xuất')]</field>
+
+        <!-- (tuỳ chọn) mặc định group theo phòng ban -->
+        <field name="context">{'group_by': ['department_id']}</field>
+    </record>
+
+
+    <!-- Menu custom -->
+    <menuitem id="menu_internal_project" name="Nội bộ" parent="project.menu_main_pm" sequence="1"/>
+    <!-- Menu con dưới "Nội bộ" -->
+    <menuitem id="menu_khkt_employee_list" name="Danh sách nhân viên" parent="menu_internal_project" action="action_khkt_employee_list" sequence="1" groups="hr.group_hr_user"/>
+    <menuitem id="menu_my_task_project" name="Nhiệm vụ của tôi" parent="menu_internal_project" action="project.action_view_my_task" sequence="2"/>
+    <!-- <menuitem id="menu_all_tasks_project" name="Tất cả nhiệm vụ" parent="menu_internal_project" action="project.action_view_all_task" sequence="3"/> -->
+    <menuitem id="menu_proposal_project" name="Phiếu đề xuất" parent="menu_internal_project" sequence="4"/>
+    <menuitem id="menu_proposal_project_expense" name="Phiếu đề xuất chi phí/ vật tư" parent="menu_proposal_project" action="proposal_sheet.action_proposal_sheet" sequence="1"/>
+    <menuitem id="menu_data_project" name="Dữ liệu" parent="project.menu_main_pm" sequence="99"/>
+    <record id="project_material.menu_material_root" model="ir.ui.menu">
+        <field name="parent_id" ref="project_work_from_so.menu_data_project"/>
+        <field name="sequence" eval="90"/>
+    </record>
+</odoo>

@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_my_finalization_project_tree" model="ir.ui.view">
+        <field name="name">project.project.my.finalization.tree</field>
+        <field name="model">project.project</field>
+        <field name="arch" type="xml">
+            <tree string="Báo cái Hồ sơ thanh/quyết toán" create="0" delete="0" js_class="my_finalization_project_list" default_order="create_date desc, id desc">
+
+                <field name="name" string="Dự án"/>
+                <field name="partner_id" string="Khách hàng"/>
+                <field name="contract_id" string="Hợp đồng"/>
+                <field name="date_start" string="Ngày bắt đầu"/>
+                <field name="date" string="Ngày kết thúc"/>
+                <field name="finalization_count" string="Số hạng mục"/>
+                <field name="value_contract_tax" string="Giá trị hợp đồng" sum="Tổng"/>
+                <field name="value_finalized" string="Giá trị đã thanh/quyết toán" sum="Tổng"/>
+                <field name="value_finalization_remaining" string="Giá trị còn lại" sum="Tổng"/>
+                <field name="finalization_percent" string="% thanh/quyết toán" widget="percentage"/>
+                <field name="stage_id" string="Giai đoạn"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_my_finalization_project_search" model="ir.ui.view">
+        <field name="name">project.project.my.finalization.search</field>
+        <field name="model">project.project</field>
+        <field name="arch" type="xml">
+            <search string="Tìm dự án cần thanh/quyết toán">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="contract_id"/>
+                <field name="user_id"/>
+                <field name="finalization_user_id"/>
+                <field name="stage_id"/>
+
+                <separator/>
+
+                <filter name="my_finalization_project" string="Dự án của tôi" domain="[('is_my_finalization_project', '=', True)]"/>
+
+                <filter name="has_finalization_acceptance" string="Còn khối lượng thanh/quyết toán" domain="[('value_finalization_remaining', '&gt;', 0)]"/>
+
+                <filter string="Đang thực hiện" name="in_progress" domain="[('stage_id.name', '=', 'Đang thực hiện')]"/>
+
+                <filter string="Hoàn tất" name="done" domain="[('stage_id.name', '=', 'Hoàn tất')]"/>
+
+                <filter string="Dự án cũ" name="old_project" domain="[('stage_id.name', '=', 'Dự án cũ')]"/>
+
+                <filter string="Đã hủy" name="cancelled" domain="[('stage_id.name', '=', 'Đã hủy')]"/>
+
+                <filter string="Tạm ngừng" name="paused" domain="[('stage_id.name', '=', 'Đang tạm ngừng')]"/>
+
+                <separator/>
+
+                <group expand="0" string="Nhóm theo">
+                    <filter name="group_partner" string="Khách hàng" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_contract" string="Hợp đồng" context="{'group_by': 'contract_id'}"/>
+                    <filter name="group_finalization_user" string="Người báo cáo thanh/quyết toán" context="{'group_by': 'finalization_user_id'}"/>
+                    <filter name="group_stage" string="Giai đoạn" context="{'group_by': 'stage_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_manager_finalization_project_tree" model="ir.ui.view">
+        <field name="name">project.project.manager.finalization.tree</field>
+        <field name="model">project.project</field>
+        <field name="arch" type="xml">
+            <tree string="Quản lý Hồ sơ thanh/quyết toán" create="0" delete="0" js_class="manager_finalization_project_list" default_order="create_date desc, id desc">
+            <header>
+                <button name="%(action_project_finalization_assign_multi_wizard)d"
+                        string="Phân công người báo cáo thanh/quyết toán"
+                        type="action"
+                        class="btn btn-primary"
+                        groups="project.group_project_manager"/>
+            </header>
+                <field name="name" string="Dự án"/>
+                <field name="partner_id" string="Khách hàng"/>
+                <field name="contract_id" string="Hợp đồng"/>
+                <field name="user_id" string="Quản lý dự án"/>
+                <field name="finalization_user_id" string="Người báo cáo thanh/quyết toán"/>
+                <field name="date_start" string="Ngày bắt đầu"/>
+                <field name="date" string="Ngày kết thúc"/>
+                <field name="value_contract_tax" string="Giá trị hợp đồng" sum="Tổng"/>
+                <field name="value_settlement" string="Giá trị thực tế" sum="Tổng"/>
+                <field name="value_arise" string="Giá trị phát sinh" sum="Tổng"/>
+                <field name="value_finalized" string="Giá trị đã thanh/quyết toán" sum="Tổng"/>
+                <field name="value_finalization_remaining" string="Giá trị còn lại" sum="Tổng"/>
+                <field name="finalization_percent" string="% thanh/quyết toán" widget="percentage"/>
+                <field name="stage_id" string="Giai đoạn"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_manager_finalization_project_search" model="ir.ui.view">
+        <field name="name">project.project.manager.finalization.search</field>
+        <field name="model">project.project</field>
+        <field name="arch" type="xml">
+            <search string="Tìm dự án thanh/quyết toán">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="contract_id"/>
+                <field name="user_id"/>
+                <field name="finalization_user_id"/>
+                <field name="stage_id"/>
+
+                <separator/>
+
+                <filter name="has_finalization_user"
+                        string="Đã phân người báo cáo thanh/quyết toán"
+                        domain="[('finalization_user_id', '!=', False)]"/>
+
+                <filter name="no_acceptance_user"
+                        string="Chưa phân người thanh/quyết toán"
+                        domain="[('finalization_user_id', '=', False)]"/>
+
+                <filter name="has_remaining_finalization_manager"
+                        string="Còn khối lượng thanh/quyết toán"
+                        domain="[('value_finalization_remaining', '&gt;', 0)]"/>
+
+            <filter string="Đang thực hiện"
+                    name="in_progress"
+                    domain="[('stage_id.name', '=', 'Đang thực hiện')]"/>
+
+            <filter string="Hoàn tất"
+                    name="done"
+                    domain="[('stage_id.name', '=', 'Hoàn tất')]"/>
+
+            <filter string="Dự án cũ"
+                    name="old_project"
+                    domain="[('stage_id.name', '=', 'Dự án cũ')]"/>
+
+            <filter string="Đã hủy"
+                    name="cancelled"
+                    domain="[('stage_id.name', '=', 'Đã hủy')]"/>
+
+            <filter string="Tạm ngừng"
+                    name="paused"
+                    domain="[('stage_id.name', '=', 'Đang tạm ngừng')]"/>
+
+                <separator/>
+
+                <group expand="0" string="Nhóm theo">
+                    <filter name="group_partner_manager"
+                            string="Khách hàng"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_contract_manager"
+                            string="Hợp đồng"
+                            context="{'group_by': 'contract_id'}"/>
+                    <filter name="group_finalization_user_manager"
+                            string="Người phụ trách thanh/quyết toán"
+                            context="{'group_by': 'finalization_user_id'}"/>
+                    <filter name="group_stage_manager"
+                            string="Giai đoạn"
+                            context="{'group_by': 'stage_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_my_finalization_project_report" model="ir.actions.act_window">
+        <field name="name">Báo cáo thanh/quyết toán của tôi</field>
+        <field name="res_model">project.project</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_my_finalization_project_tree"/>
+        <field name="search_view_id" ref="view_my_finalization_project_search"/>
+        <field name="domain">[('is_my_finalization_project', '=', True)]</field>
+        <field name="context">{'manager_mode': False}</field>
+    </record>
+
+    <record id="action_manager_finalization_project_report" model="ir.actions.act_window">
+        <field name="name">Báo cáo thanh/quyết toán quản lý</field>
+        <field name="res_model">project.project</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_manager_finalization_project_tree"/>
+        <field name="search_view_id" ref="view_manager_finalization_project_search"/>
+        <field name="context">{'manager_mode': True}</field>
+    </record>
+
+    <record id="action_open_my_finalization_report_client" model="ir.actions.client">
+        <field name="name">Báo cáo thanh/quyết toán của tôi</field>
+        <field name="tag">project_work_finalization_report.FinalizationReport</field>
+        <field name="target">current</field>
+        <field name="context">{'manager_mode': False}</field>
+    </record>
+
+    <record id="action_open_manager_finalization_report_client" model="ir.actions.client">
+        <field name="name">Báo cáo thanh/quyết toán quản lý</field>
+        <field name="tag">project_work_finalization_report.FinalizationReport</field>
+        <field name="target">current</field>
+        <field name="context">{'manager_mode': True}</field>
+    </record>
+</odoo>

@@ -16,6 +16,7 @@ def _as_date(v):
 class SupplierContract(models.Model):
     _name = "supplier.contract"
     _description = "Supplier Contract"
+    _order = "create_date desc"
 
     name = fields.Char("Mã", default="New", required=True, readonly=True)
     display_name = fields.Char("Tên hiển thị", compute="_compute_display_name", store=True)

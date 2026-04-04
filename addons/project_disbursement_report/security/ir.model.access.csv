@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_project_disbursement_report_manager,project.disbursement.report.manager,model_project_disbursement_report,project.group_project_manager,1,1,1,1
+access_project_disbursement_report_line_manager,project.disbursement.report.line.manager,model_project_disbursement_report_line,project.group_project_manager,1,1,1,1

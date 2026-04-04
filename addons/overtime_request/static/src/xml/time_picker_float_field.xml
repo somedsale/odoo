@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+    <t t-name="overtime_request.TimePickerFloatField">
+        <div class="overtime_time_picker_field">
+            <input
+                type="time"
+                class="o_input overtime_time_input"
+                step="1800"
+                lang="en-GB"
+                placeholder="HH:MM"
+                t-att-value="formattedValue"
+                t-att-readonly="props.readonly"
+                t-on-input="onInput"
+            />
+        </div>
+    </t>
+</templates>
