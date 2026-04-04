@@ -81,14 +81,11 @@
                                 <tree>
                                     <field name="name"/>
                                     <field name="date"/>
-<<<<<<< HEAD
                                     <field name="note" string="Nội dung thu"/>
                                     <field name="partner_id"/>
                                     <field name="project_id"/>
-=======
                                     <!-- <field name="partner_id"/>
                                     <field name="project_id"/> -->
->>>>>>> 92eff21330cafcc982ecc988fdd8e51a1fa41672
                                     <field name="amount" sum="Tổng tiền" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                                     <field name="payment_method"/>
                                     <field name="state"/>
