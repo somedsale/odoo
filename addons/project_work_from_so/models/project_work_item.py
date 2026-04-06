@@ -124,10 +124,9 @@ class ProjectWorkItem(models.Model):
     # =========================================================
     price_unit = fields.Float(
         string="Đơn giá chưa thuế",
-        related="so_line_id.price_unit",
-        digits="Product Price",
-        readonly=True,
+        compute="_compute_price_unit",
         store=True,
+        digits="Product Price",
     )
     price_subtotal = fields.Monetary(
         string="Thành tiền SO chưa thuế",
@@ -195,10 +194,28 @@ class ProjectWorkItem(models.Model):
         compute="_compute_value_metrics",
         store=True,
     )
+    manual_price_unit = fields.Float(
+        string="Đơn giá",
+        digits="Product Price",
+        tracking=True,
+    )
 
+    manual_tax_ids = fields.Many2many(
+        "account.tax",
+        "project_work_item_account_tax_rel",
+        "work_item_id",
+        "tax_id",
+        string="VAT",
+        tracking=True,
+        domain=[("type_tax_use", "=", "sale"), ("active", "=", True)],
+    )
     # =========================================================
     # COMPUTE HELPERS
     # =========================================================
+    @api.depends("so_line_id.price_unit", "manual_price_unit")
+    def _compute_price_unit(self):
+        for rec in self:
+            rec.price_unit = rec.so_line_id.price_unit if rec.so_line_id else (rec.manual_price_unit or 0.0)
     def _get_tax_included_amount(self, quantity, price_unit=None):
         self.ensure_one()
 
@@ -207,11 +224,8 @@ class ProjectWorkItem(models.Model):
             return 0.0
 
         price_unit = price_unit if price_unit is not None else (self.price_unit or 0.0)
-        so_line = self.so_line_id
-        if not so_line:
-            return quantity * price_unit
 
-        taxes = so_line.tax_id
+        taxes = self.so_line_id.tax_id if self.so_line_id else self.manual_tax_ids
         if not taxes:
             return quantity * price_unit
 
@@ -264,6 +278,7 @@ class ProjectWorkItem(models.Model):
     @api.depends(
         "price_unit",
         "so_line_id.tax_id",
+        "manual_tax_ids",
         "qty_plan",
         "qty_arise",
         "qty_settlement",
