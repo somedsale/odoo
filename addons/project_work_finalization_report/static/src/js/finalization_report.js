@@ -390,7 +390,39 @@ recomputeRowValues(row) {
 
         this.action.doAction(fallbackActionXmlId);
     }
+get totalRow() {
+    const rows = this.selectedRows || [];
 
+    return rows.reduce(
+        (acc, row) => {
+            acc.contract_qty += Number(row.contract_qty || 0);
+            acc.qty_arise += Number(row.qty_arise || 0);
+            acc.prev_qty_cum += Number(row.prev_qty_cum || 0);
+            acc.current_qty_week += Number(row.current_qty_week || 0);
+            acc.current_qty_cum += Number(row.current_qty_cum || 0);
+
+            acc.contract_value_tax += Number(row.contract_value_tax || 0);
+            acc.prev_value_tax += Number(row.prev_value_tax || 0);
+            acc.current_value_tax += Number(row.current_value_tax || 0);
+            acc.current_value_cum_tax += Number(row.current_value_cum_tax || 0);
+            acc.value_remaining_tax += Number(row.value_remaining_tax || 0);
+
+            return acc;
+        },
+        {
+            contract_qty: 0,
+            qty_arise: 0,
+            prev_qty_cum: 0,
+            current_qty_week: 0,
+            current_qty_cum: 0,
+            contract_value_tax: 0,
+            prev_value_tax: 0,
+            current_value_tax: 0,
+            current_value_cum_tax: 0,
+            value_remaining_tax: 0,
+        }
+    );
+}
     async reload() {
         await this.loadData();
     }

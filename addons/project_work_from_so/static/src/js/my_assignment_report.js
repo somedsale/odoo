@@ -426,7 +426,82 @@ export class MyAssignmentReport extends Component {
     onProjectAssignUserChange(ev) {
         this.state.projectAssignUserId = Number(ev.target.value || 0) || null;
     }
+    get totalRow() {
+    const rows = this.selectedRows || [];
 
+    return rows.reduce(
+        (acc, row) => {
+            acc.contract_qty += Number(row.contract_qty || 0);
+            acc.qty_arise += Number(row.qty_arise || 0);
+            acc.prev_qty_cum += Number(row.prev_qty_cum || 0);
+            acc.current_qty_week += Number(row.current_qty_week || 0);
+            acc.current_qty_cum += Number(row.current_qty_cum || 0);
+
+            acc.contract_value_tax += Number(row.contract_value_tax || 0);
+            acc.prev_value_tax += Number(row.prev_value_tax || 0);
+            acc.current_value_tax += Number(row.current_value_tax || 0);
+            acc.current_value_cum_tax += Number(row.current_value_cum_tax || 0);
+            acc.value_remaining_tax += Number(row.value_remaining_tax || 0);
+
+            return acc;
+        },
+        {
+            contract_qty: 0,
+            qty_arise: 0,
+            prev_qty_cum: 0,
+            current_qty_week: 0,
+            current_qty_cum: 0,
+            contract_value_tax: 0,
+            prev_value_tax: 0,
+            current_value_tax: 0,
+            current_value_cum_tax: 0,
+            value_remaining_tax: 0,
+        }
+    );
+}
+async openWorkItems() {
+    if (!this.state.projectId) {
+        this.notification.add("Không tìm thấy dự án.", { type: "warning" });
+        return;
+    }
+
+    await this.action.doAction({
+        type: "ir.actions.act_window",
+        name: "Hạng mục công việc",
+        res_model: "project.work.item",
+        view_mode: "tree,form",
+        views: [
+            [false, "list"],
+            [false, "form"],
+        ],
+        domain: [["project_id", "=", this.state.projectId]],
+        context: {
+            default_project_id: this.state.projectId,
+            default_assigned_user_id: this.state.project?.assignment_user_id || false,
+        },
+        target: "current",
+    });
+}
+
+async createWorkItem() {
+    if (!this.state.projectId) {
+        this.notification.add("Không tìm thấy dự án.", { type: "warning" });
+        return;
+    }
+
+    await this.action.doAction({
+        type: "ir.actions.act_window",
+        name: "Thêm hạng mục công việc",
+        res_model: "project.work.item",
+        view_mode: "form",
+        views: [[false, "form"]],
+        target: "current",
+        context: {
+            default_project_id: this.state.projectId,
+            default_assigned_user_id: this.state.project?.assignment_user_id || false,
+        },
+    });
+}
     async assignProjectUser() {
         if (!this.state.managerMode) {
             return;
