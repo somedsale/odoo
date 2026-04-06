@@ -602,13 +602,18 @@ class ProjectProject(models.Model):
 
     def action_view_work_items(self):
         self.ensure_one()
-        action = self.env.ref("project_work_from_so.action_project_work_item_list").read()[0]
-        action["domain"] = [("project_id", "=", self.id)]
-        action["context"] = {
-            "default_project_id": self.id,
-            "search_default_active_true": 1,
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Hạng mục công việc"),
+            "res_model": "project.work.item",
+            "view_mode": "tree,form",
+            "domain": [("project_id", "=", self.id)],
+            "context": {
+                "default_project_id": self.id,
+                "default_assigned_user_id": self.assignment_user_id.id if self.assignment_user_id else False,
+            },
+            "target": "current",
         }
-        return action
 
     def action_open_my_assignment_report_owl(self):
         self.ensure_one()

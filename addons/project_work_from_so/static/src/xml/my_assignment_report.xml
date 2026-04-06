@@ -28,6 +28,15 @@
                                 Lưu tất cả
                             </t>
                         </button>
+                        <button class="btn btn-outline-primary" t-if="state.project.manager_mode" t-on-click="openWorkItems" t-att-disabled="state.loading or state.saving">
+                            <i class="fa fa-list me-1"/>
+    Hạng mục
+                        </button>
+
+                        <button class="btn btn-success" t-if="state.project.manager_mode and !state.project.is_completed" t-on-click="createWorkItem" t-att-disabled="state.loading or state.saving">
+                            <i class="fa fa-plus me-1"/>
+    Thêm hạng mục
+                        </button>
                     </div>
 
                     <div class="text-end ms-auto">
@@ -398,13 +407,59 @@
                                             </td>
                                         </tr>
                                     </t>
-                                </t>
 
+                                </t>
+                                <tr t-if="groupedSelectedRows.length" class="table-info fw-bold">
+                                    <td colspan="3" class="text-center">TỔNG</td>
+
+                                    <td class="text-end">
+                                        <t t-esc="formatQty(totalRow.contract_qty)"/>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <t t-esc="formatQty(totalRow.qty_arise)"/>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <t t-esc="formatQty(totalRow.prev_qty_cum)"/>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <t t-esc="formatQty(totalRow.current_qty_week)"/>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <t t-esc="formatQty(totalRow.current_qty_cum)"/>
+                                    </td>
+
+                                    <td class="text-end">-</td>
+
+                                    <td class="text-end">
+                                        <t t-esc="formatMoney(totalRow.contract_value_tax)"/>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <t t-esc="formatMoney(totalRow.prev_value_tax)"/>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <t t-esc="formatMoney(totalRow.current_value_tax)"/>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <t t-esc="formatMoney(totalRow.current_value_cum_tax)"/>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <t t-esc="formatMoney(totalRow.value_remaining_tax)"/>
+                                    </td>
+                                </tr>
                                 <tr t-if="!groupedSelectedRows.length">
                                     <td colspan="14" class="text-center text-muted py-4">
                                         Không có dữ liệu cho kỳ đã chọn.
                                     </td>
                                 </tr>
+
                             </tbody>
                         </table>
                     </div>

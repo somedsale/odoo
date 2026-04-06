@@ -1,86 +1,191 @@
-.o_list_view th.o_list_row_count_sheliya,
-.o_list_view td.o_list_row_count_sheliya {
-    width: 50px !important;
-    min-width: 50px !important;
-    max-width: 50px !important;
-    text-align: center !important;
-    white-space: nowrap !important;
-    overflow: hidden;
-}
+/* =========================================================
+   A. MÀU NHẬN BIẾT FIELD
+   - Editable thường  : xanh nhạt
+   - Required editable: vàng/cam nhạt
+   - Required đang trống: đỏ nhạt
+   - Readonly         : không tô
+   ========================================================= */
 
-/* ===== Border tree/x2many ===== */
-.o_field_x2many .o_list_table th.o_list_row_count_sheliya,
-.o_field_x2many .o_list_table td.o_list_row_count_sheliya {
-    border-bottom: 1px solid #dee2e6 !important;
-}
+/* ---------- Biến màu dùng chung ---------- */
+:root {
+    --somed-editable-bg: #f3fbff;
+    --somed-editable-border: #7cc7e8;
 
-.o_field_x2many .o_list_table thead > tr > th {
-    border-bottom: 1px solid var(--bs-border-color, #dee2e6) !important;
-}
+    --somed-required-bg: #fff7e8;
+    --somed-required-border: #f0ad4e;
 
-.o_field_x2many .o_list_table tbody > tr > td,
-.o_field_x2many .o_list_table tbody > tr > th {
-    border-bottom: 1px solid var(--bs-border-color, #dee2e6) !important;
-}
+    --somed-required-empty-bg: #fff1f0;
+    --somed-required-empty-border: #e66a61;
 
-.o_field_x2many .o_list_table tbody > tr:first-child > td,
-.o_field_x2many .o_list_table tbody > tr:first-child > th {
-    border-top: 1px solid var(--bs-border-color, #dee2e6) !important;
+    --somed-focus-ring: 0 0 0 2px rgba(124, 199, 232, 0.18);
+    --somed-required-focus-ring: 0 0 0 2px rgba(240, 173, 78, 0.18);
 }
 
 /* =========================================================
-   1. TREE: highlight required
-   Chỉ tô lên input/select/textarea khi editable
+   1. FORM VIEW
    ========================================================= */
 
+/* reset wrapper */
+.o_form_view .o_required_modifier,
+.o_form_view .o_field_widget.o_required_modifier,
+.o_form_view .o_group .o_required_modifier {
+    background: transparent !important;
+}
+
+/* ---------- Editable thường ---------- */
+.o_form_view .o_field_widget input:not([readonly]):not([disabled]):not([type="checkbox"]):not([type="radio"]),
+.o_form_view .o_field_widget textarea:not([readonly]):not([disabled]),
+.o_form_view .o_field_widget select:not([disabled]),
+.o_form_view .o_field_widget .o_input:not([readonly]):not([disabled]),
+.o_form_view .o_input:not([readonly]):not([disabled]),
+.o_form_view textarea:not([readonly]):not([disabled]),
+.o_form_view select:not([disabled]) {
+    background: var(--somed-editable-bg) !important;
+    border: 1px solid var(--somed-editable-border) !important;
+    box-shadow: none !important;
+    border-radius: 4px;
+}
+
+/* focus cho editable thường */
+.o_form_view .o_field_widget input:not([readonly]):not([disabled]):focus,
+.o_form_view .o_field_widget textarea:not([readonly]):not([disabled]):focus,
+.o_form_view .o_field_widget select:not([disabled]):focus,
+.o_form_view .o_field_widget .o_input:not([readonly]):not([disabled]):focus,
+.o_form_view .o_input:not([readonly]):not([disabled]):focus,
+.o_form_view textarea:not([readonly]):not([disabled]):focus,
+.o_form_view select:not([disabled]):focus {
+    box-shadow: var(--somed-focus-ring) !important;
+    outline: none !important;
+}
+
+/* ---------- Required + editable ---------- */
+.o_form_view .o_required_modifier input:not([readonly]):not([disabled]):not([type="checkbox"]):not([type="radio"]),
+.o_form_view .o_required_modifier textarea:not([readonly]):not([disabled]),
+.o_form_view .o_required_modifier select:not([disabled]),
+.o_form_view .o_required_modifier .o_input:not([readonly]):not([disabled]) {
+    background: var(--somed-required-bg) !important;
+    border: 1px solid var(--somed-required-border) !important;
+    box-shadow: none !important;
+    border-radius: 4px;
+}
+
+/* focus cho required */
+.o_form_view .o_required_modifier input:not([readonly]):not([disabled]):focus,
+.o_form_view .o_required_modifier textarea:not([readonly]):not([disabled]):focus,
+.o_form_view .o_required_modifier select:not([disabled]):focus,
+.o_form_view .o_required_modifier .o_input:not([readonly]):not([disabled]):focus {
+    box-shadow: var(--somed-required-focus-ring) !important;
+    outline: none !important;
+}
+
+/* required đang rỗng */
+.o_form_view .o_required_modifier input:not([readonly]):not([disabled]):placeholder-shown,
+.o_form_view .o_required_modifier textarea:not([readonly]):not([disabled]):placeholder-shown {
+    background: var(--somed-required-empty-bg) !important;
+    border-color: var(--somed-required-empty-border) !important;
+}
+
+/* many2one / tags / datepicker wrapper editable */
+.o_form_view .o_field_widget:not(.o_readonly_modifier) .o_input_dropdown,
+.o_form_view .o_field_widget:not(.o_readonly_modifier) .o-autocomplete--input,
+.o_form_view .o_field_widget:not(.o_readonly_modifier) .o-autocomplete-dropdown-input {
+    background: var(--somed-editable-bg) !important;
+    border: 1px solid var(--somed-editable-border) !important;
+    border-radius: 4px;
+}
+
+/* required wrapper */
+.o_form_view .o_required_modifier .o_input_dropdown,
+.o_form_view .o_required_modifier .o-autocomplete--input,
+.o_form_view .o_required_modifier .o-autocomplete-dropdown-input {
+    background: var(--somed-required-bg) !important;
+    border: 1px solid var(--somed-required-border) !important;
+    border-radius: 4px;
+}
+
+/* readonly thì bỏ highlight */
+.o_form_view .o_required_modifier .o_readonly_modifier,
+.o_form_view .o_field_widget.o_readonly_modifier,
+.o_form_view input[readonly],
+.o_form_view textarea[readonly],
+.o_form_view select[disabled],
+.o_form_view .o_readonly_modifier .o_input,
+.o_form_view .o_readonly_modifier .o_input_dropdown {
+    background: transparent !important;
+    border-color: inherit !important;
+    box-shadow: none !important;
+}
+
+/* label required đổi màu nhẹ để hỗ trợ nhận biết */
+.o_form_view .o_form_label.o_required_modifier,
+.o_form_view label.o_required_modifier {
+    color: #c27c1a !important;
+    font-weight: 600 !important;
+}
+
+/* =========================================================
+   2. TREE / LIST VIEW
+   ========================================================= */
+
+/* cell nền giữ nguyên */
 .o_list_view td.o_required_modifier,
 .o_field_x2many .o_list_table td.o_required_modifier {
     background: inherit !important;
 }
 
-.o_list_view td.o_required_modifier input:not([readonly]):not([disabled]),
-.o_list_view td.o_required_modifier textarea:not([readonly]):not([disabled]),
-.o_list_view td.o_required_modifier select:not([disabled]),
-.o_list_view td .o_required_modifier input:not([readonly]):not([disabled]),
-.o_list_view td .o_required_modifier textarea:not([readonly]):not([disabled]),
-.o_list_view td .o_required_modifier select:not([disabled]),
-.o_field_x2many .o_list_table td.o_required_modifier input:not([readonly]):not([disabled]),
-.o_field_x2many .o_list_table td.o_required_modifier textarea:not([readonly]):not([disabled]),
-.o_field_x2many .o_list_table td.o_required_modifier select:not([disabled]),
-.o_field_x2many .o_list_table td .o_required_modifier input:not([readonly]):not([disabled]),
-.o_field_x2many .o_list_table td .o_required_modifier textarea:not([readonly]):not([disabled]),
-.o_field_x2many .o_list_table td .o_required_modifier select:not([disabled]) {
-    border: 1px solid #f0ad4e !important;
-    background: #fffdf5 !important;
+/* ---------- Editable thường ----------
+   loại trừ checkbox / radio / ô selector đầu dòng
+*/
+.o_list_view td:not(.o_list_record_selector) input:not([readonly]):not([disabled]):not([type="checkbox"]):not([type="radio"]),
+.o_list_view td:not(.o_list_record_selector) textarea:not([readonly]):not([disabled]),
+.o_list_view td:not(.o_list_record_selector) select:not([disabled]),
+.o_list_view td:not(.o_list_record_selector) .o_input:not([readonly]):not([disabled]),
+.o_field_x2many .o_list_table td:not(.o_list_record_selector) input:not([readonly]):not([disabled]):not([type="checkbox"]):not([type="radio"]),
+.o_field_x2many .o_list_table td:not(.o_list_record_selector) textarea:not([readonly]):not([disabled]),
+.o_field_x2many .o_list_table td:not(.o_list_record_selector) select:not([disabled]),
+.o_field_x2many .o_list_table td:not(.o_list_record_selector) .o_input:not([readonly]):not([disabled]) {
+    background: var(--somed-editable-bg) !important;
+    border: 1px solid var(--somed-editable-border) !important;
     box-shadow: none !important;
+    border-radius: 3px;
 }
 
-.o_list_view td.o_required_modifier input:not([readonly]):not([disabled]):placeholder-shown,
-.o_list_view td.o_required_modifier textarea:not([readonly]):not([disabled]):placeholder-shown,
-.o_field_x2many .o_list_table td.o_required_modifier input:not([readonly]):not([disabled]):placeholder-shown,
-.o_field_x2many .o_list_table td.o_required_modifier textarea:not([readonly]):not([disabled]):placeholder-shown {
-    background: #fff3cd !important;
-}
-.o_field_resume_one2many .o_skill_table th.o_list_row_count_sheliya,
-.o_field_resume_one2many .o_skill_table td.o_list_row_count_sheliya {
-  border-bottom: 0 !important;
+/* ---------- Required + editable ----------
+   cũng loại trừ checkbox / radio / selector
+*/
+.o_list_view td.o_required_modifier:not(.o_list_record_selector) input:not([readonly]):not([disabled]):not([type="checkbox"]):not([type="radio"]),
+.o_list_view td.o_required_modifier:not(.o_list_record_selector) textarea:not([readonly]):not([disabled]),
+.o_list_view td.o_required_modifier:not(.o_list_record_selector) select:not([disabled]),
+.o_list_view td.o_required_modifier:not(.o_list_record_selector) .o_input:not([readonly]):not([disabled]),
+.o_list_view td:not(.o_list_record_selector) .o_required_modifier input:not([readonly]):not([disabled]):not([type="checkbox"]):not([type="radio"]),
+.o_list_view td:not(.o_list_record_selector) .o_required_modifier textarea:not([readonly]):not([disabled]),
+.o_list_view td:not(.o_list_record_selector) .o_required_modifier select:not([disabled]),
+.o_list_view td:not(.o_list_record_selector) .o_required_modifier .o_input:not([readonly]):not([disabled]),
+
+.o_field_x2many .o_list_table td.o_required_modifier:not(.o_list_record_selector) input:not([readonly]):not([disabled]):not([type="checkbox"]):not([type="radio"]),
+.o_field_x2many .o_list_table td.o_required_modifier:not(.o_list_record_selector) textarea:not([readonly]):not([disabled]),
+.o_field_x2many .o_list_table td.o_required_modifier:not(.o_list_record_selector) select:not([disabled]),
+.o_field_x2many .o_list_table td.o_required_modifier:not(.o_list_record_selector) .o_input:not([readonly]):not([disabled]),
+.o_field_x2many .o_list_table td:not(.o_list_record_selector) .o_required_modifier input:not([readonly]):not([disabled]):not([type="checkbox"]):not([type="radio"]),
+.o_field_x2many .o_list_table td:not(.o_list_record_selector) .o_required_modifier textarea:not([readonly]):not([disabled]),
+.o_field_x2many .o_list_table td:not(.o_list_record_selector) .o_required_modifier select:not([disabled]),
+.o_field_x2many .o_list_table td:not(.o_list_record_selector) .o_required_modifier .o_input:not([readonly]):not([disabled]) {
+    background: var(--somed-required-bg) !important;
+    border: 1px solid var(--somed-required-border) !important;
+    box-shadow: none !important;
+    border-radius: 3px;
 }
 
-.o_field_resume_one2many .o_skill_table thead > tr > th,
-.o_field_resume_one2many .o_skill_table tbody > tr > td,
-.o_field_resume_one2many .o_skill_table tbody > tr > th,
-.o_field_resume_one2many .o_skill_table tfoot > tr > td,
-.o_field_resume_one2many .o_skill_table tfoot > tr > th {
-  border-top: 0 !important;
-  border-bottom: 0 !important;
-  border-left: 0 !important;
-  border-right: 0 !important;
-  background: transparent !important;
-}
-.o_form_view .o_field_x2many table.o_list_table {
-  border-collapse: collapse !important;
+/* required đang rỗng */
+.o_list_view td.o_required_modifier:not(.o_list_record_selector) input:not([readonly]):not([disabled]):not([type="checkbox"]):not([type="radio"]):placeholder-shown,
+.o_list_view td.o_required_modifier:not(.o_list_record_selector) textarea:not([readonly]):not([disabled]):placeholder-shown,
+.o_field_x2many .o_list_table td.o_required_modifier:not(.o_list_record_selector) input:not([readonly]):not([disabled]):not([type="checkbox"]):not([type="radio"]):placeholder-shown,
+.o_field_x2many .o_list_table td.o_required_modifier:not(.o_list_record_selector) textarea:not([readonly]):not([disabled]):placeholder-shown {
+    background: var(--somed-required-empty-bg) !important;
+    border-color: var(--somed-required-empty-border) !important;
 }
 
+/* readonly thì bỏ highlight */
 .o_list_view td.o_required_modifier .o_readonly_modifier,
 .o_list_view td.o_readonly_modifier,
 .o_list_view td input[readonly],
@@ -103,115 +208,4 @@
     background: transparent !important;
     border: 0 !important;
     box-shadow: none !important;
-}
-
-/* =========================================================
-   2. FORM: highlight required
-   Chỉ tô lên input/select/textarea khi editable
-   Không tô wrapper/label nữa
-   ========================================================= */
-
-.o_form_view .o_required_modifier,
-.o_form_view .o_field_widget.o_required_modifier,
-.o_form_view .o_group .o_required_modifier {
-    background: inherit !important;
-}
-
-/* input text / số / date / monetary render thành input */
-.o_form_view .o_required_modifier input:not([readonly]):not([disabled]),
-.o_form_view .o_required_modifier textarea:not([readonly]):not([disabled]),
-.o_form_view .o_required_modifier select:not([disabled]),
-.o_form_view .o_required_modifier .o_input:not([readonly]):not([disabled]) {
-    border: 1px solid #f0ad4e !important;
-    background: #fffdf5 !important;
-    box-shadow: none !important;
-    border-radius: 4px;
-}
-
-/* field editable mà đang rỗng thì đậm hơn */
-.o_form_view .o_required_modifier input:not([readonly]):not([disabled]):placeholder-shown,
-.o_form_view .o_required_modifier textarea:not([readonly]):not([disabled]):placeholder-shown {
-    background: #fff3cd !important;
-}
-
-/* readonly trong form thì không tô */
-.o_form_view .o_required_modifier .o_readonly_modifier,
-.o_form_view .o_field_widget.o_readonly_modifier,
-.o_form_view input[readonly],
-.o_form_view textarea[readonly],
-.o_form_view select[disabled] {
-    background: transparent !important;
-    border-color: inherit !important;
-    box-shadow: none !important;
-}
-
-/* label không highlight nữa */
-.o_form_view .o_form_label.o_required_modifier,
-.o_form_view label.o_required_modifier {
-    color: inherit !important;
-    font-weight: inherit !important;
-}
-
-/* =========================================================
-   3. TREE HEADER: chỉ xuống dòng ở dấu cách
-   không bẻ giữa các ký tự trong từ
-   ========================================================= */
-
-.o_list_view table.somed_list_wrapped_header thead th,
-.o_list_view .o_list_table thead th.somed_wrap_th {
-    white-space: normal !important;
-    word-break: keep-all !important;
-    overflow-wrap: normal !important;
-    hyphens: none !important;
-    line-height: 1.2 !important;
-    vertical-align: middle !important;
-    height: auto !important;
-    min-height: 38px;
-    padding-top: 6px !important;
-    padding-bottom: 6px !important;
-}
-
-.o_list_view .o_list_table thead th .o_column_title,
-.o_list_view .o_list_table thead th span,
-.o_list_view .o_list_table thead th div {
-    white-space: normal !important;
-    word-break: keep-all !important;
-    overflow-wrap: normal !important;
-    hyphens: none !important;
-    line-height: 1.2 !important;
-}
-
-/* tbody giữ bình thường */
-.o_list_view .o_list_table tbody td {
-    vertical-align: top;
-}
-
-/* riêng cột STT không xuống dòng */
-.o_list_view .o_list_table th.o_list_row_count_sheliya,
-.o_list_view .o_list_table td.o_list_row_count_sheliya {
-    white-space: nowrap !important;
-}
-
-/* tránh icon sort / resize lệch khi header nhiều dòng */
-.o_list_view .o_list_table thead th .o_resize,
-.o_list_view .o_list_table thead th .o-sort-up,
-.o_list_view .o_list_table thead th .o-sort-down {
-    vertical-align: middle;
-}
-/* =========================================================
-   4. TREE: default width tối thiểu 90px
-   không áp dụng cho cột STT
-   ========================================================= */
-
-.o_list_view .o_list_table thead th:not(.o_list_row_count_sheliya),
-.o_list_view .o_list_table tbody td:not(.o_list_row_count_sheliya),
-.o_list_view .o_list_table tfoot td:not(.o_list_row_count_sheliya) {
-    min-width: 90px !important;
-}
-
-/* nếu muốn áp dụng rõ hơn cho x2many tree trong form */
-.o_field_x2many .o_list_table thead th:not(.o_list_row_count_sheliya),
-.o_field_x2many .o_list_table tbody td:not(.o_list_row_count_sheliya),
-.o_field_x2many .o_list_table tfoot td:not(.o_list_row_count_sheliya) {
-    min-width: 90px !important;
 }
