@@ -65,8 +65,11 @@
                         <group>
                             <field name="project_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft' " force_save="context.get('from_task', False)"/>
                             <field name="estimate_choice" readonly="state != 'draft'"/>
-                            <field name="cost_estimate_line_id" invisible="estimate_choice == 'other'" options="{'no_create': True}" domain="[('project_id', '=', project_id)]" string="Hạng mục dự toán duy nhất" readonly="state != 'draft'"/>
-                            <field name="other_estimate_item" invisible="estimate_choice != 'other'" required="estimate_choice == 'other'" string="abc"/>
+                            <field name="auto_cost_estimate_line_ids" invisible="1"/>
+                            <field name="cost_estimate_line_ids" widget="many2many_tags" placeholder="Chọn một hoặc nhiều hạng mục dự toán..." invisible="estimate_choice == 'other'" options="{'no_create': True}" domain="[('project_id', '=', project_id)]" string="Hạng mục dự toán" readonly="state != 'draft'"/>
+                            <field name="other_estimate_item" invisible="estimate_choice != 'other'" required="estimate_choice == 'other'" string="Khác"/>
+                            <!-- <field name="cost_estimate_line_id" invisible="estimate_choice == 'other'" options="{'no_create': True}" domain="[('project_id', '=', project_id)]" string="Hạng mục dự toán duy nhất" readonly="state != 'draft'"/>
+                            <field name="other_estimate_item" invisible="estimate_choice != 'other'" required="estimate_choice == 'other'" string="abc"/> -->
                             <field name="project_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft' " force_save="context.get('from_task', False)" context="{'tree_view_ref': 'proposal_sheet.view_project_project_tree_popup_simple'}"/>
                             <field name="contract_num" string="Số hợp đồng" invisible="not project_id"/>
                             <field name="cost_additional_expense_line_id" string="Hạng mục dự toán chi phí gián tiếp" domain="[('project_id', '=', project_id)]"/>
@@ -91,6 +94,7 @@
                             <field name="material_line_ids" context="{'default_type': 'material'}" readonly="state != 'draft'" mode="list,form">
 
                                 <tree editable="bottom">
+                                    <field name="sheet_id" column_invisible="1"/>
                                     <field name="product_id" column_invisible="parent.is_new_proposal == False" context="{
                 'default_categ_id': %(project_material.product_category_vattu)d,
                 'default_detailed_type': 'product',
@@ -110,7 +114,8 @@
                                     <field name="price_unit_taxed" string="Giá đề xuất (sau thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" optional="show"/>
                                     <field name="price_total_taxed" string="Thành tiền (sau thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" optional="show" sum="Tổng"/>
                                     <field name="vendor_id" placeholder="Nhà cung cấp đề xuất" required="1"/>
-                                    <field name="other_estimate_item" string="Hạng mục"/>
+                                    <field name="other_estimate_item" string="Hạng mục khác" placeholder="Chọn hoặc tạo hạng mục khác nếu PDX chọn hạng mục khác" column_invisible="parent.estimate_choice != 'other'"/>
+                                    <field name="cost_estimate_line_id" string="Hạng mục dự toán" domain="[('project_id', '=', parent.project_id)]" placeholder="Chọn hoặc tạo hạng mục khác nếu PDX chọn hạng mục Dự toán" column_invisible="parent.estimate_choice != 'estimate'"/>
                                     <field name="description"/>
                                     <field name="currency_id" invisible="1" optional="hide"/>
                                 </tree>

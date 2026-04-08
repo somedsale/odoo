@@ -81,6 +81,9 @@
                                 <tree>
                                     <field name="name"/>
                                     <field name="date"/>
+                                    <field name="note" string="Nội dung thu"/>
+                                    <field name="partner_id"/>
+                                    <field name="project_id"/>
                                     <!-- <field name="partner_id"/>
                                     <field name="project_id"/> -->
                                     <field name="amount" sum="Tổng tiền" widget="monetary" options="{'currency_field': 'currency_id'}"/>

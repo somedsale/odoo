@@ -5,7 +5,7 @@
     "version": "1.0",
     "category": "Dashboard",
     "author": "Somed Dev",
-    "depends": ["base", "web", "sale", "account", "hr", "project"],
+    "depends": ["base", "web", "sale", "account", "hr", "project","custom_director_role"],
     "data": [
         "views/menu_views.xml",
     ],

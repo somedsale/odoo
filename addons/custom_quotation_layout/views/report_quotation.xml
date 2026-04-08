@@ -80,7 +80,7 @@
                         </td>
                         <td style="padding-left: 10px; border: none;">
                             <strong>Email:</strong>
-                            <span t-field="doc.user_id.email"/>
+                            <span t-esc="(doc.user_id.email if doc.user_id and doc.write_uid and doc.user_id.id == doc.write_uid.id else (doc.write_uid.email if doc.write_uid else ''))"/>
                         </td>
                     </tr>
                 </table>
