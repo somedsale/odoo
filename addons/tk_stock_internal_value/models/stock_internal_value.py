@@ -11,54 +11,156 @@ class StockMove(models.Model):
         readonly=True,
     )
 
-    # ✅ Đơn giá kho – nhập tay, hoặc lấy từ Đơn mua
     unit_cost = fields.Monetary(
         string="Đơn giá",
         currency_field="company_currency_id",
-        help="Đơn giá nhập/xuất nội bộ, không liên quan tới kế toán.",
+        help="Đơn giá mặc định lấy từ lần mua gần nhất.",
     )
+
     tax_ids = fields.Many2many(
         "account.tax",
         string="Thuế",
-        help="Thuế áp dụng cho giá trị kho của dòng này.",
+        help="Thuế mặc định lấy từ lần mua gần nhất hoặc thuế NCC của sản phẩm.",
     )
-    # ✅ Giá trị kho = Đơn giá * Số lượng
+
     value_amount = fields.Monetary(
         string="Giá trị",
         currency_field="company_currency_id",
         compute="_compute_value_amount",
         store=True,
-        help="Thành tiền nội bộ = Đơn giá nhập kho * Số lượng.",
     )
+
     price_subtotal = fields.Monetary(
         string="Thành tiền (chưa thuế)",
         currency_field="company_currency_id",
         compute="_compute_price_total",
         store=True,
     )
+
     price_tax = fields.Monetary(
         string="Tiền thuế",
         currency_field="company_currency_id",
         compute="_compute_price_total",
         store=True,
     )
+
     price_total = fields.Monetary(
         string="Thành tiền (có thuế)",
         currency_field="company_currency_id",
         compute="_compute_price_total",
         store=True,
     )
+
+    def _get_last_purchase_line(self):
+        self.ensure_one()
+        PurchaseLine = self.env["purchase.order.line"].sudo()
+
+        if not self.product_id:
+            return PurchaseLine.browse()
+
+        partner = self.picking_id.partner_id if self.picking_id else False
+
+        def _line_dt(line):
+            return line.order_id.date_approve or line.order_id.date_order or line.create_date or fields.Datetime.now()
+
+        def _best_line(lines):
+            if not lines:
+                return PurchaseLine.browse()
+            return lines.sorted(
+                key=lambda l: (_line_dt(l), l.id),
+                reverse=True,
+            )[:1]
+
+        base_domain = [
+            ("product_id", "=", self.product_id.id),
+            ("order_id.state", "in", ["purchase", "done"]),
+        ]
+
+        # lọc công ty theo PO, không lọc trên line nếu DB custom khác chuẩn
+        if self.company_id:
+            base_domain.append(("order_id.company_id", "=", self.company_id.id))
+
+        # 1) ưu tiên đúng nhà cung cấp trên phiếu
+        if partner:
+            lines = PurchaseLine.search(base_domain + [("order_id.partner_id", "=", partner.id)])
+            line = _best_line(lines)
+            if line:
+                return line
+
+        # 2) fallback: lần mua gần nhất của sản phẩm, bất kể NCC
+        lines = PurchaseLine.search(base_domain)
+        return _best_line(lines)
+
+    def _get_fallback_supplierinfo_price(self):
+        self.ensure_one()
+        product = self.product_id
+        if not product:
+            return 0.0
+
+        partner = self.picking_id.partner_id if self.picking_id else False
+        sellers = product.seller_ids.sorted(
+            key=lambda s: (
+                0 if partner and s.partner_id == partner else 1,
+                s.sequence,
+                s.min_qty or 0.0,
+                s.id,
+            )
+        )
+
+        seller = False
+        if partner:
+            seller = sellers.filtered(lambda s: s.partner_id == partner)[:1]
+        if not seller:
+            seller = sellers[:1]
+
+        return seller.price if seller else 0.0
+
+    def _get_default_supplier_price(self):
+        self.ensure_one()
+
+        # Ưu tiên PO line gần nhất
+        last_po_line = self._get_last_purchase_line()
+        if last_po_line:
+            return last_po_line.price_unit or 0.0
+
+        # Fallback supplierinfo
+        return self._get_fallback_supplierinfo_price()
+
+    def _get_default_supplier_taxes(self):
+        self.ensure_one()
+
+        # Ưu tiên thuế của PO line gần nhất
+        last_po_line = self._get_last_purchase_line()
+        if last_po_line and last_po_line.taxes_id:
+            return last_po_line.taxes_id
+
+        # Fallback thuế NCC trên sản phẩm
+        if not self.product_id:
+            return self.env["account.tax"]
+
+        return self.product_id.supplier_taxes_id.filtered(
+            lambda t: not self.company_id or t.company_id == self.company_id
+        )
+
+    def _apply_default_purchase_values(self):
+        for move in self:
+            if not move.product_id:
+                continue
+
+            # Nếu move đã gắn purchase_line_id thì ưu tiên tuyệt đối theo dòng đó
+            if move.purchase_line_id:
+                move.unit_cost = move.purchase_line_id.price_unit or 0.0
+                move.tax_ids = move.purchase_line_id.taxes_id
+                continue
+
+            move.unit_cost = move._get_default_supplier_price()
+            move.tax_ids = move._get_default_supplier_taxes()
+
     @api.depends("unit_cost", "quantity", "product_uom_qty", "tax_ids", "product_id", "company_id")
     def _compute_price_total(self):
-        """
-        Tính tổng tiền theo thuế giống sale/purchase:
-        - price_subtotal: total_excluded
-        - price_total: total_included
-        """
         for move in self:
             qty = move.quantity or move.product_uom_qty or 0.0
             price_unit = move.unit_cost or 0.0
-
             partner = move.picking_id.partner_id if move.picking_id and move.picking_id.partner_id else False
             currency = move.company_currency_id
 
@@ -79,44 +181,50 @@ class StockMove(models.Model):
             move.price_subtotal = total_excl
             move.price_total = total_incl
             move.price_tax = total_incl - total_excl
-    @api.depends("unit_cost", "quantity", "product_uom_qty","tax_ids")
+
+    @api.depends("unit_cost", "quantity", "product_uom_qty", "tax_ids")
     def _compute_value_amount(self):
-        """
-        Odoo 17: 'quantity' là số lượng thực tế (done).
-        Nếu chưa có quantity thì fallback product_uom_qty.
-        """
         for move in self:
             qty = move.quantity or move.product_uom_qty or 0.0
             move.value_amount = (move.unit_cost or 0.0) * qty
 
-    # 🔹 Chỉ xử lý khi có dòng Đơn mua
+    @api.onchange("product_id", "picking_id", "company_id")
+    def _onchange_product_id_set_purchase_defaults(self):
+        for move in self:
+            if not move.product_id:
+                move.unit_cost = 0.0
+                move.tax_ids = [(5, 0, 0)]
+                continue
+            move._apply_default_purchase_values()
+
     @api.onchange("purchase_line_id")
     def _onchange_purchase_line_set_unit_cost(self):
-        """
-        Nếu dòng move được tạo từ Đơn mua (purchase.order.line),
-        thì ưu tiên lấy giá từ PO.
-        """
         for move in self:
             if move.purchase_line_id:
                 move.unit_cost = move.purchase_line_id.price_unit or 0.0
                 move.tax_ids = move.purchase_line_id.taxes_id
+            elif move.product_id:
+                move._apply_default_purchase_values()
 
-    @api.model
+    @api.model_create_multi
     def create(self, vals_list):
-        single = isinstance(vals_list, dict)
-        if single:
-            vals_list = [vals_list]
-
         moves = super().create(vals_list)
 
         for move in moves:
-            # Nếu chưa có unit_cost mà có purchase_line_id → set theo PO
-            if not move.unit_cost and move.purchase_line_id:
+            if move.purchase_line_id:
                 move.unit_cost = move.purchase_line_id.price_unit or 0.0
                 move.tax_ids = move.purchase_line_id.taxes_id
+                continue
 
+            vals = {}
+            if not move.unit_cost and move.product_id:
+                vals["unit_cost"] = move._get_default_supplier_price()
+            if not move.tax_ids and move.product_id:
+                vals["tax_ids"] = [(6, 0, move._get_default_supplier_taxes().ids)]
+            if vals:
+                move.write(vals)
 
-        return moves[0] if single else moves
+        return moves
 
 
 class StockPicking(models.Model):
@@ -128,7 +236,6 @@ class StockPicking(models.Model):
         readonly=True,
     )
 
-    # ✅ Tổng giá trị nội bộ của cả phiếu kho
     amount_total_value = fields.Monetary(
         string="Tổng giá trị",
         currency_field="company_currency_id",
@@ -136,30 +243,31 @@ class StockPicking(models.Model):
         store=True,
     )
 
-    @api.depends("move_ids_without_package.price_total")
-    def _compute_amount_total_value(self):
-        for picking in self:
-            picking.amount_total_value = sum(
-                picking.move_ids_without_package.mapped("price_total")
-            )
     amount_untaxed = fields.Monetary(
         string="Tổng trước thuế",
         currency_field="company_currency_id",
         compute="_compute_amounts",
         store=True,
     )
+
     amount_tax = fields.Monetary(
         string="Tổng thuế",
         currency_field="company_currency_id",
         compute="_compute_amounts",
         store=True,
     )
+
     amount_total = fields.Monetary(
         string="Tổng sau thuế",
         currency_field="company_currency_id",
         compute="_compute_amounts",
         store=True,
     )
+
+    @api.depends("move_ids_without_package.price_total")
+    def _compute_amount_total_value(self):
+        for picking in self:
+            picking.amount_total_value = sum(picking.move_ids_without_package.mapped("price_total"))
 
     @api.depends(
         "move_ids_without_package.price_subtotal",
@@ -172,6 +280,7 @@ class StockPicking(models.Model):
             picking.amount_untaxed = sum(moves.mapped("price_subtotal"))
             picking.amount_tax = sum(moves.mapped("price_tax"))
             picking.amount_total = sum(moves.mapped("price_total"))
+
 
 class StockMoveLine(models.Model):
     _inherit = "stock.move.line"
@@ -195,14 +304,10 @@ class StockMoveLine(models.Model):
         compute="_compute_line_value_amount",
         store=True,
     )
+
     tax_ids = fields.Many2many(
         "account.tax",
         related="move_id.tax_ids",
-        readonly=True,
-    )
-    company_currency_id = fields.Many2one(
-        "res.currency",
-        related="move_id.company_currency_id",
         readonly=True,
     )
 
@@ -212,12 +317,14 @@ class StockMoveLine(models.Model):
         compute="_compute_line_prices",
         store=True,
     )
+
     price_tax = fields.Monetary(
         string="Thuế",
         currency_field="company_currency_id",
         compute="_compute_line_prices",
         store=True,
     )
+
     price_total = fields.Monetary(
         string="Thành tiền (có thuế)",
         currency_field="company_currency_id",
@@ -225,9 +332,15 @@ class StockMoveLine(models.Model):
         store=True,
     )
 
+    @api.depends("move_id.unit_cost", "quantity")
+    def _compute_line_value_amount(self):
+        for line in self:
+            qty = line.quantity or 0.0
+            line.value_amount = (line.move_id.unit_cost or 0.0) * qty
+
     @api.depends(
         "move_id.unit_cost",
-        "quantity",                 # ✅ Odoo 17
+        "quantity",
         "move_id.tax_ids",
         "move_id.product_id",
         "move_id.picking_id.partner_id",
@@ -235,7 +348,7 @@ class StockMoveLine(models.Model):
     )
     def _compute_line_prices(self):
         for line in self:
-            qty = line.quantity or 0.0               # ✅ done qty của move line
+            qty = line.quantity or 0.0
             price_unit = line.move_id.unit_cost or 0.0
             taxes = line.move_id.tax_ids
             currency = line.move_id.company_currency_id

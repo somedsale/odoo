@@ -124,6 +124,30 @@ class MultiMrpOrder(models.Model):
         default=lambda self: self._default_mo_dest_location_id(),
         help="Kho nhập thành phẩm (theo default của Lệnh sản xuất).",
     )
+    raw_picking_ids = fields.One2many(
+        "stock.picking",
+        "multi_mrp_order_raw_id",
+        string="Các phiếu xuất NVL",
+        readonly=True,
+    )
+    finished_picking_ids = fields.One2many(
+        "stock.picking",
+        "multi_mrp_order_finished_id",
+        string="Các phiếu nhập TP",
+        readonly=True,
+    )
+    raw_picking_count = fields.Integer(
+        string="Số phiếu xuất NVL",
+        compute="_compute_picking_counts",
+    )
+    finished_picking_count = fields.Integer(
+        string="Số phiếu nhập TP",
+        compute="_compute_picking_counts",
+    )    
+    def _compute_picking_counts(self):
+        for order in self:
+            order.raw_picking_count = len(order.raw_picking_ids)
+            order.finished_picking_count = len(order.finished_picking_ids)
     def _set_done_qty_full(self, picking):
         """
         Universal for Odoo 17 variants:
@@ -203,7 +227,69 @@ class MultiMrpOrder(models.Model):
                 }
                 MoveLine.create(vals)
 
+    @api.onchange("contract_id")
+    def _onchange_contract_id(self):
+        for order in self:
+            order.sale_id = False
+            order.line_ids = [(5, 0, 0)]
 
+            if not order.contract_id:
+                continue
+
+            sale = False
+            contract = order.contract_id
+
+            if "sale_id" in contract._fields:
+                sale = contract.sale_id
+            elif "sale_order_id" in contract._fields:
+                sale = contract.sale_order_id
+            elif "order_id" in contract._fields:
+                sale = contract.order_id
+            elif "sale_order_ids" in contract._fields:
+                sale = contract.sale_order_ids[:1]
+
+            if not sale:
+                return {
+                    "warning": {
+                        "title": "Chưa tìm thấy đơn bán",
+                        "message": "Hợp đồng này chưa có field liên kết đến đơn bán, hoặc chưa được gán đơn bán.",
+                    }
+                }
+
+            order.sale_id = sale.id
+
+            new_lines = []
+            for sol in sale.order_line.filtered(
+                lambda l: not l.display_type and l.product_id and l.product_id.type != "service"
+            ):
+                new_lines.append((0, 0, {
+                    "product_id": sol.product_id.id,
+                    "product_uom_id": sol.product_uom.id,
+                    "product_qty": sol.product_uom_qty,
+                    "sale_line_id": sol.id,
+                }))
+
+            order.line_ids = new_lines
+    def action_load_finished_from_sale(self):
+        for order in self:
+            if not order.contract_id:
+                raise UserError(_("Vui lòng chọn hợp đồng trước."))
+
+            sale = order.contract_id.sale_id
+            if not sale:
+                raise UserError(_("Hợp đồng chưa liên kết đơn bán."))
+
+            vals_list = []
+            for sol in sale.order_line.filtered(lambda l: not l.display_type and l.product_id and l.product_id.type != "service"):
+                vals_list.append((0, 0, {
+                    "product_id": sol.product_id.id,
+                    "product_uom_id": sol.product_uom.id,
+                    "product_qty": sol.product_uom_qty,
+                    "sale_line_id": sol.id,
+                }))
+
+            order.sale_id = sale.id
+            order.line_ids = [(5, 0, 0)] + vals_list
     def _auto_validate_picking(self, picking):
         """
         Auto done picking:
@@ -526,10 +612,11 @@ class MultiMrpOrder(models.Model):
                 "picking_type_id": order.picking_type_out_id.id,
                 "company_id": order.company_id.id,
                 "origin": order.name,
-                "contract_id": self.contract_id.id if self.contract_id else False,
+                "contract_id": order.contract_id.id if order.contract_id else False,
                 "location_id": order.location_src_id.id,
                 "location_dest_id": order.location_production_id.id,
-                "delivery_reason": _("Xuất kho sản xuất cho công trình: %s") % self.contract_id.num_contract if self.contract_id else '',
+                "delivery_reason": _("Xuất kho sản xuất cho công trình: %s") % order.contract_id.num_contract if order.contract_id else '',
+                "multi_mrp_order_raw_id": order.id,
             }
             raw_picking = Picking.create(raw_vals)
 
@@ -569,9 +656,10 @@ class MultiMrpOrder(models.Model):
                 "picking_type_id": order.picking_type_in_id.id,
                 "company_id": order.company_id.id,
                 "origin": order.name,
-                "contract_id": self.contract_id.id if self.contract_id else False,
+                "contract_id": order.contract_id.id if order.contract_id else False,
                 "location_id": src_in.id,
                 "location_dest_id": dest_in.id,
+                "multi_mrp_order_finished_id": order.id,
             }
             finished_picking = Picking.create(finished_vals)
 
@@ -595,7 +683,17 @@ class MultiMrpOrder(models.Model):
             order.picking_finished_id = finished_picking.id
 
         return True
+    def action_view_all_raw_pickings(self):
+        self.ensure_one()
+        action = self.env.ref("stock.action_picking_tree_all").read()[0]
+        action["domain"] = [("id", "in", self.raw_picking_ids.ids)]
+        return action
 
+    def action_view_all_finished_pickings(self):
+        self.ensure_one()
+        action = self.env.ref("stock.action_picking_tree_all").read()[0]
+        action["domain"] = [("id", "in", self.finished_picking_ids.ids)]
+        return action
     def action_view_productions(self):
         self.ensure_one()
         prods = self.line_ids.mapped("mrp_production_id")
@@ -789,7 +887,210 @@ class MultiMrpOrder(models.Model):
             limit=1,
         )
         return loc.id or False
+    def _get_expected_component_qtys(self):
+        self.ensure_one()
+        Bom = self.env["mrp.bom"]
 
+        components = {}
+        missing_bom_products = []
+
+        for line in self.line_ids:
+            if not line.product_id or not line.product_qty:
+                continue
+
+            bom = line.bom_id
+            if not bom and line.product_tmpl_id:
+                bom = Bom.search(
+                    [
+                        ("product_tmpl_id", "=", line.product_tmpl_id.id),
+                        ("company_id", "in", [self.company_id.id, False]),
+                        ("type", "=", "normal"),
+                    ],
+                    limit=1,
+                )
+
+            if not bom:
+                missing_bom_products.append(
+                    line.product_id.display_name or line.product_id.name
+                )
+                continue
+
+            factor = line.product_qty / (bom.product_qty or 1.0)
+
+            for bom_line in bom.bom_line_ids:
+                if getattr(bom_line, "display_type", False):
+                    continue
+
+                prod = bom_line.product_id
+                if not prod:
+                    continue
+
+                qty = (bom_line.product_qty or 0.0) * factor
+                if qty <= 0:
+                    continue
+
+                uom = getattr(bom_line, "product_uom_id", False) or prod.uom_id
+                key = (prod.id, uom.id)
+                components[key] = components.get(key, 0.0) + qty
+
+        if missing_bom_products:
+            raise UserError(
+                _("Không tìm thấy BoM cho các thành phẩm:\n%s")
+                % ("\n".join(missing_bom_products))
+            )
+
+        return components
+
+    def _get_expected_finished_qtys(self):
+        self.ensure_one()
+        finished = {}
+        for line in self.line_ids:
+            if not line.product_id or not line.product_qty:
+                continue
+            key = (line.product_id.id, line.product_uom_id.id)
+            finished[key] = finished.get(key, 0.0) + (line.product_qty or 0.0)
+        return finished
+    def _get_existing_raw_qtys(self):
+        self.ensure_one()
+        qty_map = {}
+        pickings = self.raw_picking_ids.filtered(lambda p: p.state != "cancel")
+        for picking in pickings:
+            for mv in picking.move_ids_without_package:
+                if not mv.product_id or not mv.product_uom:
+                    continue
+                key = (mv.product_id.id, mv.product_uom.id)
+                qty_map[key] = qty_map.get(key, 0.0) + (mv.product_uom_qty or 0.0)
+        return qty_map
+
+    def _get_existing_finished_qtys(self):
+        self.ensure_one()
+        qty_map = {}
+        pickings = self.finished_picking_ids.filtered(lambda p: p.state != "cancel")
+        for picking in pickings:
+            for mv in picking.move_ids_without_package:
+                if not mv.product_id or not mv.product_uom:
+                    continue
+                key = (mv.product_id.id, mv.product_uom.id)
+                qty_map[key] = qty_map.get(key, 0.0) + (mv.product_uom_qty or 0.0)
+        return qty_map
+    def action_generate_additional_raw_picking(self):
+        Picking = self.env["stock.picking"]
+        Move = self.env["stock.move"]
+
+        for order in self:
+            if order.state not in ("confirmed", "done"):
+                raise UserError(_("Chỉ được tạo bổ sung khi lệnh đã xác nhận hoặc hoàn tất."))
+
+            if not order.picking_type_out_id:
+                raise UserError(_("Vui lòng cấu hình 'Loại dịch chuyển PXK' trước."))
+            if not order.location_src_id:
+                raise UserError(_("Vui lòng cấu hình 'Kho NVL' trước."))
+            if not order.location_production_id:
+                raise UserError(_("Vui lòng cấu hình 'Kho sản xuất' trước."))
+
+            expected = order._get_expected_component_qtys()
+            existing = order._get_existing_raw_qtys()
+
+            delta = {}
+            for key, expected_qty in expected.items():
+                diff = expected_qty - existing.get(key, 0.0)
+                if diff > 0:
+                    delta[key] = diff
+
+            if not delta:
+                raise UserError(_("Không có NVL chênh lệch để tạo phiếu xuất bổ sung."))
+
+            picking_vals = {
+                "picking_type_id": order.picking_type_out_id.id,
+                "company_id": order.company_id.id,
+                "origin": "%s - PXK bổ sung" % order.name,
+                "contract_id": order.contract_id.id if order.contract_id else False,
+                "location_id": order.location_src_id.id,
+                "location_dest_id": order.location_production_id.id,
+                "delivery_reason": _("Xuất kho bổ sung cho công trình: %s") % order.contract_id.num_contract if order.contract_id else _("Xuất kho bổ sung"),
+                "multi_mrp_order_raw_id": order.id,
+            }
+            picking = Picking.create(picking_vals)
+
+            for (prod_id, uom_id), qty in delta.items():
+                product = self.env["product.product"].browse(prod_id)
+                Move.create({
+                    "name": product.display_name,
+                    "product_id": prod_id,
+                    "product_uom": uom_id,
+                    "product_uom_qty": qty,
+                    "company_id": order.company_id.id,
+                    "picking_id": picking.id,
+                    "location_id": order.location_src_id.id,
+                    "location_dest_id": order.location_production_id.id,
+                })
+
+            if not order.picking_raw_id:
+                order.picking_raw_id = picking.id
+
+        return True
+    def action_generate_additional_finished_picking(self):
+        Picking = self.env["stock.picking"]
+        Move = self.env["stock.move"]
+
+        for order in self:
+            if order.state not in ("confirmed", "done"):
+                raise UserError(_("Chỉ được tạo bổ sung khi lệnh đã xác nhận hoặc hoàn tất."))
+
+            if not order.picking_type_in_id:
+                raise UserError(_("Vui lòng cấu hình 'Loại dịch chuyển PNK' trước."))
+            if not order.location_dest_id:
+                raise UserError(_("Vui lòng cấu hình 'Kho thành phẩm' trước."))
+
+            src_in = (
+                order.picking_type_in_id.default_location_src_id
+                or order.picking_type_in_id.warehouse_id and order.picking_type_in_id.warehouse_id.wh_input_stock_loc_id
+            )
+            if not src_in:
+                raise UserError(
+                    _("Loại dịch chuyển PNK (incoming) không có kho nguồn mặc định.")
+                )
+
+            expected = order._get_expected_finished_qtys()
+            existing = order._get_existing_finished_qtys()
+
+            delta = {}
+            for key, expected_qty in expected.items():
+                diff = expected_qty - existing.get(key, 0.0)
+                if diff > 0:
+                    delta[key] = diff
+
+            if not delta:
+                raise UserError(_("Không có thành phẩm chênh lệch để tạo phiếu nhập bổ sung."))
+
+            picking_vals = {
+                "picking_type_id": order.picking_type_in_id.id,
+                "company_id": order.company_id.id,
+                "origin": "%s - PNK bổ sung" % order.name,
+                "contract_id": order.contract_id.id if order.contract_id else False,
+                "location_id": src_in.id,
+                "location_dest_id": order.location_dest_id.id,
+                "multi_mrp_order_finished_id": order.id,
+            }
+            picking = Picking.create(picking_vals)
+
+            for (prod_id, uom_id), qty in delta.items():
+                product = self.env["product.product"].browse(prod_id)
+                Move.create({
+                    "name": product.display_name,
+                    "product_id": prod_id,
+                    "product_uom": uom_id,
+                    "product_uom_qty": qty,
+                    "company_id": order.company_id.id,
+                    "picking_id": picking.id,
+                    "location_id": src_in.id,
+                    "location_dest_id": order.location_dest_id.id,
+                })
+
+            if not order.picking_finished_id:
+                order.picking_finished_id = picking.id
+
+        return True
 class MultiMrpOrderLine(models.Model):
     _name = "multi.mrp.order.line"
     _description = "Dòng thành phẩm của lệnh sản xuất nhiều thành phẩm"
@@ -813,7 +1114,7 @@ class MultiMrpOrderLine(models.Model):
         "product.product",
         string="Thành phẩm",
         required=True,
-        domain=[("type", "!=", "service")],
+        domain="[('id', 'in', allowed_product_ids)]",
     )
     product_tmpl_id = fields.Many2one(
         "product.template",
@@ -844,7 +1145,19 @@ class MultiMrpOrderLine(models.Model):
         string="Dòng đơn bán",
         domain="[('order_id', '=', parent.sale_id)]",
     )
+    sale_id = fields.Many2one(
+        related="order_id.sale_id",
+        comodel_name="sale.order",
+        string="Đơn bán",
+        store=False,
+        readonly=True,
+    )
 
+    allowed_product_ids = fields.Many2many(
+        "product.product",
+        compute="_compute_allowed_product_ids",
+        string="Sản phẩm được phép chọn",
+    )
     mrp_production_id = fields.Many2one(
         "mrp.production",
         string="Lệnh sản xuất chi tiết",
@@ -872,3 +1185,14 @@ class MultiMrpOrderLine(models.Model):
                     limit=1,
                 )
                 line.bom_id = bom
+    @api.depends("sale_id")
+    def _compute_allowed_product_ids(self):
+        for line in self:
+            sale = line.sale_id
+            if sale:
+                products = sale.order_line.filtered(
+                    lambda l: not l.display_type and l.product_id
+                ).mapped("product_id")
+                line.allowed_product_ids = products
+            else:
+                line.allowed_product_ids = self.env["product.product"]
