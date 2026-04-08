@@ -57,7 +57,7 @@ class ProposalSheet(models.Model):
 
         Điều kiện được phép:
         - Tất cả phiếu đều type = 'material'
-        - Tất cả phiếu đều state = 'waiting_accounting_paid'
+        - Tất cả phiếu đều state thuộc nhóm cho phép
         - Tất cả phiếu cùng project
         - Tất cả phiếu cùng currency
 
@@ -67,8 +67,10 @@ class ProposalSheet(models.Model):
 
         Logic dòng:
         - Nếu line.product_id có giá trị -> dùng product_id
-        - Ngược lại, dùng material_id.product_id (như cũ)
+        - Ngược lại, dùng material_id.product_id
         - Nếu cả 2 đều không có -> tạo product tạm từ material_id
+        - Đơn vị tính trên PO lấy theo đơn vị trên Phiếu Đề Xuất
+        - Nếu đơn vị sản phẩm khác đơn vị trên Phiếu Đề Xuất thì tự động cập nhật sản phẩm theo đơn vị trên Phiếu Đề Xuất
         """
         if not self:
             raise UserError(_("Không có phiếu đề xuất nào được chọn."))
@@ -79,9 +81,17 @@ class ProposalSheet(models.Model):
             raise ValidationError(_("Chỉ tạo Đơn mua cho Phiếu Đề Xuất loại 'Vật Tư'."))
 
         # 2. Kiểm tra trạng thái phiếu
-        bad_state = self.filtered(lambda s: s.state != "waiting_accounting_paid")
+        allowed_states = [
+            "reviewed_accounting",
+            "approved",
+            "waiting_accounting_paid",
+        ]
+        bad_state = self.filtered(lambda s: s.state not in allowed_states)
         if bad_state:
-            raise ValidationError(_("Chỉ tạo Đơn mua cho Phiếu Đề Xuất đang ở trạng thái 'Chờ chi tiền (KT)'."))
+            raise ValidationError(_(
+                "Chỉ tạo Đơn mua cho Phiếu Đề Xuất ở các trạng thái: "
+                "'KTTH Đang kiểm tra', 'Sếp Đang duyệt', hoặc 'Chờ KT xử lý'."
+            ))
 
         # 3. Kiểm tra cùng dự án
         projects = self.mapped("project_id")
@@ -99,21 +109,33 @@ class ProposalSheet(models.Model):
             raise ValidationError(_("Các Phiếu Đề Xuất phải cùng loại tiền tệ."))
         common_currency = currencies[0] if currencies else self.env.company.currency_id
 
-        # 5. Gom theo vendor: {vendor: {"lines": [...], "sheet_ids": set([...])}}
+        # 5. Gom theo vendor
         vendor_groups = {}
         for sheet in self:
             for line in sheet.material_line_ids:
-                if not line.quantity:
+                qty = line.quantity or 0.0
+                if qty <= 0:
                     continue
 
                 if not line.vendor_id:
                     label = (
-                        line.product_id.display_name
+                        (line.product_id and line.product_id.display_name)
                         or (line.material_id and line.material_id.display_name)
                         or (line.description or "/")
                     )
                     raise ValidationError(
                         _("Dòng vật tư '%s' trong phiếu %s chưa có Nhà cung cấp.")
+                        % (label, sheet.name)
+                    )
+
+                if not line.unit:
+                    label = (
+                        (line.product_id and line.product_id.display_name)
+                        or (line.material_id and line.material_id.display_name)
+                        or (line.description or "/")
+                    )
+                    raise ValidationError(
+                        _("Dòng vật tư '%s' trong phiếu %s chưa có đơn vị tính.")
                         % (label, sheet.name)
                     )
 
@@ -135,6 +157,7 @@ class ProposalSheet(models.Model):
 
             # Gộp line theo (product_id, uom_id, price_unit, name)
             consolidated = {}
+
             for l in vendor_lines:
                 # --- Xác định product ---
                 product = (
@@ -143,13 +166,25 @@ class ProposalSheet(models.Model):
                     or False
                 )
 
-                # Nếu vẫn không có product -> tạo product tạm từ material (giữ behavior cũ)
+                proposal_uom = l.unit
+                if not proposal_uom:
+                    label = (
+                        l.description
+                        or (l.product_id and l.product_id.display_name)
+                        or (l.material_id and l.material_id.display_name)
+                        or "/"
+                    )
+                    raise ValidationError(
+                        _("Dòng vật tư '%s' chưa có đơn vị tính trên Phiếu Đề Xuất.") % label
+                    )
+
+                # Nếu chưa có product -> tạo product tạm theo đơn vị của phiếu đề xuất
                 if not product and l.material_id:
                     product = self.env["product.product"].create({
                         "name": l.material_id.display_name,
                         "type": "service",
-                        "uom_id": l.unit.id,
-                        "uom_po_id": l.unit.id,
+                        "uom_id": proposal_uom.id,
+                        "uom_po_id": proposal_uom.id,
                         "purchase_ok": True,
                         "sale_ok": False,
                     })
@@ -157,8 +192,35 @@ class ProposalSheet(models.Model):
                 if not product:
                     label = l.description or "/"
                     raise ValidationError(
-                        _("Không xác định được Sản phẩm cho dòng vật tư '%s'." % label)
+                        _("Không xác định được Sản phẩm cho dòng vật tư '%s'.") % label
                     )
+
+                # --- Nếu đơn vị sản phẩm khác đơn vị phiếu đề xuất thì tự cập nhật sản phẩm ---
+                product_tmpl = product.product_tmpl_id
+                product_uom = product.uom_id
+                product_po_uom = product.uom_po_id
+
+                need_update_uom = (
+                    not product_uom
+                    or product_uom.id != proposal_uom.id
+                    or not product_po_uom
+                    or product_po_uom.id != proposal_uom.id
+                )
+
+                if need_update_uom:
+                    # Cập nhật cả đơn vị gốc và đơn vị mua
+                    # theo đúng đơn vị trên phiếu đề xuất
+                    product_tmpl.write({
+                        "uom_id": proposal_uom.id,
+                        "uom_po_id": proposal_uom.id,
+                    })
+
+                    # refresh lại record sau khi write
+                    product.invalidate_recordset(["uom_id", "uom_po_id"])
+                    product_tmpl.invalidate_recordset(["uom_id", "uom_po_id"])
+
+                # --- Dùng đơn vị từ phiếu đề xuất ---
+                uom = proposal_uom
 
                 # --- Thông tin dòng PO ---
                 line_name = (
@@ -167,7 +229,6 @@ class ProposalSheet(models.Model):
                     or (l.material_id and l.material_id.display_name)
                     or "/"
                 )
-                uom = l.unit or product.uom_po_id or product.uom_id
                 unit_price = float(l.price_unit or 0.0)
                 qty = l.quantity or 0.0
 
@@ -193,7 +254,6 @@ class ProposalSheet(models.Model):
                 "company_id": self.env.company.id,
                 "origin": all_origin_names,
 
-                # chỉ link các phiếu thực sự có dòng mua từ vendor này
                 "proposal_sheet_ids": [(6, 0, sheets_for_vendor.ids)],
                 "proposal_sheet_id": main_sheet.id,
 
@@ -206,7 +266,6 @@ class ProposalSheet(models.Model):
             po = self.env["purchase.order"].create(po_vals)
             created_pos |= po
 
-            # ghi log vào từng phiếu góp hàng cho vendor này
             for sheet in sheets_for_vendor:
                 sheet.message_post(
                     body=_("Đã tạo Đơn mua hàng %s cho NCC %s từ phiếu %s.")
@@ -222,5 +281,8 @@ class ProposalSheet(models.Model):
         action = self.env.ref("purchase.purchase_form_action").sudo().read()[0]
         action["domain"] = [("id", "in", created_pos.ids)]
         if len(created_pos) == 1:
-            action.update({"view_mode": "form", "res_id": created_pos.id})
+            action.update({
+                "view_mode": "form",
+                "res_id": created_pos.id,
+            })
         return action

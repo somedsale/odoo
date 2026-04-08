@@ -79,21 +79,44 @@
                     <field name="note" placeholder="Nội dung chi tiết mục đích thanh toán" readonly="state !='draft'"/>
 
                     <separator string="Chi tiết chứng từ" colspan="2"/>
-                    <field name="line_ids" readonly="state != 'draft'">
+                    <field name="line_ids" readonly="state != 'draft'" mode="list,form">
                         <tree editable="bottom">
                             <field name="sequence" widget="handle" string="" width="30"/>
                             <field name="date_from" width="90"/>
                             <field name="date_to" width="90"/>
                             <field name="content" string="Nội dung" width="250"/>
                             <field name="uom_id" string="DVT" options="{'no_create':False}"/>
-                            <field name ="quantity" string="Số lượng"/>
-                            <field name="unit_price" string="Đơn giá" options="{'currency_field': 'currency_id'}"/>
-                            <field name="amount" string="Thành tiền" width="130" options="{'currency_field': 'currency_id'}" sum="1"/>
+                            <field name="quantity" string="Số lượng"/>
+                            <field name="unit_price" string="Đơn giá" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="amount" string="Thành tiền" width="130" widget="monetary" options="{'currency_field': 'currency_id'}" sum="1"/>
                             <field name="project_id" string="Dự án" width="200" optional="hide"/>
                             <field name="attachment_ids" widget="many2many_binary" width="160"/>
                             <field name="note" string="Ghi chú" width="120"/>
                             <field name="currency_id" optional="hide"/>
                         </tree>
+
+                        <form string="Chi tiết dòng">
+                            <group>
+                                <group>
+                                    <field name="date_from"/>
+                                    <field name="date_to"/>
+                                    <field name="uom_id" string="DVT" options="{'no_create':False}"/>
+                                    <field name="quantity" string="Số lượng"/>
+                                    <field name="project_id" string="Dự án"/>
+                                </group>
+                                <group>
+                                    <field name="unit_price" string="Đơn giá" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="amount" string="Thành tiền" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="1"/>
+                                    <field name="currency_id" invisible="1"/>
+                                </group>
+                            </group>
+
+                            <group>
+                                <field name="content" string="Nội dung"/>
+                                <field name="note" string="Ghi chú"/>
+                                <field name="attachment_ids" widget="many2many_binary"/>
+                            </group>
+                        </form>
                     </field>
                     <div class="oe_chatter">
                         <field name="message_follower_ids" widget="mail_followers"/>
