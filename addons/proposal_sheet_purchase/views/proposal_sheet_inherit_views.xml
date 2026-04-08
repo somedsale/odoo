@@ -12,7 +12,8 @@
         <xpath expr="//form/header" position="inside">
           <button name="action_create_purchase_orders"
                   type="object"
-                  class="btn-primary"
+                  class="btn btn-primary"
+                  display="always"
                   string="Tạo Đơn Mua"
                   groups="purchase.group_purchase_user,account.group_account_manager"
                   invisible="(type != 'material') or (state != 'waiting_accounting_paid')"/>
@@ -53,7 +54,8 @@
             name="action_create_purchase_orders"
             type="object"
             string="Tạo Đơn Mua (gộp)"
-            class="btn-primary"
+            display="always"
+            class="btn btn-primary"
             groups="purchase.group_purchase_user,account.group_account_manager"
             invisible="['|', ('type','!=','material'), ('state','!=','waiting_accounting_paid')]"
           />
