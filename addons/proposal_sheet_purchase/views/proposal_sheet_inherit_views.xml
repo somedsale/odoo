@@ -50,15 +50,16 @@
 
         <!-- Chèn button vào trong <tree> -->
         <xpath expr="//tree" position="inside">
+          <header>
           <button
             name="action_create_purchase_orders"
             type="object"
             string="Tạo Đơn Mua (gộp)"
-            display="always"
             class="btn btn-primary"
             groups="purchase.group_purchase_user,account.group_account_manager"
             invisible="['|', ('type','!=','material'), ('state','!=','waiting_accounting_paid')]"
           />
+          </header>
         </xpath>
 
       </field>
