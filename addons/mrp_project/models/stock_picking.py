@@ -51,16 +51,12 @@ class StockPicking(models.Model):
         return {'domain': domain}
     def action_reset_to_draft_from_done(self):
         Quant = self.env["stock.quant"]
+        Scrap = self.env["stock.scrap"]
 
         for picking in self:
             if picking.state != "done":
                 raise UserError(_("Chỉ phiếu đã hoàn tất mới có thể trở lại nháp."))
 
-            if any(move.scrapped for move in picking.move_ids):
-                raise UserError(_("Không thể trở lại nháp với phiếu có dòng phế phẩm."))
-
-            # Nếu anh có chạy valuation tự động thì nên chặn ở đây.
-            # Bỏ đoạn này nếu anh vẫn muốn ép chạy.
             categories = picking.move_ids.mapped("product_id.categ_id")
             if any(c.property_valuation == "real_time" for c in categories):
                 raise UserError(_(
@@ -68,7 +64,7 @@ class StockPicking(models.Model):
                     "(real_time). Không nên reset trực tiếp vì có thể lệch kế toán kho."
                 ))
 
-            # 1) ĐẢO LẠI TỒN KHO
+            # 1) Đảo lại tồn kho theo move line
             for ml in picking.move_line_ids:
                 product = ml.product_id
                 if product.type != "product":
@@ -78,8 +74,7 @@ class StockPicking(models.Model):
                 if not qty:
                     continue
 
-                # Đảo hướng lại:
-                # đã done: source -> dest
+                # done: source -> dest
                 # reset: trừ ở dest, cộng lại source
                 Quant._update_available_quantity(
                     product,
@@ -103,19 +98,29 @@ class StockPicking(models.Model):
             move_line_ids = picking.move_line_ids.ids
             move_ids = picking.move_ids.ids
 
-            # 2) XÓA MOVE LINE BẰNG SQL
-            # Odoo chặn unlink bằng ORM khi phiếu đã done, nên dùng SQL
+            # 2) Tìm scrap liên quan - chỉ dùng field nào thực sự tồn tại
+            scrap_recs = Scrap.browse()
+            if "picking_id" in Scrap._fields:
+                scrap_recs = Scrap.search([("picking_id", "=", picking.id)])
+
+            scrap_ids = scrap_recs.ids
+
+            # 3) Xóa scrap trước
+            if scrap_ids:
+                self.env.cr.execute("""
+                    DELETE FROM stock_scrap
+                    WHERE id IN %s
+                """, [tuple(scrap_ids)])
+
+            # 4) Xóa move line của picking
             if move_line_ids:
                 self.env.cr.execute("""
                     DELETE FROM stock_move_line
                     WHERE id IN %s
                 """, [tuple(move_line_ids)])
 
-            # 3) RESET STOCK MOVE
+            # 5) Reset stock move
             if move_ids:
-                # reset quantity_done / state
-                # quantity_done có thể không phải field chuẩn trên mọi bản custom,
-                # nên chỉ reset các field chắc chắn hơn.
                 self.env.cr.execute("""
                     UPDATE stock_move
                     SET state = 'draft',
@@ -123,17 +128,23 @@ class StockPicking(models.Model):
                     WHERE id IN %s
                 """, [tuple(move_ids)])
 
-            # 4) RESET PICKING
-            vals_sql = """
-                UPDATE stock_picking
-                SET state = 'draft',
-                    date_done = NULL,
-                    is_locked = FALSE
-                WHERE id = %s
-            """
-            self.env.cr.execute(vals_sql, [picking.id])
+            # 6) Reset picking
+            if "is_locked" in picking._fields:
+                self.env.cr.execute("""
+                    UPDATE stock_picking
+                    SET state = 'draft',
+                        date_done = NULL,
+                        is_locked = FALSE
+                    WHERE id = %s
+                """, [picking.id])
+            else:
+                self.env.cr.execute("""
+                    UPDATE stock_picking
+                    SET state = 'draft',
+                        date_done = NULL
+                    WHERE id = %s
+                """, [picking.id])
 
-            # 5) clear cache để ORM đọc lại dữ liệu mới
             self.env.invalidate_all()
 
         return True

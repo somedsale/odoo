@@ -685,15 +685,25 @@ class MultiMrpOrder(models.Model):
         return True
     def action_view_all_raw_pickings(self):
         self.ensure_one()
-        action = self.env.ref("stock.action_picking_tree_all").read()[0]
-        action["domain"] = [("id", "in", self.raw_picking_ids.ids)]
-        return action
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Tất cả PXK NVL",
+            "res_model": "stock.picking",
+            "view_mode": "tree,form",
+            "domain": [("id", "in", self.raw_picking_ids.ids)],
+            "target": "current",
+        }
 
     def action_view_all_finished_pickings(self):
         self.ensure_one()
-        action = self.env.ref("stock.action_picking_tree_all").read()[0]
-        action["domain"] = [("id", "in", self.finished_picking_ids.ids)]
-        return action
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Tất cả PNK TP",
+            "res_model": "stock.picking",
+            "view_mode": "tree,form",
+            "domain": [("id", "in", self.finished_picking_ids.ids)],
+            "target": "current",
+        }
     def action_view_productions(self):
         self.ensure_one()
         prods = self.line_ids.mapped("mrp_production_id")
