@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="web_responsive.HomeHero">
+        <div t-attf-class="o_home_hero #{state.open ? 'is-open' : ''}" t-att-data-theme="state.theme">
+            <div class="o_home_hero__overlay"></div>
+            <div class="o_home_hero__glow o_home_hero__glow--1"></div>
+            <div class="o_home_hero__glow o_home_hero__glow--2"></div>
+
+            <div class="o_home_hero__container">
+                <main class="o_home_hero__content">
+
+                    <!-- HERO TOP -->
+                    <section class="o_home_hero__hero_grid">
+                        <div class="o_home_hero__hero_main">
+                            <span class="o_home_hero__eyebrow">WORKSPACE OVERVIEW</span>
+
+                            <h2 class="o_home_hero__headline">
+                                <span class="o_home_hero__headline_line">
+                                    <t t-esc="state.greeting"/>
+                                </span>
+                                <span class="o_home_hero__headline_line o_home_hero__headline_name">
+                                    <t t-esc="state.userName"/>
+                                </span>
+                            </h2>
+
+                            <p class="o_home_hero__lead">
+                                Chào mừng bạn đã quay trở lại. Theo dõi bán hàng, dự án, mua hàng và vận hành trong một không gian làm việc thống nhất, trực quan và nhanh hơn.
+                            </p>
+
+                            <div class="o_home_hero__hero_actions">
+                                <button type="button" class="btn o_home_hero__btn o_home_hero__btn--primary" t-on-click="openApps">
+                                    <span>Mở ứng dụng</span>
+                                </button>
+
+                                <button type="button" class="btn o_home_hero__btn o_home_hero__btn--secondary">
+                                    <span>Xem báo cáo</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="o_home_hero__hero_side">
+                            <div class="o_home_hero__clock_card">
+                                <div class="o_home_hero__clock_head">
+                                    <div class="o_home_hero__clock_icon">
+                                        <i class="fa fa-clock-o"></i>
+                                    </div>
+                                    <span class="o_home_hero__clock_tz">GMT +7</span>
+                                </div>
+
+                                <div class="o_home_hero__clock_body">
+                                    <div class="o_home_hero__clock_time">
+                                        <t t-esc="state.now.toLocaleTimeString()"/>
+                                    </div>
+                                    <div class="o_home_hero__clock_date">
+                                        <t t-esc="state.now.toLocaleDateString()"/>
+                                    </div>
+                                </div>
+
+                                <div class="o_home_hero__clock_footer">
+                                    <i class="fa fa-map-marker"></i>
+                                    <span>HCM, Việt Nam</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- BENTO GRID -->
+                    <section class="o_home_hero__bento">
+
+                        <!-- Large featured card -->
+                        <article class="o_home_hero__card o_home_hero__card--project">
+                            <div class="o_home_hero__card_badge">URGENT</div>
+
+                            <div class="o_home_hero__card_content">
+                                <h3 class="o_home_hero__card_title">Dự án: Horizon HQ</h3>
+                                <p class="o_home_hero__card_text">
+                                    Thiết kế không gian làm việc tích hợp công nghệ cho trụ sở chính mới.
+                                </p>
+
+                                <div class="o_home_hero__avatars">
+                                    <div class="o_home_hero__avatar">A</div>
+                                    <div class="o_home_hero__avatar">B</div>
+                                    <div class="o_home_hero__avatar">+4</div>
+                                </div>
+
+                                <div class="o_home_hero__progress">
+                                    <div class="o_home_hero__progress_bar" style="width: 72%;"></div>
+                                </div>
+
+                                <div class="o_home_hero__progress_meta">
+                                    <span>72% Hoàn thành</span>
+                                    <span>Hạn chót: 3 ngày nữa</span>
+                                </div>
+                            </div>
+
+                            <div class="o_home_hero__project_glow"></div>
+                        </article>
+
+                        <!-- Metrics card -->
+                        <article class="o_home_hero__card o_home_hero__card--metric">
+                            <div class="o_home_hero__metric_icon">
+                                <i class="fa fa-line-chart"></i>
+                            </div>
+
+                            <div class="o_home_hero__metric_label">Hiệu suất đội ngũ</div>
+                            <div class="o_home_hero__metric_value">+18.4%</div>
+
+                            <div class="o_home_hero__mini_chart">
+                                <span style="height:40%"></span>
+                                <span style="height:60%"></span>
+                                <span style="height:45%"></span>
+                                <span style="height:80%"></span>
+                                <span style="height:65%"></span>
+                                <span style="height:100%"></span>
+                            </div>
+                        </article>
+
+                        <!-- Event card -->
+                        <article class="o_home_hero__card o_home_hero__card--events">
+                            <h3 class="o_home_hero__section_title">
+                                <i class="fa fa-calendar-check-o"></i>
+                                <span>Sắp diễn ra</span>
+                            </h3>
+
+                            <div class="o_home_hero__event_list">
+                                <div class="o_home_hero__event_item">
+                                    <div class="o_home_hero__event_date">
+                                        <div class="o_home_hero__event_month">OCT</div>
+                                        <div class="o_home_hero__event_day">24</div>
+                                    </div>
+                                    <div class="o_home_hero__event_info">
+                                        <div class="o_home_hero__event_title">Họp chiến lược Q4</div>
+                                        <div class="o_home_hero__event_meta">09:00 - 10:30 • Google Meet</div>
+                                    </div>
+                                </div>
+
+                                <div class="o_home_hero__event_item">
+                                    <div class="o_home_hero__event_date">
+                                        <div class="o_home_hero__event_month">OCT</div>
+                                        <div class="o_home_hero__event_day o_home_hero__event_day--dark">25</div>
+                                    </div>
+                                    <div class="o_home_hero__event_info">
+                                        <div class="o_home_hero__event_title">Review thiết kế UX</div>
+                                        <div class="o_home_hero__event_meta">14:00 - 15:00 • Phòng họp A</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- AI summary card -->
+                        <article class="o_home_hero__card o_home_hero__card--ai">
+                            <div class="o_home_hero__ai_left">
+                                <div class="o_home_hero__ai_tag">
+                                    <i class="fa fa-magic"></i>
+                                    <span>TỔNG HỢP TUẦN</span>
+                                </div>
+
+                                <h3 class="o_home_hero__card_title">Phân tích dữ liệu bằng AI</h3>
+
+                                <p class="o_home_hero__card_text">
+                                    Hệ thống đã chuẩn bị báo cáo hiệu suất tự động cho tuần này. Sẵn sàng để đánh giá.
+                                </p>
+
+                                <button type="button" class="btn o_home_hero__link_btn">
+                                    <span>Xem chi tiết</span>
+                                    <i class="fa fa-arrow-right"></i>
+                                </button>
+                            </div>
+
+                            <div class="o_home_hero__ai_right">
+                                <div class="o_home_hero__ai_visual"></div>
+                            </div>
+                        </article>
+
+                    </section>
+
+                    <!-- FOOTER -->
+                    <footer class="o_home_hero__footer">
+                        <div class="o_home_hero__footer_left">
+                            <span>© 2026 Somed Workspace</span>
+                            <a href="#">Chính sách bảo mật</a>
+                            <a href="#">Điều khoản sử dụng</a>
+                        </div>
+
+                        <div class="o_home_hero__footer_right">
+                            <span class="o_home_hero__status_dot"></span>
+                            <span>Tất cả hệ thống đang hoạt động bình thường</span>
+                        </div>
+                    </footer>
+
+                </main>
+            </div>
+        </div>
+    </t>
+
+    <t t-inherit="web.NavBar" t-inherit-mode="extension">
+        <xpath expr="//nav[hasclass('o_main_navbar')]" position="after">
+            <HomeHero/>
+        </xpath>
+    </t>
+
+</templates>

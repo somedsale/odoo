@@ -37,8 +37,8 @@
             "/web_responsive/static/src/legacy/xml/form_buttons.xml",
             "/web_responsive/static/src/legacy/xml/custom_favorite_item.xml",
             "/web_responsive/static/src/components/apps_menu_tools.esm.js",
-            "/web_responsive/static/src/components/apps_menu/*",
-            "/web_responsive/static/src/components/apps_menu_item/*",
+            # "/web_responsive/static/src/components/apps_menu/*",
+            # "/web_responsive/static/src/components/apps_menu_item/*",
             "/web_responsive/static/src/components/menu_canonical_searchbar/*",
             "/web_responsive/static/src/components/menu_odoo_searchbar/*",
             "/web_responsive/static/src/components/menu_fuse_searchbar/*",
@@ -49,6 +49,7 @@
             "/web_responsive/static/src/components/control_panel/*",
             "/web_responsive/static/src/components/command_palette/*",
             "/web_responsive/static/src/views/form/*",
+            "/web_responsive/static/src/components/home_hero/*",
         ],
         "web.assets_tests": [
             "/web_responsive/static/tests/test_patch.js",
