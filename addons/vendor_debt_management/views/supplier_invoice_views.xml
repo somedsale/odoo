@@ -16,6 +16,7 @@
                 <field name="account_tax_id"/>
                 <field name="amount_untaxed"/>
                 <field name="amount"/>
+                <field name="no_payment" widget="checkbox"/>
                 <field name="note"/>
                 <field name="reconciled" widget="checkbox"/>
                 <field name="attachment_ids" widget="many2many_binary" optional="hide"/>
@@ -44,12 +45,13 @@
                             <field name="account_tax_id" widget="many2one"/>
                             <field name="amount_tax"/>
                             <field name="amount"/>
+                            <field name="no_payment"/>
                             <field name="reconciled" widget="checkbox"/>
                             <field name="attachment_ids" widget="many2many_binary"/>
                         </group>
                         <group>
                             <field name="date"/>
-                            <field name="due_date"/>
+                            <field name="due_date" readonly="no_payment"/>
                             <field name="note"/>
                             <field name="cost_classification" widget="select"/>
                             <field name="expense_category_id"/>
@@ -57,14 +59,16 @@
                             <field name="currency_id" invisible="1"/>
                         </group>
                     </group>
+
                     <group string="Loại nhà cung cấp">
                         <field name="supplier_category"/>
                         <field name="supplier_domestic_type" invisible="supplier_category != 'domestic'"/>
                         <field name="supply_category"/>
                     </group>
+
                     <notebook>
-                        <page string="Thông tin phiếu chi">
-                            <field name="account_payment_request_ids">
+                        <page string="Thông tin phiếu chi" invisible="no_payment">
+                            <field name="account_payment_request_ids" readonly="no_payment">
                                 <tree>
                                     <field name="name"/>
                                     <field name="create_date" string="Ngày tạo"/>
@@ -82,7 +86,7 @@
         </field>
     </record>
 
-    <!-- ✅ SEARCH VIEW with SEARCH PANEL -->
+    <!-- SEARCH VIEW with SEARCH PANEL -->
     <record id="view_supplier_invoice_search" model="ir.ui.view">
         <field name="name">supplier.invoice.search</field>
         <field name="model">supplier.invoice</field>
@@ -93,10 +97,12 @@
                 <field name="partner_id" string="Nhà cung cấp"/>
                 <field name="project_id" string="Dự án"/>
                 <field name="contract_id" string="Hợp đồng"/>
+
                 <filter name="filter_due_today" string="Đến hạn hôm nay" domain="[('due_date', '=', context_today())]"/>
                 <filter name="filter_overdue" string="Quá hạn" domain="[('due_date', '&lt;', context_today())]"/>
+                <filter name="filter_no_payment" string="Không thanh toán" domain="[('no_payment', '=', True)]"/>
+                <filter name="filter_need_payment" string="Có thanh toán" domain="[('no_payment', '=', False)]"/>
 
-                <!-- ✅ Search Panel -->
                 <searchpanel>
                     <field name="partner_id" string="Nhà cung cấp"/>
                     <field name="project_id" string="Dự án"/>

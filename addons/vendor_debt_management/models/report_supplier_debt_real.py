@@ -25,11 +25,17 @@ class SupplierDebtRealReport(models.AbstractModel):
         pending_foreign = []
 
         def _keep_line(rec):
-            # giữ cả dòng có công nợ cũ
+            """
+            Không lấy các dòng không còn số liệu công nợ thực tế.
+            Mục tiêu: nếu summary đã được loại hóa đơn 'Không thanh toán' ở tầng SQL/view,
+            thì các dòng rỗng sẽ bị loại khỏi báo cáo.
+            """
             return any([
-                (rec.residual_amount or 0.0) != 0.0,
+                (rec.total_invoice_amount or 0.0) != 0.0,
+                (rec.total_payment_amount or 0.0) != 0.0,
                 (rec.advance_amount or 0.0) != 0.0,
                 (rec.old_debt or 0.0) != 0.0,
+                (rec.residual_amount or 0.0) != 0.0,
             ])
 
         def _due_days_text(rec):
@@ -43,7 +49,18 @@ class SupplierDebtRealReport(models.AbstractModel):
             return f"Quá hạn {abs(delta)} ngày từ {rec.due_date.strftime('%d/%m/%Y')}"
 
         for rec in docs:
+            # bỏ các dòng không còn số liệu thực
             if not _keep_line(rec):
+                continue
+
+            # nếu summary của bạn có residual = 0, invoice = 0, advance = 0, old_debt = 0
+            # thì chắc chắn không cần lên báo cáo
+            if (
+                (rec.total_invoice_amount or 0.0) == 0.0
+                and (rec.advance_amount or 0.0) == 0.0
+                and (rec.old_debt or 0.0) == 0.0
+                and (rec.residual_amount or 0.0) == 0.0
+            ):
                 continue
 
             partner = rec.partner_id

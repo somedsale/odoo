@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="vendor_debt_management.SupplierDebtOwlReport">
+        <div class="o_supplier_debt_owl_report">
+            <t t-if="state.loading">
+                <div class="o_supplier_debt_loading">
+                    Đang tải báo cáo công nợ NCC...
+                </div>
+            </t>
+
+            <t t-elif="!state.data">
+                <div class="o_supplier_debt_empty">
+                    Không có dữ liệu để hiển thị.
+                </div>
+            </t>
+
+            <t t-else="">
+                <t t-set="summary" t-value="state.data.summary"/>
+
+                <div class="o_supplier_debt_header">
+                    <div class="o_supplier_debt_title_wrap">
+                <button type="button" class="btn btn-outline-secondary" t-on-click="goBack">
+    Quay lại
+</button>
+                        <div class="o_supplier_debt_title">Báo cáo công nợ NCC</div>
+                        <div class="o_supplier_debt_partner" t-esc="summary.partner_name"/>
+                        <div class="o_supplier_debt_meta">
+                            <span t-if="summary.due_days" t-esc="summary.due_days"/>
+                        </div>
+                    </div>
+
+                    <div class="o_supplier_debt_header_actions">
+                        <button type="button" class="btn btn-outline-primary" t-on-click="() => this.openRecordList('contracts')">
+                            Hợp đồng
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" t-on-click="() => this.openRecordList('invoices')">
+                            Hóa đơn
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" t-on-click="() => this.openRecordList('payments')">
+                            Phiếu chi
+                        </button>
+                        <button type="button" class="btn btn-primary" t-on-click="printPdf">
+                            In PDF
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" t-on-click="togglePdfPreview">
+                            <t t-if="!state.showPdfPreview">Xem PDF</t>
+                            <t t-else="">Ẩn PDF</t>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" t-on-click="openPdfInNewTab">
+                            Mở tab PDF
+                        </button>
+                    </div>
+                </div>
+
+                <t t-if="state.showPdfPreview and summary.pdf_url">
+                    <div class="o_supplier_debt_pdf_preview">
+                        <iframe t-att-src="summary.pdf_url" class="o_supplier_debt_pdf_iframe"/>
+                    </div>
+                </t>
+
+                <div class="o_supplier_debt_toolbar">
+                    <div class="o_supplier_debt_search">
+                        <input class="form-control" type="text" placeholder="Tìm theo dự án, hợp đồng, hóa đơn, phiếu chi..." t-att-value="state.search" t-on-input="onSearchInput" />
+                    </div>
+
+                    <label class="o_supplier_debt_check">
+                        <input type="checkbox" t-att-checked="state.onlyResidual" t-on-click="toggleOnlyResidual" />
+                        Chỉ xem còn nợ
+                    </label>
+
+                    <label class="o_supplier_debt_check">
+                        <input type="checkbox" t-att-checked="state.onlyOrphanPayments" t-on-click="toggleOnlyOrphanPayments" />
+                        Chỉ xem phiếu chi chưa có hóa đơn
+                    </label>
+                </div>
+
+                <div class="o_supplier_debt_summary_grid">
+                    <div class="o_supplier_debt_stat">
+                        <div class="label">Công nợ cũ</div>
+                        <div class="value" t-esc="formatMoney(summary.old_debt, summary.currency_symbol)"/>
+                    </div>
+                    <div class="o_supplier_debt_stat">
+                        <div class="label">Tổng hợp đồng</div>
+                        <div class="value" t-esc="formatMoney(summary.total_contract_amount, summary.currency_symbol)"/>
+                    </div>
+                    <div class="o_supplier_debt_stat">
+                        <div class="label">Tổng HSQT</div>
+                        <div class="value" t-esc="formatMoney(summary.total_settlements_amount, summary.currency_symbol)"/>
+                    </div>
+                    <div class="o_supplier_debt_stat">
+                        <div class="label">Tổng hóa đơn</div>
+                        <div class="value" t-esc="formatMoney(summary.total_invoice_amount, summary.currency_symbol)"/>
+                    </div>
+                    <div class="o_supplier_debt_stat">
+                        <div class="label">Tổng đã trả</div>
+                        <div class="value" t-esc="formatMoney(summary.total_payment_amount, summary.currency_symbol)"/>
+                    </div>
+                    <div class="o_supplier_debt_stat is-highlight">
+                        <div class="label">Còn nợ</div>
+                        <div class="value" t-esc="formatMoney(summary.residual_amount, summary.currency_symbol)"/>
+                    </div>
+                    <div class="o_supplier_debt_stat">
+                        <div class="label">Chi chưa hóa đơn</div>
+                        <div class="value" t-esc="formatMoney(summary.advance_amount, summary.currency_symbol)"/>
+                    </div>
+                </div>
+
+                <div class="o_supplier_debt_table_wrap">
+                    <table class="table table-bordered table-sm o_supplier_debt_table">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" class="text-center">STT</th>
+                                <th rowspan="2" class="text-center">Diễn giải</th>
+                                <th colspan="2" class="text-center">Hợp đồng</th>
+                                <th colspan="2" class="text-center">Hồ sơ quyết toán</th>
+                                <th colspan="3" class="text-center">Hóa đơn</th>
+                                <th colspan="2" class="text-center">Đã trả</th>
+                                <th rowspan="2" class="text-center">Số tiền còn nợ</th>
+                                <th rowspan="2" class="text-center">Ghi chú</th>
+                                <th rowspan="2" class="text-center">Hạn T/T</th>
+                            </tr>
+                            <tr>
+                                <th class="text-center">Số/Ngày</th>
+                                <th class="text-center">Số tiền</th>
+                                <th class="text-center">Số HS/ngày</th>
+                                <th class="text-center">Số tiền</th>
+                                <th class="text-center">Ngày</th>
+                                <th class="text-center">Số</th>
+                                <th class="text-center">Số tiền</th>
+                                <th class="text-center">Ngày trả</th>
+                                <th class="text-center">Số tiền</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <t t-foreach="filteredProjects" t-as="project" t-key="project.id">
+
+                                <!-- Group theo dự án -->
+                                <tr class="o_group_row_project">
+                                    <td colspan="6">
+                                        <div class="o_group_row_inner">
+                                            <div class="o_group_left">
+                                                <strong>Dự án: </strong>
+                                                <span t-esc="project.project_name"/>
+                                            </div>
+
+                                        </div>
+                                    </td>
+                                    <td colspan="3" class="text-end">
+                                                <span>
+                                                    <strong t-esc="formatMoney(project.invoice_total, summary.currency_symbol)"/>
+                                                </span>
+                                    </td>
+                                    <td colspan="2" class="text-end">
+                                                <span>
+                                                    <strong t-esc="formatMoney(project.payment_total, summary.currency_symbol)"/>
+                                                </span>
+                                    </td>
+                                    <td class="text-end">
+                                                <span>
+                                                    <strong t-esc="formatMoney(project.residual_total, summary.currency_symbol)"/>
+                                                </span> 
+                                    </td> 
+                                    <td colspan="2"></td>      
+                                </tr>
+
+                                <t t-foreach="project.contracts" t-as="contract" t-key="contract.id">
+                                    <t t-foreach="contract.rows" t-as="row" t-key="row.id">
+                                        <tr t-att-class="row.note ? 'is-orphan-payment' : (row.show_invoice ? 'is-invoice-head' : 'is-payment-child')">
+                                            <!-- STT -->
+                                            <td class="text-center">
+                                                <span t-esc="row.display_stt or row.stt"/>
+                                            </td>
+
+                                            <!-- Diễn giải -->
+                                            <td>
+                                                <t t-if="row.show_invoice and contract.interpretation">
+                                                    <span t-esc="contract.interpretation"/>
+                                                </t>
+                                            </td>
+
+                                            <!-- Hợp đồng Số/Ngày -->
+                                            <td>
+                                                <t t-if="row.show_invoice and contract.contract_name and contract.contract_name !== 'Không có hợp đồng'">
+                                                    <div>
+                                                        <span t-esc="contract.contract_name"/>
+                                                    </div>
+                                                    <t t-if="contract.contract_date">
+                                                        <div>
+                                                            <span t-esc="formatDate(contract.contract_date)"/>
+                                                        </div>
+                                                    </t>
+                                                </t>
+                                            </td>
+
+                                            <!-- Hợp đồng Số tiền -->
+                                            <td class="text-end">
+                                                <t t-if="row.show_invoice and contract.contract_name and contract.contract_name !== 'Không có hợp đồng' and contract.contract_amount">
+                                                    <span t-esc="formatMoney(contract.contract_amount, summary.currency_symbol)"/>
+                                                </t>
+                                            </td>
+
+                                            <!-- HSQT Số HS/ngày -->
+                                            <td></td>
+
+                                            <!-- HSQT Số tiền -->
+                                            <td class="text-end"></td>
+
+                                            <!-- Hóa đơn Ngày -->
+                                            <td class="text-center">
+                                                <t t-if="row.show_invoice and row.invoice_date">
+                                                    <span t-esc="formatDate(row.invoice_date)"/>
+                                                </t>
+                                            </td>
+
+                                            <!-- Hóa đơn Số -->
+                                            <td>
+                                                <t t-if="row.show_invoice and row.invoice_name">
+                                                    <span t-esc="row.invoice_name"/>
+                                                </t>
+                                            </td>
+
+                                            <!-- Hóa đơn Số tiền -->
+                                            <td class="text-end">
+                                                <t t-if="row.show_invoice and row.invoice_amount">
+                                                    <span t-esc="formatMoney(row.invoice_amount, row.currency_symbol)"/>
+                                                </t>
+                                            </td>
+
+                                            <!-- Đã trả Ngày -->
+                                            <td class="text-center">
+                                                <t t-if="row.payment_date">
+                                                    <span t-esc="formatDate(row.payment_date)"/>
+                                                </t>
+                                            </td>
+
+                                            <!-- Đã trả Số tiền -->
+                                            <td class="text-end">
+                                                <t t-if="row.payment_amount">
+                                                    <span t-esc="formatMoney(row.payment_amount, row.currency_symbol)"/>
+                                                </t>
+                                            </td>
+
+                                            <!-- Còn nợ -->
+                                            <td class="text-end">
+                                                <t t-if="row.residual_display !== false and row.residual_display !== null and row.residual_display !== undefined">
+                                                    <span t-esc="formatMoney(row.residual_display, row.currency_symbol)"/>
+                                                </t>
+                                            </td>
+
+                                            <!-- Ghi chú -->
+                                            <td>
+                                                <t t-if="row.note">
+                                                    <span class="badge text-bg-warning" t-esc="row.note"/>
+                                                </t>
+                                            </td>
+
+                                            <!-- Hạn T/T -->
+                                            <td class="text-center">
+                                                <t t-if="row.show_invoice and row.invoice_due_date">
+                                                    <span t-esc="formatDate(row.invoice_due_date)"/>
+                                                </t>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </t>
+                            </t>
+
+                            <t t-if="!filteredProjects.length">
+                                <tr>
+                                    <td colspan="14" class="text-center text-muted">
+                                        Không có dữ liệu phù hợp bộ lọc.
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

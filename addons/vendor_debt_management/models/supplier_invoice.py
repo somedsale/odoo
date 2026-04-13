@@ -7,8 +7,7 @@ class SupplierInvoice(models.Model):
     _name = "supplier.invoice"
     _description = "Supplier Invoice"
     _order = "date desc, create_date desc"
-    # _rec_name = "invoice_number"
-    # Mã hóa đơn (sequence)
+
     name = fields.Char(
         string="Mã hóa đơn",
         required=True,
@@ -22,7 +21,7 @@ class SupplierInvoice(models.Model):
         store=True,
         readonly=True,
     )
-    # Số hóa đơn thực tế
+
     invoice_number = fields.Char(
         string="Số hóa đơn",
         help="Số hóa đơn thật trên chứng từ nhà cung cấp."
@@ -72,9 +71,17 @@ class SupplierInvoice(models.Model):
     project_id = fields.Many2one("project.project", string="Dự án", store=True)
     due_date = fields.Date("Ngày đến hạn")
     note = fields.Text("Diễn giải")
+
     account_payment_request_ids = fields.One2many(
         "account.payment.request", "invoice_id", string="Phiếu chi"
     )
+
+    no_payment = fields.Boolean(
+        string="Không thanh toán",
+        default=False,
+        help="Tích chọn nếu hóa đơn này chỉ để theo dõi chứng từ, không tạo phiếu chi và không tính công nợ."
+    )
+
     cost_classification = fields.Selection([
         ('employee', 'Khoản vay nội bộ(nhân viên)'),
         ('office', 'Chi phí tại công ty'),
@@ -82,18 +89,19 @@ class SupplierInvoice(models.Model):
         ('fixed_cost', 'Chi phí cố định'),
         ('irregular_expenses', 'Chi phí không thường xuyên'),
         ('loan_interest', 'Chi phí trả lãi vay'),
-    ], string="Phân loại chi phí", default='project',required=True)
-    # NEW: Khoản mục
+    ], string="Phân loại chi phí", default='project', required=True)
+
     expense_category_id = fields.Many2one(
         'expense.category', string="Khoản mục",
         domain="[('classification', '=', cost_classification)]",
         help="Chọn khoản mục chi tiết phù hợp với Phân loại chi phí."
     )
+
     is_warehouse = fields.Selection([
         ('warehouse', 'Nhập kho'),
         ('contruction', 'Công trình'),
     ], string="Nhập kho / Công trình")
-    # Loại NCC: trong nước / nước ngoài
+
     supplier_category = fields.Selection(
         [
             ("domestic", "NCC trong nước"),
@@ -104,7 +112,6 @@ class SupplierInvoice(models.Model):
         help="Phân loại nhà cung cấp: trong nước hoặc nước ngoài.",
     )
 
-    # Nhóm NCC trong nước: nhân công / vật tư, dịch vụ
     supplier_domestic_type = fields.Selection(
         [
             ("labor", "NCC Nhân công"),
@@ -114,41 +121,32 @@ class SupplierInvoice(models.Model):
         help="Áp dụng khi Loại NCC là 'NCC trong nước'.",
     )
 
-    # Hạng mục cung cấp
     supply_category = fields.Many2one(
         "supplier.supply.category",
         string="Hạng mục cung cấp",
         help="Hạng mục cung cấp của nhà cung cấp.",
     )
 
-    # Đã đối chiếu công nợ
     reconciled = fields.Boolean(
         string="Đã đối chiếu công nợ",
         help="Đánh dấu phiếu chi này đã được đối chiếu công nợ.",
     )
+
     attachment_ids = fields.Many2many(
-    "ir.attachment",
-    "supplier_invoice_ir_attachments_rel",  # tên bảng quan hệ (tự đặt)
-    "supplier_invoice_id",
-    "attachment_id",
-    string="Tệp đính kèm",
-    help="Đính kèm hóa đơn, báo giá, biên bản, chứng từ liên quan.",
-)
-    # ==============================
-    # COMPUTE & ONCHANGE
-    # ==============================
+        "ir.attachment",
+        "supplier_invoice_ir_attachments_rel",
+        "supplier_invoice_id",
+        "attachment_id",
+        string="Tệp đính kèm",
+        help="Đính kèm hóa đơn, báo giá, biên bản, chứng từ liên quan.",
+    )
+
     def _compute_display_name(self):
         for rec in self:
             if rec.invoice_number:
                 rec.display_name = f"{rec.invoice_number} - {rec.name}"
             else:
                 rec.display_name = rec.name
-    # @api.model
-    # def create(self, vals):
-    #     """Tự động sinh mã hóa đơn nếu chưa có"""
-    #     if vals.get("name", "New") == "New":
-    #         vals["name"] = self.env["ir.sequence"].next_by_code("supplier.invoice") or "New"
-    #     return super().create(vals)
 
     @api.depends("contract_id.partner_id", "purchase_id.partner_id")
     def _compute_partner_id(self):
@@ -201,31 +199,43 @@ class SupplierInvoice(models.Model):
             if record.date and record.due_date and record.due_date < record.date:
                 raise ValidationError("Ngày đến hạn không được nhỏ hơn Ngày hóa đơn.")
 
-    # _sql_constraints = [
-    #     ("unique_invoice_number", "unique(invoice_number)", "Số hóa đơn đã tồn tại, vui lòng nhập số khác."),
-    # ]
+    @api.constrains("no_payment", "account_payment_request_ids")
+    def _check_no_payment_with_payment_requests(self):
+        for rec in self:
+            if rec.no_payment and rec.account_payment_request_ids:
+                raise ValidationError(
+                    "Hóa đơn đã tích 'Không thanh toán' thì không được có phiếu chi."
+                )
+
     _sql_constraints = [
-    (
-        "unique_invoice_number_partner",
-        "unique(partner_id, invoice_number)",
-        "Số hóa đơn đã tồn tại cho nhà cung cấp này, vui lòng nhập số khác.",
-    ),
-]
+        (
+            "unique_invoice_number_partner",
+            "unique(partner_id, invoice_number)",
+            "Số hóa đơn đã tồn tại cho nhà cung cấp này, vui lòng nhập số khác.",
+        ),
+    ]
+
     @api.model
     def create(self, vals):
-        # 1) Sinh mã (sequence) nếu chưa có
         if vals.get("name", "New") == "New":
             vals["name"] = self.env["ir.sequence"].next_by_code("supplier.invoice") or "New"
 
-        # 2) (khuyến nghị) chuẩn hoá invoice_number để tránh dính '' gây unique “ảo”
         if "invoice_number" in vals:
             inv = (vals.get("invoice_number") or "").strip()
             vals["invoice_number"] = inv or False
 
         rec = super().create(vals)
 
-        # 3) Tăng supplier_rank
         if rec.partner_id:
             rec.partner_id._increase_rank("supplier_rank")
 
         return rec
+
+    def write(self, vals):
+        res = super().write(vals)
+        for rec in self:
+            if rec.no_payment and rec.account_payment_request_ids:
+                raise ValidationError(
+                    "Hóa đơn đã tích 'Không thanh toán' thì không được có phiếu chi."
+                )
+        return res
