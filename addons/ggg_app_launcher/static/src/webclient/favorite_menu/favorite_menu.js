@@ -13,6 +13,8 @@ export class FavoriteMenu extends Component {
     setup() {
         this.orm = useService("orm");
         this.action = useService("action");
+        this.notification = useService("notification");
+
         this.state = useState({
             name: "",
             url: "",
@@ -21,7 +23,7 @@ export class FavoriteMenu extends Component {
     }
 
     onBeforeOpen() {
-        this.state.url = window.location.pathname + window.location.search;
+        this.state.url = window.location.pathname + window.location.hash;
         this.state.name = this._getPageName();
     }
 
@@ -35,9 +37,9 @@ export class FavoriteMenu extends Component {
                 }
             }
         } catch {
-            // Fallback below
+            // fallback below
         }
-        // Fallback: extract from URL path
+
         const parts = window.location.pathname.split("/").filter(Boolean);
         return parts.length > 1 ? parts.slice(1).join(" / ") : "";
     }
@@ -49,13 +51,29 @@ export class FavoriteMenu extends Component {
     async onSave() {
         const name = this.state.name.trim();
         if (!name) {
+            this.notification.add("Vui lòng nhập tên yêu thích.", {
+                type: "warning",
+            });
             return;
         }
-        await this.orm.create("ggg.favorite", [{
-            name,
-            url: this.state.url,
-        }]);
-        this.state.isOpen = false;
+
+        try {
+            await this.orm.create("ggg.favorite", [{
+                name,
+                url: this.state.url,
+            }]);
+
+            this.notification.add("Đã lưu vào yêu thích thành công.", {
+                type: "success",
+            });
+
+            this.state.isOpen = false;
+        } catch (error) {
+            console.error("Favorite save error", error);
+            this.notification.add("Lưu yêu thích thất bại.", {
+                type: "danger",
+            });
+        }
     }
 
     onKeydown(ev) {
