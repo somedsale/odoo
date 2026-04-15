@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<record id="action_supplier_debt_owl_report" model="ir.actions.client">
+    <field name="name">Báo cáo công nợ NCC (OWL)</field>
+    <field name="tag">vendor_debt_management.supplier_debt_owl_report</field>
+</record>
+
+</odoo>

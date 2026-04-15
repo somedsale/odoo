@@ -209,3 +209,39 @@
     border: 0 !important;
     box-shadow: none !important;
 }
+
+/* Header list: cho title xuống dòng khi cột bị kéo nhỏ */
+.o_list_view thead th.somed_wrap_th,
+.o_field_x2many .o_list_table thead th.somed_wrap_th {
+    min-width: 200px !important;
+    white-space: normal !important;
+    vertical-align: middle !important;
+}
+
+/* bỏ truncate ở text title */
+.o_list_view thead th.somed_wrap_th > div > span,
+.o_list_view thead th.somed_wrap_th .text-truncate,
+.o_field_x2many .o_list_table thead th.somed_wrap_th > div > span,
+.o_field_x2many .o_list_table thead th.somed_wrap_th .text-truncate {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+    line-height: 1.2 !important;
+}
+
+/* để icon sort vẫn nằm bên phải nhưng text được xuống dòng */
+.o_list_view thead th.somed_wrap_th > div,
+.o_field_x2many .o_list_table thead th.somed_wrap_th > div {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px;
+}
+
+/* span title được phép co và xuống dòng */
+.o_list_view thead th.somed_wrap_th > div > span,
+.o_field_x2many .o_list_table thead th.somed_wrap_th > div > span {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
