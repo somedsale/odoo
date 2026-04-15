@@ -67,56 +67,6 @@
 
                     <!-- BENTO GRID -->
                     <section class="o_home_hero__bento">
-
-                        <!-- Large featured card -->
-                        <article class="o_home_hero__card o_home_hero__card--project">
-                            <div class="o_home_hero__card_badge">URGENT</div>
-
-                            <div class="o_home_hero__card_content">
-                                <h3 class="o_home_hero__card_title">Dự án: Horizon HQ</h3>
-                                <p class="o_home_hero__card_text">
-                                    Thiết kế không gian làm việc tích hợp công nghệ cho trụ sở chính mới.
-                                </p>
-
-                                <div class="o_home_hero__avatars">
-                                    <div class="o_home_hero__avatar">A</div>
-                                    <div class="o_home_hero__avatar">B</div>
-                                    <div class="o_home_hero__avatar">+4</div>
-                                </div>
-
-                                <div class="o_home_hero__progress">
-                                    <div class="o_home_hero__progress_bar" style="width: 72%;"></div>
-                                </div>
-
-                                <div class="o_home_hero__progress_meta">
-                                    <span>72% Hoàn thành</span>
-                                    <span>Hạn chót: 3 ngày nữa</span>
-                                </div>
-                            </div>
-
-                            <div class="o_home_hero__project_glow"></div>
-                        </article>
-
-                        <!-- Metrics card -->
-                        <article class="o_home_hero__card o_home_hero__card--metric">
-                            <div class="o_home_hero__metric_icon">
-                                <i class="fa fa-line-chart"></i>
-                            </div>
-
-                            <div class="o_home_hero__metric_label">Hiệu suất đội ngũ</div>
-                            <div class="o_home_hero__metric_value">+18.4%</div>
-
-                            <div class="o_home_hero__mini_chart">
-                                <span style="height:40%"></span>
-                                <span style="height:60%"></span>
-                                <span style="height:45%"></span>
-                                <span style="height:80%"></span>
-                                <span style="height:65%"></span>
-                                <span style="height:100%"></span>
-                            </div>
-                        </article>
-
-                        <!-- Event card -->
                         <article class="o_home_hero__card o_home_hero__card--events">
                             <h3 class="o_home_hero__section_title">
                                 <i class="fa fa-calendar-check-o"></i>
@@ -124,30 +74,59 @@
                             </h3>
 
                             <div class="o_home_hero__event_list">
-                                <div class="o_home_hero__event_item">
-                                    <div class="o_home_hero__event_date">
-                                        <div class="o_home_hero__event_month">OCT</div>
-                                        <div class="o_home_hero__event_day">24</div>
+                                <t t-if="state.loadingEvents">
+                                    <div class="o_home_hero__event_item">
+                                        <div class="o_home_hero__event_info">
+                                            <div class="o_home_hero__event_title">Đang tải lịch...</div>
+                                            <div class="o_home_hero__event_meta">Vui lòng chờ một chút</div>
+                                        </div>
                                     </div>
-                                    <div class="o_home_hero__event_info">
-                                        <div class="o_home_hero__event_title">Họp chiến lược Q4</div>
-                                        <div class="o_home_hero__event_meta">09:00 - 10:30 • Google Meet</div>
-                                    </div>
-                                </div>
+                                </t>
 
-                                <div class="o_home_hero__event_item">
-                                    <div class="o_home_hero__event_date">
-                                        <div class="o_home_hero__event_month">OCT</div>
-                                        <div class="o_home_hero__event_day o_home_hero__event_day--dark">25</div>
+                                <t t-elif="state.upcomingEvents.length > 0">
+                                    <t t-foreach="state.upcomingEvents" t-as="event" t-key="event.id">
+                                        <div class="o_home_hero__event_item">
+                                            <div class="o_home_hero__event_date">
+                                                <div class="o_home_hero__event_month">
+                                                    <t t-esc="formatEventMonth(event.start)"/>
+                                                </div>
+                                                <div class="o_home_hero__event_day">
+                                                    <t t-esc="formatEventDay(event.start)"/>
+                                                </div>
+                                            </div>
+
+                                            <div class="o_home_hero__event_info">
+                                                <div class="o_home_hero__event_title">
+                                                    <t t-esc="event.name"/>
+                                                </div>
+
+                                                <div class="o_home_hero__event_meta">
+                                                    <t t-esc="formatEventTime(event.start)"/>
+                                                    <t t-if="event.stop">
+                                                        <span> - </span>
+                                                        <t t-esc="formatEventTime(event.stop)"/>
+                                                    </t>
+                                                    <t t-if="event.location">
+                                                        <span> • </span>
+                                                        <t t-esc="event.location"/>
+                                                    </t>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </t>
+
+                                <t t-else="">
+                                    <div class="o_home_hero__event_item">
+                                        <div class="o_home_hero__event_info">
+                                            <div class="o_home_hero__event_title">Không có lịch sắp tới</div>
+                                            <div class="o_home_hero__event_meta">Hiện chưa có sự kiện nào trong calendar</div>
+                                        </div>
                                     </div>
-                                    <div class="o_home_hero__event_info">
-                                        <div class="o_home_hero__event_title">Review thiết kế UX</div>
-                                        <div class="o_home_hero__event_meta">14:00 - 15:00 • Phòng họp A</div>
-                                    </div>
-                                </div>
+                                </t>
+                                <div class="o_home_hero__project_glow"></div>
                             </div>
                         </article>
-
                         <!-- AI summary card -->
                         <article class="o_home_hero__card o_home_hero__card--ai">
                             <div class="o_home_hero__ai_left">
@@ -185,10 +164,9 @@
 
                         <div class="o_home_hero__footer_right">
                             <span class="o_home_hero__status_dot"></span>
-                            <span>Tất cả hệ thống đang hoạt động bình thường</span>
+                            <span>Không gian làm việc đã sẵn sàng</span>
                         </div>
                     </footer>
-
                 </main>
             </div>
         </div>
