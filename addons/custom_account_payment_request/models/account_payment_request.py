@@ -11,11 +11,13 @@ class AccountingPaymentRequest(models.Model):
 
     name = fields.Char(string="Mã phiếu chi", required=True, copy=False, readonly=True, default='/')
 
-    # GIỮ FIELD CŨ để không mất dữ liệu cũ
+    # giữ để tương thích dữ liệu cũ
     proposal_sheet_id = fields.Many2one('proposal.sheet', string="Phiếu đề xuất (cũ)")
     proposal_person_id = fields.Many2one('res.users', string="Người đề xuất", store=True)
-    total = fields.Float(string="Số tiền", compute='_compute_total', store=True, readonly=False)
-    manual_total = fields.Float(string="Số tiền (nhập tay)", store=True, readonly=False)  # chỉ để nhập liệu, không dùng tính toán gì cả
+
+    total = fields.Float(string="Số tiền", compute='_compute_total', store=True)
+    manual_total = fields.Float(string="Số tiền nhập tay", default=0.0)
+
     date = fields.Date(string="Ngày đề xuất")
     date_payment = fields.Date(string="Ngày thanh toán")
     journal_id = fields.Many2one('account.journal', string="Nhật ký", domain="[('type', 'in', ['cash', 'bank'])]")
@@ -61,7 +63,7 @@ class AccountingPaymentRequest(models.Model):
         ('post', 'Đã vào sổ'),
         ('cancelled', 'Hủy'),
         ('done', 'Hoàn tất'),
-    ], default='draft')
+    ], default='draft', tracking=True)
 
     status_expense = fields.Selection([
         ('not yet', 'Chưa chi'),
@@ -70,11 +72,10 @@ class AccountingPaymentRequest(models.Model):
 
     bank_id = fields.Many2one('res.bank', string="Ngân hàng")
 
-    # MỚI: nhiều phiếu đề xuất trong 1 phiếu chi
     line_ids = fields.One2many(
         'account.payment.request.line',
         'payment_request_id',
-        string='Chi tiết phiếu đề xuất',
+        string='Chi tiết phiếu chi',
         copy=True
     )
 
@@ -83,31 +84,43 @@ class AccountingPaymentRequest(models.Model):
         compute='_compute_proposal_count',
         store=True
     )
+
     proposal_sheet_names = fields.Char(
         string='Phiếu đề xuất',
         compute='_compute_proposal_sheet_names',
         store=True
     )
-    @api.depends('line_ids', 'line_ids.proposal_sheet_id', 'line_ids.proposal_sheet_id.name')
+
+    is_manual_payment = fields.Boolean(
+        string='Chi thủ công',
+        compute='_compute_is_manual_payment',
+        store=True
+    )
+
+    @api.depends('line_ids')
+    def _compute_is_manual_payment(self):
+        for rec in self:
+            rec.is_manual_payment = not bool(rec.line_ids)
+
+    @api.depends('line_ids.proposal_sheet_id', 'line_ids.proposal_sheet_id.name')
     def _compute_proposal_sheet_names(self):
         for rec in self:
-            names = rec.line_ids.mapped('proposal_sheet_id.name')
-            rec.proposal_sheet_names = ', '.join(names) if names else (
-                rec.proposal_sheet_id.name if rec.proposal_sheet_id else False
-            )
+            proposal_lines = rec.line_ids.filtered(lambda l: l.line_type == 'proposal' and l.proposal_sheet_id)
+            names = proposal_lines.mapped('proposal_sheet_id.name')
+            rec.proposal_sheet_names = ', '.join(names) if names else False
+
     @api.depends('line_ids.amount', 'manual_total')
     def _compute_total(self):
         for rec in self:
             if rec.line_ids:
-                rec.total = sum(rec.line_ids.mapped('amount')) + (rec.manual_total or 0.0)
+                rec.total = sum(rec.line_ids.mapped('amount'))
             else:
-                # fallback dữ liệu cũ
-                rec.total = (rec.total or 0.0) + (rec.manual_total or 0.0)
+                rec.total = rec.manual_total or 0.0
 
     @api.depends('line_ids')
     def _compute_proposal_count(self):
         for rec in self:
-            rec.proposal_count = len(rec.line_ids)
+            rec.proposal_count = len(rec.line_ids.filtered(lambda l: l.line_type == 'proposal' and l.proposal_sheet_id))
 
     @api.onchange('cost_classification')
     def _onchange_cost_classification(self):
@@ -122,46 +135,72 @@ class AccountingPaymentRequest(models.Model):
         """
         for rec in self:
             if rec.proposal_sheet_id and not rec.line_ids and rec.state == 'draft':
-                rec.project_id = rec.proposal_sheet_id.project_id
-                rec.proposal_person_id = rec.proposal_sheet_id.requested_by
-                rec.date = rec.proposal_sheet_id.date_proposal
+                amount = rec.proposal_sheet_id.amount_total or rec.manual_total or 0.0
                 rec.line_ids = [(0, 0, {
+                    'line_type': 'proposal',
                     'proposal_sheet_id': rec.proposal_sheet_id.id,
-                    'amount': rec.total or rec.proposal_sheet_id.amount_total or 0.0,
+                    'amount': amount,
                 })]
+                rec._sync_header_from_lines()
 
     @api.onchange('line_ids')
     def _onchange_line_ids(self):
         for rec in self:
-            if rec.line_ids:
-                projects = rec.line_ids.mapped('project_id')
-                if len(projects) == 1:
-                    rec.project_id = projects[0].id
-                first_line = rec.line_ids[0]
-                rec.proposal_sheet_id = first_line.proposal_sheet_id.id
-                rec.proposal_person_id = first_line.proposal_sheet_id.requested_by.id
-                rec.date = first_line.proposal_sheet_id.date_proposal
-            else:
-                rec.proposal_sheet_id = False
-                rec.proposal_person_id = False
-                rec.date = False
+            rec._sync_header_from_lines()
+
+    def _get_header_vals_from_lines(self):
+        self.ensure_one()
+        proposal_lines = self.line_ids.filtered(lambda l: l.line_type == 'proposal' and l.proposal_sheet_id)
+
+        if not proposal_lines:
+            return {
+                'proposal_sheet_id': False,
+                'proposal_person_id': False,
+                'date': False,
+                'project_id': False,
+            }
+
+        first = proposal_lines[0]
+        projects = proposal_lines.mapped('project_id')
+
+        return {
+            'proposal_sheet_id': first.proposal_sheet_id.id,
+            'proposal_person_id': first.proposal_sheet_id.requested_by.id if first.proposal_sheet_id.requested_by else False,
+            'date': first.proposal_sheet_id.date_proposal,
+            'project_id': projects[0].id if len(projects) == 1 else False,
+        }
+
+    def _sync_header_from_lines(self):
+        for rec in self:
+            values = rec._get_header_vals_from_lines()
+            for field_name, value in values.items():
+                rec[field_name] = value
 
     @api.constrains('line_ids', 'project_id')
     def _check_lines_same_project(self):
         for rec in self:
-            if not rec.line_ids:
+            proposal_lines = rec.line_ids.filtered(lambda l: l.line_type == 'proposal' and l.project_id)
+            if not proposal_lines:
                 continue
-            projects = rec.line_ids.mapped('project_id')
+
+            projects = proposal_lines.mapped('project_id')
             if len(projects) > 1:
                 raise ValidationError("Một phiếu chi chỉ được gom các phiếu đề xuất trong cùng một dự án.")
-            if rec.project_id and projects and rec.project_id != projects[0]:
+
+            if rec.project_id and rec.project_id != projects[0]:
                 raise ValidationError("Dự án trên phiếu chi phải trùng với dự án của các phiếu đề xuất.")
 
-    @api.constrains('line_ids')
-    def _check_has_lines_before_confirm(self):
+    @api.constrains('manual_total')
+    def _check_manual_total(self):
         for rec in self:
-            if rec.state in ('confirmed', 'post', 'done') and not rec.line_ids:
-                raise ValidationError("Phiếu chi phải có ít nhất một dòng phiếu đề xuất.")
+            if rec.manual_total < 0:
+                raise ValidationError("Số tiền nhập tay không được âm.")
+
+    @api.constrains('line_ids', 'manual_total')
+    def _check_payment_source(self):
+        for rec in self:
+            if not rec.line_ids and (rec.manual_total or 0.0) <= 0:
+                raise ValidationError("Bạn phải nhập ít nhất 1 dòng phiếu chi hoặc số tiền nhập tay lớn hơn 0.")
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -171,49 +210,47 @@ class AccountingPaymentRequest(models.Model):
 
         records = super().create(vals_list)
 
-        # migrate mềm cho dữ liệu/luồng cũ:
-        # có proposal_sheet_id nhưng chưa có line => tạo line đầu tiên
         for rec in records:
             if rec.proposal_sheet_id and not rec.line_ids:
+                amount = rec.manual_total or rec.proposal_sheet_id.amount_total or 0.0
                 rec.line_ids = [(0, 0, {
+                    'line_type': 'proposal',
                     'proposal_sheet_id': rec.proposal_sheet_id.id,
-                    'amount': rec.total or rec.proposal_sheet_id.amount_total or 0.0,
+                    'amount': amount,
                 })]
-                rec._sync_header_from_lines()
+            rec._write_header_from_lines()
+
         return records
 
     def write(self, vals):
         res = super().write(vals)
         for rec in self:
-            if rec.proposal_sheet_id and not rec.line_ids:
+            if rec.proposal_sheet_id and not rec.line_ids and rec.state == 'draft':
+                amount = rec.manual_total or rec.proposal_sheet_id.amount_total or 0.0
                 rec.line_ids = [(0, 0, {
+                    'line_type': 'proposal',
                     'proposal_sheet_id': rec.proposal_sheet_id.id,
-                    'amount': rec.total or rec.proposal_sheet_id.amount_total or 0.0,
+                    'amount': amount,
                 })]
-            rec._sync_header_from_lines()
+            rec._write_header_from_lines()
         return res
 
-    def _sync_header_from_lines(self):
+    def _write_header_from_lines(self):
         for rec in self:
-            if rec.line_ids:
-                first = rec.line_ids[0]
-                values = {
-                    'proposal_sheet_id': first.proposal_sheet_id.id,
-                    'proposal_person_id': first.proposal_sheet_id.requested_by.id if first.proposal_sheet_id.requested_by else False,
-                    'date': first.proposal_sheet_id.date_proposal,
-                }
-                projects = rec.line_ids.mapped('project_id')
-                values['project_id'] = projects[0].id if len(projects) == 1 else False
-                super(AccountingPaymentRequest, rec).write(values)
+            values = rec._get_header_vals_from_lines()
+            super(AccountingPaymentRequest, rec).write(values)
 
     def action_confirm(self):
         for rec in self:
-            if not rec.line_ids:
-                raise UserError("Bạn phải chọn ít nhất 1 phiếu đề xuất.")
-            if any(line.amount <= 0 for line in rec.line_ids):
-                raise UserError("Số tiền chi trên từng phiếu đề xuất phải lớn hơn 0.")
-            if not rec.total or rec.total <= 0:
-                raise UserError("Bạn phải nhập số tiền trước khi hoàn tất.")
+            if not rec.line_ids and (rec.manual_total or 0.0) <= 0:
+                raise UserError("Bạn phải chọn ít nhất 1 phiếu đề xuất hoặc nhập số tiền chi thủ công.")
+
+            if rec.line_ids and any(line.amount <= 0 for line in rec.line_ids):
+                raise UserError("Số tiền chi trên từng dòng phải lớn hơn 0.")
+
+            if rec.total <= 0:
+                raise UserError("Tổng số tiền chi phải lớn hơn 0.")
+
             if rec.state == 'draft':
                 rec.state = 'confirmed'
 
@@ -255,17 +292,22 @@ class AccountingPaymentRequest(models.Model):
             if rec.state != 'confirmed':
                 raise UserError("Yêu cầu chi tiền chỉ có thể được đánh dấu là đã hoàn tất khi ở trạng thái xác nhận.")
 
+            if rec.total <= 0:
+                raise UserError("Tổng số tiền chi phải lớn hơn 0.")
+
             rec.state = 'done'
             rec.status_expense = 'paid'
             rec.payment_person = self.env.user.partner_id
             rec.date_payment = fields.Datetime.now()
             rec.message_post(body="Yêu cầu chi tiền đã hoàn tất.")
 
-            # cập nhật trạng thái từng proposal.sheet theo tổng đã chi DONE
-            for line in rec.line_ids:
+            # Chỉ cập nhật proposal nếu phiếu này có line proposal
+            proposal_lines = rec.line_ids.filtered(lambda l: l.line_type == 'proposal' and l.proposal_sheet_id)
+            for line in proposal_lines:
                 proposal = line.proposal_sheet_id
                 all_payment_lines = self.env['account.payment.request.line'].search([
                     ('proposal_sheet_id', '=', proposal.id),
+                    ('line_type', '=', 'proposal'),
                     ('payment_request_id.state', '=', 'done')
                 ])
                 total_paid = sum(all_payment_lines.mapped('amount'))
@@ -287,6 +329,7 @@ class AccountingPaymentRequest(models.Model):
                     'date': rec.date_payment or fields.Date.today(),
                     'account_payment_id': rec.id
                 })
+
     def action_sync_old_payment_requests(self):
         payments = self.env['account.payment.request'].search([
             ('proposal_sheet_id', '!=', False),
@@ -297,15 +340,16 @@ class AccountingPaymentRequest(models.Model):
             if payment.line_ids:
                 continue
 
+            amount = payment.manual_total or payment.total or payment.proposal_sheet_id.amount_total or 0.0
+
             self.env['account.payment.request.line'].create({
                 'payment_request_id': payment.id,
+                'line_type': 'proposal',
                 'proposal_sheet_id': payment.proposal_sheet_id.id,
-                'amount': payment.total if payment.total is not None else 0.0,
+                'amount': amount,
             })
 
-            if hasattr(payment, '_sync_header_from_lines'):
-                payment._sync_header_from_lines()
-
+            payment._write_header_from_lines()
             created_count += 1
 
         return {
@@ -318,6 +362,7 @@ class AccountingPaymentRequest(models.Model):
                 'sticky': False,
             }
         }
+
 
 class PaymentRequestController(http.Controller):
     @http.route('/payment_request/statistics', type='json', auth='user')

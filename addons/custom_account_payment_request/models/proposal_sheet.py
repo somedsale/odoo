@@ -34,5 +34,7 @@ class ProposalSheet(models.Model):
 
     def _compute_payment_total(self):
         for rec in self:
-            done_lines = rec.payment_line_ids.filtered(lambda l: l.payment_request_id.state == 'done')
+            done_lines = rec.payment_line_ids.filtered(
+                lambda l: l.line_type == 'proposal' and l.payment_request_id.state == 'done'
+            )
             rec.payment_total = sum(done_lines.mapped('amount'))

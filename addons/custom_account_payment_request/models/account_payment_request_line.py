@@ -7,7 +7,6 @@ class AccountPaymentRequestLine(models.Model):
     _description = 'Chi tiết phiếu chi theo phiếu đề xuất'
     _order = 'id'
 
-
     payment_request_id = fields.Many2one(
         'account.payment.request',
         string='Phiếu chi',
@@ -58,6 +57,7 @@ class AccountPaymentRequestLine(models.Model):
     amount = fields.Float(string='Số tiền chi', required=True, default=0.0)
     interpretation = fields.Char(string='Diễn giải')
     note = fields.Text(string='Ghi chú')
+
     payment_create_date = fields.Datetime(
         string='Ngày tạo chi',
         related='payment_request_id.create_date',
@@ -107,7 +107,7 @@ class AccountPaymentRequestLine(models.Model):
         for rec in self:
             if rec.line_type == 'manual':
                 rec.proposal_sheet_id = False
-            elif rec.line_type == 'proposal' and not rec.manual_name:
+            else:
                 rec.manual_name = False
 
     @api.constrains('amount')
@@ -116,7 +116,7 @@ class AccountPaymentRequestLine(models.Model):
             if rec.amount < 0:
                 raise ValidationError("Số tiền chi trên từng dòng không được âm.")
 
-    @api.constrains('line_type', 'proposal_sheet_id', 'manual_name')
+    @api.constrains('line_type', 'proposal_sheet_id', 'manual_name', 'interpretation')
     def _check_required_fields(self):
         for rec in self:
             if rec.line_type == 'proposal' and not rec.proposal_sheet_id:
@@ -124,15 +124,17 @@ class AccountPaymentRequestLine(models.Model):
             if rec.line_type == 'manual' and not (rec.manual_name or rec.interpretation):
                 raise ValidationError("Dòng chi thủ công phải nhập tên khoản chi hoặc diễn giải.")
 
-    @api.constrains('proposal_sheet_id', 'payment_request_id')
+    @api.constrains('proposal_sheet_id', 'payment_request_id', 'line_type')
     def _check_unique_proposal_in_payment(self):
         for rec in self:
-            if not rec.payment_request_id or not rec.proposal_sheet_id:
+            if rec.line_type != 'proposal' or not rec.payment_request_id or not rec.proposal_sheet_id:
                 continue
+
             dup = self.search_count([
                 ('id', '!=', rec.id),
                 ('payment_request_id', '=', rec.payment_request_id.id),
                 ('proposal_sheet_id', '=', rec.proposal_sheet_id.id),
+                ('line_type', '=', 'proposal'),
             ])
             if dup:
                 raise ValidationError("Một phiếu đề xuất chỉ nên xuất hiện 1 lần trong cùng 1 phiếu chi.")
