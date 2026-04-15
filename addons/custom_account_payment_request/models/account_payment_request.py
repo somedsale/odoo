@@ -15,7 +15,7 @@ class AccountingPaymentRequest(models.Model):
     proposal_sheet_id = fields.Many2one('proposal.sheet', string="Phiếu đề xuất (cũ)")
     proposal_person_id = fields.Many2one('res.users', string="Người đề xuất", store=True)
     total = fields.Float(string="Số tiền", compute='_compute_total', store=True, readonly=False)
-    manual_total = fields.Float(string="Số tiền", store=True, readonly=False)  # chỉ để nhập liệu, không dùng tính toán gì cả
+    manual_total = fields.Float(string="Số tiền (nhập tay)", store=True, readonly=False)  # chỉ để nhập liệu, không dùng tính toán gì cả
     date = fields.Date(string="Ngày đề xuất")
     date_payment = fields.Date(string="Ngày thanh toán")
     journal_id = fields.Many2one('account.journal', string="Nhật ký", domain="[('type', 'in', ['cash', 'bank'])]")
