@@ -13,13 +13,17 @@
       </xpath>
 
       <!-- Chèn ngay sau nút Validate để chắc chắn match -->
-      <xpath expr="//header/button[@name='button_validate']" position="after">
+      <!-- <xpath expr="//header/button[@name='button_validate']" position="after">
         <button name="action_create_delivery_from_receipt"
                 type="object"
                 string="Xuất hàng"
                 class="oe_highlight"
                 invisible="is_incoming_done == False or is_delivery == True"
                 />
+      </xpath> -->
+      <xpath expr="//group/div[@class='o_td_label']/label[1]" position="attributes">
+         <attribute name="string">Người nhận</attribute>
+         <attribute name="style">font-weight:bold;</attribute>
       </xpath>
 
     </field>

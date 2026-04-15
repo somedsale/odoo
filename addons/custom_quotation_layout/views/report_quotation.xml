@@ -108,154 +108,318 @@
                             word-break: break-word;
                             white-space: normal;
                         }
+                                                .so_quote_table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            table-layout: fixed;
+                            font-family: 'Times New Roman', Times, serif !important;
+                            color: #000000 !important;
+                            font-size: 13px;
+                        }
+
+                        .so_quote_table th,
+                        .so_quote_table td {
+                            border: 1px solid #000000 !important;
+                            padding: 3px 4px;
+                            vertical-align: top;
+                            word-break: break-word !important;
+                            overflow-wrap: anywhere !important;
+                            white-space: normal !important;
+                        }
+
+                        .so_quote_table th {
+                            text-align: center;
+                            font-weight: bold;
+                            vertical-align: middle !important;
+                        }
+
+                        .so_main_row td {
+                            vertical-align: middle !important;
+                            font-weight: bold !important;
+                        }
+
+                        .so_center {
+                            text-align: center !important;
+                        }
+
+                        .so_num {
+                            text-align: right !important;
+                            white-space: nowrap !important;
+                        }
+
+                        .so_product_name {
+                            line-height: 1.25 !important;
+                            padding-left: 8px;
+                        }
+
+                        .so_spec_line {
+                            line-height: 1.15 !important;
+                            font-style: italic;
+                            padding-left: 8px;
+                        }
+
+                        /* Dòng thông số: vẫn có border đầy đủ, nhưng ngang là nét đứt */
+                        .so_spec_row td {
+                            border-left: 1px solid #000000 !important;
+                            border-right: 1px solid #000000 !important;
+                            border-top: 1px dashed #888888 !important;
+                            border-bottom: 1px dashed #888888 !important;
+                            vertical-align: top !important;
+                        }
+
+                        /* Ô cột sản phẩm của dòng thông số */
+                        .so_product_follow {
+                            border-left: 1px solid #000000 !important;
+                            border-right: 1px solid #000000 !important;
+                            border-top: 1px dashed #888888 !important;
+                            border-bottom: 1px dashed #888888 !important;
+                        }
+
+                        /* Các ô trống còn lại của dòng thông số */
+                        .so_empty_follow {
+                            border-left: 1px solid #000000 !important;
+                            border-right: 1px solid #000000 !important;
+                            border-top: 1px dashed #888888 !important;
+                            border-bottom: 1px dashed #888888 !important;
+                        }
+
+                        .so_section_row td,
+                        .so_summary_row td {
+                            background-color: #e6e2d3 !important;
+                            color: #000000 !important;
+                            font-weight: bold;
+                        }
+
+                        .so_keep_block {
+                            page-break-inside: avoid !important;
+                            break-inside: avoid-page !important;
+                        }
+
+                        .so_quote_table tr {
+                            page-break-inside: auto !important;
+                            break-inside: auto !important;
+                        }
+                        .o_somed_report_bg_wrap {
+                        position: relative;
+                        min-height: 100%;
+                    }
+
+                    .o_somed_report_bg_layer {
+                        position: absolute;
+                        inset: 0;
+                        background-repeat: no-repeat;
+                        background-position: center top;
+                        background-size: cover;
+                        opacity: 1;
+                        z-index: 0;
+                    }
+
+                    .o_somed_report_content {
+                        position: relative;
+                        z-index: 1;
+                    }
                     </style>
-                    <table class="table" style="font-family: &apos;Times New Roman&apos;, Times, serif !important; color:#000 !important;border-dark border-2;">
-                        <tbody>
-                            <tr class="table-bordered border-dark border-2" style="height:auto; ">
-                                <th style="width:50px !important;border-right: 1px solid black;">STT</th>
-                                <th style="width:150px !important;border-right: 1px solid black;">Sản phẩm</th>
-                                <t t-if="doc.is_show_image">
-                                    <th style="width:90px !important; text-align:center; border-right: 1px solid black;">Ảnh</th>
-                                </t>
-                                <t t-if="doc.is_show_ma_sp">
-                                    <th style="width:100px !important;border-right: 1px solid black;">Mã SP</th>
-                                </t>
-                                <th style="width:380px !important;border-right: 1px solid black;">Thông số</th>
-                                <th style="width:100px !important;border-right: 1px solid black;">Xuất xứ</th>
-                                <th style="width:70px !important;border-right: 1px solid black;">Đơn vị</th>
-                                <th style="width:100px !important;border-right: 1px solid black;">Khối lượng</th>
-                                <t t-if="doc.is_show_chi_phi_nhan_cong">
-                                    <th style="width:100px !important;border-right: 1px solid black;">Chi phí nhân công</th>
-                                </t>
-                                <th class="num" style="min-width:110px !important;border-right: 1px solid black; white-space: nowrap;">Đơn giá</th>
-                                <th class="num" style="min-width:110px !important;border-right: 1px solid black;white-space: nowrap;">Thành tiền</th>
-                                <th style="min-width:80px !important;border-right: 1px solid black;">Ghi chú</th>
-                            </tr>
-                            <t t-set="stt" t-value="0"/>
-                            <t t-set="sttLM" t-value="0"/>
-                            <t t-foreach="doc.order_line" t-as="line">
-                                <t t-if="line.display_type != 'line_section'">
-                                    <t t-set="stt" t-value="stt + 1"/>
-                                    <tr class="table-bordered border-dark border-2; height:auto; ">
-                                        <td class="text-center" style="border-left: 2px solid black;">
-                                            <span t-esc="stt"/>
-                                        </td>
-                                        <td>
-                                            <span t-esc="line.product_display_name or line.product_id.name"/>
-                                        </td>
+                            <table class="so_quote_table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:4%;">STT</th>
+                                        <th style="width:36%;">Sản phẩm</th>
+
                                         <t t-if="doc.is_show_image">
-                                            <td style="text-align:center; border-right: 1px solid black;">
-                                                <t t-if="line.product_id.image_1920">
-                                                    <img t-att-src="'data:image/png;base64,%s' % (line.product_id.image_1920.decode() if isinstance(line.product_id.image_1920, bytes) else line.product_id.image_1920)" style="width:60px; height:auto; object-fit:contain;"/>
-                                                </t>
-                                                <t t-else="">
-                                                    <span style="color:#888; font-size:11px;"></span>
-                                                </t>
-                                            </td>
+                                            <th style="width:8%;">Ảnh</th>
                                         </t>
+
                                         <t t-if="doc.is_show_ma_sp">
-                                            <td class="text-center">
-                                                <span t-field="line.product_id.default_code" t-field-options="{&quot;widget&quot;: &quot;char&quot;}"/>
-                                            </td>
+                                            <th style="width:8%;">Mã SP</th>
                                         </t>
-                                        <td class="spec_cell">
-                                            <i>
-                                                <span t-esc="(line.name or line.x_thongso or '')" style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;"/>
-                                            </i>
-                                        </td>
-                                        <td class="text-center">
-                                            <span t-field="line.x_xuatxu"/>
-                                        </td>
-                                        <td class="text-center">
-                                            <span t-field="line.product_uom"/>
-                                        </td>
-                                        <td class="text-center">
-                                            <span t-field="line.product_uom_qty"/>
-                                        </td>
+
+                                        <th style="width:7%;">Xuất xứ</th>
+                                        <th style="width:5%;">Đơn vị</th>
+                                        <th style="width:6%;">Khối lượng</th>
+
                                         <t t-if="doc.is_show_chi_phi_nhan_cong">
-                                            <td class="text-center">
-                                                <span t-field="line.x_chi_phi_nhan_cong" t-field-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;currency_field&quot;: &quot;currency_id&quot;}"/>
-                                            </td>
+                                            <th style="width:8%;">Chi phí nhân công</th>
                                         </t>
-                                        <td class="num" style="text-align: right !important;">
-                                            <span t-field="line.formatted_price"/>
-                                        </td>
-                                        <td class="num" style="text-align: right !important;">
-                                            <span t-field="line.price_subtotal"/>
-                                        </td>
-                                        <td style="border-center: 2px solid black;">
-                                            <span t-field="line.x_note"/>
-                                        </td>
+
+                                        <th style="width:7%;">Đơn giá</th>
+                                        <th style="width:7%;">Thành tiền</th>
+                                        <th style="width:6%;">Ghi chú</th>
                                     </tr>
-                                </t>
-                                <t t-else="">
-                                    <t t-set="sttLM" t-value="sttLM + 1"/>
+                                </thead>
+                                <tbody>
+
+
                                     <t t-set="stt" t-value="0"/>
-                                    <tr class="table-bordered border-dark border" style="background-color:#e6e2d3; color:#000 !important;font-weight: bold;">
-                                        <td class="text-center" style="border-left: 2px solid black;">
-                                            <span t-esc="doc.int_to_roman(sttLM)"/>
-                                        </td>
-                                        <t t-if="doc.is_show_chi_phi_nhan_cong">
-                                            <td colspan="10" style="white-space:nowrap; text-align: center;vertical-align: middle;">
-                                                <span t-field="line.name"/>
-                                            </td>
+                                    <t t-set="sttLM" t-value="0"/>
+
+                                    <t t-foreach="doc.order_line" t-as="line">
+                                        <t t-if="line.display_type != 'line_section'">
+                                            <t t-set="stt" t-value="stt + 1"/>
+                                            <t t-set="spec_text" t-value="(line.name or line.x_thongso or '')"/>
+                                            <t t-set="spec_lines" t-value="[s.strip() for s in spec_text.split('\n') if s and s.strip()]"/>
+                                            <t t-if="not spec_lines">
+                                                <t t-set="spec_lines" t-value="['']"/>
+                                            </t>
+
+                                            <t t-set="product_name" t-value="line.product_display_name or line.product_id.name"/>
+
+                                            <!-- Dòng tên sản phẩm -->
+                                            <tr class="so_main_row">
+                                                <td class="so_center">
+                                                    <span t-esc="stt"/>
+                                                </td>
+
+                                                <td>
+                                                    <div class="so_product_name" style="vertical-align:middle !important;">
+                                                        <span t-esc="product_name"/>
+                                                    </div>
+                                                </td>
+
+                                                <t t-if="doc.is_show_image">
+                                                    <td class="so_center" style="vertical-align:middle !important;">
+                                                        <t t-if="line.product_id.image_1920">
+                                                            <img t-att-src="'data:image/png;base64,%s' % (line.product_id.image_1920.decode() if isinstance(line.product_id.image_1920, bytes) else line.product_id.image_1920)" style="width:60px; height:auto; object-fit:contain;"/>
+                                                        </t>
+                                                        <t t-else="">
+                                                            <span></span>
+                                                        </t>
+                                                    </td>
+                                                </t>
+
+                                                <t t-if="doc.is_show_ma_sp">
+                                                    <td class="so_center" style="vertical-align:middle !important;">
+                                                        <span t-field="line.product_id.default_code" t-field-options='{"widget": "char"}'/>
+                                                    </td>
+                                                </t>
+
+                                                <td class="so_center" style="vertical-align:middle !important;">
+                                                    <span t-field="line.x_xuatxu"/>
+                                                </td>
+
+                                                <td class="so_center" style="vertical-align:middle !important;">
+                                                    <span t-field="line.product_uom"/>
+                                                </td>
+
+                                                <td class="so_center" style="vertical-align:middle !important;">
+                                                    <span t-field="line.product_uom_qty"/>
+                                                </td>
+
+                                                <t t-if="doc.is_show_chi_phi_nhan_cong">
+                                                    <td class="so_num" style="vertical-align:middle !important;">
+                                                        <span t-field="line.x_chi_phi_nhan_cong" t-field-options='{"widget": "monetary", "currency_field": "currency_id"}'/>
+                                                    </td>
+                                                </t>
+
+                                                <td class="so_num" style="vertical-align:middle !important;">
+                                                    <span t-field="line.formatted_price"/>
+                                                </td>
+
+                                                <td class="so_num" style="vertical-align:middle !important;">
+                                                    <span t-field="line.price_subtotal"/>
+                                                </td>
+
+                                                <td>
+                                                    <span t-field="line.x_note" />
+                                                </td>
+                                            </tr>
+
+                                            <!-- Các dòng thông số tách riêng -->
+                                            <t t-foreach="spec_lines" t-as="spec_line">
+                                                <tr class="so_spec_row">
+                                                    <td class="so_empty_follow"></td>
+
+                                                    <td class="so_product_follow">
+                                                        <div class="so_spec_line">
+                                                            <span t-esc="spec_line"/>
+                                                        </div>
+                                                    </td>
+
+                                                    <t t-if="doc.is_show_image">
+                                                        <td class="so_empty_follow"></td>
+                                                    </t>
+
+                                                    <t t-if="doc.is_show_ma_sp">
+                                                        <td class="so_empty_follow"></td>
+                                                    </t>
+
+                                                    <td class="so_empty_follow"></td>
+                                                    <td class="so_empty_follow"></td>
+                                                    <td class="so_empty_follow"></td>
+
+                                                    <t t-if="doc.is_show_chi_phi_nhan_cong">
+                                                        <td class="so_empty_follow"></td>
+                                                    </t>
+
+                                                    <td class="so_empty_follow"></td>
+                                                    <td class="so_empty_follow"></td>
+                                                    <td class="so_empty_follow"></td>
+                                                </tr>
+                                            </t>
                                         </t>
+
                                         <t t-else="">
-                                            <td colspan="9" style="white-space:nowrap; text-align: left;vertical-align: middle;">
-                                                <span t-field="line.name"/>
-                                            </td>
+                                            <t t-set="sttLM" t-value="sttLM + 1"/>
+                                            <t t-set="stt" t-value="0"/>
+                                            <tr class="so_section_row so_keep_block">
+                                                <td class="so_center">
+                                                    <span t-esc="doc.int_to_roman(sttLM)"/>
+                                                </td>
+                                                <t t-set="section_colspan" t-value="8 + (1 if doc.is_show_image else 0) + (1 if doc.is_show_ma_sp else 0) + (1 if doc.is_show_chi_phi_nhan_cong else 0)"/>
+                                                <td t-att-colspan="section_colspan" style="white-space:nowrap; text-align:left; vertical-align:middle;">
+                                                    <span t-field="line.name"/>
+                                                </td>
+                                            </tr>
                                         </t>
+                                    </t>
+
+                                    <t t-set="tax_details" t-value="{}"/>
+                                    <t t-foreach="doc.order_line" t-as="line">
+                                        <t t-if="not line.display_type">
+                                            <t t-foreach="line.tax_id" t-as="tax">
+                                                <t t-set="base" t-value="tax_details.get(tax.name, {'base': 0.0, 'amount': 0.0})"/>
+                                                <t t-set="tax_details" t-value="dict(tax_details, **{tax.name: {'base': base['base'] + line.price_subtotal, 'amount': base['amount'] + (line.price_subtotal * tax.amount / 100)}})"/>
+                                            </t>
+                                        </t>
+                                    </t>
+
+                                    <t t-set="col_base" t-value="6"/>
+                                    <t t-set="col_base" t-value="col_base + 1 if doc.is_show_ma_sp else col_base"/>
+                                    <t t-set="col_base" t-value="col_base + 1 if doc.is_show_chi_phi_nhan_cong else col_base"/>
+                                    <t t-set="col_base" t-value="col_base + 1 if doc.is_show_image else col_base"/>
+
+                                    <tr class="so_summary_row so_keep_block">
+                                        <td t-att-colspan="col_base" style="white-space:nowrap; text-align:left; vertical-align:middle;">
+                                        Tổng chưa VAT
+                                        </td>
+                                        <td style="white-space:nowrap; text-align:right;">
+                                            <span t-field="doc.amount_untaxed"/>
+                                        </td>
+                                        <td></td>
                                     </tr>
-                                </t>
-                            </t>
-                            <t t-set="tax_details" t-value="{}"/>
-                            <t t-foreach="doc.order_line" t-as="line">
-                                <t t-foreach="line.tax_id" t-as="tax">
-                                    <t t-set="base" t-value="tax_details.get(tax.name, {&apos;base&apos;: 0.0, &apos;amount&apos;: 0.0})"/>
-                                    <t t-set="tax_details" t-value="dict(tax_details, **{tax.name: {&apos;base&apos;: base[&apos;base&apos;] + line.price_subtotal, &apos;amount&apos;: base[&apos;amount&apos;] + (line.price_subtotal * tax.amount / 100)}})"/>
-                                </t>
-                            </t>
-                            <t t-set="col_base" t-value="7"/>
-                            <t t-set="col_base" t-value="col_base + 1 if doc.is_show_ma_sp else col_base"/>
-                            <t t-set="col_base" t-value="col_base + 1 if doc.is_show_chi_phi_nhan_cong else col_base"/>
-                            <t t-set="col_base" t-value="col_base + 1 if doc.is_show_image else col_base"/>
 
-                            <!-- Tổng chưa VAT -->
-                            <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important; font-weight:bold;">
-                                <td t-att-colspan="col_base" style="white-space:nowrap; text-align:left; vertical-align:middle;">
-        Tổng chưa VAT
-                                </td>
-                                <td style="white-space:nowrap; text-align:right;">
-                                    <span t-field="doc.amount_untaxed"/>
-                                </td>
-                                <td style="white-space:nowrap;"></td>
-                            </tr>
+                                    <t t-foreach="tax_details.items()" t-as="item">
+                                        <tr class="so_summary_row so_keep_block">
+                                            <td t-att-colspan="col_base" style="white-space:nowrap; text-align:left; vertical-align:middle;">
+                                                <t t-esc="'VAT %s' % item[0]"/>
+                                            </td>
+                                            <td style="white-space:nowrap; text-align:right;">
+                                                <t t-esc="'%s đ' % '{:,.0f}'.format(item[1]['amount']).replace(',', '.')"/>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    </t>
 
-                            <!-- Dòng VAT -->
-                            <t t-foreach="tax_details.items()" t-as="item">
-                                <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important; font-weight:bold;">
-                                    <td t-att-colspan="col_base" style="white-space:nowrap; text-align:left; vertical-align:middle;">
-                                        <t t-esc="'VAT %s' % item[0]"/>
-                                    </td>
-                                    <td style="white-space:nowrap; text-align:right;">
-                                        <t t-esc="'%s đ' % '{:,.0f}'.format(item[1]['amount']).replace(',', '.')"/>
-                                    </td>
-                                    <td style="white-space:nowrap;"></td>
-                                </tr>
-                            </t>
-
-                            <!-- Tổng cộng -->
-                            <tr class="table-bordered border-dark border-2" style="background-color:#e6e2d3; color:#000 !important; font-weight:bold;">
-                                <td t-att-colspan="col_base" style="white-space:nowrap; text-align:left; vertical-align:middle;">
-        Tổng
-                                </td>
-                                <td style="white-space:nowrap; text-align:right;">
-                                    <span t-field="doc.amount_total"/>
-                                </td>
-                                <td style="white-space:nowrap;"></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                    <tr class="so_summary_row so_keep_block">
+                                        <td t-att-colspan="col_base" style="white-space:nowrap; text-align:left; vertical-align:middle;">
+                                        Tổng
+                                        </td>
+                                        <td style="white-space:nowrap; text-align:right;">
+                                            <span t-field="doc.amount_total"/>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                 </div>
                 <div style="page-break-inside: avoid;">
                     <div style="text-align: center; font-weight: bold; margin-top: 10px;">

@@ -157,7 +157,7 @@
                             <field name="expense_type"/>
                             <field name="total" widget="monetary" sum="Tổng cộng"/>
                             <field name="state" string="Trạng thái" widget="badge" decoration-warning="state == 'confirmed'" decoration-success="state == 'done'"/>
-                            <field name="proposal_sheet_id" optional="hide"/>
+                            <!-- <field name="proposal_sheet_ids" optional="hide"/> -->
                             <field name="date" optional="hide"/>
                             <field name="currency_id" optional="hide"/>
 

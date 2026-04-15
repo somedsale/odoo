@@ -20,9 +20,15 @@
         <field name="print_report_name">'Bao cao cong no NCC thuc te'</field>
         <field name="paperformat_id" ref="vendor_debt_management.custom_sale_report_a4_portrait"/>
     </record>
-
-    <menuitem id="menu_supplier_debt_real_report" name="BC Công nợ NCC thực tế" parent="vendor_debt_management.menu_supplier_summary_root" action="vendor_debt_management.action_supplier_debt_real_report"/>
-
+<record id="action_supplier_debt_real_report_client" model="ir.actions.client">
+    <field name="name">BC Công nợ NCC thực tế</field>
+    <field name="tag">vendor_debt_management.supplier_debt_real_report</field>
+</record>
+    <!-- <menuitem id="menu_supplier_debt_real_report" name="BC Công nợ NCC thực tế" parent="vendor_debt_management.menu_supplier_summary_root" action="vendor_debt_management.action_supplier_debt_real_report"/> -->
+<menuitem id="menu_supplier_debt_real_report"
+          name="BC Công nợ NCC thực tế"
+          parent="vendor_debt_management.menu_supplier_summary_root"
+          action="vendor_debt_management.action_supplier_debt_real_report_client"/>
     <template id="report_supplier_debt_real_money_cell">
         <t t-set="cur" t-value="cur or company_currency"/>
         <t t-set="redneg" t-value="redneg or False"/>
@@ -37,218 +43,286 @@
         <t t-else="">-</t>
     </template>
 
-    <template id="report_supplier_debt_real_group_detail">
-        <t t-set="rows" t-value="rows or []"/>
-        <t t-set="row_class" t-value="row_class or 'group-sub'"/>
+<template id="report_supplier_debt_real_group_detail">
+    <t t-set="rows" t-value="rows or []"/>
+    <t t-set="row_class" t-value="row_class or 'group-sub'"/>
 
-        <t t-if="rows">
-            <t t-set="sub_contract" t-value="0.0"/>
-            <t t-set="sub_invoice" t-value="0.0"/>
-            <t t-set="sub_paid_hd" t-value="0.0"/>
-            <t t-set="sub_advance" t-value="0.0"/>
-            <t t-set="sub_old_debt" t-value="0.0"/>
-            <t t-set="sub_residual" t-value="0.0"/>
+    <t t-if="rows">
+        <t t-set="sub_contract" t-value="0.0"/>
+        <t t-set="sub_invoice" t-value="0.0"/>
+        <t t-set="sub_paid_hd" t-value="0.0"/>
+        <t t-set="sub_advance" t-value="0.0"/>
+        <t t-set="sub_old_debt" t-value="0.0"/>
+        <t t-set="sub_residual" t-value="0.0"/>
 
-            <t t-foreach="rows" t-as="x">
-                <t t-set="sub_contract" t-value="sub_contract + (x.get('contract_amount') or 0.0)"/>
-                <t t-set="sub_invoice" t-value="sub_invoice + (x.get('invoice_amount') or 0.0)"/>
-                <t t-set="sub_paid_hd" t-value="sub_paid_hd + (x.get('paid_hd') or 0.0)"/>
-                <t t-set="sub_advance" t-value="sub_advance + (x.get('advance_amount') or 0.0)"/>
-                <t t-set="sub_old_debt" t-value="sub_old_debt + (x.get('old_debt') or 0.0)"/>
-                <t t-set="sub_residual" t-value="sub_residual + (x.get('residual_amount') or 0.0)"/>
-            </t>
-
-            <t t-set="sub_currency" t-value="(rows and rows[0].get('currency')) or company_currency"/>
-
-            <tr t-att-class="row_class">
-                <td colspan="3">
-                    <t t-esc="title"/>
-                </td>
-
-                <td class="text-right num">
-                    <t t-set="val" t-value="sub_contract"/>
-                    <t t-set="cur" t-value="sub_currency"/>
-                    <t t-set="redneg" t-value="False"/>
-                    <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                </td>
-
-                <td class="text-right num">
-                    <t t-set="val" t-value="sub_invoice"/>
-                    <t t-set="cur" t-value="sub_currency"/>
-                    <t t-set="redneg" t-value="False"/>
-                    <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                </td>
-
-                <td class="text-right num">
-                    <t t-set="val" t-value="sub_paid_hd"/>
-                    <t t-set="cur" t-value="sub_currency"/>
-                    <t t-set="redneg" t-value="False"/>
-                    <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                </td>
-
-                <td class="text-right num">
-                    <t t-set="val" t-value="sub_advance"/>
-                    <t t-set="cur" t-value="sub_currency"/>
-                    <t t-set="redneg" t-value="False"/>
-                    <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                </td>
-
-                <td class="text-right num">
-                    <t t-set="val" t-value="sub_old_debt"/>
-                    <t t-set="cur" t-value="sub_currency"/>
-                    <t t-set="redneg" t-value="False"/>
-                    <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                </td>
-
-                <td class="text-right num">
-                    <t t-set="val" t-value="sub_residual"/>
-                    <t t-set="cur" t-value="sub_currency"/>
-                    <t t-set="redneg" t-value="True"/>
-                    <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                </td>
-
-                <td></td>
-            </tr>
-
-            <t t-set="stt" t-value="0"/>
-            <t t-foreach="rows" t-as="l">
-                <t t-set="stt" t-value="stt + 1"/>
-                <tr>
-                    <td class="text-center">
-                        <span t-esc="stt"/>
-                    </td>
-                    <td>
-                        <span t-esc="l.get('partner_name') or ''"/>
-                    </td>
-                    <td>
-                        <span t-esc="l.get('supply_category_name') or ''"/>
-                    </td>
-
-                    <td class="text-right num">
-                        <t t-set="val" t-value="l.get('contract_amount')"/>
-                        <t t-set="cur" t-value="l.get('currency') or company_currency"/>
-                        <t t-set="redneg" t-value="False"/>
-                        <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                    </td>
-
-                    <td class="text-right num">
-                        <t t-set="val" t-value="l.get('invoice_amount')"/>
-                        <t t-set="cur" t-value="l.get('currency') or company_currency"/>
-                        <t t-set="redneg" t-value="False"/>
-                        <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                    </td>
-
-                    <td class="text-right num">
-                        <t t-set="val" t-value="l.get('paid_hd')"/>
-                        <t t-set="cur" t-value="l.get('currency') or company_currency"/>
-                        <t t-set="redneg" t-value="False"/>
-                        <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                    </td>
-
-                    <td class="text-right num">
-                        <t t-set="val" t-value="l.get('advance_amount')"/>
-                        <t t-set="cur" t-value="l.get('currency') or company_currency"/>
-                        <t t-set="redneg" t-value="False"/>
-                        <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                    </td>
-
-                    <td class="text-right num">
-                        <t t-set="val" t-value="l.get('old_debt')"/>
-                        <t t-set="cur" t-value="l.get('currency') or company_currency"/>
-                        <t t-set="redneg" t-value="False"/>
-                        <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                    </td>
-
-                    <td class="text-right num">
-                        <t t-set="val" t-value="l.get('residual_amount')"/>
-                        <t t-set="cur" t-value="l.get('currency') or company_currency"/>
-                        <t t-set="redneg" t-value="True"/>
-                        <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                    </td>
-
-                    <td>
-                        <span t-esc="l.get('due_days') or ''"/>
-                    </td>
-                </tr>
-            </t>
+        <t t-foreach="rows" t-as="x">
+            <t t-set="sub_contract" t-value="sub_contract + (x.get('contract_amount') or 0.0)"/>
+            <t t-set="sub_invoice" t-value="sub_invoice + (x.get('invoice_amount') or 0.0)"/>
+            <t t-set="sub_paid_hd" t-value="sub_paid_hd + (x.get('paid_hd') or 0.0)"/>
+            <t t-set="sub_advance" t-value="sub_advance + (x.get('advance_amount') or 0.0)"/>
+            <t t-set="sub_old_debt" t-value="sub_old_debt + (x.get('old_debt') or 0.0)"/>
+            <t t-set="sub_residual" t-value="sub_residual + (x.get('residual_amount') or 0.0)"/>
         </t>
-    </template>
 
-    <template id="report_supplier_debt_real_section">
-        <t t-set="labor_rows" t-value="labor_rows or []"/>
-        <t t-set="material_rows" t-value="material_rows or []"/>
-        <t t-set="foreign_rows" t-value="foreign_rows or []"/>
-        <t t-set="all_rows" t-value="labor_rows + material_rows + foreign_rows"/>
+        <t t-set="sub_currency" t-value="(rows and rows[0].get('currency')) or company_currency"/>
 
-        <t t-if="not all_rows">
+        <tr t-att-class="row_class">
+            <td colspan="3">
+                <t t-esc="title"/>
+            </td>
+
+            <td class="text-right num">
+                <t t-set="val" t-value="sub_old_debt"/>
+                <t t-set="cur" t-value="sub_currency"/>
+                <t t-set="redneg" t-value="False"/>
+                <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+            </td>
+
+            <td class="text-right num">
+                <t t-set="val" t-value="sub_contract"/>
+                <t t-set="cur" t-value="sub_currency"/>
+                <t t-set="redneg" t-value="False"/>
+                <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+            </td>
+
+            <td class="text-right num">
+                <t t-set="val" t-value="sub_invoice"/>
+                <t t-set="cur" t-value="sub_currency"/>
+                <t t-set="redneg" t-value="False"/>
+                <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+            </td>
+
+            <td class="text-right num">
+                <t t-set="val" t-value="sub_paid_hd"/>
+                <t t-set="cur" t-value="sub_currency"/>
+                <t t-set="redneg" t-value="False"/>
+                <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+            </td>
+
+            <td class="text-right num">
+                <t t-set="val" t-value="sub_advance"/>
+                <t t-set="cur" t-value="sub_currency"/>
+                <t t-set="redneg" t-value="False"/>
+                <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+            </td>
+
+            <td class="text-right num">
+                <t t-set="val" t-value="sub_residual"/>
+                <t t-set="cur" t-value="sub_currency"/>
+                <t t-set="redneg" t-value="True"/>
+                <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+            </td>
+
+            <td></td>
+        </tr>
+
+        <t t-set="stt" t-value="0"/>
+        <t t-foreach="rows" t-as="l">
+            <t t-set="stt" t-value="stt + 1"/>
             <tr>
-                <td colspan="10" class="text-center">
-                    <t t-esc="empty_message"/>
+                <td class="text-center">
+                    <span t-esc="stt"/>
+                </td>
+                <td>
+                    <span t-esc="l.get('partner_name') or ''"/>
+                </td>
+                <td>
+                    <span t-esc="l.get('supply_category_name') or ''"/>
+                </td>
+
+                <td class="text-right num">
+                    <t t-set="val" t-value="l.get('old_debt')"/>
+                    <t t-set="cur" t-value="l.get('currency') or company_currency"/>
+                    <t t-set="redneg" t-value="False"/>
+                    <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+                </td>
+
+                <td class="text-right num">
+                    <t t-set="val" t-value="l.get('contract_amount')"/>
+                    <t t-set="cur" t-value="l.get('currency') or company_currency"/>
+                    <t t-set="redneg" t-value="False"/>
+                    <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+                </td>
+
+                <td class="text-right num">
+                    <t t-set="val" t-value="l.get('invoice_amount')"/>
+                    <t t-set="cur" t-value="l.get('currency') or company_currency"/>
+                    <t t-set="redneg" t-value="False"/>
+                    <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+                </td>
+
+                <td class="text-right num">
+                    <t t-set="val" t-value="l.get('paid_hd')"/>
+                    <t t-set="cur" t-value="l.get('currency') or company_currency"/>
+                    <t t-set="redneg" t-value="False"/>
+                    <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+                </td>
+
+                <td class="text-right num">
+                    <t t-set="val" t-value="l.get('advance_amount')"/>
+                    <t t-set="cur" t-value="l.get('currency') or company_currency"/>
+                    <t t-set="redneg" t-value="False"/>
+                    <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+                </td>
+
+                <td class="text-right num">
+                    <t t-set="val" t-value="l.get('residual_amount')"/>
+                    <t t-set="cur" t-value="l.get('currency') or company_currency"/>
+                    <t t-set="redneg" t-value="True"/>
+                    <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+                </td>
+
+                <td>
+                    <span t-esc="l.get('due_days') or ''"/>
                 </td>
             </tr>
         </t>
-        <t t-else="">
-            <t t-set="sec_contract" t-value="0.0"/>
-            <t t-set="sec_invoice" t-value="0.0"/>
-            <t t-set="sec_paid_hd" t-value="0.0"/>
-            <t t-set="sec_advance" t-value="0.0"/>
-            <t t-set="sec_old_debt" t-value="0.0"/>
-            <t t-set="sec_residual" t-value="0.0"/>
+    </t>
+</template>
 
-            <t t-foreach="all_rows" t-as="x">
-                <t t-set="sec_contract" t-value="sec_contract + (x.get('contract_amount') or 0.0)"/>
-                <t t-set="sec_invoice" t-value="sec_invoice + (x.get('invoice_amount') or 0.0)"/>
-                <t t-set="sec_paid_hd" t-value="sec_paid_hd + (x.get('paid_hd') or 0.0)"/>
-                <t t-set="sec_advance" t-value="sec_advance + (x.get('advance_amount') or 0.0)"/>
-                <t t-set="sec_old_debt" t-value="sec_old_debt + (x.get('old_debt') or 0.0)"/>
-                <t t-set="sec_residual" t-value="sec_residual + (x.get('residual_amount') or 0.0)"/>
+<template id="report_supplier_debt_real_section">
+    <t t-set="labor_rows" t-value="labor_rows or []"/>
+    <t t-set="material_rows" t-value="material_rows or []"/>
+    <t t-set="foreign_rows" t-value="foreign_rows or []"/>
+    <t t-set="all_rows" t-value="labor_rows + material_rows + foreign_rows"/>
+
+    <t t-if="not all_rows">
+        <tr>
+            <td colspan="10" class="text-center">
+                <t t-esc="empty_message"/>
+            </td>
+        </tr>
+    </t>
+    <t t-else="">
+        <t t-set="sec_contract" t-value="0.0"/>
+        <t t-set="sec_invoice" t-value="0.0"/>
+        <t t-set="sec_paid_hd" t-value="0.0"/>
+        <t t-set="sec_advance" t-value="0.0"/>
+        <t t-set="sec_old_debt" t-value="0.0"/>
+        <t t-set="sec_residual" t-value="0.0"/>
+
+        <t t-foreach="all_rows" t-as="x">
+            <t t-set="sec_contract" t-value="sec_contract + (x.get('contract_amount') or 0.0)"/>
+            <t t-set="sec_invoice" t-value="sec_invoice + (x.get('invoice_amount') or 0.0)"/>
+            <t t-set="sec_paid_hd" t-value="sec_paid_hd + (x.get('paid_hd') or 0.0)"/>
+            <t t-set="sec_advance" t-value="sec_advance + (x.get('advance_amount') or 0.0)"/>
+            <t t-set="sec_old_debt" t-value="sec_old_debt + (x.get('old_debt') or 0.0)"/>
+            <t t-set="sec_residual" t-value="sec_residual + (x.get('residual_amount') or 0.0)"/>
+        </t>
+
+        <t t-set="sec_currency" t-value="(all_rows and all_rows[0].get('currency')) or company_currency"/>
+
+        <tr class="section-title">
+            <td colspan="3">
+                <t t-esc="section_title"/>
+            </td>
+
+            <td class="text-right num">
+                <t t-set="val" t-value="sec_old_debt"/>
+                <t t-set="cur" t-value="sec_currency"/>
+                <t t-set="redneg" t-value="False"/>
+                <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+            </td>
+
+            <td class="text-right num">
+                <t t-set="val" t-value="sec_contract"/>
+                <t t-set="cur" t-value="sec_currency"/>
+                <t t-set="redneg" t-value="False"/>
+                <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+            </td>
+
+            <td class="text-right num">
+                <t t-set="val" t-value="sec_invoice"/>
+                <t t-set="cur" t-value="sec_currency"/>
+                <t t-set="redneg" t-value="False"/>
+                <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+            </td>
+
+            <td class="text-right num">
+                <t t-set="val" t-value="sec_paid_hd"/>
+                <t t-set="cur" t-value="sec_currency"/>
+                <t t-set="redneg" t-value="False"/>
+                <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+            </td>
+
+            <td class="text-right num">
+                <t t-set="val" t-value="sec_advance"/>
+                <t t-set="cur" t-value="sec_currency"/>
+                <t t-set="redneg" t-value="False"/>
+                <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+            </td>
+
+            <td class="text-right num">
+                <t t-set="val" t-value="sec_residual"/>
+                <t t-set="cur" t-value="sec_currency"/>
+                <t t-set="redneg" t-value="True"/>
+                <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+            </td>
+
+            <td></td>
+        </tr>
+
+        <t t-if="labor_rows or material_rows">
+            <t t-set="dom_rows" t-value="labor_rows + material_rows"/>
+            <t t-set="dom_contract" t-value="0.0"/>
+            <t t-set="dom_invoice" t-value="0.0"/>
+            <t t-set="dom_paid_hd" t-value="0.0"/>
+            <t t-set="dom_advance" t-value="0.0"/>
+            <t t-set="dom_old_debt" t-value="0.0"/>
+            <t t-set="dom_residual" t-value="0.0"/>
+
+            <t t-foreach="dom_rows" t-as="x">
+                <t t-set="dom_contract" t-value="dom_contract + (x.get('contract_amount') or 0.0)"/>
+                <t t-set="dom_invoice" t-value="dom_invoice + (x.get('invoice_amount') or 0.0)"/>
+                <t t-set="dom_paid_hd" t-value="dom_paid_hd + (x.get('paid_hd') or 0.0)"/>
+                <t t-set="dom_advance" t-value="dom_advance + (x.get('advance_amount') or 0.0)"/>
+                <t t-set="dom_old_debt" t-value="dom_old_debt + (x.get('old_debt') or 0.0)"/>
+                <t t-set="dom_residual" t-value="dom_residual + (x.get('residual_amount') or 0.0)"/>
             </t>
 
-            <t t-set="sec_currency" t-value="(all_rows and all_rows[0].get('currency')) or company_currency"/>
+            <t t-set="dom_currency" t-value="(dom_rows and dom_rows[0].get('currency')) or company_currency"/>
 
-            <tr class="section-title">
-                <td colspan="3">
-                    <t t-esc="section_title"/>
-                </td>
+            <tr class="group-main">
+                <td colspan="3">I. NCC TRONG NƯỚC</td>
 
                 <td class="text-right num">
-                    <t t-set="val" t-value="sec_contract"/>
-                    <t t-set="cur" t-value="sec_currency"/>
+                    <t t-set="val" t-value="dom_old_debt"/>
+                    <t t-set="cur" t-value="dom_currency"/>
                     <t t-set="redneg" t-value="False"/>
                     <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
                 </td>
 
                 <td class="text-right num">
-                    <t t-set="val" t-value="sec_invoice"/>
-                    <t t-set="cur" t-value="sec_currency"/>
+                    <t t-set="val" t-value="dom_contract"/>
+                    <t t-set="cur" t-value="dom_currency"/>
                     <t t-set="redneg" t-value="False"/>
                     <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
                 </td>
 
                 <td class="text-right num">
-                    <t t-set="val" t-value="sec_paid_hd"/>
-                    <t t-set="cur" t-value="sec_currency"/>
+                    <t t-set="val" t-value="dom_invoice"/>
+                    <t t-set="cur" t-value="dom_currency"/>
                     <t t-set="redneg" t-value="False"/>
                     <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
                 </td>
 
                 <td class="text-right num">
-                    <t t-set="val" t-value="sec_advance"/>
-                    <t t-set="cur" t-value="sec_currency"/>
+                    <t t-set="val" t-value="dom_paid_hd"/>
+                    <t t-set="cur" t-value="dom_currency"/>
                     <t t-set="redneg" t-value="False"/>
                     <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
                 </td>
 
                 <td class="text-right num">
-                    <t t-set="val" t-value="sec_old_debt"/>
-                    <t t-set="cur" t-value="sec_currency"/>
+                    <t t-set="val" t-value="dom_advance"/>
+                    <t t-set="cur" t-value="dom_currency"/>
                     <t t-set="redneg" t-value="False"/>
                     <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
                 </td>
 
                 <td class="text-right num">
-                    <t t-set="val" t-value="sec_residual"/>
-                    <t t-set="cur" t-value="sec_currency"/>
+                    <t t-set="val" t-value="dom_residual"/>
+                    <t t-set="cur" t-value="dom_currency"/>
                     <t t-set="redneg" t-value="True"/>
                     <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
                 </td>
@@ -256,297 +330,189 @@
                 <td></td>
             </tr>
 
-            <t t-if="labor_rows or material_rows">
-                <t t-set="dom_rows" t-value="labor_rows + material_rows"/>
-                <t t-set="dom_contract" t-value="0.0"/>
-                <t t-set="dom_invoice" t-value="0.0"/>
-                <t t-set="dom_paid_hd" t-value="0.0"/>
-                <t t-set="dom_advance" t-value="0.0"/>
-                <t t-set="dom_old_debt" t-value="0.0"/>
-                <t t-set="dom_residual" t-value="0.0"/>
-
-                <t t-foreach="dom_rows" t-as="x">
-                    <t t-set="dom_contract" t-value="dom_contract + (x.get('contract_amount') or 0.0)"/>
-                    <t t-set="dom_invoice" t-value="dom_invoice + (x.get('invoice_amount') or 0.0)"/>
-                    <t t-set="dom_paid_hd" t-value="dom_paid_hd + (x.get('paid_hd') or 0.0)"/>
-                    <t t-set="dom_advance" t-value="dom_advance + (x.get('advance_amount') or 0.0)"/>
-                    <t t-set="dom_old_debt" t-value="dom_old_debt + (x.get('old_debt') or 0.0)"/>
-                    <t t-set="dom_residual" t-value="dom_residual + (x.get('residual_amount') or 0.0)"/>
-                </t>
-
-                <t t-set="dom_currency" t-value="(dom_rows and dom_rows[0].get('currency')) or company_currency"/>
-
-                <tr class="group-main">
-                    <td colspan="3">I. NCC TRONG NƯỚC</td>
-
-                    <td class="text-right num">
-                        <t t-set="val" t-value="dom_contract"/>
-                        <t t-set="cur" t-value="dom_currency"/>
-                        <t t-set="redneg" t-value="False"/>
-                        <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                    </td>
-
-                    <td class="text-right num">
-                        <t t-set="val" t-value="dom_invoice"/>
-                        <t t-set="cur" t-value="dom_currency"/>
-                        <t t-set="redneg" t-value="False"/>
-                        <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                    </td>
-
-                    <td class="text-right num">
-                        <t t-set="val" t-value="dom_paid_hd"/>
-                        <t t-set="cur" t-value="dom_currency"/>
-                        <t t-set="redneg" t-value="False"/>
-                        <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                    </td>
-
-                    <td class="text-right num">
-                        <t t-set="val" t-value="dom_advance"/>
-                        <t t-set="cur" t-value="dom_currency"/>
-                        <t t-set="redneg" t-value="False"/>
-                        <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                    </td>
-
-                    <td class="text-right num">
-                        <t t-set="val" t-value="dom_old_debt"/>
-                        <t t-set="cur" t-value="dom_currency"/>
-                        <t t-set="redneg" t-value="False"/>
-                        <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                    </td>
-
-                    <td class="text-right num">
-                        <t t-set="val" t-value="dom_residual"/>
-                        <t t-set="cur" t-value="dom_currency"/>
-                        <t t-set="redneg" t-value="True"/>
-                        <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                    </td>
-
-                    <td></td>
-                </tr>
-
-                <t t-if="labor_rows">
-                    <t t-set="rows" t-value="labor_rows"/>
-                    <t t-set="title" t-value="'NCC Nhân công'"/>
-                    <t t-set="row_class" t-value="'group-sub'"/>
-                    <t t-call="vendor_debt_management.report_supplier_debt_real_group_detail"/>
-                </t>
-
-                <t t-if="material_rows">
-                    <t t-set="rows" t-value="material_rows"/>
-                    <t t-set="title" t-value="'NCC Vật tư, dịch vụ'"/>
-                    <t t-set="row_class" t-value="'group-sub'"/>
-                    <t t-call="vendor_debt_management.report_supplier_debt_real_group_detail"/>
-                </t>
+            <t t-if="labor_rows">
+                <t t-set="rows" t-value="labor_rows"/>
+                <t t-set="title" t-value="'NCC Nhân công'"/>
+                <t t-set="row_class" t-value="'group-sub'"/>
+                <t t-call="vendor_debt_management.report_supplier_debt_real_group_detail"/>
             </t>
 
-            <t t-if="foreign_rows">
-                <t t-set="rows" t-value="foreign_rows"/>
-                <t t-set="title" t-value="'II. NCC NƯỚC NGOÀI'"/>
-                <t t-set="row_class" t-value="'group-main'"/>
+            <t t-if="material_rows">
+                <t t-set="rows" t-value="material_rows"/>
+                <t t-set="title" t-value="'NCC Vật tư, dịch vụ'"/>
+                <t t-set="row_class" t-value="'group-sub'"/>
                 <t t-call="vendor_debt_management.report_supplier_debt_real_group_detail"/>
             </t>
         </t>
-    </template>
 
-    <template id="report_supplier_debt_real_view">
-        <t t-call="vendor_debt_management.report_supplier_summary_layout">
-            <div class="page">
-                <t t-set="company_currency" t-value="env.company.currency_id"/>
-                <t t-set="user_id" t-value="env.user"/>
-
-                <style>
-                    .page { font-family: "Times New Roman"; font-size: 12pt; color: #000; }
-                    .styled-table {
-                        border-collapse: collapse;
-                        margin: 0 auto;
-                        font-size: 12pt;
-                        width: 100%;
-                        border: 1px solid #000;
-                        table-layout: fixed;
-                    }
-                    .styled-table thead tr {
-                        background-color: #C6E0B4;
-                        font-weight: bold;
-                        color: #000;
-                        text-align: center;
-                    }
-                    .styled-table th, .styled-table td {
-                        font-size: 10pt;
-                        padding: 6px 8px;
-                        border: 1px solid #000;
-                        vertical-align: middle;
-                        overflow: hidden;
-                        word-wrap: break-word;
-                        overflow-wrap: anywhere;
-                    }
-                    .section-title { font-weight: bold; text-transform: uppercase; background-color: #F8CBAD; }
-                    .group-main { font-weight: bold; background-color: #FFE699; }
-                    .group-sub { font-weight: bold; background-color: #FFF2CC; }
-                    .text-center { text-align: center; }
-                    .text-right  { text-align: right; }
-                    .num { white-space: nowrap; }
-                </style>
-
-                <h2 style="text-align:center; margin-bottom: 20px; font-size: 28px; font-weight: bold; text-transform: uppercase;">
-                    BÁO CÁO TỔNG HỢP CÔNG NỢ NHÀ CUNG CẤP THỰC TẾ
-                </h2>
-
-                <table class="styled-table">
-                    <colgroup>
-                        <col style="width:4%"/>
-                        <col style="width:24%"/>
-                        <col style="width:12%"/>
-                        <col style="width:10%"/>
-                        <col style="width:10%"/>
-                        <col style="width:10%"/>
-                        <col style="width:10%"/>
-                        <col style="width:10%"/>
-                        <col style="width:10%"/>
-                        <col style="width:10%"/>
-                    </colgroup>
-
-                    <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>Nhà cung cấp</th>
-                            <th>Hạng mục cung cấp</th>
-                            <th>Tổng giá trị HĐ</th>
-                            <th>Tổng giá trị Hóa đơn</th>
-                            <th>Đã Thanh toán</th>
-                            <th>Tạm ứng/ Chưa Hóa đơn</th>
-                            <th>Công nợ cũ</th>
-                            <th>Còn nợ</th>
-                            <th>Hạn thanh toán</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        <t t-set="done_rows" t-value="(done_domestic_labor or []) + (done_domestic_material or []) + (done_foreign or [])"/>
-                        <t t-set="pending_rows" t-value="(pending_domestic_labor or []) + (pending_domestic_material or []) + (pending_foreign or [])"/>
-                        <t t-set="all_rows" t-value="done_rows + pending_rows"/>
-
-                        <t t-set="grand_contract" t-value="0.0"/>
-                        <t t-set="grand_invoice" t-value="0.0"/>
-                        <t t-set="grand_paid_hd" t-value="0.0"/>
-                        <t t-set="grand_advance" t-value="0.0"/>
-                        <t t-set="grand_old_debt" t-value="0.0"/>
-                        <t t-set="grand_residual" t-value="0.0"/>
-
-                        <t t-foreach="all_rows" t-as="g">
-                            <t t-set="grand_contract" t-value="grand_contract + (g.get('contract_amount') or 0.0)"/>
-                            <t t-set="grand_invoice" t-value="grand_invoice + (g.get('invoice_amount') or 0.0)"/>
-                            <t t-set="grand_paid_hd" t-value="grand_paid_hd + (g.get('paid_hd') or 0.0)"/>
-                            <t t-set="grand_advance" t-value="grand_advance + (g.get('advance_amount') or 0.0)"/>
-                            <t t-set="grand_old_debt" t-value="grand_old_debt + (g.get('old_debt') or 0.0)"/>
-                            <t t-set="grand_residual" t-value="grand_residual + (g.get('residual_amount') or 0.0)"/>
-                        </t>
-
-                        <t t-set="grand_currency" t-value="(all_rows and all_rows[0].get('currency')) or company_currency"/>
-
-                        <tr class="section-title">
-                            <td colspan="3">TỔNG CÔNG NỢ PHẢI TRẢ</td>
-
-                            <td class="text-right num">
-                                <t t-set="val" t-value="grand_contract"/>
-                                <t t-set="cur" t-value="grand_currency"/>
-                                <t t-set="redneg" t-value="False"/>
-                                <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                            </td>
-
-                            <td class="text-right num">
-                                <t t-set="val" t-value="grand_invoice"/>
-                                <t t-set="cur" t-value="grand_currency"/>
-                                <t t-set="redneg" t-value="False"/>
-                                <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                            </td>
-
-                            <td class="text-right num">
-                                <t t-set="val" t-value="grand_paid_hd"/>
-                                <t t-set="cur" t-value="grand_currency"/>
-                                <t t-set="redneg" t-value="False"/>
-                                <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                            </td>
-
-                            <td class="text-right num">
-                                <t t-set="val" t-value="grand_advance"/>
-                                <t t-set="cur" t-value="grand_currency"/>
-                                <t t-set="redneg" t-value="False"/>
-                                <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                            </td>
-
-                            <td class="text-right num">
-                                <t t-set="val" t-value="grand_old_debt"/>
-                                <t t-set="cur" t-value="grand_currency"/>
-                                <t t-set="redneg" t-value="False"/>
-                                <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                            </td>
-
-                            <td class="text-right num">
-                                <t t-set="val" t-value="grand_residual"/>
-                                <t t-set="cur" t-value="grand_currency"/>
-                                <t t-set="redneg" t-value="True"/>
-                                <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
-                            </td>
-                            <td></td>
-                        </tr>
-
-                        <t t-set="section_title" t-value="'ĐÃ ĐỐI CHIẾU'"/>
-                        <t t-set="labor_rows" t-value="done_domestic_labor"/>
-                        <t t-set="material_rows" t-value="done_domestic_material"/>
-                        <t t-set="foreign_rows" t-value="done_foreign"/>
-                        <t t-set="empty_message" t-value="'Không có công nợ đã đối chiếu.'"/>
-                        <t t-call="vendor_debt_management.report_supplier_debt_real_section"/>
-
-                        <t t-set="section_title" t-value="'CHỜ ĐỐI CHIẾU'"/>
-                        <t t-set="labor_rows" t-value="pending_domestic_labor"/>
-                        <t t-set="material_rows" t-value="pending_domestic_material"/>
-                        <t t-set="foreign_rows" t-value="pending_foreign"/>
-                        <t t-set="empty_message" t-value="'Không có công nợ chờ đối chiếu.'"/>
-                        <t t-call="vendor_debt_management.report_supplier_debt_real_section"/>
-                    </tbody>
-                </table>
-
-                <div style="page-break-inside: avoid; font-weight: bold">
-                    <div class="row">
-                        <div class="col-6" style="text-align:center;line-height:1.8">
-                            <div>
-                                TP Hồ Chí Minh ngày &#160;&#160; tháng &#160;&#160; năm
-                                <span t-esc="datetime.datetime.today().year"/>
-                            </div>
-                            <div>
-                                <span>Người lập biểu</span>
-                            </div>
-                            <div style="height:65px">
-                                <t t-if="user_id and user_id.digital_signature">
-                                    <img t-att-src="'data:image/png;base64,' + (user_id.digital_signature.decode() if isinstance(user_id.digital_signature, bytes) else user_id.digital_signature)" style="max-height:65px; max-width:150px;"/>
-                                </t>
-                            </div>
-                            <div>
-                                <span t-field="user_id.name"/>
-                            </div>
-                        </div>
-
-                        <div class="col-6" style="text-align:center;line-height:1.8">
-                            <div>
-                                TP Hồ Chí Minh ngày &#160;&#160; tháng &#160;&#160; năm
-                                <span t-esc="datetime.datetime.today().year"/>
-                            </div>
-                            <div>Giám Đốc</div>
-                            <div style="height:65px">
-                                <t t-set="director_group" t-value="env.ref('custom_director_role.group_director')"/>
-                                <t t-set="director" t-value="env['res.users'].search([('groups_id', 'in', director_group.id)], limit=1)"/>
-                                <t t-if="director and director.digital_signature">
-                                    <img t-att-src="'data:image/png;base64,' + (director.digital_signature.decode() if isinstance(director.digital_signature, bytes) else director.digital_signature)" style="max-height:65px; max-width:150px;"/>
-                                </t>
-                            </div>
-                            <div>
-                                <span> Đỗ Minh Toàn </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <t t-if="foreign_rows">
+            <t t-set="rows" t-value="foreign_rows"/>
+            <t t-set="title" t-value="'II. NCC NƯỚC NGOÀI'"/>
+            <t t-set="row_class" t-value="'group-main'"/>
+            <t t-call="vendor_debt_management.report_supplier_debt_real_group_detail"/>
         </t>
-    </template>
+    </t>
+</template>
+
+<template id="report_supplier_debt_real_view">
+    <t t-call="vendor_debt_management.report_supplier_summary_layout">
+        <div class="page">
+            <t t-set="company_currency" t-value="env.company.currency_id"/>
+            <t t-set="user_id" t-value="env.user"/>
+
+            <style>
+                .page { font-family: "Times New Roman"; font-size: 12pt; color: #000; }
+                .styled-table {
+                    border-collapse: collapse;
+                    margin: 0 auto;
+                    font-size: 12pt;
+                    width: 100%;
+                    border: 1px solid #000;
+                    table-layout: fixed;
+                }
+                .styled-table thead tr {
+                    background-color: #C6E0B4;
+                    font-weight: bold;
+                    color: #000;
+                    text-align: center;
+                }
+                .styled-table th, .styled-table td {
+                    font-size: 10pt;
+                    padding: 6px 8px;
+                    border: 1px solid #000;
+                    vertical-align: middle;
+                    overflow: hidden;
+                    word-wrap: break-word;
+                    overflow-wrap: anywhere;
+                }
+                .section-title { font-weight: bold; text-transform: uppercase; background-color: #F8CBAD; }
+                .group-main { font-weight: bold; background-color: #FFE699; }
+                .group-sub { font-weight: bold; background-color: #FFF2CC; }
+                .text-center { text-align: center; }
+                .text-right  { text-align: right; }
+                .num { white-space: nowrap; }
+            </style>
+
+            <h2 style="text-align:center; margin-bottom: 20px; font-size: 28px; font-weight: bold; text-transform: uppercase;">
+                BÁO CÁO TỔNG HỢP CÔNG NỢ NHÀ CUNG CẤP THỰC TẾ
+            </h2>
+
+            <table class="styled-table">
+                <colgroup>
+                    <col style="width:4%"/>
+                    <col style="width:24%"/>
+                    <col style="width:12%"/>
+                    <col style="width:10%"/>
+                    <col style="width:10%"/>
+                    <col style="width:10%"/>
+                    <col style="width:10%"/>
+                    <col style="width:10%"/>
+                    <col style="width:10%"/>
+                    <col style="width:10%"/>
+                </colgroup>
+
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Nhà cung cấp</th>
+                        <th>Hạng mục cung cấp</th>
+                        <th>Công nợ cũ</th>
+                        <th>Tổng giá trị HĐ</th>
+                        <th>Tổng giá trị Hóa đơn</th>
+                        <th>Đã Thanh toán</th>
+                        <th>Tạm ứng/ Chưa Hóa đơn</th>
+                        <th>Còn nợ</th>
+                        <th>Hạn thanh toán</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <t t-set="done_rows" t-value="(done_domestic_labor or []) + (done_domestic_material or []) + (done_foreign or [])"/>
+                    <t t-set="pending_rows" t-value="(pending_domestic_labor or []) + (pending_domestic_material or []) + (pending_foreign or [])"/>
+                    <t t-set="all_rows" t-value="done_rows + pending_rows"/>
+
+                    <t t-set="grand_contract" t-value="0.0"/>
+                    <t t-set="grand_invoice" t-value="0.0"/>
+                    <t t-set="grand_paid_hd" t-value="0.0"/>
+                    <t t-set="grand_advance" t-value="0.0"/>
+                    <t t-set="grand_old_debt" t-value="0.0"/>
+                    <t t-set="grand_residual" t-value="0.0"/>
+
+                    <t t-foreach="all_rows" t-as="g">
+                        <t t-set="grand_contract" t-value="grand_contract + (g.get('contract_amount') or 0.0)"/>
+                        <t t-set="grand_invoice" t-value="grand_invoice + (g.get('invoice_amount') or 0.0)"/>
+                        <t t-set="grand_paid_hd" t-value="grand_paid_hd + (g.get('paid_hd') or 0.0)"/>
+                        <t t-set="grand_advance" t-value="grand_advance + (g.get('advance_amount') or 0.0)"/>
+                        <t t-set="grand_old_debt" t-value="grand_old_debt + (g.get('old_debt') or 0.0)"/>
+                        <t t-set="grand_residual" t-value="grand_residual + (g.get('residual_amount') or 0.0)"/>
+                    </t>
+
+                    <t t-set="grand_currency" t-value="(all_rows and all_rows[0].get('currency')) or company_currency"/>
+
+                    <tr class="section-title">
+                        <td colspan="3">TỔNG CÔNG NỢ PHẢI TRẢ</td>
+
+                        <td class="text-right num">
+                            <t t-set="val" t-value="grand_old_debt"/>
+                            <t t-set="cur" t-value="grand_currency"/>
+                            <t t-set="redneg" t-value="False"/>
+                            <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+                        </td>
+
+                        <td class="text-right num">
+                            <t t-set="val" t-value="grand_contract"/>
+                            <t t-set="cur" t-value="grand_currency"/>
+                            <t t-set="redneg" t-value="False"/>
+                            <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+                        </td>
+
+                        <td class="text-right num">
+                            <t t-set="val" t-value="grand_invoice"/>
+                            <t t-set="cur" t-value="grand_currency"/>
+                            <t t-set="redneg" t-value="False"/>
+                            <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+                        </td>
+
+                        <td class="text-right num">
+                            <t t-set="val" t-value="grand_paid_hd"/>
+                            <t t-set="cur" t-value="grand_currency"/>
+                            <t t-set="redneg" t-value="False"/>
+                            <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+                        </td>
+
+                        <td class="text-right num">
+                            <t t-set="val" t-value="grand_advance"/>
+                            <t t-set="cur" t-value="grand_currency"/>
+                            <t t-set="redneg" t-value="False"/>
+                            <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+                        </td>
+
+                        <td class="text-right num">
+                            <t t-set="val" t-value="grand_residual"/>
+                            <t t-set="cur" t-value="grand_currency"/>
+                            <t t-set="redneg" t-value="True"/>
+                            <t t-call="vendor_debt_management.report_supplier_debt_real_money_cell"/>
+                        </td>
+                        <td></td>
+                    </tr>
+
+                    <t t-set="section_title" t-value="'ĐÃ ĐỐI CHIẾU'"/>
+                    <t t-set="labor_rows" t-value="done_domestic_labor"/>
+                    <t t-set="material_rows" t-value="done_domestic_material"/>
+                    <t t-set="foreign_rows" t-value="done_foreign"/>
+                    <t t-set="empty_message" t-value="'Không có công nợ đã đối chiếu.'"/>
+                    <t t-call="vendor_debt_management.report_supplier_debt_real_section"/>
+
+                    <t t-set="section_title" t-value="'CHỜ ĐỐI CHIẾU'"/>
+                    <t t-set="labor_rows" t-value="pending_domestic_labor"/>
+                    <t t-set="material_rows" t-value="pending_domestic_material"/>
+                    <t t-set="foreign_rows" t-value="pending_foreign"/>
+                    <t t-set="empty_message" t-value="'Không có công nợ chờ đối chiếu.'"/>
+                    <t t-call="vendor_debt_management.report_supplier_debt_real_section"/>
+                </tbody>
+            </table>
+        </div>
+    </t>
+</template>
 
 </odoo>
