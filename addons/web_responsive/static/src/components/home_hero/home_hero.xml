@@ -32,10 +32,6 @@
                                 <button type="button" class="btn o_home_hero__btn o_home_hero__btn--primary" t-on-click="openApps">
                                     <span>Mở ứng dụng</span>
                                 </button>
-
-                                <button type="button" class="btn o_home_hero__btn o_home_hero__btn--secondary">
-                                    <span>Xem báo cáo</span>
-                                </button>
                             </div>
                         </div>
 
@@ -65,7 +61,7 @@
                         </div>
                     </section>
 
-                    <!-- BENTO GRID -->
+                    <!-- BOTTOM GRID -->
                     <section class="o_home_hero__bento">
                         <article class="o_home_hero__card o_home_hero__card--events">
                             <h3 class="o_home_hero__section_title">
@@ -124,34 +120,63 @@
                                         </div>
                                     </div>
                                 </t>
+
                                 <div class="o_home_hero__project_glow"></div>
                             </div>
                         </article>
-                        <!-- AI summary card -->
-                        <article class="o_home_hero__card o_home_hero__card--ai">
-                            <div class="o_home_hero__ai_left">
-                                <div class="o_home_hero__ai_tag">
-                                    <i class="fa fa-magic"></i>
-                                    <span>TỔNG HỢP TUẦN</span>
+
+                        <article class="o_home_hero__card o_home_hero__card--guide">
+                            <div class="o_home_hero__guide_wrap">
+                                <div class="o_home_hero__guide_head">
+                                    <h3 class="o_home_hero__section_title">
+                                        <i class="fa fa-compass"></i>
+                                        <span>Hướng dẫn nhanh</span>
+                                    </h3>
+
+                                    <p class="o_home_hero__card_text">
+                                        Bắt đầu công việc hiệu quả bằng cách mở ứng dụng, theo dõi lịch làm việc và sử dụng đúng chức năng theo vai trò của bạn.
+                                    </p>
                                 </div>
 
-                                <h3 class="o_home_hero__card_title">Phân tích dữ liệu bằng AI</h3>
+                                <div class="o_home_hero__guide_list">
+                                    <div class="o_home_hero__guide_item">
+                                        <div class="o_home_hero__guide_icon">
+                                            <i class="fa fa-th-large"></i>
+                                        </div>
+                                        <div class="o_home_hero__guide_info">
+                                            <div class="o_home_hero__guide_title">Mở ứng dụng cần dùng</div>
+                                            <div class="o_home_hero__guide_desc">
+                                                Truy cập nhanh các phân hệ từ menu ứng dụng để bắt đầu công việc.
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                <p class="o_home_hero__card_text">
-                                    Hệ thống đã chuẩn bị báo cáo hiệu suất tự động cho tuần này. Sẵn sàng để đánh giá.
-                                </p>
+                                    <div class="o_home_hero__guide_item">
+                                        <div class="o_home_hero__guide_icon">
+                                            <i class="fa fa-calendar-check-o"></i>
+                                        </div>
+                                        <div class="o_home_hero__guide_info">
+                                            <div class="o_home_hero__guide_title">Theo dõi lịch làm việc</div>
+                                            <div class="o_home_hero__guide_desc">
+                                                Xem các lịch hẹn và sự kiện sắp tới ở khung bên trái để chủ động thời gian.
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                <button type="button" class="btn o_home_hero__link_btn">
-                                    <span>Xem chi tiết</span>
-                                    <i class="fa fa-arrow-right"></i>
-                                </button>
-                            </div>
-
-                            <div class="o_home_hero__ai_right">
-                                <div class="o_home_hero__ai_visual"></div>
+                                    <div class="o_home_hero__guide_item">
+                                        <div class="o_home_hero__guide_icon">
+                                            <i class="fa fa-shield"></i>
+                                        </div>
+                                        <div class="o_home_hero__guide_info">
+                                            <div class="o_home_hero__guide_title">Làm việc theo vai trò</div>
+                                            <div class="o_home_hero__guide_desc">
+                                                Nội dung và chức năng hiển thị được đồng bộ theo quyền truy cập của bạn.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </article>
-
                     </section>
 
                     <!-- FOOTER -->

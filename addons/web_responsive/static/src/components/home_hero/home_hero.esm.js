@@ -11,7 +11,6 @@ export class HomeHero extends Component {
         this.user = useService("user");
         this.router = useService("router");
         this.orm = useService("orm");
-        this.action = useService("action");
 
         this.state = useState({
             open: false,
@@ -20,14 +19,8 @@ export class HomeHero extends Component {
             greeting: "",
             userName: this.user.name || "User",
             theme: session.apps_menu?.theme || "milk",
-
             upcomingEvents: [],
             loadingEvents: false,
-
-            activities: [],
-            loadingActivities: false,
-            activityCount: 0,
-
             onlineUserCount: 0,
         });
 
@@ -42,6 +35,9 @@ export class HomeHero extends Component {
                 this.state.now = new Date();
                 this._setGreeting();
             }, 1000);
+
+            // refresh số user online mỗi 60s
+
 
             this._onHashChange = () => {
                 setTimeout(() => this._closeIfNavigated(), 0);
@@ -80,7 +76,6 @@ export class HomeHero extends Component {
 
             await Promise.all([
                 this.loadUpcomingEvents(),
-                this.loadActivities(),
             ]);
         });
 
@@ -164,61 +159,7 @@ export class HomeHero extends Component {
         }
     }
 
-    async loadActivities() {
-        this.state.loadingActivities = true;
-        this.state.activities = [];
-        this.state.activityCount = 0;
 
-        try {
-            const userId = this.user.userId || session.uid;
-
-            const domain = [
-                ["user_id", "=", userId],
-            ];
-
-            const fields = [
-                "id",
-                "summary",
-                "date_deadline",
-                "res_id",
-                "res_model",
-                "res_name",
-                "activity_type_id",
-                "note",
-            ];
-
-            const activities = await this.orm.call(
-                "mail.activity",
-                "search_read",
-                [],
-                {
-                    domain,
-                    fields,
-                    limit: 5,
-                    order: "date_deadline asc, id desc",
-                    context: session.user_context || {},
-                }
-            );
-
-            const totalCount = await this.orm.call(
-                "mail.activity",
-                "search_count",
-                [domain],
-                {
-                    context: session.user_context || {},
-                }
-            );
-
-            this.state.activities = Array.isArray(activities) ? activities : [];
-            this.state.activityCount = totalCount || 0;
-        } catch (error) {
-            console.error("HomeHero: loadActivities error", error);
-            this.state.activities = [];
-            this.state.activityCount = 0;
-        } finally {
-            this.state.loadingActivities = false;
-        }
-    }
 
     _toServerDatetime(date) {
         const pad = (n) => String(n).padStart(2, "0");
@@ -276,96 +217,6 @@ export class HomeHero extends Component {
             hour: "2-digit",
             minute: "2-digit",
         });
-    }
-
-    formatActivityDeadline(dateValue) {
-        if (!dateValue) {
-            return "Không có hạn";
-        }
-
-        const today = new Date();
-        const deadline = this._parseDate(dateValue);
-
-        if (!deadline || isNaN(deadline.getTime())) {
-            return dateValue;
-        }
-
-        const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        const deadlineOnly = new Date(deadline.getFullYear(), deadline.getMonth(), deadline.getDate());
-
-        const diffMs = deadlineOnly.getTime() - todayOnly.getTime();
-        const diffDays = Math.round(diffMs / 86400000);
-
-        if (diffDays < 0) {
-            return `Quá hạn ${Math.abs(diffDays)} ngày`;
-        }
-        if (diffDays === 0) {
-            return "Hôm nay";
-        }
-        if (diffDays === 1) {
-            return "Ngày mai";
-        }
-        return deadline.toLocaleDateString();
-    }
-
-    getActivityTitle(activity) {
-        return (
-            activity.summary ||
-            activity.res_name ||
-            "Hoạt động cần xử lý"
-        );
-    }
-
-    getActivityMeta(activity) {
-        const parts = [];
-
-        if (activity.res_model) {
-            parts.push(activity.res_model);
-        }
-        if (activity.res_name) {
-            parts.push(activity.res_name);
-        }
-
-        return parts.join(" • ");
-    }
-
-    async openActivity(activity) {
-        if (!activity || !activity.res_id || !activity.res_model) {
-            return;
-        }
-
-        try {
-            await this.action.doAction({
-                type: "ir.actions.act_window",
-                res_model: activity.res_model,
-                res_id: activity.res_id,
-                views: [[false, "form"]],
-                target: "current",
-            });
-            this.closeHero();
-        } catch (error) {
-            console.error("HomeHero: openActivity error", error);
-        }
-    }
-
-    async openMyActivities() {
-        try {
-            await this.action.doAction({
-                type: "ir.actions.act_window",
-                name: "Việc cần xử lý",
-                res_model: "mail.activity",
-                view_mode: "list,form",
-                views: [
-                    [false, "list"],
-                    [false, "form"],
-                ],
-                domain: [["user_id", "=", this.user.userId || session.uid]],
-                target: "current",
-            });
-            this.closeHero();
-        } catch (error) {
-            console.error("HomeHero: openMyActivities error", error);
-        }
     }
 
     closeHero() {
