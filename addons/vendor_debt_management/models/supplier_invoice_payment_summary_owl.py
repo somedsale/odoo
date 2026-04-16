@@ -82,9 +82,13 @@ class SupplierInvoicePaymentSummaryOwl(models.Model):
             or "Không rõ số hóa đơn"
         )
 
+    def _owl_invoice_description(self, invoice):
+        return getattr(invoice, "note", False) or ""
+
     def _owl_contract_display_name(self, contract):
         return (
-            getattr(contract, "name", False)
+            getattr(contract, "number_contract", False)
+            or getattr(contract, "name", False)
             or getattr(contract, "display_name", False)
             or "Không rõ hợp đồng"
         )
@@ -313,6 +317,7 @@ class SupplierInvoicePaymentSummaryOwl(models.Model):
                         "id": f"row_{stt}",
                         "stt": stt,
                         "show_invoice": idx == 0,
+                        "invoice_note": self._owl_invoice_description(inv),
                         "invoice_name": self._owl_invoice_display_name(inv),
                         "invoice_date": self._owl_get_invoice_date(inv),
                         "invoice_due_date": self._owl_get_invoice_due_date(inv),
@@ -331,6 +336,7 @@ class SupplierInvoicePaymentSummaryOwl(models.Model):
                     "id": f"row_{stt}",
                     "stt": stt,
                     "show_invoice": True,
+                    "invoice_note": self._owl_invoice_description(inv),
                     "invoice_name": self._owl_invoice_display_name(inv),
                     "invoice_date": self._owl_get_invoice_date(inv),
                     "invoice_due_date": self._owl_get_invoice_due_date(inv),
@@ -420,6 +426,7 @@ class SupplierInvoicePaymentSummaryOwl(models.Model):
                     "id": f"row_{stt}",
                     "stt": stt,
                     "show_invoice": False,
+                    "invoice_note": "",
                     "invoice_name": "",
                     "invoice_date": False,
                     "invoice_due_date": False,
@@ -470,3 +477,4 @@ class SupplierInvoicePaymentSummaryOwl(models.Model):
             "summary": summary,
             "projects": projects,
         }
+

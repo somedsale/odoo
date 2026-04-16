@@ -278,16 +278,16 @@
 
                                             <!-- 3. Diễn giải (HĐ) -->
                                             <td class="text-center" style="vertical-align:middle;">
-                                                <t t-if="row_idx == 1">
-                                                    <span t-esc="line.interpretation or ''"/>
+                                                <t t-if="row.get('is_first_invoice_row') and inv">
+                                                    <span t-esc="inv.note or ''"/>
                                                 </t>
                                             </td>
 
                                             <!-- 4. HĐ Số / Ngày -->
                                             <td class="text-center" style="vertical-align:middle;">
                                                 <t t-if="row_idx == 1">
-                                                    <t t-if="line.name">
-                                                        <span t-esc="line.name"/>
+                                                    <t t-if="line.number_contract or line.name">
+                                                        <span t-esc="line.number_contract or line.name"/>
                                                     </t>
                                                     <t t-if="line.contract_date">
                                                         <br/>
@@ -428,10 +428,14 @@
                                         </td>
 
                                         <!-- 3. Diễn giải -->
-                                        <td></td>
+                                        <td>
+                                            <span t-esc="inv.note or ''"/>
+                                        </td>
 
                                         <!-- 4. HĐ Số/Ngày -->
                                         <td></td>
+
+                                        <!-- 5. HD So tien -->
 
                                         <!-- 5. HĐ Số tiền -->
                                         <td></td>
@@ -522,21 +526,21 @@
                                         </td>
 
                                         <!-- 3. Diễn giải -->
+                                        <td>
+                                            <span t-esc="inv.note or ''"/>
+                                        </td>
+
+                                        <!-- 4. HD So/Ngay -->
                                         <td></td>
 
-                                        <!-- 4. HĐ Số/Ngày -->
+                                        <!-- 5. HD So tien -->
                                         <td></td>
 
-                                        <!-- 5. HĐ Số tiền -->
+                                        <!-- 6. HSQT So HS/Ngay -->
                                         <td></td>
 
-                                        <!-- 6. HSQT Số HS/Ngày -->
+                                        <!-- 7. HSQT So tien -->
                                         <td></td>
-
-                                        <!-- 7. HSQT Số tiền -->
-                                        <td></td>
-
-                                        <!-- 8. Hóa đơn Ngày -->
                                         <td class="text-center">
                                             <t t-if="inv.date">
                                                 <span t-esc="inv.date.strftime('%d/%m/%Y')"/>
@@ -648,3 +652,4 @@
         </t>
     </template>
 </odoo>
+
