@@ -174,8 +174,8 @@
 
                                             <!-- Diễn giải -->
                                             <td>
-                                                <t t-if="row.show_invoice and contract.interpretation">
-                                                    <span t-esc="contract.interpretation"/>
+                                                <t t-if="row.show_invoice and row.invoice_note">
+                                                    <span t-esc="row.invoice_note"/>
                                                 </t>
                                             </td>
 

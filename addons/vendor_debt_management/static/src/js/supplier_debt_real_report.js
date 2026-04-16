@@ -67,13 +67,15 @@ setup() {
     }
 
     _decorateRows(items, sectionKey, supplierTypeKey, sectionLabel, supplierTypeLabel) {
-        return (items || []).map((item) => ({
-            ...item,
-            sectionKey,
-            supplierTypeKey,
-            sectionLabel,
-            supplierTypeLabel,
-        }));
+        return (items || [])
+            .filter((item) => Number(item?.residual_amount || 0) > 0)
+            .map((item) => ({
+                ...item,
+                sectionKey,
+                supplierTypeKey,
+                sectionLabel,
+                supplierTypeLabel,
+            }));
     }
 
     get rawRows() {

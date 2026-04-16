@@ -104,11 +104,11 @@
                     </group>
 
                     <group string="Thiết lập kho">
-                        <field name="picking_type_out_id" readonly="state == 'done'"/>
-                        <field name="picking_type_in_id" readonly="state == 'done'"/>
-                        <field name="location_src_id" readonly="state == 'done'"/>
+                        <field name="picking_type_out_id" readonly="1"/>
+                        <field name="picking_type_in_id" readonly="1"/>
+                        <field name="location_src_id" readonly="1"/>
                         <!-- <field name="location_production_id"/> -->
-                        <field name="location_dest_id" readonly="state == 'done'"/>
+                        <field name="location_dest_id" readonly="1"/>
                     </group>
 
                     <notebook>

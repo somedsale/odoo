@@ -161,7 +161,7 @@ get filteredProjects() {
                         const haystack = [
                             project.project_name,
                             contract.contract_name,
-                            contract.interpretation,
+                            row.invoice_note,
                             this.formatDate(contract.contract_date),
                             row.invoice_name,
                             this.formatDate(row.invoice_date),
