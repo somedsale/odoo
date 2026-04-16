@@ -1,5 +1,5 @@
 "id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
 "access_account_payment_request","access.account.payment.request","model_account_payment_request","",1,1,1,1
 "access_expense_category","access.access.expense.category","model_expense_category","",1,1,1,1
-access_account_payment_request_line_user,access.account.payment.request.line.user,model_account_payment_request_line,account.group_account_user,1,1,1,1
+access_account_payment_request_line_user,access.account.payment.request.line.user,model_account_payment_request_line,"",1,1,1,1
 access_account_payment_request_line_manager,access.account.payment.request.line.manager,model_account_payment_request_line,account.group_account_manager,1,1,1,1
