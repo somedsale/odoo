@@ -6,6 +6,7 @@
         <field name="arch" type="xml">
             <form string="Giấy đề nghị giải chi" create="true" edit="true">
                 <header>
+                    <field name="can_edit_invoice" invisible="1"/>
                     <field name="can_submit" invisible="1"/>
                     <field name="can_approve_manager" invisible="1"/>
                     <field name="can_approve_accountant" invisible="1"/>
@@ -79,19 +80,20 @@
                     <field name="note" placeholder="Nội dung chi tiết mục đích thanh toán" readonly="state !='draft'"/>
 
                     <separator string="Chi tiết chứng từ" colspan="2"/>
-                    <field name="line_ids" readonly="state != 'draft'">
+                    <field name="line_ids">
                         <tree editable="bottom">
                             <field name="sequence" widget="handle" string="" width="30"/>
-                            <field name="date_from" width="90"/>
-                            <field name="date_to" width="90"/>
-                            <field name="content" string="Nội dung" width="250"/>
-                            <field name="uom_id" string="DVT" options="{'no_create':False}"/>
-                            <field name ="quantity" string="Số lượng"/>
-                            <field name="unit_price" string="Đơn giá" options="{'currency_field': 'currency_id'}"/>
+                            <field name="date_from" width="90" invisible="parent.state != 'draft'"/>
+                            <field name="date_to" width="90" invisible="parent.state != 'draft'"/>
+                            <field name="content" string="Nội dung" width="250" invisible="parent.state != 'draft'"/>
+                            <field name="uom_id" string="DVT" options="{'no_create':False}" invisible="parent.state != 'draft'"/>
+                            <field name ="quantity" string="Số lượng" invisible="parent.state != 'draft'"/>
+                            <field name="unit_price" string="Đơn giá" options="{'currency_field': 'currency_id'}" invisible="parent.state != 'draft'"/>
                             <field name="amount" string="Thành tiền" width="130" options="{'currency_field': 'currency_id'}" sum="1"/>
-                            <field name="project_id" string="Dự án" width="200" optional="hide"/>
-                            <field name="attachment_ids" widget="many2many_binary" width="160"/>
-                            <field name="note" string="Ghi chú" width="120"/>
+                            <field name="project_id" string="Dự án" width="200" optional="hide" invisible="parent.state != 'draft'"/>
+                            <field name="attachment_ids" widget="many2many_binary" width="160" invisible="parent.state != 'draft'"/>
+                            <field name="invoice_id" string="Hóa đơn" width="200" options="{'no_create': True,'no_open':True}" invisible="parent.state == 'draft'" readonly="not parent.can_edit_invoice" domain="[('project_id', '=', parent.project_id)]" />
+                            <field name="note" string="Ghi chú" width="120" invisible="parent.state != 'draft'"/>
                             <field name="currency_id" optional="hide"/>
                         </tree>
                     </field>

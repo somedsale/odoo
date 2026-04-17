@@ -4,7 +4,7 @@
     "summary": "Đề Nghị Giải Chi",
     "author": "Somed",
     "category": "Test",
-    "depends": ["base","custom_account_payment_request","custom_accounting_receipt"],
+    "depends": ["base","custom_account_payment_request","custom_accounting_receipt","vendor_debt_management"],
     "data": [
         "security/account_payment_proposal_rules.xml",
         "security/ir.model.access.csv",

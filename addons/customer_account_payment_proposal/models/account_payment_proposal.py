@@ -119,6 +119,7 @@ class AccountPaymentProposal(models.Model):
     can_reset_draft = fields.Boolean(compute="_compute_permissions", string="Có thể hóa nháp")
     can_reject = fields.Boolean(compute="_compute_permissions", string="Có thể từ chối")
     can_withdraw_submit = fields.Boolean(compute="_compute_permissions", string="Có thể hủy gửi")
+    can_edit_invoice = fields.Boolean(compute="_compute_can_edit_invoice", string="Có thể sửa hóa đơn")
     @api.depends("state", "user_id", "manager_id", "director_user_id")
     def _compute_permissions(self):
         """Xác định ai được thấy nút nào"""
@@ -171,6 +172,10 @@ class AccountPaymentProposal(models.Model):
                 # Case kế toán tự gửi (đang chờ giám đốc) -> chỉ đúng khi người tạo là kế toán
                 elif rec.state == "account_approved" and is_accountant:
                     rec.can_withdraw_submit = True
+
+    def _compute_can_edit_invoice(self):
+        for rec in self:
+            rec.can_edit_invoice = self.env.user.has_group('account.group_account_manager') or self.env.user.has_group('base.group_system')
 
     @api.model
     def _default_director_user(self):
