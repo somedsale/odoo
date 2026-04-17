@@ -18,7 +18,6 @@ export class FavoriteMenu extends Component {
         this.state = useState({
             name: "",
             url: "",
-            isOpen: false,
         });
     }
 
@@ -48,6 +47,19 @@ export class FavoriteMenu extends Component {
         this.state.name = ev.target.value;
     }
 
+    _closeDropdown() {
+        // giả lập click ra ngoài để Dropdown tự đóng
+        setTimeout(() => {
+            document.body.dispatchEvent(
+                new MouseEvent("click", {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window,
+                })
+            );
+        }, 0);
+    }
+
     async onSave() {
         const name = this.state.name.trim();
         if (!name) {
@@ -67,7 +79,7 @@ export class FavoriteMenu extends Component {
                 type: "success",
             });
 
-            this.state.isOpen = false;
+            this._closeDropdown();
         } catch (error) {
             console.error("Favorite save error", error);
             this.notification.add("Lưu yêu thích thất bại.", {
