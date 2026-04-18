@@ -237,7 +237,7 @@ Giải ngân dự án
 
                         <div class="col-12">
                           <label class="form-label">Địa điểm XD</label>
-                          <input class="form-control" readonly="1" t-att-value="state.display.location || ''"/>
+                          <input class="form-control" data-field="location" t-att-value="state.form.location || ''" t-on-input="onInput" placeholder="Nhập địa điểm xây dựng..."/>
                         </div>
 
                         <div class="col-12">

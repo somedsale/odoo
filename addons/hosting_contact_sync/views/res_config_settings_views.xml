@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_hosting_contact_sync" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.hosting.contact.sync</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app string="Hosting Contact Sync" name="hosting_contact_sync" logo="hosting_contact_sync/static/description/icon.png">
+                    <block title="Cấu hình đồng bộ contact từ hosting">
+                        <setting string="Hosting Contact API URL">
+                            <field name="hosting_contact_api_url" placeholder="https://domain.com/api/odoo_contacts.php"/>
+                        </setting>
+                        <setting string="Hosting Contact API Token">
+                            <field name="hosting_contact_api_token" password="True"/>
+                        </setting>
+                        <setting string="Timeout">
+                            <field name="hosting_contact_api_timeout"/>
+                        </setting>
+                        <!-- <setting string="Tự tạo lead">
+                            <field name="hosting_contact_auto_create_lead"/>
+                        </setting> -->
+                        <setting string="Verify SSL">
+                            <field name="hosting_contact_verify_ssl"/>
+                        </setting>
+                        <setting string="Website → Odoo Receive Token">
+                            <field name="hosting_contact_receive_token" password="True"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

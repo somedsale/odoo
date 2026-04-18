@@ -11,6 +11,39 @@ class AccountingPaymentRequest(models.Model):
 
     name = fields.Char(string="Mã phiếu chi", required=True, copy=False, readonly=True, default='/')
 
+    # =========================
+    # Liên kết bổ sung để tạo từ PO
+    # =========================
+    purchase_id = fields.Many2one(
+        'purchase.order',
+        string='Đơn mua hàng',
+        ondelete='set null',
+        index=True
+    )
+
+    supplier_contract_id = fields.Many2one(
+        'supplier.contract',
+        string='Hợp đồng NCC',
+        ondelete='set null'
+    )
+
+    task_id = fields.Many2one(
+        'project.task',
+        string='Nhiệm vụ',
+        ondelete='set null'
+    )
+
+    supplier_id = fields.Many2one(
+        'res.partner',
+        string='Nhà cung cấp',
+        ondelete='set null'
+    )
+
+    payment_kind = fields.Selection([
+        ('advance', 'Tạm ứng'),
+        ('full', 'Thanh toán toàn bộ'),
+    ], string='Kiểu thanh toán', default='full', tracking=True)
+
     # giữ để tương thích dữ liệu cũ
     proposal_sheet_id = fields.Many2one('proposal.sheet', string="Phiếu đề xuất (cũ)")
     proposal_person_id = fields.Many2one('res.users', string="Người đề xuất", store=True)
@@ -129,10 +162,6 @@ class AccountingPaymentRequest(models.Model):
 
     @api.onchange('proposal_sheet_id')
     def _onchange_proposal_sheet_id(self):
-        """
-        Tương thích dữ liệu cũ:
-        nếu chọn proposal_sheet_id cũ ở draft và chưa có line -> tạo 1 line mặc định
-        """
         for rec in self:
             if rec.proposal_sheet_id and not rec.line_ids and rec.state == 'draft':
                 amount = rec.proposal_sheet_id.amount_total or rec.manual_total or 0.0
@@ -301,7 +330,6 @@ class AccountingPaymentRequest(models.Model):
             rec.date_payment = fields.Datetime.now()
             rec.message_post(body="Yêu cầu chi tiền đã hoàn tất.")
 
-            # Chỉ cập nhật proposal nếu phiếu này có line proposal
             proposal_lines = rec.line_ids.filtered(lambda l: l.line_type == 'proposal' and l.proposal_sheet_id)
             for line in proposal_lines:
                 proposal = line.proposal_sheet_id

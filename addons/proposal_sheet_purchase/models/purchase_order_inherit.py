@@ -416,12 +416,11 @@ class PurchaseOrder(models.Model):
         vals = {
             "name": "/",
             "purchase_id": self.id,
-            "proposal_sheet_id": first_sheet.id if first_sheet else False,  # giữ tương thích cũ
+            "proposal_sheet_id": first_sheet.id if first_sheet else False,
             "supplier_contract_id": contract.id,
             "project_id": project.id if project else False,
             "task_id": task.id if task else False,
             "proposal_person_id": first_sheet.requested_by.id if first_sheet and first_sheet.requested_by else False,
-            "total": pay_amount,
             "date": first_sheet.date_proposal if first_sheet and first_sheet.date_proposal else fields.Date.context_today(self),
             "currency_id": self.currency_id.id,
             "receive_person": self.partner_id.id,
