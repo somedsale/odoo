@@ -45,6 +45,7 @@ static props = {
         date: false,
         contract_id: null,
         stage_id: null,
+        location: "",
         description: "",
       },
 
@@ -365,6 +366,7 @@ static props = {
       date: false,
       contract_id: null,
       stage_id: null,
+      location: "",
       description: "",
     };
 
@@ -394,6 +396,9 @@ static props = {
       date: this.state.form.date || false,
       contract_id: this.state.form.contract_id || false,
       stage_id: this.state.form.stage_id || false,
+      location: this.state.form.location
+        ? String(this.state.form.location).trim()
+        : false,
       description: this.state.form.description
         ? String(this.state.form.description)
         : false,
@@ -713,6 +718,7 @@ async _loadProject() {
     date: rec.date || false,
     contract_id: contractId,
     stage_id: stageId,
+    location: rec.location || "",
     description: markup(rec.description || ""),
   };
 
