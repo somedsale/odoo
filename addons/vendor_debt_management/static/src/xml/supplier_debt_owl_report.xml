@@ -19,9 +19,9 @@
 
                 <div class="o_supplier_debt_header">
                     <div class="o_supplier_debt_title_wrap">
-                <button type="button" class="btn btn-outline-secondary" t-on-click="goBack">
-    Quay lại
-</button>
+                        <button type="button" class="btn btn-outline-secondary" t-on-click="goBack">
+                                Quay lại
+                        </button>
                         <div class="o_supplier_debt_title">Báo cáo công nợ NCC</div>
                         <div class="o_supplier_debt_partner" t-esc="summary.partner_name"/>
                         <div class="o_supplier_debt_meta">
@@ -29,27 +29,24 @@
                         </div>
                     </div>
 
-                    <div class="o_supplier_debt_header_actions">
-                        <button type="button" class="btn btn-outline-primary" t-on-click="() => this.openRecordList('contracts')">
-                            Hợp đồng
-                        </button>
-                        <button type="button" class="btn btn-outline-primary" t-on-click="() => this.openRecordList('invoices')">
-                            Hóa đơn
-                        </button>
-                        <button type="button" class="btn btn-outline-primary" t-on-click="() => this.openRecordList('payments')">
-                            Phiếu chi
-                        </button>
-                        <button type="button" class="btn btn-primary" t-on-click="printPdf">
-                            In PDF
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" t-on-click="togglePdfPreview">
-                            <t t-if="!state.showPdfPreview">Xem PDF</t>
-                            <t t-else="">Ẩn PDF</t>
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" t-on-click="openPdfInNewTab">
-                            Mở tab PDF
-                        </button>
-                    </div>
+<div class="o_supplier_debt_header_actions">
+    <button type="button" class="btn btn-primary" t-on-click="printPdf">
+        In PDF
+    </button>
+
+    <button type="button" class="btn btn-outline-success" t-on-click="shareReport">
+        Chia sẻ
+    </button>
+
+    <button type="button" class="btn btn-outline-secondary" t-on-click="togglePdfPreview">
+        <t t-if="!state.showPdfPreview">Xem PDF</t>
+        <t t-else="">Ẩn PDF</t>
+    </button>
+
+    <button type="button" class="btn btn-outline-secondary" t-on-click="openPdfInNewTab">
+        Mở tab PDF
+    </button>
+</div>
                 </div>
 
                 <t t-if="state.showPdfPreview and summary.pdf_url">
@@ -147,21 +144,21 @@
                                         </div>
                                     </td>
                                     <td colspan="3" class="text-end">
-                                                <span>
-                                                    <strong t-esc="formatMoney(project.invoice_total, summary.currency_symbol)"/>
-                                                </span>
+                                        <span>
+                                            <strong t-esc="formatMoney(project.invoice_total, summary.currency_symbol)"/>
+                                        </span>
                                     </td>
                                     <td colspan="2" class="text-end">
-                                                <span>
-                                                    <strong t-esc="formatMoney(project.payment_total, summary.currency_symbol)"/>
-                                                </span>
+                                        <span>
+                                            <strong t-esc="formatMoney(project.payment_total, summary.currency_symbol)"/>
+                                        </span>
                                     </td>
                                     <td class="text-end">
-                                                <span>
-                                                    <strong t-esc="formatMoney(project.residual_total, summary.currency_symbol)"/>
-                                                </span> 
-                                    </td> 
-                                    <td colspan="2"></td>      
+                                        <span>
+                                            <strong t-esc="formatMoney(project.residual_total, summary.currency_symbol)"/>
+                                        </span>
+                                    </td>
+                                    <td colspan="2"></td>
                                 </tr>
 
                                 <t t-foreach="project.contracts" t-as="contract" t-key="contract.id">

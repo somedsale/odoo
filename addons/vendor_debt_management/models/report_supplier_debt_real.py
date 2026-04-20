@@ -30,13 +30,10 @@ class SupplierDebtRealReport(models.AbstractModel):
             Mục tiêu: nếu summary đã được loại hóa đơn 'Không thanh toán' ở tầng SQL/view,
             thì các dòng rỗng sẽ bị loại khỏi báo cáo.
             """
-            return any([
-                (rec.total_invoice_amount or 0.0) != 0.0,
-                (rec.total_payment_amount or 0.0) != 0.0,
-                (rec.advance_amount or 0.0) != 0.0,
-                (rec.old_debt or 0.0) != 0.0,
-                (rec.residual_amount or 0.0) != 0.0,
-            ])
+            return (
+                (rec.advance_amount or 0.0) > 0.0
+                or (rec.residual_amount or 0.0) > 0.0
+            )
 
         def _due_days_text(rec):
             if not rec.due_date or (rec.residual_amount or 0.0) <= 0.0:
@@ -55,14 +52,6 @@ class SupplierDebtRealReport(models.AbstractModel):
 
             # nếu summary của bạn có residual = 0, invoice = 0, advance = 0, old_debt = 0
             # thì chắc chắn không cần lên báo cáo
-            if (
-                (rec.total_invoice_amount or 0.0) == 0.0
-                and (rec.advance_amount or 0.0) == 0.0
-                and (rec.old_debt or 0.0) == 0.0
-                and (rec.residual_amount or 0.0) == 0.0
-            ):
-                continue
-
             partner = rec.partner_id
             currency = rec.currency_id or self.env.company.currency_id
 

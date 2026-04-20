@@ -1,5 +1,5 @@
 from odoo import models, fields, api, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, UserError
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -117,6 +117,41 @@ class ProposalMaterialLine(models.Model):
         store=False,
     )
 
+    actual_count_qty = fields.Float(
+        string="SL kiểm kê thực tế",
+        digits=(16, 4),
+        copy=False,
+        tracking=True,
+    )
+
+    count_diff_qty = fields.Float(
+        string="Chênh lệch kiểm kê",
+        compute="_compute_count_diff_qty",
+        store=False,
+    )
+
+    count_note = fields.Text(string="Ghi chú kiểm kho", copy=False)
+
+    last_counted_qty = fields.Float(
+        string="SL đã xác nhận",
+        digits=(16, 4),
+        copy=False,
+        readonly=True,
+    )
+
+    last_counted_by = fields.Many2one(
+        'res.users',
+        string='Người xác nhận kho',
+        copy=False,
+        readonly=True,
+    )
+
+    last_counted_date = fields.Datetime(
+        string='Ngày xác nhận kho',
+        copy=False,
+        readonly=True,
+    )
+
     other_estimate_item = fields.Many2one(
         'estimate.item.other',
         string='Hạng mục khác',
@@ -155,6 +190,16 @@ class ProposalMaterialLine(models.Model):
                 line.stock_qty_on_hand = qty
                 line.stock_qty_available = qty - reserved
 
+    @api.depends('actual_count_qty', 'stock_qty_on_hand')
+    def _compute_count_diff_qty(self):
+        for line in self:
+            actual_qty = line.actual_count_qty if line.actual_count_qty is not False else line.stock_qty_on_hand
+            line.count_diff_qty = (actual_qty or 0.0) - (line.stock_qty_on_hand or 0.0)
+
+    def _prepare_default_actual_count_qty(self):
+        self.ensure_one()
+        return self.stock_qty_on_hand or 0.0
+
     @api.depends('price_unit', 'quantity', 'tax_id', 'product_id', 'vendor_id')
     def _compute_price_taxed(self):
         for line in self:
@@ -178,6 +223,18 @@ class ProposalMaterialLine(models.Model):
     def _compute_estimate_price_total(self):
         for line in self:
             line.estimate_price_total = (line.quantity or 0.0) * (line.estimate_price_unit or 0.0)
+
+    @api.onchange('product_id')
+    def _onchange_init_actual_count_qty_from_stock(self):
+        for line in self:
+            if line.product_id and not line.actual_count_qty:
+                line.actual_count_qty = line.stock_qty_on_hand
+
+    @api.onchange('material_id')
+    def _onchange_init_actual_count_qty_from_material_stock(self):
+        for line in self:
+            if line.material_id and not line.actual_count_qty:
+                line.actual_count_qty = line.stock_qty_on_hand
 
     @api.depends('material_id', 'sheet_id.project_id')
     def _compute_estimate_price_unit(self):
@@ -460,6 +517,9 @@ class ProposalMaterialLine(models.Model):
         if write_vals:
             record.write(write_vals)
 
+        if 'actual_count_qty' not in vals:
+            record.write({'actual_count_qty': record._prepare_default_actual_count_qty()})
+
         record._ensure_supplierinfo_for_product_vendor()
         return record
 
@@ -527,6 +587,21 @@ class ProposalMaterialLine(models.Model):
         for line in self:
             if line.quantity <= 0:
                 raise ValidationError("Số lượng vật tư phải lớn hơn 0.")
+
+    @api.constrains('actual_count_qty')
+    def _check_actual_count_qty(self):
+        for line in self:
+            if line.actual_count_qty and line.actual_count_qty < 0:
+                raise ValidationError("Số lượng kiểm kê thực tế không được âm.")
+
+    def action_clear_actual_count(self):
+        for line in self:
+            if line.sheet_id.state != 'draft':
+                raise UserError("Chỉ được xóa số kiểm kê khi phiếu đang ở trạng thái nháp.")
+            line.write({
+                'actual_count_qty': 0.0,
+                'count_note': False,
+            })
 
     def archive(self):
         self.write({'active': False})

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api, tools
 from datetime import date
+import secrets
 
 
 class SupplierInvoicePaymentSummary(models.Model):
@@ -42,7 +43,11 @@ class SupplierInvoicePaymentSummary(models.Model):
 
     due_date = fields.Date("Ngày đến hạn", compute="_compute_due_date")
     due_days = fields.Char("Số ngày đến hạn", compute="_compute_due_date")
-    due_days_html = fields.Html("Số ngày đến hạn (màu)", compute="_compute_due_days_html", sanitize=False)
+    due_days_html = fields.Html(
+        "Số ngày đến hạn (màu)",
+        compute="_compute_due_days_html",
+        sanitize=False,
+    )
 
     total_contract_amount = fields.Monetary(
         "Tổng giá trị hợp đồng",
@@ -77,7 +82,12 @@ class SupplierInvoicePaymentSummary(models.Model):
         currency_field="currency_id",
     )
 
-    note = fields.Text("Ghi chú", compute="_compute_note", inverse="_inverse_note", store=False)
+    note = fields.Text(
+        "Ghi chú",
+        compute="_compute_note",
+        inverse="_inverse_note",
+        store=False,
+    )
     interpretation = fields.Char(
         "Diễn giải",
         compute="_compute_interpretation",
@@ -129,6 +139,164 @@ class SupplierInvoicePaymentSummary(models.Model):
         store=False,
     )
 
+    # ========== SHARE INFO ==========
+    # Không lưu trực tiếp trên model _auto=False
+    share_token = fields.Char(
+        string="Share Token",
+        compute="_compute_share_info",
+        inverse="_inverse_share_info",
+        store=False,
+    )
+    share_enabled = fields.Boolean(
+        string="Cho phép chia sẻ",
+        compute="_compute_share_info",
+        inverse="_inverse_share_info",
+        store=False,
+    )
+    share_expired_at = fields.Datetime(
+        string="Hết hạn chia sẻ",
+        compute="_compute_share_info",
+        inverse="_inverse_share_info",
+        store=False,
+    )
+    share_url = fields.Char(
+        string="Link chia sẻ",
+        compute="_compute_share_url",
+        store=False,
+    )
+
+    # =====================================================
+    # SHARE ACTIONS
+    # =====================================================
+    @api.depends("partner_id", "currency_id")
+    def _compute_share_info(self):
+        Note = self.env["supplier.invoice.payment.summary.note"]
+        for rec in self:
+            rec.share_token = False
+            rec.share_enabled = False
+            rec.share_expired_at = False
+
+            if not (rec.partner_id and rec.currency_id):
+                continue
+
+            note = Note.search([
+                ("partner_id", "=", rec.partner_id.id),
+                ("currency_id", "=", rec.currency_id.id),
+            ], limit=1)
+
+            if note:
+                rec.share_token = note.share_token or False
+                rec.share_enabled = bool(note.share_enabled)
+                rec.share_expired_at = note.share_expired_at or False
+
+    def _inverse_share_info(self):
+        Note = self.env["supplier.invoice.payment.summary.note"]
+        for rec in self:
+            if not (rec.partner_id and rec.currency_id):
+                continue
+
+            note = Note.search([
+                ("partner_id", "=", rec.partner_id.id),
+                ("currency_id", "=", rec.currency_id.id),
+            ], limit=1)
+
+            vals = {
+                "share_token": rec.share_token or False,
+                "share_enabled": bool(rec.share_enabled),
+                "share_expired_at": rec.share_expired_at or False,
+            }
+
+            if note:
+                note.write(vals)
+            else:
+                vals.update({
+                    "partner_id": rec.partner_id.id,
+                    "currency_id": rec.currency_id.id,
+                })
+                Note.create(vals)
+
+    @api.depends("share_token")
+    def _compute_share_url(self):
+        for rec in self:
+            rec.share_url = rec.get_share_url() or False
+
+    def action_generate_share_link(self):
+        self.ensure_one()
+
+        if not self.partner_id or not self.currency_id:
+            return False
+
+        Note = self.env["supplier.invoice.payment.summary.note"]
+        note = Note.search([
+            ("partner_id", "=", self.partner_id.id),
+            ("currency_id", "=", self.currency_id.id),
+        ], limit=1)
+
+        if not note:
+            note = Note.create({
+                "partner_id": self.partner_id.id,
+                "currency_id": self.currency_id.id,
+            })
+
+        if not note.share_token:
+            note.share_token = secrets.token_urlsafe(32)
+
+        note.share_enabled = True
+
+        url = f"{self.env['ir.config_parameter'].sudo().get_param('web.base.url')}/vendor-debt/share/{note.share_token}"
+        return {
+            "url": url,
+            "share_url": url,
+        }
+
+
+    def action_regenerate_share_link(self):
+        self.ensure_one()
+
+        if not self.partner_id or not self.currency_id:
+            return False
+
+        Note = self.env["supplier.invoice.payment.summary.note"]
+        note = Note.search([
+            ("partner_id", "=", self.partner_id.id),
+            ("currency_id", "=", self.currency_id.id),
+        ], limit=1)
+
+        if not note:
+            note = Note.create({
+                "partner_id": self.partner_id.id,
+                "currency_id": self.currency_id.id,
+            })
+
+        note.share_token = secrets.token_urlsafe(32)
+        note.share_enabled = True
+
+        url = f"{self.env['ir.config_parameter'].sudo().get_param('web.base.url')}/vendor-debt/share/{note.share_token}"
+        return {
+            "url": url,
+            "share_url": url,
+        }
+
+
+    def get_share_url(self):
+        self.ensure_one()
+
+        if not self.partner_id or not self.currency_id:
+            return False
+
+        note = self.env["supplier.invoice.payment.summary.note"].search([
+            ("partner_id", "=", self.partner_id.id),
+            ("currency_id", "=", self.currency_id.id),
+        ], limit=1)
+
+        if not note or not note.share_token:
+            return False
+
+        return f"{self.env['ir.config_parameter'].sudo().get_param('web.base.url')}/vendor-debt/share/{note.share_token}"
+
+    # =====================================================
+    # ACTIONS
+    # =====================================================
     def action_open_invoices(self):
         self.ensure_one()
         ctx = dict(self.env.context or {})
@@ -196,6 +364,7 @@ class SupplierInvoicePaymentSummary(models.Model):
             "domain": domain,
             "context": ctx,
         }
+
     @api.model
     def get_supplier_debt_real_report_data(self):
         Report = self.env["report.vendor_debt_management.report_supplier_debt_real_view"]
@@ -244,6 +413,7 @@ class SupplierInvoicePaymentSummary(models.Model):
             "pending_domestic_material": _attach_summary_id(data.get("pending_domestic_material", [])),
             "pending_foreign": _attach_summary_id(data.get("pending_foreign", [])),
         }
+
     # =====================================================
     # SQL VIEW
     # =====================================================
@@ -786,6 +956,11 @@ class SupplierInvoicePaymentSummaryNote(models.Model):
     reconciled = fields.Boolean("Đã đối chiếu công nợ")
     note = fields.Text("Ghi chú")
     interpretation = fields.Char("Diễn giải")
+
+    # share fields lưu ở model thật
+    share_token = fields.Char("Share Token", copy=False, index=True)
+    share_enabled = fields.Boolean("Cho phép chia sẻ", default=False)
+    share_expired_at = fields.Datetime("Hết hạn chia sẻ")
 
     _sql_constraints = [
         (

@@ -223,6 +223,40 @@ for (const project of result) {
 goBack() {
     window.history.back();
 }
+async shareReport() {
+    try {
+        const result = await this.orm.call(
+            "supplier.invoice.payment.summary",
+            "action_generate_share_link",
+            [[this.summaryId]]
+        );
+
+        const shareUrl = result?.url || result?.share_url || result;
+
+        if (!shareUrl) {
+            this.notification.add("Không tạo được link chia sẻ.", {
+                type: "danger",
+            });
+            return;
+        }
+
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(shareUrl);
+            this.notification.add("Đã copy link chia sẻ vào clipboard.", {
+                type: "success",
+            });
+        } else {
+            window.prompt("Copy link chia sẻ:", shareUrl);
+        }
+
+        window.open(shareUrl, "_blank");
+    } catch (error) {
+        console.error("shareReport error", error);
+        this.notification.add("Không tạo được link chia sẻ.", {
+            type: "danger",
+        });
+    }
+}
     async openRecordList(type) {
         if (!this.summaryId) {
             return;

@@ -66,9 +66,16 @@ setup() {
         }
     }
 
+    _hasOutstandingOrAdvance(item) {
+        return (
+            Number(item?.residual_amount || 0) > 0 ||
+            Number(item?.advance_amount || 0) > 0
+        );
+    }
+
     _decorateRows(items, sectionKey, supplierTypeKey, sectionLabel, supplierTypeLabel) {
         return (items || [])
-            .filter((item) => Number(item?.residual_amount || 0) > 0)
+            .filter((item) => this._hasOutstandingOrAdvance(item))
             .map((item) => ({
                 ...item,
                 sectionKey,
