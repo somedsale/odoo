@@ -176,7 +176,16 @@ class AccountingPaymentRequest(models.Model):
     def _onchange_line_ids(self):
         for rec in self:
             rec._sync_header_from_lines()
+    @api.onchange('project_id')
+    def _onchange_project_id_filter_lines(self):
+        for rec in self:
+            if not rec.project_id:
+                continue
 
+            invalid_lines = rec.line_ids.filtered(
+                lambda l: l.proposal_sheet_id and l.project_id and l.project_id != rec.project_id
+            )
+            rec.line_ids -= invalid_lines
     def _get_header_vals_from_lines(self):
         self.ensure_one()
         proposal_lines = self.line_ids.filtered(lambda l: l.line_type == 'proposal' and l.proposal_sheet_id)
@@ -186,19 +195,23 @@ class AccountingPaymentRequest(models.Model):
                 'proposal_sheet_id': False,
                 'proposal_person_id': False,
                 'date': False,
-                'project_id': False,
+                # KHÔNG trả project_id=False nữa
             }
 
         first = proposal_lines[0]
         projects = proposal_lines.mapped('project_id')
 
-        return {
+        vals = {
             'proposal_sheet_id': first.proposal_sheet_id.id,
             'proposal_person_id': first.proposal_sheet_id.requested_by.id if first.proposal_sheet_id.requested_by else False,
             'date': first.proposal_sheet_id.date_proposal,
-            'project_id': projects[0].id if len(projects) == 1 else False,
         }
 
+        if len(projects) == 1 and projects[0]:
+            vals['project_id'] = projects[0].id
+
+        return vals
+    
     def _sync_header_from_lines(self):
         for rec in self:
             values = rec._get_header_vals_from_lines()

@@ -8,6 +8,11 @@ import { _t } from "@web/core/l10n/translation";
 const STORAGE_KEY = "ad_accounting_dashboard_filters_v5";
 
 const fmtVND = (n) => `${(Number(n) || 0).toLocaleString("vi-VN")} đ`;
+const hasInvoiceCode = (invoice) => {
+  const code = invoice?.invoice_number;
+  return typeof code === "string" ? code.trim().length > 0 : Boolean(code);
+};
+
 const fmtDate = (dateStr) => {
   if (!dateStr) return "";
   const d = new Date(dateStr);
@@ -248,7 +253,11 @@ class AccountingDashboard extends Component {
       const cashOut = Number(data?.cash_out ?? 0);
       const net = Number(data?.net_cash ?? cashIn - cashOut);
       const advRemain = Number(data?.employee_advance_remain_total ?? 0);
-      const totalSupp = Number(data?.total_supplier_invoice ?? 0);
+      const supplierInvoices = (data?.supplier_invoices || []).filter(hasInvoiceCode);
+      const totalSupp = supplierInvoices.reduce(
+        (sum, inv) => sum + Number(inv?.amount ?? 0),
+        0
+      );
       const totalCust = Number(data?.total_customer_invoice ?? 0);
 
       this.state.kpis = {
@@ -267,7 +276,7 @@ class AccountingDashboard extends Component {
 
       this.state.proposal_pending_count = data?.proposal_pending_count || 0;
       this.state.payment_proposals_pending_count = data?.payment_proposals_pending_count || 0;
-      this.state.supplier_invoices = data?.supplier_invoices || [];
+      this.state.supplier_invoices = supplierInvoices;
       this.state.customer_invoices = data?.customer_invoices || [];
       this.state.daily_cash_flow = data?.daily_cash_flow || [];
 
@@ -535,6 +544,8 @@ class AccountingDashboard extends Component {
       domain: [
         ["date", ">=", date_from],
         ["date", "<=", date_to],
+        ["invoice_number", "!=", false],
+        ["invoice_number", "!=", ""],
       ],
     });
   }
