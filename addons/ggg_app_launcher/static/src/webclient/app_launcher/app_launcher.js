@@ -383,6 +383,11 @@ export class AppLauncher extends Component {
         this.layoutService.deleteFolder(pageIdx, itemIdx);
         this.layoutService.saveLayout();
         this._renderPages();
+
+        const updatedItem = this.state.pages[this.state.openFolderPageIdx]?.items[this.state.openFolderItemIdx];
+        if (!updatedItem || updatedItem.type !== "folder") {
+            this._closeFolderPopover();
+        }
     }
 
     // Remove app from folder via popover
