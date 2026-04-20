@@ -38,6 +38,6 @@ class PurchaseAdvancePaymentWizard(models.TransientModel):
             amount=self.amount,
             payment_type=self.payment_type,
             journal_id=self.journal_id.id if self.journal_id else False,
-            note=self.note or _("Tạm ứng tạo từ wizard"),
+            note=self.note or _("Tạm ứng tạo từ đơn mua hàng %s") % po.name,
         )
         return po.action_view_payment_requests()

@@ -12,7 +12,7 @@ _logger = logging.getLogger(__name__)
 
 class HostingContact(models.Model):
     _name = "hosting.contact"
-    _description = "Hosting Contact"
+    _description = "Khách hàng liên hệ từ website"
     _inherit = ["mail.thread", "mail.activity.mixin"]
     _order = "remote_created_at desc, id desc"
     _rec_name = "display_name"
