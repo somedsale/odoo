@@ -22,6 +22,7 @@
         "wizard/wizard_views.xml",
         "wizard/supplier_invoice_wizard.xml",
         "views/supplier_debt_owl_report_action.xml",
+            'views/vendor_debt_share_templates.xml',
     ],
     "assets": {
     "web.assets_backend": [
