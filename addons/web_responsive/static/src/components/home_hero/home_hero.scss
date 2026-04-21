@@ -3,10 +3,10 @@
   --hero-muted: rgba(23, 50, 77, 0.78);
   --hero-soft-text: rgba(23, 50, 77, 0.62);
   --hero-border: rgba(24, 152, 226, 0.14);
-  --hero-card-bg: rgba(255, 255, 255, 0.88);
+  --hero-card-bg: rgba(255, 255, 255, 0.65);
   --hero-card-shadow: 0 20px 55px rgba(24, 152, 226, 0.12);
   --hero-btn-shadow: 0 14px 34px rgba(24, 152, 226, 0.22);
-  --hero-card-plain: #ffffff;
+  --hero-card-plain: rgba(255, 255, 255, 0.6);
   --hero-background:
     url("../../img/home-menu-bg-overlay.svg"),
     linear-gradient(135deg, #ffffff 0%, #f7fcff 22%, #eef7fd 55%, #dfeffc 100%);
@@ -17,10 +17,10 @@
   --hero-muted: rgba(255, 255, 255, 0.86);
   --hero-soft-text: rgba(255, 255, 255, 0.72);
   --hero-border: rgba(255, 255, 255, 0.14);
-  --hero-card-bg: rgba(255, 255, 255, 0.12);
+  --hero-card-bg: rgba(255, 255, 255, 0.08);
   --hero-card-shadow: 0 22px 60px rgba(7, 31, 51, 0.28);
   --hero-btn-shadow: 0 14px 34px rgba(255, 255, 255, 0.2);
-  --hero-card-plain: rgba(255, 255, 255, 0.08);
+  --hero-card-plain: rgba(255, 255, 255, 0.05);
   --hero-background:
     url("../../img/home-menu-bg-overlay.svg"),
     linear-gradient(135deg, #1898e2 0%, #1488ce 22%, #1076b7 56%, #0d618f 100%);
@@ -205,13 +205,13 @@
 }
 
 .o_home_hero__btn--secondary {
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.55);
   color: #005dbb;
   border-color: rgba(24, 152, 226, 0.16);
 }
 
 .o_home_hero[data-theme="community"] .o_home_hero__btn--secondary {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.16);
   color: #ffffff;
   border-color: var(--hero-border);
 }
@@ -242,7 +242,7 @@
   width: 44px;
   height: 44px;
   border-radius: 14px;
-  background: rgba(24, 152, 226, 0.1);
+  background: rgba(24, 152, 226, 0.12);
   color: #1898e2;
   display: flex;
   align-items: center;
@@ -251,7 +251,7 @@
 }
 
 .o_home_hero[data-theme="community"] .o_home_hero__clock_icon {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.18);
   color: #ffffff;
 }
 
@@ -304,10 +304,12 @@
   font-size: 18px;
   line-height: 1.25;
   font-weight: 800;
+  color: #ffffff;
 }
 
 .o_home_hero__section_title i {
-  color: #1898e2;
+  color: #ffffff;
+  font-size: 20px;
 }
 
 .o_home_hero__card_text {
@@ -423,7 +425,7 @@
   padding: 10px 12px;
   border-radius: 16px;
   border: 1px solid rgba(24, 152, 226, 0.1);
-  background: rgba(24, 152, 226, 0.04);
+  background: rgba(24, 152, 226, 0.05);
 }
 
 .o_home_hero__guide_icon {
@@ -434,7 +436,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(24, 152, 226, 0.12);
+  background: rgba(24, 152, 226, 0.15);
   color: #1898e2;
   font-size: 16px;
 }
