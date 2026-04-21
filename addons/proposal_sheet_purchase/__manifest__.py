@@ -10,6 +10,7 @@
         "data/sequence_data.xml",
         "views/proposal_sheet_inherit_views.xml",
         "views/purchase_order_inherit_views.xml",
+        "views/account_payment_request_views.xml",
         # "views/project_task_inherit_views.xml", 
         "views/purchase_advance_payment_wizard_views.xml",
         "views/purchase_create_supplier_invoice_wizard_views.xml",
