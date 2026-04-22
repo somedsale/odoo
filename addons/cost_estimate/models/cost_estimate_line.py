@@ -358,3 +358,20 @@ class CostEstimateLine(models.Model):
             rec.labor_total_cost = sum(rec.labor_expense_line_ids.mapped('price_total'))
             rec.material_total_cost = sum(rec.material_line_ids.mapped('price_total'))
             rec.other_total_cost = sum(rec.expense_line_ids.mapped('price_total'))
+
+    def action_open_copy_cost_wizard(self):
+        self.ensure_one()
+        if self.display_type:
+            raise UserError("Không thể sao chép chi phí cho dòng nhóm/ghi chú.")
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Sao chép chi phí từ hạng mục khác',
+            'res_model': 'cost.estimate.copy.cost.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_target_line_id': self.id,
+                'default_cost_estimate_id': self.cost_estimate_id.id,
+            }
+        }

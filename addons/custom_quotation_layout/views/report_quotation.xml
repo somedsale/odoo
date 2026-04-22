@@ -82,9 +82,7 @@
 
                         <td style="padding-left: 10px; border: none;">
                             <strong>Điện thoại:</strong>
-                            <t t-if="emp.mobile_phone">
-                                <t t-out="emp.mobile_phone"/>
-                            </t>
+                            <span t-esc="(doc.user_id.mobile_phone if doc.user_id and doc.write_uid and doc.user_id.id == doc.write_uid.id else (doc.write_uid.mobile_phone if doc.write_uid else ''))"/>
                         </td>
                     </tr>
 
