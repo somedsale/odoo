@@ -362,48 +362,48 @@
                             <div class="vendor-kpi">
                                 <div class="vendor-kpi-label">Công nợ cũ</div>
                                 <div class="vendor-kpi-value">
-                                    <span t-esc="summary_data.get('old_debt', 0.0)"/>
-                                    <span t-if="currency_symbol" t-esc="currency_symbol"/>
+                                    <span t-esc="'{:,.0f}'.format(summary_data.get('old_debt', 0.0) or 0.0).replace(',', '.')"/>
+                                    <span t-if="currency_symbol" t-esc="' ' + currency_symbol"/>
                                 </div>
                             </div>
 
                             <div class="vendor-kpi">
                                 <div class="vendor-kpi-label">Tổng hợp đồng</div>
                                 <div class="vendor-kpi-value">
-                                    <span t-esc="summary_data.get('total_contract_amount', 0.0)"/>
-                                    <span t-if="currency_symbol" t-esc="currency_symbol"/>
+                                    <span t-esc="'{:,.0f}'.format(summary_data.get('total_contract_amount', 0.0) or 0.0).replace(',', '.')"/>
+                                    <span t-if="currency_symbol" t-esc="' ' + currency_symbol"/>
                                 </div>
                             </div>
 
                             <div class="vendor-kpi">
                                 <div class="vendor-kpi-label">Tổng hồ sơ quyết toán</div>
                                 <div class="vendor-kpi-value">
-                                    <span t-esc="summary_data.get('total_settlements_amount', 0.0)"/>
-                                    <span t-if="currency_symbol" t-esc="currency_symbol"/>
+                                    <span t-esc="'{:,.0f}'.format(summary_data.get('total_settlements_amount', 0.0) or 0.0).replace(',', '.')"/>
+                                    <span t-if="currency_symbol" t-esc="' ' + currency_symbol"/>
                                 </div>
                             </div>
 
                             <div class="vendor-kpi">
                                 <div class="vendor-kpi-label">Tổng hóa đơn</div>
                                 <div class="vendor-kpi-value">
-                                    <span t-esc="summary_data.get('total_invoice_amount', 0.0)"/>
-                                    <span t-if="currency_symbol" t-esc="currency_symbol"/>
+                                    <span t-esc="'{:,.0f}'.format(summary_data.get('total_invoice_amount', 0.0) or 0.0).replace(',', '.')"/>
+                                    <span t-if="currency_symbol" t-esc="' ' + currency_symbol"/>
                                 </div>
                             </div>
 
                             <div class="vendor-kpi">
                                 <div class="vendor-kpi-label">Tổng đã trả</div>
                                 <div class="vendor-kpi-value">
-                                    <span t-esc="summary_data.get('total_payment_amount', 0.0)"/>
-                                    <span t-if="currency_symbol" t-esc="currency_symbol"/>
+                                    <span t-esc="'{:,.0f}'.format(summary_data.get('total_payment_amount', 0.0) or 0.0).replace(',', '.')"/>
+                                    <span t-if="currency_symbol" t-esc="' ' + currency_symbol"/>
                                 </div>
                             </div>
 
                             <div class="vendor-kpi vendor-kpi-highlight">
                                 <div class="vendor-kpi-label">Còn nợ</div>
                                 <div class="vendor-kpi-value">
-                                    <span t-esc="summary_data.get('residual_amount', 0.0)"/>
-                                    <span t-if="currency_symbol" t-esc="currency_symbol"/>
+                                    <span t-esc="'{:,.0f}'.format(summary_data.get('residual_amount', 0.0) or 0.0).replace(',', '.')"/>
+                                    <span t-if="currency_symbol" t-esc="' ' + currency_symbol"/>
                                 </div>
                             </div>
                         </div>
@@ -412,8 +412,8 @@
                             <div class="vendor-note-box">
                                 <div class="vendor-note-title">Chi chưa hóa đơn</div>
                                 <div class="vendor-note-content">
-                                    <span t-esc="summary_data.get('advance_amount', 0.0)"/>
-                                    <span t-if="currency_symbol" t-esc="currency_symbol"/>
+                                    <span t-esc="'{:,.0f}'.format(summary_data.get('advance_amount', 0.0) or 0.0).replace(',', '.')"/>
+                                    <span t-if="currency_symbol" t-esc="' ' + currency_symbol"/>
                                 </div>
                             </div>
 
@@ -442,7 +442,8 @@
                                 </div>
                             </div>
                             <div class="vendor-table-badge">
-                                <span t-esc="len(projects) if projects else 0"/> dự án
+                                <span t-esc="len(projects) if projects else 0"/>
+                                <span>dự án</span>
                             </div>
                         </div>
 
@@ -476,85 +477,179 @@
                                     <t t-set="display_stt" t-value="1"/>
 
                                     <t t-foreach="projects" t-as="project" t-key="project.get('id')">
+                                        <!-- DỰ ÁN -->
                                         <tr class="vendor-project-row">
-                                            <td colspan="6">
-                                                <strong>Dự án:</strong>
+                                            <td colspan="14">
                                                 <span t-esc="project.get('project_name')"/>
                                             </td>
-                                            <td colspan="3" class="text-end">
-                                                <strong t-esc="project.get('invoice_total', 0.0)"/>
-                                            </td>
-                                            <td colspan="2" class="text-end">
-                                                <strong t-esc="project.get('payment_total', 0.0)"/>
-                                            </td>
-                                            <td class="text-end">
-                                                <strong t-esc="project.get('residual_total', 0.0)"/>
-                                            </td>
-                                            <td colspan="2"></td>
                                         </tr>
 
                                         <t t-foreach="project.get('contracts', [])" t-as="contract" t-key="contract.get('id')">
+                                            <!-- HỢP ĐỒNG -->
+                                            <tr class="vendor-contract-row">
+                                                <td class="text-center"></td>
+
+                                                <td colspan="2">
+                                                    <div class="vendor-contract-text" style="padding-left: 24px;">
+                                                        <t t-if="contract.get('number_contract') and contract.get('number_contract') != 'Không có hợp đồng'">
+                                                            <span t-esc="contract.get('number_contract')"/>
+                                                            <t t-if="contract.get('contract_date')">
+                                                                <span> / </span>
+                                                                <span t-esc="contract.get('contract_date')"/>
+                                                            </t>
+                                                        </t>
+                                                        <t t-else="">
+                                                            <span>Không có hợp đồng</span>
+                                                        </t>
+                                                    </div>
+                                                </td>
+
+                                                <td class="text-end">
+                                                    <strong>
+                                                        <t t-if="contract.get('contract_amount') not in (False, None, '')">
+                                                            <span t-esc="'{:,.0f}'.format(contract.get('contract_amount') or 0.0).replace(',', '.')"/>
+                                                            <span t-if="currency_symbol" t-esc="' ' + currency_symbol"/>
+                                                        </t>
+                                                    </strong>
+                                                </td>
+
+                                                <td colspan="10"></td>
+                                            </tr>
+
+                                            <!-- HÓA ĐƠN + PHIẾU CHI -->
                                             <t t-foreach="contract.get('rows', [])" t-as="row" t-key="row.get('id')">
-                                                <tr>
-                                                    <td class="text-center">
-                                                        <span t-esc="display_stt"/>
-                                                        <t t-set="display_stt" t-value="display_stt + 1"/>
-                                                    </td>
 
-                                                    <td>
-                                                        <div t-esc="row.get('invoice_note') or ''"/>
-                                                    </td>
+                                                <!-- DÒNG HÓA ĐƠN -->
+                                                <t t-if="row.get('show_invoice')">
+                                                    <tr class="vendor-row-invoice">
+                                                        <td class="text-center">
+                                                            <span t-esc="display_stt"/>
+                                                            <t t-set="display_stt" t-value="display_stt + 1"/>
+                                                        </td>
 
-                                                    <td>
-                                                        <t t-if="row.get('show_invoice') and contract.get('number_contract') and contract.get('number_contract') != 'Không có hợp đồng'">
-                                                            <div style="font-weight:700;" t-esc="contract.get('number_contract')"/>
-                                                            <div t-if="contract.get('contract_date')" class="vendor-muted" t-esc="contract.get('contract_date')"/>
-                                                        </t>
-                                                    </td>
+                                                        <td colspan="2">
+                                                            <div class="vendor-line-invoice-text" style="padding-left: 48px;">
+                                                                <t t-if="row.get('invoice_note')">
+                                                                    <span t-esc="row.get('invoice_note')"/>
+                                                                </t>
+                                                                <t t-elif="row.get('invoice_name')">
+                                                                    <span t-esc="row.get('invoice_name')"/>
+                                                                </t>
+                                                            </div>
+                                                        </td>
 
-                                                    <td class="text-end">
-                                                        <t t-if="row.get('show_invoice') and contract.get('number_contract') and contract.get('number_contract') != 'Không có hợp đồng' and contract.get('contract_amount')">
-                                                            <span t-esc="contract.get('contract_amount')"/>
-                                                        </t>
-                                                    </td>
+                                                        <!-- Hợp đồng số tiền -->
+                                                        <td class="text-end"></td>
 
-                                                    <td></td>
-                                                    <td class="text-end"></td>
+                                                        <!-- HSQT số/ngày -->
+                                                        <td></td>
 
-                                                    <td class="text-center">
-                                                        <span t-esc="row.get('invoice_date') or ''"/>
-                                                    </td>
+                                                        <!-- HSQT số tiền -->
+                                                        <td class="text-end"></td>
 
-                                                    <td>
-                                                        <span t-esc="row.get('invoice_name') or ''"/>
-                                                    </td>
+                                                        <!-- Hóa đơn ngày -->
+                                                        <td class="text-center">
+                                                            <span t-esc="row.get('invoice_date') or ''"/>
+                                                        </td>
 
-                                                    <td class="text-end">
-                                                        <span t-esc="row.get('invoice_amount') or ''"/>
-                                                    </td>
+                                                        <!-- Hóa đơn số -->
+                                                        <td>
+                                                            <span t-esc="row.get('invoice_name') or ''"/>
+                                                        </td>
 
-                                                    <td class="text-center">
-                                                        <span t-esc="row.get('payment_date') or ''"/>
-                                                    </td>
+                                                        <!-- Hóa đơn số tiền -->
+                                                        <td class="text-end">
+                                                            <t t-if="row.get('invoice_amount') not in (False, None, '')">
+                                                                <span t-esc="'{:,.0f}'.format(row.get('invoice_amount') or 0.0).replace(',', '.')"/>
+                                                                <span t-if="currency_symbol" t-esc="' ' + currency_symbol"/>
+                                                            </t>
+                                                        </td>
 
-                                                    <td class="text-end">
-                                                        <span t-esc="row.get('payment_amount') or ''"/>
-                                                    </td>
+                                                        <!-- Đã trả ngày -->
+                                                        <td></td>
 
-                                                    <td class="text-end">
-                                                        <span t-esc="row.get('residual_display') if row.get('residual_display') not in (False, None) else ''"/>
-                                                    </td>
+                                                        <!-- Đã trả số tiền -->
+                                                        <td></td>
 
-                                                    <td>
-                                                        <t t-if="row.get('note')">
-                                                            <span class="vendor-pill" t-esc="row.get('note')"/>
-                                                        </t>
-                                                    </td>
+                                                        <!-- Còn nợ -->
+                                                        <td class="text-end">
+                                                            <t t-if="row.get('residual_display') not in (False, None, '')">
+                                                                <span t-esc="'{:,.0f}'.format(row.get('residual_display') or 0.0).replace(',', '.')"/>
+                                                                <span t-if="currency_symbol" t-esc="' ' + currency_symbol"/>
+                                                            </t>
+                                                        </td>
 
-                                                    <td class="text-center">
-                                                        <span t-esc="row.get('invoice_due_date') or ''"/>
-                                                    </td>
-                                                </tr>
+                                                        <!-- Ghi chú -->
+                                                        <td></td>
+
+                                                        <!-- Hạn T/T -->
+                                                        <td class="text-center">
+                                                            <span t-esc="row.get('invoice_due_date') or ''"/>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+
+                                                <!-- DÒNG PHIẾU CHI: chỉ hiện khi thực sự có dữ liệu payment hoặc note -->
+                                                <t t-if="row.get('payment_date') or row.get('payment_amount') not in (False, None, '') or row.get('note')">
+                                                    <tr t-att-class="row.get('note') and 'vendor-row-payment vendor-row-payment-orphan' or 'vendor-row-payment'">
+                                                        <td class="text-center"></td>
+
+                                                        <td colspan="2">
+                                                            <div class="vendor-line-payment-text" style="padding-left: 72px;">
+                                                                <span class="vendor-line-payment-marker">↳</span>
+                                                            </div>
+                                                        </td>
+
+                                                        <!-- Hợp đồng số tiền -->
+                                                        <td class="text-end"></td>
+
+                                                        <!-- HSQT số/ngày -->
+                                                        <td></td>
+
+                                                        <!-- HSQT số tiền -->
+                                                        <td class="text-end"></td>
+
+                                                        <!-- Hóa đơn ngày -->
+                                                        <td></td>
+
+                                                        <!-- Hóa đơn số -->
+                                                        <td></td>
+
+                                                        <!-- Hóa đơn số tiền -->
+                                                        <td></td>
+
+                                                        <!-- Đã trả ngày -->
+                                                        <td class="text-center">
+                                                            <span t-esc="row.get('payment_date') or ''"/>
+                                                        </td>
+
+                                                        <!-- Đã trả số tiền -->
+                                                        <td class="text-end">
+                                                            <t t-if="row.get('payment_amount') not in (False, None, '')">
+                                                                <span t-esc="'{:,.0f}'.format(row.get('payment_amount') or 0.0).replace(',', '.')"/>
+                                                                <span t-if="currency_symbol" t-esc="' ' + currency_symbol"/>
+                                                            </t>
+                                                        </td>
+
+                                                        <!-- Còn nợ -->
+                                                        <td class="text-end">
+                                                            <t t-if="not row.get('show_invoice') and row.get('residual_display') not in (False, None, '')">
+                                                                <span t-esc="'{:,.0f}'.format(row.get('residual_display') or 0.0).replace(',', '.')"/>
+                                                                <span t-if="currency_symbol" t-esc="' ' + currency_symbol"/>
+                                                            </t>
+                                                        </td>
+
+                                                        <!-- Ghi chú -->
+                                                        <td>
+                                                            <t t-if="row.get('note')">
+                                                                <span class="vendor-pill" t-esc="row.get('note')"/>
+                                                            </t>
+                                                        </td>
+
+                                                        <!-- Hạn T/T -->
+                                                        <td></td>
+                                                    </tr>
+                                                </t>
                                             </t>
                                         </t>
                                     </t>

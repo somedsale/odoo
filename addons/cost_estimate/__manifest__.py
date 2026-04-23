@@ -10,6 +10,7 @@
         'views/cost_estimate_views.xml',
         'views/project_expense_view.xml',
         'views/cost_additional_expense_line_views.xml',
+        'wizard/cost_estimate_copy_cost_wizard_views.xml',
     ],
     'assets': {
     'web.assets_backend': [

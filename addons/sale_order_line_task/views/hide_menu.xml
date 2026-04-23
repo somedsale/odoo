@@ -21,4 +21,13 @@
     <record id="sale.menu_sale_invoicing" model="ir.ui.menu">
         <field name="active" eval="False"/>
     </record>
+    <record id="account.menu_finance" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+    <record id="spreadsheet_dashboard.spreadsheet_dashboard_menu_root" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+    <record id="mrp.menu_mrp_root" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
 </odoo>
