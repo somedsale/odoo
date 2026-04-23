@@ -3,11 +3,11 @@
   <data>
 
     <!-- 🌟 Menu gốc riêng của module Somed -->
-    <menuitem
+    <!-- <menuitem
       id="menu_somed_product_root"
       name="Cấu hình sản phẩm Somed"
       sequence="10"
-    />
+    /> -->
 
     <!-- TREE VIEW -->
     <record id="view_product_attribute_set_tree" model="ir.ui.view">
@@ -49,13 +49,13 @@
     </record>
 
     <!-- MENU CON: Bộ thuộc tính sản phẩm -->
-    <menuitem
+    <!-- <menuitem
       id="menu_product_attribute_set"
       name="Bộ thuộc tính sản phẩm"
       parent="menu_somed_product_root"
       action="action_product_attribute_set"
       sequence="20"
-    />
+    /> -->
 
   </data>
 </odoo>

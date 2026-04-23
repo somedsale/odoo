@@ -302,4 +302,50 @@
             top: 35px;
         }
     }
+    .o_group_row_project td {
+    background: #d9edf7 !important;
+    font-weight: 700;
+    color: #000 !important;
+}
+
+.o_group_row_contract td {
+    background: #f5f5f5 !important;
+    font-weight: 600;
+    color: #000 !important;
+}
+
+.o_row_invoice td {
+    background: #f8fbff !important;
+    color: #000 !important;
+    border-top: 1px solid #bcd7f5 !important;
+    border-bottom: 1px solid #d9e8f8 !important;
+}
+
+.o_line_invoice_text {
+    font-weight: 600;
+    color: #000;
+}
+
+.o_row_payment td {
+    background: #fcfcfc !important;
+    color: #000 !important;
+    border-top: 1px dashed #d6d6d6 !important;
+}
+
+.o_line_payment_text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #444;
+    font-style: italic;
+}
+
+.o_line_payment_marker {
+    font-weight: 700;
+    color: #777;
+}
+
+.o_row_payment_orphan td {
+    background: #fff8e1 !important;
+}
 }

@@ -44,13 +44,13 @@
     </record>
 
     <!-- MENU CON: Loại sản phẩm -->
-    <menuitem
+    <!-- <menuitem
       id="menu_product_type"
       name="Loại sản phẩm"
       parent="menu_somed_product_root"
       action="action_product_type"
       sequence="30"
-    />
+    /> -->
 
   </data>
 </odoo>
