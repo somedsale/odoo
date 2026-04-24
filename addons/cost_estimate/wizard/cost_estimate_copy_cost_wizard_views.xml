@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_cost_estimate_copy_cost_wizard_form" model="ir.ui.view">
+        <field name="name">cost.estimate.copy.cost.wizard.form</field>
+        <field name="model">cost.estimate.copy.cost.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Sao chép chi phí từ hạng mục khác" create="0" edit="1">
+                <sheet>
+                    <div class="oe_title">
+                        <h2>Sao chép chi phí</h2>
+                        <div class="text-muted">
+                            Chọn hạng mục nguồn và loại chi phí cần sao chép sang hạng mục đích.
+                        </div>
+                    </div>
+
+                    <group col="2">
+                        <group string="Thông tin đích">
+                            <field name="cost_estimate_id" readonly="1"/>
+                            <field name="target_line_id" readonly="1"/>
+                        </group>
+
+                        <group string="Thông tin nguồn">
+                            <field name="source_line_id"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                    </group>
+
+                    <separator string="Loại chi phí cần sao chép"/>
+
+                    <group col="3">
+                        <field name="copy_material" widget="boolean_toggle"/>
+                        <field name="copy_labor" widget="boolean_toggle"/>
+                        <field name="copy_other" widget="boolean_toggle"/>
+                    </group>
+
+                    <group>
+                        <field name="replace_existing"/>
+                    </group>
+
+                    <div class="alert alert-info" role="alert">
+                        <strong>Lưu ý:</strong>
+                        Nếu chọn <b>Xóa chi phí hiện tại ở hạng mục đích trước khi sao chép</b>
+                        thì các dòng chi phí cũ của hạng mục đích sẽ bị thay thế theo loại đã chọn.
+                    </div>
+                </sheet>
+
+                <footer>
+                    <button name="action_copy_costs"
+                            type="object"
+                            string="Sao chép chi phí"
+                            class="btn btn-primary"/>
+                    <button string="Hủy"
+                            special="cancel"
+                            class="btn btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

@@ -5,3 +5,4 @@ access_project_expense_user,access_project_expense_user,model_project_expense,ba
 access_project_expense_line_user,access.project.expense.line.user,model_project_expense_line,,1,1,1,1
 access_cost_additional_expense_user,access.cost.additional.expense.user,model_cost_additional_expense,,1,1,1,1
 access_cost_additional_expense_line_user,access.cost.additional.expense.line.user,model_cost_additional_expense_line,,1,1,1,1
+access_cost_estimate_copy_cost_wizard_user,access.cost.estimate.copy.cost.wizard.user,model_cost_estimate_copy_cost_wizard,base.group_user,1,1,1,1

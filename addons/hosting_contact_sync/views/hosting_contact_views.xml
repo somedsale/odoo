@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_hosting_contact_search" model="ir.ui.view">
+        <field name="name">hosting.contact.search</field>
+        <field name="model">hosting.contact</field>
+        <field name="arch" type="xml">
+            <search string="Khách hàng từ website">
+                <field name="remote_id"/>
+                <field name="title"/>
+                <field name="contact_name"/>
+                <field name="phone"/>
+                <field name="email"/>
+                <field name="product"/>
+                <field name="partner_id"/>
+                <field name="sale_order_id"/>
+                <field name="user_id"/>
+                <field name="state"/>
+
+                <filter string="Mới" name="filter_new" domain="[('state','=','new')]"/>
+                <filter string="Đã liên hệ" name="filter_contacted" domain="[('state','=','contacted')]"/>
+                <filter string="Đã tạo báo giá" name="filter_quoted" domain="[('state','=','quoted')]"/>
+                <filter string="Hoàn tất" name="filter_done" domain="[('state','=','done')]"/>
+                <filter string="Hủy" name="filter_cancel" domain="[('state','=','cancel')]"/>
+
+                <separator/>
+
+                <filter string="Có báo giá" name="filter_has_quotation" domain="[('sale_order_id','!=',False)]"/>
+                <filter string="Chưa có báo giá" name="filter_no_quotation" domain="[('sale_order_id','=',False)]"/>
+                <filter string="Có khách hàng" name="filter_has_partner" domain="[('partner_id','!=',False)]"/>
+                <filter string="Chưa có khách hàng" name="filter_no_partner" domain="[('partner_id','=',False)]"/>
+
+                <group expand="0" string="Nhóm theo">
+                    <filter string="Trạng thái" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Phụ trách" name="group_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Ngày tạo hosting" name="group_remote_created_at" context="{'group_by': 'remote_created_at:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_hosting_contact_tree" model="ir.ui.view">
+        <field name="name">hosting.contact.tree</field>
+        <field name="model">hosting.contact</field>
+        <field name="arch" type="xml">
+            <tree string="Khách hàng từ website" create="false" delete="true">
+                <header>
+                    <button name="action_fetch_from_hosting"
+                            type="object"
+                            display="always"
+                            string="Đồng bộ từ hosting"
+                            class="btn-primary"/>
+
+                    <button name="action_mark_contacted"
+                            type="object"
+                            string="Đánh dấu đã liên hệ"
+                            class="btn-secondary"/>
+
+                    <button name="action_done"
+                            type="object"
+                            string="Hoàn tất"
+                            class="btn-success"/>
+
+                    <button name="action_cancel"
+                            type="object"
+                            string="Hủy"
+                            class="btn-danger"/>
+                </header>
+
+                <field name="remote_id" string="Remote ID"/>
+                <field name="title"/>
+                <field name="contact_name"/>
+                <field name="phone"/>
+                <field name="email"/>
+                <field name="product"/>
+                <field name="user_id"/>
+                <field name="partner_id"/>
+                <field name="sale_order_id"/>
+                <field name="remote_created_at"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'new'"
+                       decoration-warning="state == 'contacted'"
+                       decoration-primary="state == 'quoted'"
+                       decoration-success="state == 'done'"
+                       decoration-danger="state == 'cancel'"/>
+
+                <button name="action_create_quotation"
+                        type="object"
+                        string="Tạo báo giá"
+                        class="btn-link"/>
+
+                <button name="action_open_sale_order"
+                        type="object"
+                        string="Mở báo giá"
+                        class="btn-link"
+                        invisible="not sale_order_id"/>
+
+                <button name="action_open_partner"
+                        type="object"
+                        string="Mở khách hàng"
+                        class="btn-link"
+                        invisible="not partner_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_hosting_contact_form" model="ir.ui.view">
+        <field name="name">hosting.contact.form</field>
+        <field name="model">hosting.contact</field>
+        <field name="arch" type="xml">
+            <form string="Hosting Contact">
+                <header>
+                    <button name="action_mark_contacted"
+                            type="object"
+                            string="Đã liên hệ"
+                            class="btn-secondary"
+                            invisible="state in ('contacted','quoted','done','cancel')"/>
+
+                    <button name="action_create_quotation"
+                            type="object"
+                            string="Tạo báo giá"
+                            class="btn-primary"
+                            invisible="state in ('quoted','done','cancel')"/>
+
+                    <button name="action_open_sale_order"
+                            type="object"
+                            string="Mở báo giá"
+                            class="btn-secondary"
+                            invisible="not sale_order_id"/>
+
+                    <button name="action_open_partner"
+                            type="object"
+                            string="Mở khách hàng"
+                            class="btn-secondary"
+                            invisible="not partner_id"/>
+
+                    <button name="action_done"
+                            type="object"
+                            string="Hoàn tất"
+                            class="btn-success"
+                            invisible="state in ('done','cancel')"/>
+
+                    <button name="action_cancel"
+                            type="object"
+                            string="Hủy"
+                            class="btn-danger"
+                            invisible="state in ('done','cancel')"/>
+
+                    <button name="action_reset_to_new"
+                            type="object"
+                            string="Đặt lại Mới"
+                            class="btn-secondary"
+                            invisible="state == 'new'"/>
+
+                    <field name="state" widget="statusbar" statusbar_visible="new,contacted,quoted,done,cancel"/>
+                </header>
+
+<sheet>
+    <widget name="web_ribbon" title="Đã liên hệ" bg_color="text-bg-warning"
+            invisible="state != 'contacted'"/>
+    <widget name="web_ribbon" title="Đã tạo báo giá" bg_color="text-bg-primary"
+            invisible="state != 'quoted'"/>
+    <widget name="web_ribbon" title="Hoàn tất" bg_color="text-bg-success"
+            invisible="state != 'done'"/>
+    <widget name="web_ribbon" title="Hủy" bg_color="text-bg-danger"
+            invisible="state != 'cancel'"/>
+
+    <div class="oe_button_box" name="button_box">
+        <button name="action_open_sale_order"
+                type="object"
+                class="oe_stat_button"
+                icon="fa-file-text-o"
+                invisible="not sale_order_id">
+            <field name="sale_order_count" widget="statinfo" string="Báo giá"/>
+        </button>
+    </div>
+
+    <group>
+        <group>
+            <field name="remote_id" readonly="1"/>
+            <field name="title"/>
+            <field name="contact_name"/>
+            <field name="phone"/>
+            <field name="email"/>
+            <field name="product"/>
+        </group>
+        <group>
+            <field name="user_id"/>
+            <field name="partner_id"/>
+            <field name="sale_order_id" readonly="1"/>
+            <field name="remote_created_at" readonly="1"/>
+            <field name="last_fetch_at" readonly="1"/>
+        </group>
+    </group>
+
+    <group>
+        <group string="Mốc xử lý">
+            <field name="contact_date" readonly="1"/>
+            <field name="quotation_date" readonly="1"/>
+        </group>
+        <group string="Kết thúc">
+            <field name="done_date" readonly="1"/>
+            <field name="cancel_date" readonly="1"/>
+        </group>
+    </group>
+
+    <notebook>
+        <page string="Nội dung khách gửi">
+            <field name="message" nolabel="1"/>
+        </page>
+        <page string="Ghi chú nội bộ">
+            <field name="note_internal" nolabel="1"/>
+        </page>
+        <page string="Lỗi đồng bộ">
+            <field name="sync_error" nolabel="1" readonly="1"/>
+        </page>
+        <page string="Dữ liệu gốc">
+            <field name="raw_payload" nolabel="1" readonly="1" widget="text"/>
+        </page>
+    </notebook>
+</sheet>
+
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hosting_contact" model="ir.actions.act_window">
+        <field name="name">Khách hàng từ website</field>
+        <field name="res_model">hosting.contact</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_hosting_contact_search"/>
+    </record>
+
+    <menuitem id="menu_hosting_contact_root"
+              name="Khách hàng từ website"
+              parent="sale.sale_menu_root"
+              action="action_hosting_contact"
+              sequence="20"/>
+
+
+</odoo>

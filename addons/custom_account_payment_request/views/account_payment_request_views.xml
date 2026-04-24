@@ -1,22 +1,102 @@
 <odoo>
+    <!-- TREE VIEW -->
     <record id="view_account_payment_request_tree" model="ir.ui.view">
         <field name="name">account.payment.request.tree</field>
         <field name="model">account.payment.request</field>
         <field name="arch" type="xml">
-            <tree >
+            <tree>
+                <header>
+                    <button name="action_sync_old_payment_requests"
+                            string="Đồng bộ phiếu chi cũ"
+                            type="object"
+                            class="btn-warning"
+                            display="always"
+                            groups="base.group_system"/>
+                </header>
                 <field name="currency_id" optional="hide"/>
                 <field name="name" string="Mã phiếu chi"/>
+                <field name="project_id" string="Dự án"/>
+                <field name="proposal_sheet_names"/>
                 <field name="note" string="Nội dung chi"/>
-                <field name="proposal_sheet_id" string="Phiếu đề xuất"/>
-                <field name ="project_id" string="Dự án" class="project_value"/>
+                <field name="proposal_count" string="Số PĐX"/>
                 <field name="create_date" string="Ngày tạo"/>
                 <field name="date_payment" string="Ngày chi"/>
-                <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="1" sum="Tổng"/>
-                <field name="state" string="Trạng thái" widget="badge" decoration-muted="state == 'draft'" decoration-primary="state == 'confirmed'" decoration-success="state == 'done'"/>
-                <field name="status_expense" widget="badge" string="Trạng thái chi tiền" decoration-danger="status_expense == 'not yet'" decoration-success="status_expense == 'paid'"/>
+                <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
+                <field name="state" string="Trạng thái" widget="badge"
+                       decoration-muted="state == 'draft'"
+                       decoration-primary="state == 'confirmed'"
+                       decoration-success="state == 'done'"/>
+                <field name="status_expense" widget="badge" string="Trạng thái chi tiền"
+                       decoration-danger="status_expense == 'not yet'"
+                       decoration-success="status_expense == 'paid'"/>
             </tree>
         </field>
     </record>
+
+    <!-- SEARCH VIEW -->
+    <record id="view_account_payment_request_search" model="ir.ui.view">
+        <field name="name">account.payment.request.search</field>
+        <field name="model">account.payment.request</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm Phiếu Chi">
+                <!-- Search input -->
+                <field name="name" string="Mã phiếu chi"/>
+                <field name="project_id" string="Dự án"/>
+                <field name="proposal_sheet_names" string="Phiếu đề xuất"/>
+                <field name="note" string="Nội dung chi"/>
+                <field name="receive_person" string="Người nhận"/>
+                <field name="payment_person" string="Người lập"/>
+                <field name="total" string="Số tiền"/>
+                <field name="manual_total" string="Số tiền nhập tay"/>
+
+                <!-- Search Panel -->
+                <searchpanel>
+                    <field name="project_id" string="Dự án" icon="fa-folder-open"/>
+                    <field name="state" string="Trạng thái" icon="fa-tasks"/>
+                    <field name="status_expense" string="Trạng thái chi tiền" icon="fa-money"/>
+                    <field name="payment_type" string="Hình thức thanh toán" icon="fa-credit-card"/>
+                    <field name="expense_category_id" string="Hạng mục chi" icon="fa-list"/>
+                </searchpanel>
+
+                <!-- Filters trạng thái -->
+                <separator/>
+                <filter string="Nháp" name="filter_draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Đã xác nhận" name="filter_confirmed" domain="[('state', '=', 'confirmed')]"/>
+                <filter string="Hoàn thành" name="filter_done" domain="[('state', '=', 'done')]"/>
+                <filter string="Đã hủy" name="filter_cancelled" domain="[('state', '=', 'cancelled')]"/>
+
+                <!-- Filters thanh toán -->
+                <separator/>
+                <filter string="Chưa thanh toán" name="filter_not_paid" domain="[('status_expense', '=', 'not yet')]"/>
+                <filter string="Đã thanh toán" name="filter_paid" domain="[('status_expense', '=', 'paid')]"/>
+
+                <!-- Filters hình thức -->
+                <separator/>
+                <filter string="Tiền mặt" name="filter_cash" domain="[('payment_type', '=', 'cash')]"/>
+                <filter string="Chuyển khoản" name="filter_bank" domain="[('payment_type', '=', 'bank')]"/>
+
+                <!-- Filters số tiền -->
+                <separator/>
+                <filter string="Dưới 10 triệu" name="amount_lt_10m" domain="[('total', '&lt;', 10000000)]"/>
+                <filter string="10 - 50 triệu" name="amount_10_50m" domain="[('total', '&gt;=', 10000000), ('total', '&lt;=', 50000000)]"/>
+                <filter string="50 - 100 triệu" name="amount_50_100m" domain="[('total', '&gt;', 50000000), ('total', '&lt;=', 100000000)]"/>
+                <filter string="Trên 100 triệu" name="amount_gt_100m" domain="[('total', '&gt;', 100000000)]"/>
+
+                <!-- Group by -->
+                <group expand="0" string="Nhóm theo">
+                    <filter string="Dự án" name="group_by_project" context="{'group_by': 'project_id'}"/>
+                    <filter string="Trạng thái" name="group_by_state" context="{'group_by': 'state'}"/>
+                    <filter string="Trạng thái chi tiền" name="group_by_status_expense" context="{'group_by': 'status_expense'}"/>
+                    <filter string="Hình thức thanh toán" name="group_by_payment_type" context="{'group_by': 'payment_type'}"/>
+                    <filter string="Ngày tạo" name="group_by_create_date" context="{'group_by': 'create_date'}"/>
+                    <filter string="Ngày chi" name="group_by_date_payment" context="{'group_by': 'date_payment'}"/>
+                    <filter string="Người nhận" name="group_by_receive_person" context="{'group_by': 'receive_person'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- FORM VIEW -->
     <record id="view_account_payment_request_form" model="ir.ui.view">
         <field name="name">account.payment.request.form</field>
         <field name="model">account.payment.request</field>
@@ -24,25 +104,28 @@
             <form string="Phiếu chi">
                 <field name="status_expense" invisible="1"/>
                 <header>
-                    <button name="action_confirm" string="Xác nhận" type="object" class="btn-primary" invisible="state != &apos;draft&apos;" groups="account.group_account_manager,base.group_system"/>
-                    <button name="action_payment_request" string="Ghi nhận thanh toán" type="object" class="btn-success" invisible="state != &apos;confirmed&apos;" groups="account.group_account_manager,base.group_system"/>
-                    <button name="action_cancel" string="Hủy" type="object" class="btn-danger" invisible="state == &apos;cancelled&apos;" groups="account.group_account_manager,base.group_system"/>
-                    <button name="action_reset_to_draft" string="Đặt lại thành nháp" type="object" class="btn-secondary" invisible="state != 'cancelled'" groups="account.group_account_manager,base.group_system"/>
+                    <button name="action_confirm" string="Xác nhận" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_payment_request" string="Ghi nhận thanh toán" type="object" class="btn-success" invisible="state != 'confirmed'"/>
+                    <button name="action_cancel" string="Hủy" type="object" class="btn-danger" invisible="state == 'cancelled'"/>
+                    <button name="action_reset_to_draft" string="Đặt lại thành nháp" type="object" class="btn-secondary" invisible="state != 'cancelled'"/>
                     <field name="state" widget="statusbar" statusbar_visible="confirmed,done"/>
                 </header>
+
                 <sheet>
                     <widget name="web_ribbon" title="Đã thanh toán" bg_color="bg-success" invisible="status_expense != 'paid'"/>
                     <widget name="web_ribbon" title="Chưa thanh toán" bg_color="bg-danger" invisible="status_expense != 'not yet' or state == 'draft'"/>
+
                     <div class="oe_title">
-                        <h1 >
+                        <h1>
                             <field name="name" readonly="1"/>
-                            <!-- <field name="status_expense" widget="badge" decoration-success="status_expense == 'paid'" decoration-danger="status_expense == 'not yet'"/> -->
                         </h1>
                     </div>
-                    <group >
+
+                    <group>
                         <group>
-                            <field name="proposal_sheet_id" domain="[('project_id', '=', project_id)]" readonly="state != 'draft'"/>
-                            <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="state != 'draft'"/>
+                            <field name="proposal_sheet_id" invisible="1"/>
+                            <field name="total" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="1"/>
+                            <field name="manual_total" readonly="state != 'draft'"/>
                             <field name="payment_person" widget="many2one_avatar_user" readonly="1"/>
                             <field name="create_date" string="Ngày tạo" readonly="1"/>
                             <field name="receive_person" readonly="state != 'draft'"/>
@@ -50,19 +133,34 @@
                             <field name="note" readonly="state != 'draft'"/>
                             <field name="currency_id" invisible="1"/>
                         </group>
+
                         <group>
                             <field name="cost_classification" widget="select" readonly="state != 'draft'"/>
                             <field name="expense_category_id" context="{'default_classification': cost_classification}"/>
                             <field name="project_id" invisible="cost_classification != 'project'" readonly="state != 'draft'"/>
-                            <field name="date" invisible="proposal_person_id == False" readonly="state != 'draft'"/>
-                            <field name="date_payment" string="Ngày chi" invisible="status_expense == 'not yet'" />
-                            <field name="proposal_person_id" widget="many2one_avatar_user" invisible="proposal_person_id == False"/>
+                            <field name="date_payment" string="Ngày chi" invisible="status_expense == 'not yet'"/>
                             <field name="expense_type" widget="select" invisible="cost_classification != 'project'" readonly="state != 'draft'"/>
                             <field name="payment_type" widget="select" readonly="state != 'draft'"/>
-                            <field name="bank_id" string="Ngân hàng" invisible="payment_type != 'bank'" readonly="state != 'draft'" placeholder="Chọn ngân hàng dùng để chi"/>
+                            <field name="bank_id" string="Ngân hàng" invisible="payment_type != 'bank'" readonly="state != 'draft'"/>
                         </group>
                     </group>
+
+                    <notebook>
+                        <page string="Phiếu đề xuất">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <tree editable="bottom">
+                                    <field name="proposal_sheet_id" domain="[('project_id', '=', parent.project_id)]"/>
+                                    <field name="requested_by" readonly="1"/>
+                                    <field name="proposal_date" readonly="1"/>
+                                    <field name="interpretation"/>
+                                    <field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
+                                    <field name="note"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
                 </sheet>
+
                 <div class="oe_chatter">
                     <field name="message_follower_ids" widget="mail_followers"/>
                     <field name="message_ids" widget="mail_thread"/>
@@ -70,117 +168,25 @@
             </form>
         </field>
     </record>
-    <record id="view_account_payment_request_search" model="ir.ui.view">
-        <field name="name">account.payment.request.search</field>
-        <field name="model">account.payment.request</field>
-        <field name="arch" type="xml">
-            <search string="Tìm kiếm phiếu chi">
 
-                <!-- Search fields -->
-                <field name="name" string="Mã phiếu chi"/>
-                <field name="note" string="Nội dung chi"/>
-                <field name="proposal_sheet_id" string="Phiếu đề xuất"/>
-                <field name="project_id" string="Dự án"/>
-                <field name="receive_person" string="Người nhận tiền"/>
-                <field name="payment_person" string="Người tạo chi"/>
-                <field name="bank_id" string="Ngân hàng"/>
-                <field name="date" string="Ngày đề xuất"/>
-                <field name="date_payment" string="Ngày chi"/>
-
-                <!-- Quick filters -->
-                <separator/>
-
-                <filter string="Nháp" name="filter_draft" domain="[('state', '=', 'draft')]"/>
-                <filter string="Đã xác nhận" name="filter_confirmed" domain="[('state', '=', 'confirmed')]"/>
-                <filter string="Đã vào sổ" name="filter_post" domain="[('state', '=', 'post')]"/>
-                <filter string="Hoàn tất" name="filter_done" domain="[('state', '=', 'done')]"/>
-                <filter string="Đã hủy" name="filter_cancelled" domain="[('state', '=', 'cancelled')]"/>
-
-                <separator/>
-
-                <filter string="Chưa chi" name="filter_not_paid" domain="[('status_expense', '=', 'not yet')]"/>
-                <filter string="Đã chi" name="filter_paid" domain="[('status_expense', '=', 'paid')]"/>
-
-                <separator/>
-
-                <filter string="Tiền mặt" name="filter_cash" domain="[('payment_type', '=', 'cash')]"/>
-                <filter string="Chuyển khoản" name="filter_bank" domain="[('payment_type', '=', 'bank')]"/>
-
-                <separator/>
-
-                <filter string="Có dự án" name="filter_has_project" domain="[('project_id', '!=', False)]"/>
-                <filter string="Không có dự án" name="filter_no_project" domain="[('project_id', '=', False)]"/>
-                <filter string="Chi công trình" name="filter_project_cost" domain="[('cost_classification', '=', 'project')]"/>
-                <filter string="Chi công ty" name="filter_office_cost" domain="[('cost_classification', '=', 'office')]"/>
-
-                <separator/>
-
-                <!-- Date filters -->
-                <filter string="Hôm nay" name="filter_today" domain="[('date', '=', context_today().strftime('%%Y-%%m-%%d'))]"/>
-                <filter string="Tháng này" name="filter_this_month" domain="[
-                        ('date', '&gt;=', context_today().strftime('%%Y-%%m-01')),
-                        ('date', '&lt;=', context_today().strftime('%%Y-%%m-31'))
-                    ]"/>
-                <filter string="Đã chi hôm nay" name="filter_paid_today" domain="[('date_payment', '=', context_today().strftime('%%Y-%%m-%%d'))]"/>
-
-                <separator/>
-
-                <!-- Group by -->
-                <group expand="0" string="Nhóm theo">
-                    <filter string="Dự án" name="group_project" context="{'group_by': 'project_id'}"/>
-                    <filter string="Phiếu đề xuất" name="group_proposal" context="{'group_by': 'proposal_sheet_id'}"/>
-                    <filter string="Trạng thái" name="group_state" context="{'group_by': 'state'}"/>
-                    <filter string="Trạng thái chi" name="group_status_expense" context="{'group_by': 'status_expense'}"/>
-                    <filter string="Phân loại chi phí" name="group_cost_classification" context="{'group_by': 'cost_classification'}"/>
-                    <filter string="Loại chi phí" name="group_expense_type" context="{'group_by': 'expense_type'}"/>
-                    <filter string="Loại thanh toán" name="group_payment_type" context="{'group_by': 'payment_type'}"/>
-                    <filter string="Ngân hàng" name="group_bank" context="{'group_by': 'bank_id'}"/>
-                    <filter string="Người nhận tiền" name="group_receive_person" context="{'group_by': 'receive_person'}"/>
-                    <filter string="Ngày đề xuất" name="group_date" context="{'group_by': 'date'}"/>
-                    <filter string="Tháng đề xuất" name="group_date_month" context="{'group_by': 'date:month'}"/>
-                    <filter string="Ngày chi" name="group_date_payment" context="{'group_by': 'date_payment'}"/>
-                    <filter string="Tháng chi" name="group_date_payment_month" context="{'group_by': 'date_payment:month'}"/>
-                </group>
-
-                <!-- Search panel -->
-                <searchpanel>
-                    <field name="project_id" string="Dự án" enable_counters="1"/>
-                    <field name="state" string="Trạng thái" select="multi" enable_counters="1"/>
-                    <field name="status_expense" string="Trạng thái chi" select="multi" enable_counters="1"/>
-                    <field name="cost_classification" string="Phân loại chi phí" select="multi" enable_counters="1"/>
-                    <field name="payment_type" string="Loại thanh toán" select="multi" enable_counters="1"/>
-                    <field name="expense_type" string="Loại chi phí" select="multi" enable_counters="1"/>
-                    <field name="bank_id" string="Ngân hàng" select="multi" enable_counters="1"/>
-                </searchpanel>
-
-            </search>
-        </field>
-    </record>
-    <record id="view_account_payment_request_search_no_panel" model="ir.ui.view">
-        <field name="name">account.payment.request.search.no.panel</field>
-        <field name="model">account.payment.request</field>
-        <field name="arch" type="xml">
-            <search string="Tìm kiếm">
-                <field name="name"/>
-                <field name="note"/>
-            </search>
-        </field>
-    </record>
-
+    <!-- ACTION -->
     <record id="action_account_payment_request" model="ir.actions.act_window">
         <field name="name">Phiếu Chi</field>
         <field name="res_model">account.payment.request</field>
         <field name="view_mode">tree,form</field>
-        <field name="context">{}</field>
         <field name="search_view_id" ref="view_account_payment_request_search"/>
+        <field name="context">{}</field>
     </record>
+
     <record id="action_account_payment_request_without_searchpanel" model="ir.actions.act_window">
         <field name="name">Phiếu Chi</field>
         <field name="res_model">account.payment.request</field>
         <field name="view_mode">tree,form</field>
-        <field name="search_view_id" ref="view_account_payment_request_search_no_panel"/>
+        <field name="search_view_id" ref="view_account_payment_request_search"/>
     </record>
 
-    <menuitem id="menu_accounting_payment_request" name="Phiếu Chi" parent="custom_account_menu.menu_accounting_vouchers" action="action_account_payment_request"/>
-
+    <menuitem id="menu_accounting_payment_request"
+              name="Phiếu Chi"
+              parent="custom_account_menu.menu_accounting_vouchers"
+              action="action_account_payment_request"/>
 </odoo>

@@ -53,6 +53,7 @@
                             <field name="interpretation"/>
                             <field name="contract_date"/>
                             <field name="due_date"/>
+                            <field name="attachment_ids" widget="many2many_binary" options="{'no_create': True, 'no_open': True}" /> <!-- Thêm trường đính kèm tệp -->
                         </group>
                         <group string="Chi tiết">
                             <field name="amount"/>

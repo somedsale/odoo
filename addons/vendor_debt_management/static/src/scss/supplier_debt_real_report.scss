@@ -1,0 +1,451 @@
+.o_supplier_debt_report_view {
+    --report-bg: #f5f7fb;
+    --card-bg: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border-soft: #e2e8f0;
+    --border-strong: #cbd5e1;
+    --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.06);
+    --shadow-sm: 0 4px 14px rgba(15, 23, 42, 0.05);
+    --primary-soft: #e8f1ff;
+    --primary-border: #c7dcff;
+    --primary-text: #1d4ed8;
+    --success-soft: #eaf8ef;
+    --success-text: #15803d;
+    --warning-soft: #fff6e5;
+    --warning-text: #b45309;
+    --danger-soft: #feecec;
+    --danger-text: #b91c1c;
+    --table-head: #edf4ea;
+    --table-total: #fbe4d5;
+    --row-hover: #f8fafc;
+
+    /* FIX sticky */
+    --report-sticky-header-height: 48px;
+    --report-sticky-toolbar-height: 0px;
+
+    background: linear-gradient(180deg, #f8fafc 0%, #f4f7fb 100%);
+    min-height: 100%;
+    padding: 20px 24px 28px;
+
+    .btn {
+        border-radius: 12px;
+        font-weight: 600;
+        box-shadow: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        border-color: #1d4ed8;
+
+        &:hover,
+        &:focus {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            border-color: #1e40af;
+        }
+    }
+
+    .btn-outline-secondary {
+        color: #334155;
+        border-color: #cbd5e1;
+        background: #fff;
+
+        &:hover,
+        &:focus {
+            color: #0f172a;
+            border-color: #94a3b8;
+            background: #f8fafc;
+        }
+    }
+
+    .form-control,
+    .form-select {
+        border-radius: 12px;
+        border: 1px solid var(--border-soft);
+        min-height: 42px;
+        box-shadow: none;
+
+        &:focus {
+            border-color: #93c5fd;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+        }
+    }
+
+    .form-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 6px;
+    }
+}
+
+.o_supplier_debt_report_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.o_supplier_debt_report_title {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1.2;
+    font-weight: 750;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+}
+
+.o_supplier_debt_report_subtitle {
+    margin-top: 6px;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.o_supplier_debt_report_actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.o_supplier_debt_report_loading {
+    background: var(--card-bg);
+    border: 1px solid var(--border-soft);
+    border-radius: 18px;
+    box-shadow: var(--shadow-soft);
+    padding: 56px 24px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 15px;
+}
+
+.o_supplier_debt_filters {
+    background: var(--card-bg);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 18px;
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 16px;
+    overflow: hidden;
+
+    .card-body {
+        padding: 18px;
+    }
+}
+
+.o_supplier_debt_filters_grid {
+    display: grid;
+    grid-template-columns: minmax(320px, 2fr) minmax(180px, 1fr) minmax(220px, 1fr) minmax(160px, 160px);
+    gap: 14px 16px;
+    align-items: end;
+}
+
+.o_filter_item_search {
+    .form-control {
+        padding-left: 14px;
+    }
+}
+
+.o_supplier_debt_summary_cards {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.o_summary_card {
+    position: relative;
+    background: var(--card-bg);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 18px;
+    box-shadow: var(--shadow-soft);
+    padding: 18px 18px 16px;
+    overflow: hidden;
+
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 4px;
+        background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
+    }
+}
+
+.o_summary_card_label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.o_summary_card_value {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--text-main);
+    letter-spacing: -0.02em;
+}
+
+.o_supplier_debt_table_card {
+    background: var(--card-bg);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 18px;
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+    margin-bottom: 16px;
+
+    .card-body {
+        background: #fff;
+    }
+}
+
+.o_supplier_debt_table_toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.o_supplier_debt_table_wrap {
+    max-height: calc(100vh - 340px);
+    overflow: auto;
+    position: relative;
+    background: #fff;
+}
+
+.o_supplier_debt_table {
+    width: 100%;
+    margin: 0;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #fff;
+
+    thead th {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        background: linear-gradient(180deg, #f2f8ef 0%, #e8f1e4 100%);
+        color: #1e293b;
+        font-size: 12.5px;
+        font-weight: 750;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        border-bottom: 1px solid var(--border-strong);
+        box-shadow: inset 0 -1px 0 var(--border-strong);
+        min-height: var(--report-sticky-header-height);
+        height: var(--report-sticky-header-height);
+        vertical-align: middle;
+    }
+
+    th,
+    td {
+        padding: 11px 12px;
+        vertical-align: middle;
+        border-right: 1px solid #e5e7eb;
+        border-bottom: 1px solid #e5e7eb;
+        background-clip: padding-box;
+
+        &:last-child {
+            border-right: 0;
+        }
+    }
+
+    tbody tr:hover td {
+        background: var(--row-hover);
+    }
+
+    tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    td {
+        color: #1f2937;
+        font-size: 13px;
+    }
+
+    .fw-bold {
+        font-weight: 700 !important;
+    }
+
+    .badge {
+        font-weight: 600;
+        font-size: 11px;
+        padding: 6px 9px;
+        border-radius: 999px;
+    }
+
+    .text-bg-light {
+        background: #eef2ff !important;
+        color: #3730a3 !important;
+        border: 1px solid #c7d2fe;
+    }
+
+    .text-bg-secondary {
+        background: #f1f5f9 !important;
+        color: #334155 !important;
+        border: 1px solid #cbd5e1;
+    }
+}
+
+.o_supplier_debt_total_row td {
+    position: sticky;
+    top: var(--report-sticky-header-height);
+    z-index: 20;
+    background: linear-gradient(180deg, #fde9dc 0%, #f9dcc7 100%) !important;
+    color: #7c2d12;
+    font-weight: 800;
+    text-transform: uppercase;
+    border-bottom: 1px solid #e7bfa6 !important;
+    box-shadow: inset 0 -1px 0 #e7bfa6;
+}
+
+.o_group_section_row td {
+    background: linear-gradient(180deg, #dbeafe 0%, #cfe5ff 100%) !important;
+    color: #1e3a8a;
+    font-weight: 800;
+    text-transform: uppercase;
+    border-top: 1px solid #bfdbfe !important;
+    border-bottom: 1px solid #bfdbfe !important;
+}
+
+.o_group_supplier_type_row td {
+    background: linear-gradient(180deg, #eff6ff 0%, #e8f1ff 100%) !important;
+    color: #334155;
+    font-weight: 700;
+    border-top: 1px solid #dbeafe !important;
+    border-bottom: 1px solid #dbeafe !important;
+}
+
+.o_group_section_row td.text-end,
+.o_group_supplier_type_row td.text-end {
+    font-weight: 800;
+}
+
+.o_supplier_debt_table tbody tr td {
+    transition: background-color 0.15s ease;
+}
+
+.o_supplier_debt_table tbody tr:hover td {
+    background: #f8fafc;
+}
+
+.o_clickable_supplier_row {
+    cursor: pointer;
+
+    td {
+        transition: background-color 0.15s ease, transform 0.1s ease;
+    }
+
+    &:hover td {
+        background: #eef6ff !important;
+    }
+
+    &:active td {
+        background: #dbeafe !important;
+    }
+}
+
+.o_supplier_debt_pager {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    background: var(--card-bg);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 18px;
+    box-shadow: var(--shadow-soft);
+    padding: 14px 16px;
+}
+
+.o_supplier_debt_pager_info {
+    color: #475569;
+    font-size: 14px;
+}
+
+.o_supplier_debt_pager_actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.o_supplier_debt_page_status {
+    min-width: 120px;
+    text-align: center;
+    font-size: 14px;
+    color: #334155;
+}
+
+.o_supplier_debt_report_view .btn[disabled],
+.o_supplier_debt_report_view .btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+@media (max-width: 1600px) {
+    .o_supplier_debt_summary_cards {
+        grid-template-columns: repeat(3, minmax(180px, 1fr));
+    }
+}
+
+@media (max-width: 1200px) {
+    .o_supplier_debt_report_view {
+        padding: 16px;
+    }
+
+    .o_supplier_debt_report_header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .o_supplier_debt_report_actions {
+        justify-content: flex-start;
+    }
+
+    .o_supplier_debt_filters_grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .o_supplier_debt_summary_cards {
+        grid-template-columns: repeat(2, minmax(180px, 1fr));
+    }
+
+    .o_supplier_debt_table_wrap {
+        max-height: calc(100vh - 380px);
+    }
+}
+
+@media (max-width: 768px) {
+    .o_supplier_debt_filters_grid {
+        grid-template-columns: 1fr;
+    }
+
+    .o_supplier_debt_summary_cards {
+        grid-template-columns: 1fr;
+    }
+
+    .o_supplier_debt_pager {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .o_supplier_debt_pager_actions {
+        justify-content: space-between;
+    }
+
+    .o_supplier_debt_page_status {
+        min-width: auto;
+    }
+
+    .o_supplier_debt_report_title {
+        font-size: 22px;
+    }
+
+    .o_summary_card_value {
+        font-size: 22px;
+    }
+}

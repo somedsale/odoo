@@ -60,94 +60,92 @@
                 </tree>
             </field>
         </record>
-        <record id="view_account_receipt_search" model="ir.ui.view">
-            <field name="name">account.receipt.search</field>
-            <field name="model">account.receipt</field>
-            <field name="arch" type="xml">
-                <search string="Tìm kiếm phiếu thu">
+<record id="view_account_receipt_search" model="ir.ui.view">
+    <field name="name">account.receipt.search</field>
+    <field name="model">account.receipt</field>
+    <field name="arch" type="xml">
+        <search string="Tìm kiếm phiếu thu">
 
-                    <!-- Search fields -->
-                    <field name="name" string="Số phiếu thu"/>
-                    <field name="note" string="Nội dung thu"/>
-                    <field name="project_id" string="Dự án"/>
-                    <field name="partner_id" string="Khách hàng"/>
-                    <field name="employee_id" string="Nhân viên"/>
-                    <field name="date" string="Ngày thu"/>
-                    <field name="bank_id" string="Ngân hàng"/>
+            <field name="name" string="Số phiếu thu"/>
+            <field name="note" string="Nội dung thu"/>
+            <field name="project_id" string="Dự án"/>
+            <field name="partner_id" string="Khách hàng"/>
+            <field name="employee_id" string="Nhân viên"/>
+            <field name="date" string="Ngày thu"/>
+            <field name="bank_id" string="Ngân hàng"/>
+            <field name="amount" string="Số tiền"/>
 
-                    <separator/>
+            <separator/>
 
-                    <!-- State filters -->
-                    <filter string="Nháp" name="draft" domain="[('state', '=', 'draft')]"/>
-                    <filter string="Đã ghi sổ" name="posted" domain="[('state', '=', 'posted')]"/>
-                    <filter string="Đã hủy" name="cancel" domain="[('state', '=', 'cancel')]"/>
+            <filter string="Nháp" name="draft" domain="[('state', '=', 'draft')]"/>
+            <filter string="Đã ghi sổ" name="posted" domain="[('state', '=', 'posted')]"/>
+            <filter string="Đã hủy" name="cancel" domain="[('state', '=', 'cancel')]"/>
 
-                    <separator/>
+            <separator/>
 
-                    <!-- Payment method -->
-                    <filter string="Tiền mặt" name="cash" domain="[('payment_method', '=', 'cash')]"/>
-                    <filter string="Chuyển khoản" name="bank" domain="[('payment_method', '=', 'bank')]"/>
+            <filter string="Tiền mặt" name="cash" domain="[('payment_method', '=', 'cash')]"/>
+            <filter string="Chuyển khoản" name="bank" domain="[('payment_method', '=', 'bank')]"/>
 
-                    <separator/>
+            <separator/>
 
-                    <!-- Partner type -->
-                    <filter string="Khách hàng" name="customer" domain="[('partner_type', '=', 'customer')]"/>
-                    <filter string="Nhân viên" name="employee" domain="[('partner_type', '=', 'employee')]"/>
+            <filter string="Khách hàng" name="customer" domain="[('partner_type', '=', 'customer')]"/>
+            <filter string="Nhân viên" name="employee" domain="[('partner_type', '=', 'employee')]"/>
 
-                    <separator/>
+            <separator/>
 
-                    <!-- Revenue type -->
-                    <filter string="Doanh thu đã thực hiện" name="done_revenue" domain="[('type_revenue', '=', 'done_revenue')]"/>
-                    <filter string="Tạm ứng" name="advance" domain="[('type_revenue', '=', 'advance')]"/>
-                    <filter string="Khoản vay" name="loan" domain="[('type_revenue', '=', 'loan')]"/>
-                    <filter string="Giải chi" name="explain" domain="[('type_revenue', '=', 'explain')]"/>
-                    <filter string="Thu khác" name="other" domain="[('type_revenue', '=', 'other')]"/>
+            <filter string="Doanh thu đã thực hiện" name="done_revenue" domain="[('type_revenue', '=', 'done_revenue')]"/>
+            <filter string="Tạm ứng" name="advance" domain="[('type_revenue', '=', 'advance')]"/>
+            <filter string="Khoản vay" name="loan" domain="[('type_revenue', '=', 'loan')]"/>
+            <filter string="Giải chi" name="explain" domain="[('type_revenue', '=', 'explain')]"/>
+            <filter string="Thu khác" name="other" domain="[('type_revenue', '=', 'other')]"/>
 
-                    <separator/>
+            <separator/>
 
-                    <!-- Project filters -->
-                    <filter string="Có dự án" name="has_project" domain="[('project_id', '!=', False)]"/>
-                    <filter string="Không có dự án" name="no_project" domain="[('project_id', '=', False)]"/>
+            <filter string="Có dự án" name="has_project" domain="[('project_id', '!=', False)]"/>
+            <filter string="Không có dự án" name="no_project" domain="[('project_id', '=', False)]"/>
 
-                    <separator/>
+            <separator/>
 
-                    <!-- Time filters -->
-                    <filter string="Hôm nay" name="today" domain="[('date', '=', context_today().strftime('%%Y-%%m-%%d'))]"/>
+            <filter string="Số tiền &gt; 0" name="amount_gt_0" domain="[('amount', '&gt;', 0)]"/>
+            <filter string="Số tiền &lt; 1 triệu" name="amount_lt_1m" domain="[('amount', '&lt;', 1000000)]"/>
+            <filter string="Từ 1 - 10 triệu" name="amount_1m_10m" domain="[('amount', '&gt;=', 1000000), ('amount', '&lt;=', 10000000)]"/>
+            <filter string="Trên 10 triệu" name="amount_gt_10m" domain="[('amount', '&gt;', 10000000)]"/>
 
-                    <filter string="Tháng này" name="this_month" domain="[
-                        ('date', '&gt;=', context_today().strftime('%%Y-%%m-01')),
-                        ('date', '&lt;=', context_today().strftime('%%Y-%%m-31'))
-                    ]"/>
+            <separator/>
 
-                    <separator/>
+            <filter string="Hôm nay" name="today" domain="[('date', '=', context_today().strftime('%%Y-%%m-%%d'))]"/>
+            <filter string="Tháng này" name="this_month" domain="[
+                ('date', '&gt;=', context_today().strftime('%%Y-%%m-01')),
+                ('date', '&lt;=', context_today().strftime('%%Y-%%m-31'))
+            ]"/>
 
-                    <!-- Group by -->
-                    <group expand="0" string="Nhóm theo">
-                        <filter string="Dự án" name="group_project" context="{'group_by': 'project_id'}"/>
-                        <filter string="Khách hàng" name="group_partner" context="{'group_by': 'partner_id'}"/>
-                        <filter string="Nhân viên" name="group_employee" context="{'group_by': 'employee_id'}"/>
-                        <filter string="Loại đối tượng" name="group_partner_type" context="{'group_by': 'partner_type'}"/>
-                        <filter string="Trạng thái" name="group_state" context="{'group_by': 'state'}"/>
-                        <filter string="Loại doanh thu" name="group_type_revenue" context="{'group_by': 'type_revenue'}"/>
-                        <filter string="Phương thức thanh toán" name="group_payment_method" context="{'group_by': 'payment_method'}"/>
-                        <filter string="Ngân hàng" name="group_bank" context="{'group_by': 'bank_id'}"/>
-                        <filter string="Ngày thu" name="group_date" context="{'group_by': 'date'}"/>
-                        <filter string="Tháng thu" name="group_date_month" context="{'group_by': 'date:month'}"/>
-                    </group>
+            <separator/>
 
-                    <!-- Search panel -->
-                    <searchpanel>
-                        <field name="project_id" string="Dự án" enable_counters="1"/>
-                        <field name="state" string="Trạng thái" select="multi" enable_counters="1"/>
-                        <field name="partner_type" string="Loại đối tượng" select="multi" enable_counters="1"/>
-                        <field name="type_revenue" string="Loại doanh thu" select="multi" enable_counters="1"/>
-                        <field name="payment_method" string="Phương thức thanh toán" select="multi" enable_counters="1"/>
-                        <field name="bank_id" string="Ngân hàng" select="multi" enable_counters="1"/>
-                    </searchpanel>
+            <group expand="0" string="Nhóm theo">
+                <filter string="Dự án" name="group_project" context="{'group_by': 'project_id'}"/>
+                <filter string="Khách hàng" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                <filter string="Nhân viên" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                <filter string="Loại đối tượng" name="group_partner_type" context="{'group_by': 'partner_type'}"/>
+                <filter string="Trạng thái" name="group_state" context="{'group_by': 'state'}"/>
+                <filter string="Loại doanh thu" name="group_type_revenue" context="{'group_by': 'type_revenue'}"/>
+                <filter string="Phương thức thanh toán" name="group_payment_method" context="{'group_by': 'payment_method'}"/>
+                <filter string="Ngân hàng" name="group_bank" context="{'group_by': 'bank_id'}"/>
+                <filter string="Ngày thu" name="group_date" context="{'group_by': 'date'}"/>
+                <filter string="Tháng thu" name="group_date_month" context="{'group_by': 'date:month'}"/>
+            </group>
 
-                </search>
-            </field>
-        </record>
+            <searchpanel>
+                <field name="project_id" string="Dự án" enable_counters="1"/>
+                <field name="state" string="Trạng thái" select="multi" enable_counters="1"/>
+                <field name="partner_type" string="Loại đối tượng" select="multi" enable_counters="1"/>
+                <field name="type_revenue" string="Loại doanh thu" select="multi" enable_counters="1"/>
+                <field name="payment_method" string="Phương thức thanh toán" select="multi" enable_counters="1"/>
+                <field name="bank_id" string="Ngân hàng" select="multi" enable_counters="1"/>
+            </searchpanel>
+
+        </search>
+    </field>
+</record>
 
         <!-- Action -->
         <record id="action_account_receipt" model="ir.actions.act_window">

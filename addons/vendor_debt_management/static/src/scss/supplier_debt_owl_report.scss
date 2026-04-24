@@ -1,0 +1,351 @@
+.o_supplier_debt_owl_report {
+    padding: 16px 20px 32px;
+    background: #f6f8fb;
+    min-height: 100%;
+
+    .o_supplier_debt_loading,
+    .o_supplier_debt_empty {
+        background: #fff;
+        border-radius: 16px;
+        padding: 32px;
+        text-align: center;
+        font-size: 16px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+    }
+
+    .o_supplier_debt_header {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+        margin-bottom: 16px;
+        background: #fff;
+        border-radius: 18px;
+        padding: 20px 22px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+    }
+
+    .o_supplier_debt_title {
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1.2;
+        color: #1f2937;
+    }
+
+    .o_supplier_debt_partner {
+        font-size: 18px;
+        font-weight: 600;
+        margin-top: 4px;
+        color: #111827;
+    }
+
+    .o_supplier_debt_meta {
+        margin-top: 6px;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .o_supplier_debt_header_actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .o_supplier_debt_toolbar {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+        background: #fff;
+        border-radius: 18px;
+        padding: 14px 18px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+    }
+
+    .o_supplier_debt_search {
+        flex: 1 1 320px;
+        min-width: 280px;
+    }
+
+    .o_supplier_debt_check {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        font-weight: 500;
+        color: #374151;
+        margin: 0;
+    }
+
+    .o_supplier_debt_summary_grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 14px;
+        margin-bottom: 18px;
+    }
+
+    .o_supplier_debt_stat {
+        background: #fff;
+        border-radius: 18px;
+        padding: 18px 18px 16px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+
+        .label {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #111827;
+            line-height: 1.2;
+        }
+
+        &.is-highlight {
+            border: 1px solid #f59e0b;
+
+            .value {
+                color: #b45309;
+            }
+        }
+    }
+
+    .o_supplier_debt_pdf_preview {
+        background: #fff;
+        border-radius: 18px;
+        padding: 12px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+    }
+
+    .o_supplier_debt_pdf_iframe {
+        width: 100%;
+        height: 900px;
+        border: none;
+        border-radius: 12px;
+        background: #f9fafb;
+    }
+
+    .o_supplier_debt_table_wrap {
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+        border: 1px solid #d1d5db;
+        overflow: auto;
+        max-height: calc(100vh - 320px);
+        padding: 0;
+    }
+
+    .o_supplier_debt_table {
+        width: 100%;
+        min-width: 1500px;
+        margin: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: #fff;
+
+        thead th {
+            position: sticky;
+            background: #dfeeda;
+            color: #111827;
+            font-size: 12px;
+            font-weight: 700;
+            text-align: center;
+            vertical-align: middle;
+            white-space: nowrap;
+            padding: 8px 10px;
+            border-right: 1px solid #9ca3af;
+            border-bottom: 1px solid #9ca3af;
+        }
+
+        thead tr:first-child th {
+            top: 0;
+            z-index: 5;
+            border-top: 0;
+        }
+
+        thead tr:nth-child(2) th {
+            top: 35px;
+            z-index: 6;
+        }
+
+        thead tr th:first-child {
+            border-left: 0;
+        }
+
+        tbody td {
+            font-size: 13px;
+            vertical-align: middle;
+            padding: 8px 10px;
+            border-right: 1px solid #d1d5db;
+            border-bottom: 1px solid #d1d5db;
+            background: #fff;
+        }
+
+        tbody tr td:first-child {
+            border-left: 0;
+        }
+
+        tbody tr.is-invoice-head td {
+            background: #fcfcfd;
+        }
+
+        tbody tr.is-payment-child td {
+            background: #ffffff;
+        }
+
+        tbody tr.is-orphan-payment td {
+            background: #fff8e1;
+        }
+
+        td.text-end,
+        th.text-end {
+            text-align: right;
+        }
+
+        td.text-center,
+        th.text-center {
+            text-align: center;
+        }
+    }
+
+    .o_group_row_project td {
+        background: #dfeeda !important;
+        border-right: 1px solid #9ca3af !important;
+        border-bottom: 1px solid #9ca3af !important;
+    }
+
+    .o_group_row_project td:first-child {
+
+    }
+
+    .o_group_row_inner {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        padding: 10px 12px;
+        flex-wrap: wrap;
+    }
+
+    .o_group_left {
+        font-size: 13px;
+        color: #111827;
+    }
+
+    .o_group_right {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        font-size: 13px;
+        color: #374151;
+    }
+
+    .o_group_right strong {
+        color: #111827;
+    }
+
+    .badge.is-paid {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge.is-partial {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .badge.is-unpaid {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .badge.is-neutral {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    @media (max-width: 992px) {
+        .o_supplier_debt_header {
+            flex-direction: column;
+        }
+
+        .o_supplier_debt_header_actions {
+            width: 100%;
+        }
+
+        .o_supplier_debt_toolbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .o_supplier_debt_search {
+            min-width: 100%;
+        }
+
+        .o_group_row_inner {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .o_group_right {
+            gap: 10px 14px;
+        }
+
+        .o_supplier_debt_table {
+            min-width: 1200px;
+        }
+
+        .o_supplier_debt_table thead tr:nth-child(2) th {
+            top: 35px;
+        }
+    }
+    .o_group_row_project td {
+    background: #d9edf7 !important;
+    font-weight: 700;
+    color: #000 !important;
+}
+
+.o_group_row_contract td {
+    background: #f5f5f5 !important;
+    font-weight: 600;
+    color: #000 !important;
+}
+
+.o_row_invoice td {
+    background: #f8fbff !important;
+    color: #000 !important;
+    border-top: 1px solid #bcd7f5 !important;
+    border-bottom: 1px solid #d9e8f8 !important;
+}
+
+.o_line_invoice_text {
+    font-weight: 600;
+    color: #000;
+}
+
+.o_row_payment td {
+    background: #fcfcfc !important;
+    color: #000 !important;
+    border-top: 1px dashed #d6d6d6 !important;
+}
+
+.o_line_payment_text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #444;
+    font-style: italic;
+}
+
+.o_line_payment_marker {
+    font-weight: 700;
+    color: #777;
+}
+
+.o_row_payment_orphan td {
+    background: #fff8e1 !important;
+}
+}

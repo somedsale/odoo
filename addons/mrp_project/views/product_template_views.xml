@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Nút trên form -->
+    <record id="product_template_form_inherit_force_convert_to_storable" model="ir.ui.view">
+        <field name="name">product.template.form.inherit.force.convert.to.storable</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button
+                    name="action_force_convert_to_storable"
+                    type="object"
+                    string="Ép sang Lưu kho"
+                    class="btn btn-primary"
+                    groups="stock.group_stock_manager"
+                    confirm="Thao tác này sẽ ép đổi loại sản phẩm sang Lưu kho, kể cả khi sản phẩm đã được sử dụng. Bạn có chắc không?"
+                />
+
+                <button
+                    name="action_force_convert_to_consumable"
+                    type="object"
+                    string="Ép sang Tiêu dùng"
+                    class="btn btn-warning"
+                    groups="stock.group_stock_manager"
+                    confirm="Thao tác này sẽ ép đổi loại sản phẩm sang Tiêu dùng, kể cả khi sản phẩm đã được sử dụng. Bạn có chắc không?"
+                />
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Nút trên list -->
+    <record id="product_template_tree_inherit_force_convert_to_storable" model="ir.ui.view">
+        <field name="name">product.template.tree.inherit.force.convert.to.storable</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="inside">
+                   <header>
+                   <button
+                        name="action_force_convert_to_storable"
+                        type="object"
+                        string="Ép sang Lưu kho"
+                        class="btn btn-primary"
+                        groups="stock.group_stock_manager"
+                        confirm="Thao tác này sẽ ép đổi các sản phẩm đã chọn sang Lưu kho, kể cả khi đã phát sinh giao dịch. Bạn có chắc không?"
+                    />
+
+                    <button
+                        name="action_force_convert_to_consumable"
+                        type="object"
+                        string="Ép sang Tiêu dùng"
+                        class="btn btn-warning"
+                        groups="stock.group_stock_manager"
+                        confirm="Thao tác này sẽ ép đổi các sản phẩm đã chọn sang Tiêu dùng, kể cả khi đã phát sinh giao dịch. Bạn có chắc không?"
+                    />
+                     </header>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

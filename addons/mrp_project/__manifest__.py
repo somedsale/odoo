@@ -12,7 +12,8 @@
         "views/mrp_production_views.xml",
         "views/multi_mrp_order_views.xml",
         # "views/stock_move_views.xml",
-        # "views/stock_picking_views.xml",
+        "views/stock_picking_views.xml",
+        "views/product_template_views.xml",
     ],
     "installable": True,
 }

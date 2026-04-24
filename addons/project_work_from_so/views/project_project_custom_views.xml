@@ -69,7 +69,7 @@
                         <group string="Thông tin hợp đồng">
                             <field name="contract_id" options="{'no_create': True}"/>
                             <field name="signature_date" readonly="1"/>
-                            <field name="location" readonly="1"/>
+                            <field name="location"/>
                             <field name="sale_order_id" readonly="1"/>
                             <field name="value_contract_tax" readonly="1"/>
                             <field name="sales_category_ids" widget="many2many_tags" readonly="1"/>

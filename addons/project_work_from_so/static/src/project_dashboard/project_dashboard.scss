@@ -1,12 +1,15 @@
 .pwpd {
   .pwpd-header h2 {
     font-weight: 800;
+    font-size: 24px;
+    line-height: 1.2;
   }
 
   .pwpd-kpi .pwpd-kpi-value {
-    font-size: 26px;
+    font-size: 30px;
     font-weight: 900;
     margin-top: 2px;
+    line-height: 1.1;
   }
 
   .pwpd-grid {
@@ -17,6 +20,7 @@
 
   .pwpd-row {
     cursor: pointer;
+    font-size: 14px;
   }
 
   .pwpd-row:hover {
@@ -36,8 +40,8 @@
   --pwf-selected-row: #eef5ff;
   --pwf-selected-row-hover: #e3efff;
   --pwf-sticky-shadow: 1px 0 0 0 #d5dee8;
-  --pwf-head-group-h: 32px; // header nhóm
-  --pwf-head-row2-h: 38px; // header chi tiết
+  --pwf-head-group-h: 36px; // header nhóm
+  --pwf-head-row2-h: 44px; // header chi tiết
   --pwf-text: #0f172a;
   --pwf-muted: #64748b;
 
@@ -47,13 +51,15 @@
   .card-header {
     background: var(--pwf-header-bg);
     border-bottom: 1px solid var(--pwf-border-soft);
+    padding: 14px 16px;
 
     .form-control.form-control-sm,
     .form-select.form-select-sm {
       border-radius: 10px;
       border-color: #dbe3ee;
-      min-height: 31px;
+      min-height: 36px;
       background-color: #fff;
+      font-size: 14px;
 
       &:focus {
         box-shadow: 0 0 0 0.15rem rgba(59, 130, 246, 0.12);
@@ -63,7 +69,16 @@
 
     .btn.btn-sm {
       border-radius: 10px;
-      min-height: 31px;
+      min-height: 36px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .btn.btn-primary {
+      min-height: 36px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 10px;
     }
   }
 
@@ -71,25 +86,35 @@
     background: linear-gradient(180deg, #fbfdff 0%, #f8fafc 100%);
     border-bottom: 1px solid var(--pwf-border-soft);
 
+    .pwf-toolbar-top {
+      margin-bottom: 12px !important;
+    }
+
     .pwf-toolbar-title {
       .fw-semibold {
         color: #0f172a;
-        font-size: 14px;
-        line-height: 1.2;
+        font-size: 15px;
+        line-height: 1.25;
       }
+
       .fw-bold-title {
-          font-weight: 700 ;
-        }
+        font-weight: 700;
+        font-size: 24px;
+        line-height: 1.2;
+        margin: 0;
+        color: #0f172a;
+      }
+
       .small {
-        font-size: 12px;
+        font-size: 13px;
       }
     }
 
     .form-label {
-      font-size: 11px;
+      font-size: 13px;
       color: #64748b;
-      font-weight: 600;
-      margin-bottom: 4px !important;
+      font-weight: 700;
+      margin-bottom: 6px !important;
       line-height: 1.2;
     }
 
@@ -99,19 +124,25 @@
         border-color: #dbe3ee;
         background: #fff;
         color: #64748b;
-        min-height: 31px;
+        min-height: 36px;
+        font-size: 14px;
       }
 
       .form-control {
         border-left: 0;
         border-radius: 0 10px 10px 0;
+        font-size: 14px;
       }
+    }
+
+    .form-select.form-select-sm {
+      font-size: 14px;
     }
 
     .pwf-toolbar-grid {
       display: grid;
       grid-template-columns: minmax(320px, 2fr) repeat(3, minmax(180px, 1fr)) 140px;
-      gap: 10px;
+      gap: 12px;
       align-items: end;
     }
 
@@ -127,13 +158,23 @@
   .card-footer {
     background: var(--pwf-header-bg);
     border-top: 1px solid var(--pwf-border-soft);
+    padding: 12px 16px;
+    font-size: 13px;
+
+    .text-muted {
+      font-size: 13px !important;
+      line-height: 1.4;
+    }
 
     .btn-group .btn {
-      min-width: 34px;
+      min-width: 36px;
     }
 
     .btn.btn-sm {
       border-radius: 10px;
+      min-height: 34px;
+      font-size: 13px;
+      font-weight: 600;
     }
 
     .btn-group .btn.btn-primary {
@@ -144,7 +185,8 @@
     .form-select.form-select-sm {
       border-radius: 10px;
       border-color: #dbe3ee;
-      min-height: 31px;
+      min-height: 34px;
+      font-size: 13px;
 
       &:focus {
         box-shadow: 0 0 0 0.15rem rgba(59, 130, 246, 0.12);
@@ -159,9 +201,15 @@
   .pwf-selected-summary {
     background: linear-gradient(180deg, #f8fbff 0%, #f5f9ff 100%);
     border-top: 1px solid var(--pwf-border-soft);
+    font-size: 13px;
 
     b {
       color: var(--pwf-text);
+    }
+
+    .small {
+      font-size: 13px;
+      line-height: 1.45;
     }
 
     .small > b {
@@ -170,6 +218,8 @@
 
     .btn {
       border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
     }
   }
 
@@ -205,6 +255,7 @@
     justify-content: center;
     padding: 16px;
     background: #fff;
+    font-size: 14px;
   }
 
   .pwf-empty-state {
@@ -230,6 +281,16 @@
       background: #f1f5f9;
       border: 1px solid #e2e8f0;
     }
+
+    .fw-semibold {
+      font-size: 18px;
+      line-height: 1.3;
+    }
+
+    .small {
+      font-size: 13px;
+      line-height: 1.45;
+    }
   }
 
   // =========================
@@ -239,18 +300,19 @@
     table-layout: fixed;
     border-collapse: separate;
     border-spacing: 0;
-    min-width: 3300px; // khớp colgroup dashboard hiện tại
+    min-width: 3300px;
     color: var(--pwf-text);
 
     th,
     td {
       border-bottom: 1px solid var(--pwf-border);
       border-right: 1px solid var(--pwf-border);
-      padding: 8px 10px;
+      padding: 10px 10px;
       vertical-align: middle;
       background: #fff;
       white-space: nowrap;
       background-clip: padding-box;
+      font-size: 13px;
     }
 
     // Viền trái ngoài cùng
@@ -265,9 +327,9 @@
       z-index: 5;
       background: var(--pwf-header-bg);
       color: #334155;
-      font-weight: 600;
-      font-size: 12px;
-      line-height: 1.15;
+      font-weight: 700;
+      font-size: 13px;
+      line-height: 1.2;
       text-transform: none;
       vertical-align: middle;
       box-shadow: inset 0 -1px 0 0 var(--pwf-border);
@@ -279,11 +341,11 @@
       z-index: 7;
       height: var(--pwf-head-group-h);
       min-height: var(--pwf-head-group-h);
-      padding-top: 4px;
-      padding-bottom: 4px;
+      padding-top: 6px;
+      padding-bottom: 6px;
       background: var(--pwf-header-bg-2);
-      font-size: 11px;
-      font-weight: 700;
+      font-size: 12px;
+      font-weight: 800;
       color: #475569;
       border-bottom: 1px solid #dbe3ee;
       text-transform: uppercase;
@@ -292,16 +354,16 @@
       vertical-align: middle;
     }
 
-    // Header chi tiết (nằm dưới header nhóm)
+    // Header chi tiết
     thead tr:nth-child(2) th {
       top: var(--pwf-head-group-h);
       z-index: 8;
       min-height: var(--pwf-head-row2-h);
       background: var(--pwf-header-bg);
       vertical-align: middle;
-      font-size: 11.5px;
+      font-size: 13px;
       color: #334155;
-      line-height: 1.2;
+      line-height: 1.25;
     }
 
     // ===== Body rows =====
@@ -310,7 +372,6 @@
       cursor: pointer;
     }
 
-    // Zebra nhẹ
     tbody tr.pwf-row:nth-child(even):not(.is-selected) td {
       background: #fcfdff;
     }
@@ -332,6 +393,8 @@
       font-variant-numeric: tabular-nums;
       font-feature-settings: "tnum";
       color: #0f172a;
+      font-size: 13px;
+      font-weight: 600;
     }
 
     .form-check-input {
@@ -353,7 +416,7 @@
 
     .pwf-cell-partner,
     .pwf-cell-project {
-      white-space: normal !important; // override nowrap cho 2 cột này
+      white-space: normal !important;
       vertical-align: top;
     }
 
@@ -363,8 +426,9 @@
       overflow: visible;
       text-overflow: unset;
       word-break: break-word;
-      line-height: 1.25;
+      line-height: 1.35;
       max-width: 100%;
+      font-size: 13px;
     }
 
     // ===== Sticky columns (desktop) =====
@@ -407,36 +471,36 @@
       z-index: 12;
     }
 
-    // Vị trí sticky theo colgroup
     .sticky-col-0 {
       left: 0;
-    } // checkbox (44)
+    }
 
     .sticky-col-1 {
       left: 44px;
-    } // STT (60)
+    }
 
     .sticky-col-2 {
       left: 104px;
-    } // Đối tác = 44 + 60
+    }
 
     .sticky-col-3 {
       left: 324px;
-    } // Tên dự án = 44 + 60 + 220
+    }
 
     // ===== Percent badges =====
     .pwf-percent-badge {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-width: 58px;
-      padding: 2px 8px;
+      min-width: 62px;
+      padding: 3px 9px;
       border-radius: 999px;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 700;
       border: 1px solid transparent;
       background: #f1f5f9;
       color: #475569;
+      line-height: 1.2;
 
       &.is-low {
         background: #fff7ed;
@@ -479,17 +543,16 @@
     display: inline-flex;
     align-items: center;
     max-width: 100%;
-    padding: 3px 8px;
+    padding: 4px 9px;
     border-radius: 999px;
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 700;
     line-height: 1.15;
     white-space: nowrap;
     border: 1px solid transparent;
     overflow: hidden;
     text-overflow: ellipsis;
 
-    // fallback
     background: #f8fafc;
     color: #475569;
     border-color: #e2e8f0;
@@ -581,57 +644,81 @@
   // Tablets
   @media (max-width: 1199.98px) {
     .card-header {
+      padding: 12px;
+    }
+
+    .pwf-toolbar {
       .pwf-toolbar-top {
         gap: 10px !important;
       }
-    }
 
-    .card-footer {
-      .d-flex.align-items-center.gap-2 {
-        width: 100%;
-        justify-content: flex-start;
-        flex-wrap: wrap;
+      .pwf-toolbar-title {
+        .fw-semibold {
+          font-size: 14px;
+        }
+
+        .fw-bold-title {
+          font-size: 22px;
+        }
       }
 
-      .btn-group.btn-group-sm {
-        max-width: 100%;
-        overflow-x: auto;
-        flex-wrap: nowrap;
+      .pwf-toolbar-grid {
+        grid-template-columns: 1fr 1fr;
       }
-    }
 
-    .pwf-selected-summary {
-      .d-flex.flex-wrap.gap-3.small {
-        gap: 8px 14px !important;
+      .pwf-search {
+        grid-column: 1 / -1;
       }
     }
 
     .pwf-table {
-      thead th {
-        font-size: 11px;
+      min-width: 3050px;
+
+      th,
+      td {
+        padding: 9px 9px;
+        font-size: 12.5px;
       }
 
-      .pwf-percent-badge {
-        min-width: 52px;
-        padding: 2px 6px;
-        font-size: 11px;
+      thead th {
+        font-size: 12.5px;
+      }
+
+      thead .pwf-group-head th {
+        font-size: 11.5px;
       }
     }
   }
 
-  // Mobile / narrow screens: TẮT STICKY (theo yêu cầu)
+  // Mobile
   @media (max-width: 767.98px) {
     .card-header {
       padding: 10px;
 
       .form-control.form-control-sm,
       .form-select.form-select-sm,
-      .btn.btn-sm {
+      .btn.btn-sm,
+      .btn.btn-primary {
         min-height: 34px;
+        font-size: 13px;
       }
     }
 
     .pwf-toolbar {
+      .pwf-toolbar-title {
+        .fw-semibold {
+          font-size: 13px;
+        }
+
+        .fw-bold-title {
+          font-size: 20px;
+        }
+      }
+
+      .form-label {
+        font-size: 12px;
+      }
+
       .pwf-toolbar-grid {
         grid-template-columns: 1fr;
         gap: 8px;
@@ -693,6 +780,7 @@
       th,
       td {
         padding: 7px 8px;
+        font-size: 12px;
       }
 
       .pwf-stage-badge {
@@ -700,7 +788,13 @@
         padding: 2px 7px;
       }
 
-      // ❌ Tắt sticky trên mobile
+      .pwf-percent-badge {
+        font-size: 10px;
+        min-width: 56px;
+        padding: 2px 7px;
+      }
+
+      // Tắt sticky trên mobile
       thead th,
       thead .pwf-group-head th,
       thead tr:nth-child(2) th {
@@ -728,11 +822,12 @@
     .card-header {
       .pwf-toolbar-title {
         .fw-semibold {
-          font-size: 13px;
+          font-size: 12px;
         }
+
         .fw-bold-title {
-          font-size: 14px;
-          font-weight: 700 ;
+          font-size: 18px;
+          font-weight: 700;
         }
       }
 
@@ -755,29 +850,27 @@
     }
   }
 }
-/* ✅ Cho phép TH xuống dòng */
+
+/* Cho phép TH xuống dòng */
 .o_pwf_dash .pwf-table thead th {
-  white-space: normal !important;     // bỏ nowrap
-  word-break: break-word;             // từ dài vẫn xuống dòng
-  overflow-wrap: anywhere;            // an toàn cho text dài
+  white-space: normal !important;
+  word-break: break-word;
+  overflow-wrap: anywhere;
   line-height: 1.2;
-}
-
-/* ✅ Nếu bạn muốn header nhóm (dòng 1) vẫn 1 dòng, chỉ dòng chi tiết (dòng 2) mới wrap */
-.o_pwf_dash .pwf-table thead .pwf-group-head th {
-  white-space: nowrap !important;     // giữ 1 dòng cho header nhóm
-}
-
-.o_pwf_dash .pwf-table thead tr:nth-child(2) th {
-  white-space: normal !important;     // cho header chi tiết xuống dòng
-}
-
-/* ✅ Canh giữa theo chiều dọc để nhìn đẹp khi xuống dòng */
-.o_pwf_dash .pwf-table thead th {
   vertical-align: middle;
 }
 
-/* (Tuỳ chọn) Header số canh phải vẫn ok */
+/* Giữ header nhóm 1 dòng */
+.o_pwf_dash .pwf-table thead .pwf-group-head th {
+  white-space: nowrap !important;
+}
+
+/* Header chi tiết được xuống dòng */
+.o_pwf_dash .pwf-table thead tr:nth-child(2) th {
+  white-space: normal !important;
+}
+
+/* Header số canh phải */
 .o_pwf_dash .pwf-table thead th.text-end {
   text-align: right !important;
 }
