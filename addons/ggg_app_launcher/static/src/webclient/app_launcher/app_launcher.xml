@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="ggg_app_launcher.AppLauncher">
+        <div class="ggg-app-launcher" t-ref="overlay" t-on-click="onOverlayClick"
+             t-on-pointermove="onPointerMove"
+             t-on-pointerup="onPointerUp">
+            <div class="ggg-launcher-content" t-att-class="{'ggg-jiggle-mode': state.jiggleMode}">
+
+                <!-- Header: search + edit/done -->
+                <div class="ggg-launcher-header">
+                    <div class="ggg-search-bar">
+                        <i class="oi oi-search ggg-search-icon"/>
+                        <input type="text"
+                               class="ggg-search-input"
+                               placeholder="Search apps and favorites..."
+                               t-att-value="state.searchQuery"
+                               t-on-input="onSearchInput"
+                               t-on-keydown.stop=""
+                        />
+                        <button t-if="state.searchQuery"
+                                class="ggg-search-clear btn"
+                                t-on-click="onClearSearch">
+                            <i class="oi oi-close"/>
+                        </button>
+                    </div>
+                    <button t-if="!state.jiggleMode and !state.searchQuery"
+                            class="ggg-edit-btn btn"
+                            t-on-click="onEditClick">
+                        Edit
+                    </button>
+                    <button t-if="state.jiggleMode"
+                            class="ggg-hint-toggle-btn btn"
+                            t-on-click="onToggleHint">
+                        <t t-if="state.showHint">Hide hints</t>
+                        <t t-else="">Show hints</t>
+                    </button>
+                    <button t-if="state.jiggleMode"
+                            class="ggg-done-btn btn"
+                            t-on-click="onDoneClick">
+                        Done
+                    </button>
+                </div>
+
+                <!-- Favorites section -->
+                <div t-if="showFavoritesSection" class="ggg-favorites-section">
+                    <div class="ggg-favorites-header">
+                        <span class="ggg-favorites-title">
+                            <i class="fa fa-star ggg-favorites-star"/>
+                            Favorites
+                            <span t-if="state.favoritesCollapsed" class="ggg-favorites-count">
+                                (<t t-esc="state.favorites.length"/>)
+                            </span>
+                        </span>
+                        <button class="ggg-favorites-toggle btn"
+                                t-on-click="onToggleFavoritesCollapsed">
+                            <t t-if="state.favoritesCollapsed">Show</t>
+                            <t t-else="">Hide</t>
+                        </button>
+                    </div>
+                    <div t-if="!state.favoritesCollapsed" class="ggg-favorites-table">
+                        <t t-foreach="state.favorites" t-as="fav" t-key="fav.id">
+                            <!-- Edit mode row -->
+                            <div t-if="state.editingFavoriteId === fav.id"
+                                 class="ggg-favorite-row ggg-favorite-editing">
+                                <t t-set="favApp" t-value="getAppIconForUrl(fav.url)"/>
+                                <div class="ggg-fav-icon">
+                                    <img t-if="favApp"
+                                         t-att-src="getAppIconSrc(favApp)"
+                                         class="ggg-fav-icon-img" draggable="false"/>
+                                    <i t-else="" class="fa fa-star ggg-fav-icon-fallback"/>
+                                </div>
+                                <input type="text" class="ggg-fav-edit-input ggg-fav-edit-name"
+                                       t-att-value="state.editName"
+                                       t-on-input="onEditNameInput"
+                                       t-on-keydown="onEditKeydown"
+                                       placeholder="Name"/>
+                                <input type="text" class="ggg-fav-edit-input ggg-fav-edit-url"
+                                       t-att-value="state.editUrl"
+                                       t-on-input="onEditUrlInput"
+                                       t-on-keydown="onEditKeydown"
+                                       placeholder="URL"/>
+                                <div class="ggg-fav-actions">
+                                    <button class="ggg-fav-btn ggg-fav-save"
+                                            t-on-click="onEditSave">Save</button>
+                                    <button class="ggg-fav-btn ggg-fav-cancel"
+                                            t-on-click="onEditCancel">Cancel</button>
+                                </div>
+                            </div>
+                            <!-- Display mode row -->
+                            <div t-else="" class="ggg-favorite-row"
+                                 t-on-click="() => this.onFavoriteClick(fav)">
+                                <t t-set="favApp" t-value="getAppIconForUrl(fav.url)"/>
+                                <div class="ggg-fav-icon">
+                                    <img t-if="favApp"
+                                         t-att-src="getAppIconSrc(favApp)"
+                                         class="ggg-fav-icon-img" draggable="false"/>
+                                    <i t-else="" class="fa fa-star ggg-fav-icon-fallback"/>
+                                </div>
+                                <span class="ggg-fav-name" t-esc="fav.name"/>
+                                <span class="ggg-fav-url" t-att-title="fav.url" t-esc="fav.url"/>
+                                <div class="ggg-fav-actions">
+                                    <button class="ggg-fav-btn ggg-fav-edit"
+                                            t-on-click="(ev) => this.onEditFavorite(fav, ev)">
+                                        <i class="fa fa-pencil"/>
+                                    </button>
+                                    <button class="ggg-fav-btn ggg-fav-delete"
+                                            t-on-click="(ev) => this.onDeleteFavorite(fav, ev)">
+                                        <i class="fa fa-times"/>
+                                    </button>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Search results: favorites -->
+                <div t-if="state.searchQuery and state.filteredFavorites.length"
+                     class="ggg-favorites-section ggg-search-favorites">
+                    <div class="ggg-favorites-header">
+                        <span class="ggg-favorites-title">
+                            <i class="fa fa-star ggg-favorites-star"/>
+                            Favorites
+                        </span>
+                    </div>
+                    <div class="ggg-favorites-table">
+                        <t t-foreach="state.filteredFavorites" t-as="fav" t-key="fav.id">
+                            <div class="ggg-favorite-row"
+                                 t-on-click="() => this.onFavoriteClick(fav)">
+                                <t t-set="favApp" t-value="getAppIconForUrl(fav.url)"/>
+                                <div class="ggg-fav-icon">
+                                    <img t-if="favApp"
+                                         t-att-src="getAppIconSrc(favApp)"
+                                         class="ggg-fav-icon-img" draggable="false"/>
+                                    <i t-else="" class="fa fa-star ggg-fav-icon-fallback"/>
+                                </div>
+                                <span class="ggg-fav-name" t-esc="fav.name"/>
+                                <span class="ggg-fav-url" t-att-title="fav.url" t-esc="fav.url"/>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Page container -->
+                <div class="ggg-page-viewport"
+                     t-ref="pageContainer"
+                     t-on-pointerdown="onPointerDownEmpty">
+
+                    <div class="ggg-page-track" t-att-style="pageContainerStyle">
+                        <t t-foreach="state.pages" t-as="page" t-key="page_index">
+                            <div class="ggg-app-page" t-att-data-page="page_index">
+                                <div class="ggg-app-grid">
+                                    <t t-foreach="page.items" t-as="item" t-key="item_index">
+
+                                        <!-- App icon -->
+                                        <t t-if="item.type === 'app' and item.app">
+                                            <div class="ggg-app-icon-wrapper"
+                                                 t-att-class="{
+                                                    'ggg-dragging': isDraggedItem(item.appId),
+                                                    'ggg-drop-target': isDropTarget(page_index, item_index),
+                                                    'ggg-folder-zone': isFolderZone(page_index, item_index)
+                                                 }"
+                                                 t-on-pointerdown.stop="(ev) => this.onPointerDown(ev, item.appId, 'app', page_index, item_index)">
+                                                <div class="ggg-app-icon">
+                                                    <img t-att-src="getAppIconSrc(item.app)"
+                                                         class="ggg-app-img"
+                                                         draggable="false"
+                                                         t-att-alt="item.app.name"/>
+                                                </div>
+                                                <span class="ggg-app-name" t-esc="item.app.name"/>
+                                            </div>
+                                        </t>
+
+                                        <!-- Folder icon -->
+                                        <t t-if="item.type === 'folder'">
+                                            <div class="ggg-app-icon-wrapper ggg-folder-wrapper"
+                                                 t-att-class="{
+                                                    'ggg-drop-target': isDropTarget(page_index, item_index),
+                                                    'ggg-folder-zone': isFolderZone(page_index, item_index)
+                                                 }"
+                                                 t-on-pointerdown.stop="(ev) => this.onPointerDown(ev, item.appIds and item.appIds[0], 'folder', page_index, item_index)">
+                                                <!-- Delete badge in jiggle mode -->
+                                                <button t-if="state.jiggleMode"
+                                                        class="ggg-folder-delete-badge"
+                                                        t-on-click.stop="(ev) => this.onFolderDeleteBadge(page_index, item_index, ev)">
+                                                    ✕
+                                                </button>
+                                                <div class="ggg-app-icon ggg-folder-icon">
+                                                    <div class="ggg-folder-preview">
+                                                        <t t-foreach="getFolderPreviewApps(item)" t-as="previewApp" t-key="previewApp_index">
+                                                            <div class="ggg-folder-preview-slot">
+                                                                <img t-if="previewApp"
+                                                                     t-att-src="getAppIconSrc(previewApp)"
+                                                                     class="ggg-folder-preview-img"
+                                                                     draggable="false"/>
+                                                                <div t-else="" class="ggg-folder-preview-empty"/>
+                                                            </div>
+                                                        </t>
+                                                    </div>
+                                                </div>
+                                                <span class="ggg-app-name" t-esc="item.name"/>
+                                            </div>
+                                        </t>
+
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Dot indicators -->
+                <div t-if="showDots" class="ggg-dot-indicators">
+                    <t t-foreach="dotPages" t-as="dotIdx" t-key="dotIdx">
+                        <button class="ggg-dot"
+                                t-att-class="{'ggg-dot-active': dotIdx === state.currentPage}"
+                                t-on-click="() => this.onDotClick(dotIdx)"/>
+                    </t>
+                </div>
+
+                <!-- User guide hint -->
+                <div t-if="showHintBar" class="ggg-hint-bar">
+                    <span class="ggg-hint-text" t-esc="hintText"/>
+                    <button class="ggg-hint-dismiss" t-on-click="onDismissHint">
+                        <i class="oi oi-close"/>
+                    </button>
+                </div>
+
+                <!-- Folder popover -->
+                <t t-if="openFolder">
+                    <div class="ggg-popover-backdrop" t-on-click="onPopoverBackdropClick"/>
+                    <div class="ggg-folder-popover"
+                         t-att-class="{'ggg-popover-below': state.folderPopoverBelow, 'ggg-popover-above': !state.folderPopoverBelow}">
+                        <div class="ggg-popover-header">
+                            <t t-if="state.renamingFolder">
+                                <input type="text"
+                                       class="ggg-popover-rename-input"
+                                       t-att-value="state.renameValue"
+                                       t-on-input="onRenameInput"
+                                       t-on-keydown="onRenameKeydown"
+                                       t-on-blur="onRenameBlur"
+                                       t-ref="renameInput"/>
+                            </t>
+                            <t t-else="">
+                                <span class="ggg-popover-title" t-on-click="onFolderNameClick"
+                                      t-esc="openFolder.name"/>
+                            </t>
+                        </div>
+                        <div class="ggg-popover-grid">
+                            <t t-foreach="openFolder.resolvedApps or []" t-as="folderApp" t-key="folderApp_index">
+                                <div t-if="folderApp" class="ggg-popover-app"
+                                     t-on-click="() => this.onPopoverAppClick(folderApp)"
+                                     t-on-pointerdown.stop="(ev) => this.onPopoverPointerDown(ev, folderApp, folderApp_index)">
+                                    <button t-if="state.jiggleMode or state.popoverEditMode"
+                                            class="ggg-popover-remove-badge"
+                                            t-on-pointerdown.stop=""
+                                            t-on-click.stop="(ev) => this.onPopoverRemoveApp(folderApp, folderApp_index)">
+                                        ✕
+                                    </button>
+                                    <div class="ggg-app-icon">
+                                        <img t-att-src="getAppIconSrc(folderApp)"
+                                             class="ggg-app-img"
+                                             draggable="false"/>
+                                    </div>
+                                    <span class="ggg-app-name" t-esc="folderApp.name"/>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Drag ghost -->
+                <div t-if="state.dragging and draggedApp"
+                     class="ggg-drag-ghost"
+                     t-att-style="dragStyle">
+                    <div class="ggg-app-icon">
+                        <img t-att-src="getAppIconSrc(draggedApp)"
+                             class="ggg-app-img"
+                             draggable="false"/>
+                    </div>
+                    <span class="ggg-app-name" t-esc="draggedApp.name"/>
+                </div>
+
+            </div>
+        </div>
+    </t>
+
+</templates>

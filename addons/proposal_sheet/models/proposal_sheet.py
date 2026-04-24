@@ -448,6 +448,7 @@ class ProposalSheet(models.Model):
             now = fields.Datetime.now()
             self.date_proposal = now
             self.date_reviewed_accounting = now
+            self.treasurer_confirmed = True
 
             partner_ids = self._get_approval_partners(
                 include_manager=False,

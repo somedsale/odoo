@@ -31,8 +31,6 @@ class DynamicInventoryReport(models.Model):
 
     date_from = fields.Date(string="Date From")
     date_to = fields.Date(string="Date To")
-
-    # ✅ selection key là string (đừng dùng Integer)
     month = fields.Selection([(str(i), str(i)) for i in range(1, 13)], string="Month")
     quarter = fields.Selection([("1", "Q1"), ("2", "Q2"), ("3", "Q3"), ("4", "Q4")], string="Quarter")
     year = fields.Integer(string="Year", default=lambda self: fields.Date.context_today(self).year)
@@ -40,12 +38,11 @@ class DynamicInventoryReport(models.Model):
     location_id = fields.Many2one("stock.location", string="Location")
     company_id = fields.Many2one("res.company", string="Company", default=lambda self: self.env.company)
 
-    # -----------------
+    # =================
     # Helpers
-    # -----------------
+    # =================
 
     def _compute_date_range(self, rec):
-        """Return (start_date, end_date) as python date objects."""
         today = fields.Date.context_today(self)
         y = int(rec.year or today.year)
 
@@ -69,7 +66,6 @@ class DynamicInventoryReport(models.Model):
             last_day = calendar.monthrange(y, end_m)[1]
             return date(y, start_m, 1), date(y, end_m, last_day)
 
-        # year
         return date(y, 1, 1), date(y, 12, 31)
 
     def _dt_range(self, start_d, end_d):
@@ -90,7 +86,6 @@ class DynamicInventoryReport(models.Model):
         ]).ids
 
     def _ml_qty_field(self):
-        """Auto-detect qty field on stock.move.line."""
         SML = self.env["stock.move.line"].sudo()
         for f in ("qty_done", "quantity_done", "quantity", "product_uom_qty"):
             if f in SML._fields:
@@ -101,7 +96,6 @@ class DynamicInventoryReport(models.Model):
         )
 
     def _ml_date_field(self):
-        """Prefer done date for accurate period filter."""
         SML = self.env["stock.move.line"].sudo()
 
         if "date" in SML._fields:
@@ -115,7 +109,6 @@ class DynamicInventoryReport(models.Model):
         return "move_id.date"
 
     def _rg_qty_by_move(self, domain):
-        """Return dict {move_id: qty_sum} on stock.move.line (for prorate move.value_amount)."""
         SML = self.env["stock.move.line"].sudo()
         qty_field = self._ml_qty_field()
         res = SML.read_group(domain, [qty_field], ["move_id"])
@@ -127,15 +120,6 @@ class DynamicInventoryReport(models.Model):
         return out
 
     def _line_value(self, ml, qty, move_qty_map):
-        """
-        Compute value for a move line.
-        Priority:
-        1) stock.move.line.value_amount
-        2) stock.move.line.unit_cost * qty
-        3) stock.move.value_amount prorate by qty / sum(move qty)
-        4) stock.move.unit_cost * qty
-        5) product.standard_price * qty
-        """
         Move = self.env["stock.move"].sudo()
         SML = self.env["stock.move.line"].sudo()
 
@@ -146,13 +130,11 @@ class DynamicInventoryReport(models.Model):
 
         qty = float(qty or 0.0)
 
-        # 1) move line value_amount
         if has_ml_value_amount:
             va = float(getattr(ml, "value_amount", 0.0) or 0.0)
             if va:
                 return va
 
-        # 2) move line unit_cost
         if has_ml_unit_cost:
             uc = float(getattr(ml, "unit_cost", 0.0) or 0.0)
             if uc:
@@ -160,7 +142,6 @@ class DynamicInventoryReport(models.Model):
 
         m = ml.move_id
 
-        # 3) move value_amount prorate
         if has_mv_value_amount:
             mv = float(getattr(m, "value_amount", 0.0) or 0.0)
             if mv:
@@ -169,18 +150,60 @@ class DynamicInventoryReport(models.Model):
                     return mv * (qty / total_qty)
                 return mv
 
-        # 4) move unit_cost
         if has_mv_unit_cost:
             uc = float(getattr(m, "unit_cost", 0.0) or 0.0)
             if uc:
                 return uc * qty
 
-        # 5) fallback standard_price
         return float((ml.product_id.standard_price or 0.0)) * qty
 
-    # -----------------
-    # RPC
-    # -----------------
+    def _get_base_domains(self, rec):
+        start_d, end_d = self._compute_date_range(rec)
+        start_dt, end_dt = self._dt_range(start_d, end_d)
+        company_id = rec.company_id.id if rec.company_id else self.env.company.id
+        loc_ids = self._get_location_ids(rec)
+        date_field = self._ml_date_field()
+
+        base = [
+            ("move_id.state", "=", "done"),
+            ("product_id.detailed_type", "=", "product"),
+            ("move_id.company_id", "=", company_id),
+        ]
+        loc_domain = ["|", ("location_id", "in", loc_ids), ("location_dest_id", "in", loc_ids)]
+
+        start_dt_s = fields.Datetime.to_string(start_dt)
+        end_dt_s = fields.Datetime.to_string(end_dt)
+
+        before_domain = base + loc_domain + [(date_field, "<", start_dt_s)]
+        period_domain = base + loc_domain + [(date_field, ">=", start_dt_s), (date_field, "<=", end_dt_s)]
+
+        return {
+            "start_d": start_d,
+            "end_d": end_d,
+            "start_dt": start_dt,
+            "end_dt": end_dt,
+            "company_id": company_id,
+            "loc_ids": loc_ids,
+            "date_field": date_field,
+            "before_domain": before_domain,
+            "period_domain": period_domain,
+        }
+
+    def _movement_type_label(self, ml, loc_ids):
+        in_flag = ml.location_dest_id.id in loc_ids
+        out_flag = ml.location_id.id in loc_ids
+
+        if in_flag and out_flag:
+            return "Nội bộ"
+        if in_flag:
+            return "Nhập"
+        if out_flag:
+            return "Xuất"
+        return "Khác"
+
+    # =================
+    # RPC SUMMARY
+    # =================
 
     @api.model
     def inventory_report(self, option):
@@ -189,10 +212,9 @@ class DynamicInventoryReport(models.Model):
         if not rec:
             return {"name": "Inventory Movement Summary", "orders": {}, "filters": {}, "report_lines": [], "totals": {}}
 
-        start_d, end_d = self._compute_date_range(rec)
-        start_dt, end_dt = self._dt_range(start_d, end_d)
+        ctx = self._get_base_domains(rec)
+        loc_ids = ctx["loc_ids"]
 
-        loc_ids = self._get_location_ids(rec)
         if not loc_ids:
             return {
                 "name": "Inventory Movement Summary",
@@ -204,35 +226,14 @@ class DynamicInventoryReport(models.Model):
                 "totals": {},
             }
 
-        company_id = rec.company_id.id if rec.company_id else self.env.company.id
-        date_field = self._ml_date_field()
-
         SML = self.env["stock.move.line"].sudo()
         qty_field = self._ml_qty_field()
 
-        base = [
-            ("move_id.state", "=", "done"),
-            ("product_id.detailed_type", "=", "product"),
-            ("move_id.company_id", "=", company_id),
-        ]
+        ml_before = SML.search(ctx["before_domain"])
+        ml_period = SML.search(ctx["period_domain"])
 
-        # ✅ nếu sau này bạn muốn loại internal transfer giữa loc_ids thì bật True
-        exclude_internal_transfers = False
-
-        start_dt_s = fields.Datetime.to_string(start_dt)
-        end_dt_s = fields.Datetime.to_string(end_dt)
-
-        # domain chung: mọi line có liên quan loc
-        loc_domain = ["|", ("location_id", "in", loc_ids), ("location_dest_id", "in", loc_ids)]
-
-        before_domain = base + loc_domain + [(date_field, "<", start_dt_s)]
-        period_domain = base + loc_domain + [(date_field, ">=", start_dt_s), (date_field, "<=", end_dt_s)]
-
-        ml_before = SML.search(before_domain)
-        ml_period = SML.search(period_domain)
-
-        move_qty_before = self._rg_qty_by_move(before_domain)
-        move_qty_period = self._rg_qty_by_move(period_domain)
+        move_qty_before = self._rg_qty_by_move(ctx["before_domain"])
+        move_qty_period = self._rg_qty_by_move(ctx["period_domain"])
 
         agg = defaultdict(lambda: {
             "opening_in_qty": 0.0, "opening_in_val": 0.0,
@@ -241,7 +242,9 @@ class DynamicInventoryReport(models.Model):
             "out_qty": 0.0, "out_val": 0.0,
         })
 
-        def _accumulate(mls, is_before: bool):
+        exclude_internal_transfers = False
+
+        def _accumulate(mls, is_before=False):
             move_qty_map = move_qty_before if is_before else move_qty_period
             for ml in mls:
                 pid = ml.product_id.id
@@ -291,16 +294,12 @@ class DynamicInventoryReport(models.Model):
                 continue
 
             a = agg[pid]
-
             opening_qty = a["opening_in_qty"] - a["opening_out_qty"]
             opening_val = a["opening_in_val"] - a["opening_out_val"]
-
             in_qty = a["in_qty"]
             in_val = a["in_val"]
-
             out_qty = a["out_qty"]
             out_val = a["out_val"]
-
             closing_qty = opening_qty + in_qty - out_qty
             closing_val = opening_val + in_val - out_val
 
@@ -309,9 +308,9 @@ class DynamicInventoryReport(models.Model):
 
             lines.append({
                 "product_id": p.id,
-                "product_name": p.name,
+                "product_name": p.display_name or p.name,
                 "product_code": p.default_code or "",
-                "uom": p.uom_id.name,
+                "uom": p.uom_id.name or "",
 
                 "opening_qty": opening_qty,
                 "opening_val": opening_val,
@@ -335,19 +334,19 @@ class DynamicInventoryReport(models.Model):
             totals["closing_qty"] += closing_qty
             totals["closing_val"] += closing_val
 
-        lines.sort(key=lambda x: (x.get("product_name") or ""))
+        lines.sort(key=lambda x: ((x.get("product_name") or "").lower(), (x.get("product_code") or "").lower()))
 
         period_label = {
             "custom": "Custom",
             "month": "Month",
             "quarter": "Quarter",
-            "year": "Year"
+            "year": "Year",
         }.get(rec.period_type, "Custom")
 
         filters = {
             "period_type": period_label,
-            "date_from": fields.Date.to_string(start_d),
-            "date_to": fields.Date.to_string(end_d),
+            "date_from": fields.Date.to_string(ctx["start_d"]),
+            "date_to": fields.Date.to_string(ctx["end_d"]),
             "location": rec.location_id.complete_name if rec.location_id else "All internal locations",
         }
 
@@ -359,9 +358,9 @@ class DynamicInventoryReport(models.Model):
             "quarter": rec.quarter,
             "year": rec.year,
             "location_id": rec.location_id.id if rec.location_id else False,
-            "computed_date_from": fields.Date.to_string(start_d),
-            "computed_date_to": fields.Date.to_string(end_d),
-            "company_id": company_id,
+            "computed_date_from": fields.Date.to_string(ctx["start_d"]),
+            "computed_date_to": fields.Date.to_string(ctx["end_d"]),
+            "company_id": ctx["company_id"],
         }
 
         return {
@@ -374,9 +373,199 @@ class DynamicInventoryReport(models.Model):
             "totals": totals,
         }
 
-    # -----------------
+    # =================
+    # RPC DETAIL
+    # =================
+
+    @api.model
+    def inventory_product_detail(self, wizard_id, product_id):
+        rec = self.browse(wizard_id).exists()
+        if not rec or not product_id:
+            return {
+                "product": {},
+                "lines": [],
+                "summary": {},
+            }
+
+        ctx = self._get_base_domains(rec)
+        loc_ids = ctx["loc_ids"]
+        qty_field = self._ml_qty_field()
+        SML = self.env["stock.move.line"].sudo()
+
+        domain = list(ctx["period_domain"]) + [("product_id", "=", int(product_id))]
+        mls = SML.search(domain)
+
+        move_qty_map = self._rg_qty_by_move(domain)
+        product = self.env["product.product"].sudo().browse(int(product_id)).exists()
+
+        detail_lines = []
+        sum_in_qty = 0.0
+        sum_in_val = 0.0
+        sum_out_qty = 0.0
+        sum_out_val = 0.0
+
+        for ml in mls:
+            qty = float(getattr(ml, qty_field, 0.0) or 0.0)
+            if not qty:
+                continue
+
+            movement_type = self._movement_type_label(ml, loc_ids)
+            val = float(self._line_value(ml, qty, move_qty_map) or 0.0)
+
+            if movement_type == "Nhập":
+                sum_in_qty += qty
+                sum_in_val += val
+            elif movement_type == "Xuất":
+                sum_out_qty += qty
+                sum_out_val += val
+
+            movement_date = (
+                getattr(ml, "date", False)
+                or getattr(ml.move_id, "date", False)
+                or getattr(getattr(ml.move_id, "picking_id", False), "date_done", False)
+            )
+
+            detail_lines.append({
+                "id": ml.id,
+                "sort_date": fields.Datetime.to_string(movement_date) if movement_date else "",
+                "date": fields.Datetime.to_string(movement_date) if movement_date else "",
+                "reference": (
+                    getattr(getattr(ml, "move_id", False), "reference", False)
+                    or getattr(getattr(ml, "move_id", False), "origin", False)
+                    or getattr(getattr(getattr(ml, "move_id", False), "picking_id", False), "name", False)
+                    or getattr(getattr(ml, "move_id", False), "name", False)
+                    or ""
+                ),
+                "picking_name": getattr(getattr(ml.move_id, "picking_id", False), "name", False) or "",
+                "location_from": ml.location_id.complete_name or "",
+                "location_to": ml.location_dest_id.complete_name or "",
+                "movement_type": movement_type,
+                "qty": qty,
+                "value": val,
+                "uom": ml.product_uom_id.name or (product.uom_id.name if product else ""),
+                "partner": (
+                    getattr(getattr(ml.move_id, "picking_id", False), "partner_id", False)
+                    and ml.move_id.picking_id.partner_id.display_name
+                ) or "",
+                "lot_name": ("lot_id" in ml._fields and ml.lot_id and ml.lot_id.name) or "",
+            })
+
+        detail_lines = sorted(
+            detail_lines,
+            key=lambda x: (x.get("sort_date") or "", x.get("id") or 0)
+        )
+
+        for line in detail_lines:
+            line.pop("sort_date", None)
+
+        return {
+            "product": {
+                "id": product.id if product else False,
+                "name": product.display_name if product else "",
+                "code": product.default_code if product else "",
+                "uom": product.uom_id.name if product else "",
+            },
+            "summary": {
+                "in_qty": sum_in_qty,
+                "in_val": sum_in_val,
+                "out_qty": sum_out_qty,
+                "out_val": sum_out_val,
+            },
+            "lines": detail_lines,
+        }
+        rec = self.browse(wizard_id).exists()
+        if not rec or not product_id:
+            return {
+                "product": {},
+                "lines": [],
+                "summary": {},
+            }
+
+        ctx = self._get_base_domains(rec)
+        loc_ids = ctx["loc_ids"]
+        qty_field = self._ml_qty_field()
+        SML = self.env["stock.move.line"].sudo()
+
+        domain = list(ctx["period_domain"]) + [("product_id", "=", int(product_id))]
+        mls = SML.search(domain, order="%s asc, id asc" % ctx["date_field"])
+
+        move_qty_map = self._rg_qty_by_move(domain)
+        product = self.env["product.product"].sudo().browse(int(product_id)).exists()
+
+        detail_lines = []
+        sum_in_qty = 0.0
+        sum_in_val = 0.0
+        sum_out_qty = 0.0
+        sum_out_val = 0.0
+
+        for ml in mls:
+            qty = float(getattr(ml, qty_field, 0.0) or 0.0)
+            if not qty:
+                continue
+
+            movement_type = self._movement_type_label(ml, loc_ids)
+            val = float(self._line_value(ml, qty, move_qty_map) or 0.0)
+
+            if movement_type == "Nhập":
+                sum_in_qty += qty
+                sum_in_val += val
+            elif movement_type == "Xuất":
+                sum_out_qty += qty
+                sum_out_val += val
+
+            detail_lines.append({
+                "id": ml.id,
+                "date": fields.Datetime.to_string(
+                    getattr(ml, "date", False)
+                    or getattr(ml.move_id, "date", False)
+                    or getattr(getattr(ml.move_id, "picking_id", False), "date_done", False)
+                ) if (
+                    getattr(ml, "date", False)
+                    or getattr(ml.move_id, "date", False)
+                    or getattr(getattr(ml.move_id, "picking_id", False), "date_done", False)
+                ) else "",
+                "reference": (
+                    getattr(getattr(ml, "move_id", False), "reference", False)
+                    or getattr(getattr(ml, "move_id", False), "origin", False)
+                    or getattr(getattr(getattr(ml, "move_id", False), "picking_id", False), "name", False)
+                    or getattr(getattr(ml, "move_id", False), "name", False)
+                    or ""
+                ),
+                "picking_name": getattr(getattr(ml.move_id, "picking_id", False), "name", False) or "",
+                "location_from": ml.location_id.complete_name or "",
+                "location_to": ml.location_dest_id.complete_name or "",
+                "movement_type": movement_type,
+                "qty": qty,
+                "value": val,
+                "uom": ml.product_uom_id.name or product.uom_id.name or "",
+                "partner": (
+                    getattr(getattr(ml.move_id, "picking_id", False), "partner_id", False)
+                    and ml.move_id.picking_id.partner_id.display_name
+                ) or "",
+                "lot_name": (
+                    "lot_id" in ml._fields and ml.lot_id and ml.lot_id.name
+                ) or "",
+            })
+
+        return {
+            "product": {
+                "id": product.id if product else False,
+                "name": product.display_name if product else "",
+                "code": product.default_code if product else "",
+                "uom": product.uom_id.name if product else "",
+            },
+            "summary": {
+                "in_qty": sum_in_qty,
+                "in_val": sum_in_val,
+                "out_qty": sum_out_qty,
+                "out_val": sum_out_val,
+            },
+            "lines": detail_lines,
+        }
+
+    # =================
     # XLSX
-    # -----------------
+    # =================
 
     def get_inventory_xlsx_report(self, data, response, report_data, dfr_data):
         orders = json.loads(data or "{}")
@@ -389,30 +578,24 @@ class DynamicInventoryReport(models.Model):
             totals = {}
 
         output = io.BytesIO()
-        workbook = xlsxwriter.Workbook(output, {
-            "in_memory": True,
-        })
+        workbook = xlsxwriter.Workbook(output, {"in_memory": True})
         sheet = workbook.add_worksheet("Inventory")
 
-        # ===== FORMATS =====
         fmt_company = workbook.add_format({"bold": True, "font_size": 12})
         fmt_info = workbook.add_format({"bold": True})
         head = workbook.add_format({"align": "center", "bold": True, "font_size": 16})
+        fmt_sub = workbook.add_format({"align": "center", "italic": True})
 
         th2 = workbook.add_format({"align": "center", "valign": "vcenter", "bold": True, "border": 1})
         td2 = workbook.add_format({"border": 1})
+        num_qty = workbook.add_format({"border": 1, "align": "right", "num_format": "#,##0.00"})
+        num_val = workbook.add_format({"border": 1, "align": "right", "num_format": "#,##0.00"})
 
-        # ✅ tách format số: SL (2 lẻ) vs Giá trị (0 lẻ)
-        num_qty = workbook.add_format({"border": 1, "align": "right", "num_format": "#,##0"})
-        num_val = workbook.add_format({"border": 1, "align": "right", "num_format": "#,##0"})
-        # nếu muốn âm đỏ: add {"font_color": "red"} cho số âm (tuỳ)
-
-        # ===== COMPANY HEADER (3 dòng) =====
         cid = int(orders.get("company_id") or self.env.company.id)
         company = self.env["res.company"].browse(cid).exists()
         partner = company.partner_id if company else self.env.company.partner_id
 
-        company_name = (company.name or "").upper() if company else (self.env.company.name or "").upper()
+        company_name = (company.name or self.env.company.name or "").upper()
         raw_addr = partner._display_address(without_company=True) if partner else ""
         addr = ", ".join([p.strip() for p in raw_addr.replace("\n", ",").split(",") if p.strip()])
         vat = (company.vat if company else self.env.company.vat) or ""
@@ -421,12 +604,10 @@ class DynamicInventoryReport(models.Model):
         if addr:
             sheet.merge_range("A2:B2", addr, fmt_info)
         if vat:
-            sheet.merge_range("A3:B3", f"Mã số thuế: {vat}", fmt_info)
+            sheet.merge_range("A3:B3", "Mã số thuế: %s" % vat, fmt_info)
 
-        # ===== TITLE =====
         sheet.merge_range("A4:K4", "BÁO CÁO TỒN KHO", head)
 
-        # ===== SUB TITLE: Kho + kỳ =====
         loc_name = "All internal locations"
         loc_id = orders.get("location_id")
         if loc_id:
@@ -434,41 +615,11 @@ class DynamicInventoryReport(models.Model):
             if loc:
                 loc_name = loc.complete_name
 
-        period_type = (orders.get("period_type") or "custom").strip()
-        dfrom = orders.get("computed_date_from") or orders.get("date_from")
-        dto = orders.get("computed_date_to") or orders.get("date_to")
-
-        def _parse_date(s):
-            try:
-                return datetime.strptime(s, "%Y-%m-%d").date()
-            except Exception:
-                return None
-
-        d1 = _parse_date(dfrom) if dfrom else None
-        d2 = _parse_date(dto) if dto else None
-
-        sub_text = f"Kho: {loc_name}"
-        if d1:
-            y = d1.year
-            m = d1.month
-            q = ((m - 1) // 3) + 1
-
-            if period_type == "month":
-                sub_text = f"Kho: {loc_name}, Tháng {m} năm {y}"
-            elif period_type == "quarter":
-                sub_text = f"Kho: {loc_name}, Quý {q} năm {y}"
-            elif period_type == "year":
-                sub_text = f"Kho: {loc_name}, Năm {y}"
-            else:
-                if d2:
-                    sub_text = f"Kho: {loc_name}, Từ ngày {d1.strftime('%d/%m/%Y')} đến ngày {d2.strftime('%d/%m/%Y')}"
-                else:
-                    sub_text = f"Kho: {loc_name}, Ngày {d1.strftime('%d/%m/%Y')}"
-
-        fmt_sub = workbook.add_format({"align": "center", "italic": True, "bold": True})
+        date_from = orders.get("computed_date_from") or ""
+        date_to = orders.get("computed_date_to") or ""
+        sub_text = "Kho: %s | Từ ngày: %s | Đến ngày: %s" % (loc_name, date_from, date_to)
         sheet.merge_range("A5:K5", sub_text, fmt_sub)
 
-        # ===== TABLE HEADER (2 dòng cha + con) =====
         row_parent = 7
         row_child = 8
 
@@ -495,10 +646,8 @@ class DynamicInventoryReport(models.Model):
         sheet.set_column(2, 2, 12)
         sheet.set_column(3, 10, 16)
 
-        # ===== TOTAL ROW =====
         row = row_child + 1
         sheet.merge_range(row, 0, row, 2, "Tổng", th2)
-
         sheet.write_number(row, 3, float(totals.get("opening_qty") or 0.0), num_qty)
         sheet.write_number(row, 4, float(totals.get("opening_val") or 0.0), num_val)
         sheet.write_number(row, 5, float(totals.get("in_qty") or 0.0), num_qty)
@@ -508,18 +657,11 @@ class DynamicInventoryReport(models.Model):
         sheet.write_number(row, 9, float(totals.get("closing_qty") or 0.0), num_qty)
         sheet.write_number(row, 10, float(totals.get("closing_val") or 0.0), num_val)
 
-        # ===== DATA ROWS =====
         for line in report_lines:
             row += 1
-
-            code = line.get("product_code") or ""
-            if not code and line.get("product_id"):
-                p = self.env["product.product"].sudo().browse(int(line["product_id"])).exists()
-                code = (p.default_code or "") if p else ""
-
-            sheet.write(row, 0, code, td2)
-            sheet.write(row, 1, line.get("product_name", ""), td2)
-            sheet.write(row, 2, line.get("uom", ""), td2)
+            sheet.write(row, 0, line.get("product_code") or "", td2)
+            sheet.write(row, 1, line.get("product_name") or "", td2)
+            sheet.write(row, 2, line.get("uom") or "", td2)
 
             sheet.write_number(row, 3, float(line.get("opening_qty") or 0.0), num_qty)
             sheet.write_number(row, 4, float(line.get("opening_val") or 0.0), num_val)
@@ -529,6 +671,7 @@ class DynamicInventoryReport(models.Model):
             sheet.write_number(row, 8, float(line.get("out_val") or 0.0), num_val)
             sheet.write_number(row, 9, float(line.get("closing_qty") or 0.0), num_qty)
             sheet.write_number(row, 10, float(line.get("closing_val") or 0.0), num_val)
+
         workbook.close()
         output.seek(0)
         response.stream.write(output.read())

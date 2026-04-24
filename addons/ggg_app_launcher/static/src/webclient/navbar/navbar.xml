@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="ggg_app_launcher.NavBar.AppsMenu" t-inherit="web.NavBar.AppsMenu" t-inherit-mode="extension">
+
+        <xpath expr="//Dropdown" position="replace">
+            <div class="o_navbar_apps_menu ggg_app_menu">
+                <button class="btn ggg_app_menu_btn" data-hotkey="h" title="App Launcher" t-on-click="toggleGggLauncher">
+                    <i class="oi oi-apps fs-4" style="color:#fff"/>
+                </button>
+            </div>
+        </xpath>
+
+    </t>
+
+    <t t-name="ggg_app_launcher.NavBar" t-inherit="web.NavBar" t-inherit-mode="extension">
+
+        <xpath expr="//nav[hasclass('o_main_navbar')]" position="inside">
+            <AppLauncher t-if="gggState.launcherOpen" onClose.bind="closeGggLauncher" onAppSelect.bind="onNavBarDropdownItemSelection" />
+        </xpath>
+
+    </t>
+
+</templates>

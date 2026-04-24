@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="ggg_favorite_own_rule" model="ir.rule">
+            <field name="name">Own Favorites Only</field>
+            <field name="model_id" ref="model_ggg_favorite"/>
+            <field name="domain_force">[('user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+    </data>
+</odoo>
