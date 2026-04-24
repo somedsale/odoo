@@ -1,0 +1,613 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="mailbox_client.MailboxApp">
+        <div class="o_mailbox_app o_mailbox_hifi d-flex flex-column h-100">
+
+            <!-- TOP BAR -->
+            <div class="o_mailbox_topbar d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+                <div class="d-flex align-items-center gap-4 flex-grow-1 min-w-0">
+                    <div class="o_mailbox_brand fw-bold">
+                        Odoo Mail
+                    </div>
+
+                    <div class="o_mailbox_search_wrap position-relative">
+                        <i class="fa fa-search o_mailbox_search_icon"/>
+                        <input type="text"
+                               class="form-control o_mailbox_search_input"
+                               placeholder="Search mail..."
+                               t-att-value="state.search"
+                               t-on-input="onSearchInput"/>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                    <button class="btn btn-light btn-sm" t-on-click="onFetchMail" title="Fetch">
+                        <i class="fa fa-refresh"/>
+                    </button>
+                    <button class="btn btn-light btn-sm"
+                            t-on-click="onMoveTrash"
+                            t-att-disabled="!state.selectedMessageId ? true : undefined"
+                            title="Trash current">
+                        <i class="fa fa-trash"/>
+                    </button>
+                    <button class="btn btn-light btn-sm"
+                            t-on-click="onRestoreInbox"
+                            t-att-disabled="(!state.selectedMessageId || selectedFolderCode !== 'trash') ? true : undefined"
+                            title="Restore current">
+                        <i class="fa fa-undo"/>
+                    </button>
+                    <button class="btn btn-light btn-sm"
+                            t-on-click="onToggleRead"
+                            t-att-disabled="!state.selectedMessageId ? true : undefined"
+                            title="Toggle read">
+                        <i class="fa fa-envelope-o"/>
+                    </button>
+
+                    <button class="btn btn-primary btn-sm ms-2" t-on-click="onCompose">
+                        Compose
+                    </button>
+                </div>
+            </div>
+
+            <!-- MAIN -->
+            <div class="o_mailbox_body d-flex flex-grow-1 overflow-hidden">
+
+                <!-- SIDEBAR -->
+                <aside class="o_mailbox_sidebar border-end d-flex flex-column">
+                    <div class="p-3">
+                        <div class="o_mailbox_sidebar_card d-flex align-items-center gap-3 mb-4">
+                            <div class="o_mailbox_sidebar_avatar">
+                                M
+                            </div>
+                            <div class="min-w-0">
+                                <div class="fw-semibold text-truncate">Mailbox</div>
+                                <div class="text-muted small text-truncate">
+                                    <t t-esc="composerSelectedAccount ? composerSelectedAccount.email_address : (state.accounts.length ? state.accounts[0].email_address : '-')"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary w-100 mb-2" t-on-click="onCompose">
+                            <i class="fa fa-pencil me-2"/> New Message
+                        </button>
+
+                        <button class="btn btn-light w-100 mb-4" t-on-click="onCreateFolder">
+                            <i class="fa fa-folder-o me-2"/> New Folder
+                        </button>
+
+                        <div class="o_mailbox_sidebar_title mb-2">Accounts</div>
+                        <div class="mb-3">
+                            <t t-foreach="state.accounts" t-as="account" t-key="account.id">
+                                <div t-att-class="'o_mailbox_account_item d-flex align-items-center justify-content-between ' + (state.selectedAccountId === account.id ? 'active' : '')"
+                                     t-on-click="() => this.onSelectAccount(account.id)">
+                                    <div class="min-w-0">
+                                        <div class="fw-semibold text-truncate">
+                                            <t t-esc="account.name"/>
+                                        </div>
+                                        <div class="text-muted small text-truncate">
+                                            <t t-esc="account.email_address"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+
+                        <div class="o_mailbox_sidebar_title mb-2">Folders</div>
+                        <nav class="o_mailbox_folder_nav">
+                            <t t-foreach="state.folders" t-as="folder" t-key="folder.id">
+                                <div t-att-class="'o_mailbox_folder_item d-flex align-items-center justify-content-between ' + (state.selectedFolderId === folder.id ? 'active' : '')"
+                                     t-on-click="() => this.onSelectFolder(folder.id)"
+                                     t-on-dragover.prevent=""
+                                     t-on-drop="(ev) => this.onDropMessagesToFolder(folder.id, ev)">
+
+                                    <div class="d-flex align-items-center gap-2 min-w-0 flex-grow-1">
+                                        <i t-if="folder.code === 'inbox'" class="fa fa-inbox"/>
+                                        <i t-if="folder.code === 'sent'" class="fa fa-send"/>
+                                        <i t-if="folder.code === 'draft'" class="fa fa-file-text-o"/>
+                                        <i t-if="folder.code === 'trash'" class="fa fa-trash"/>
+                                        <i t-if="folder.code === 'spam'" class="fa fa-ban"/>
+                                        <i t-if="folder.code === 'archive'" class="fa fa-archive"/>
+                                        <i t-if="!['inbox','sent','draft','trash','spam','archive'].includes(folder.code)" class="fa fa-folder-o"/>
+
+                                        <span class="text-truncate">
+                                            <t t-esc="folder.name"/>
+                                        </span>
+                                    </div>
+
+                                    <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                                        <span class="o_mailbox_folder_badge badge rounded-pill text-bg-light">
+                                            <t t-esc="folder.mailbox_message_count"/>
+                                        </span>
+
+                                        <button t-if="folder.code === 'custom'"
+                                                type="button"
+                                                class="btn btn-link btn-sm text-danger text-decoration-none p-0 ms-1"
+                                                title="Delete folder"
+                                                t-on-click.stop="() => this.onDeleteFolder(folder)">
+                                            <i class="fa fa-times"/>
+                                        </button>
+                                    </div>
+                                </div>
+                            </t>
+                        </nav>
+                    </div>
+
+                    <!-- <div class="mt-auto p-3 border-top">
+                        <div class="o_mailbox_folder_item d-flex align-items-center gap-2">
+                            <i class="fa fa-cog"/>
+                            <span>Settings</span>
+                        </div>
+                        <div class="o_mailbox_folder_item d-flex align-items-center gap-2">
+                            <i class="fa fa-question-circle-o"/>
+                            <span>Help</span>
+                        </div>
+                    </div> -->
+                </aside>
+
+                <!-- LIST -->
+                <section class="o_mailbox_list border-end d-flex flex-column">
+                    <div class="o_mailbox_list_header px-3 py-2 border-bottom d-flex align-items-center justify-content-between gap-2">
+                        <div class="d-flex align-items-center gap-2 min-w-0">
+                            <input type="checkbox"
+                                   t-att-checked="allVisibleSelected ? true : undefined"
+                                   t-on-change="onToggleSelectAll"/>
+                            <span class="small fw-semibold text-muted">
+                                <t t-esc="hasSelectedMessages ? `${state.selectedMessageIds.length} selected` : 'Sorted by Date'"/>
+                            </span>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                            <button t-if="hasSelectedMessages"
+                                    class="btn btn-light btn-sm"
+                                    t-on-click="onBulkMarkRead"
+                                    title="Mark Read">
+                                <i class="fa fa-envelope-open-o"/>
+                            </button>
+
+                            <button t-if="hasSelectedMessages"
+                                    class="btn btn-light btn-sm"
+                                    t-on-click="onBulkMarkUnread"
+                                    title="Mark Unread">
+                                <i class="fa fa-envelope-o"/>
+                            </button>
+
+                            <button t-if="hasSelectedMessages"
+                                    class="btn btn-light btn-sm"
+                                    t-on-click="onBulkToggleStar"
+                                    title="Toggle Star">
+                                <i class="fa fa-star"/>
+                            </button>
+
+                            <button t-if="hasSelectedMessages and selectedFolderCode !== 'trash'"
+                                    class="btn btn-light btn-sm"
+                                    t-on-click="onBulkMoveTrash"
+                                    title="Move to Trash">
+                                <i class="fa fa-trash"/>
+                            </button>
+
+                            <button t-if="hasSelectedMessages and selectedFolderCode === 'trash'"
+                                    class="btn btn-light btn-sm"
+                                    t-on-click="onBulkRestoreInbox"
+                                    title="Restore to Inbox">
+                                <i class="fa fa-undo"/>
+                            </button>
+
+                            <div class="o_mailbox_filter_dropdown position-relative">
+                                <button class="btn btn-light btn-sm d-flex align-items-center gap-1"
+                                        t-on-click.stop="toggleFilterMenu"
+                                        type="button">
+                                    <i class="fa fa-filter"/>
+                                    <span><t t-esc="filterLabel"/></span>
+                                </button>
+
+                                <div t-if="state.showFilterMenu"
+                                     class="o_mailbox_filter_menu"
+                                     t-on-click.stop="">
+                                    <button type="button" class="o_mailbox_filter_item" t-on-click="() => this.applyFilter('all')">
+                                        All
+                                    </button>
+                                    <button type="button" class="o_mailbox_filter_item" t-on-click="() => this.applyFilter('unread')">
+                                        Unread
+                                    </button>
+                                    <button type="button" class="o_mailbox_filter_item" t-on-click="() => this.applyFilter('starred')">
+                                        Starred
+                                    </button>
+                                    <button type="button" class="o_mailbox_filter_item" t-on-click="() => this.applyFilter('attachment')">
+                                        Has attachment
+                                    </button>
+                                    <button type="button" class="o_mailbox_filter_item" t-on-click="() => this.applyFilter('incoming')">
+                                        Incoming
+                                    </button>
+                                    <button type="button" class="o_mailbox_filter_item" t-on-click="() => this.applyFilter('outgoing')">
+                                        Outgoing
+                                    </button>
+                                    <button type="button" class="o_mailbox_filter_item" t-on-click="() => this.applyFilter('today')">
+                                        Today
+                                    </button>
+                                    <button type="button" class="o_mailbox_filter_item" t-on-click="() => this.applyFilter('week')">
+                                        This week
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="o_mailbox_list_items">
+                        <t t-if="state.loading">
+                            <div class="p-4 text-center text-muted">Loading...</div>
+                        </t>
+
+                        <t t-if="!state.loading and !state.messages.length">
+                            <div class="p-4 text-center text-muted">No emails found.</div>
+                        </t>
+
+                        <t t-foreach="state.messages" t-as="message" t-key="message.id">
+                            <div t-att-class="'o_mailbox_list_item ' + (state.selectedMessageId === message.id ? 'active' : '') + ' ' + (!message.is_read ? 'unread' : '')"
+                                 t-on-click="() => this.onSelectMessage(message.id)"
+                                 draggable="true"
+                                 t-on-dragstart="(ev) => this.onDragMessageStart(message.id, ev)">
+
+                                <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                                    <div class="d-flex align-items-center gap-2 min-w-0">
+                                        <input type="checkbox"
+                                               t-att-checked="isMessageChecked(message.id) ? true : undefined"
+                                               t-on-click.stop=""
+                                               t-on-change="(ev) => this.onToggleMessageCheckbox(message.id, ev)"/>
+                                        <span t-if="!message.is_read" class="o_mailbox_unread_dot"/>
+                                        <span class="o_mailbox_list_sender text-truncate">
+                                            <t t-esc="message.sender_name || message.sender || '-'"/>
+                                        </span>
+                                    </div>
+                                    <span class="o_mailbox_list_date text-nowrap">
+                                        <t t-esc="formatDate(message.message_date)"/>
+                                    </span>
+                                </div>
+
+                                <div class="o_mailbox_list_subject text-truncate">
+                                    <t t-esc="message.name || '(No Subject)'"/>
+                                </div>
+
+                                <div class="o_mailbox_list_snippet mt-1">
+                                    <t t-esc="message.list_snippet_text || ''"/>
+                                </div>
+
+                                <div class="mt-2 d-flex align-items-center gap-2 flex-wrap">
+                                    <span t-if="message.attachment_count" class="badge rounded-pill text-bg-light">
+                                        <i class="fa fa-paperclip me-1"/>
+                                        <t t-esc="message.attachment_count"/>
+                                    </span>
+                                    <span t-if="message.is_starred" class="badge rounded-pill text-bg-warning">
+                                        Starred
+                                    </span>
+                                    <span t-if="!message.is_read" class="badge rounded-pill text-bg-primary">
+                                        Unread
+                                    </span>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+
+                    <div class="o_mailbox_list_pager px-3 py-2 border-top d-flex align-items-center justify-content-between">
+                        <div class="small text-muted">
+                            <t t-if="state.totalCount">
+                                <t t-esc="pageStart"/>-<t t-esc="pageEnd"/> / <t t-esc="state.totalCount"/>
+                            </t>
+                            <t t-else="">
+                                0 / 0
+                            </t>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="btn btn-light btn-sm"
+                                    t-on-click="onPrevPage"
+                                    t-att-disabled="state.currentPage &lt;= 1 ? true : undefined">
+                                <i class="fa fa-angle-left me-1"/>
+                                Prev
+                            </button>
+
+                            <span class="small text-muted">
+                                <t t-esc="state.currentPage"/> / <t t-esc="totalPages"/>
+                            </span>
+
+                            <button class="btn btn-light btn-sm"
+                                    t-on-click="onNextPage"
+                                    t-att-disabled="state.currentPage &gt;= totalPages ? true : undefined">
+                                Next
+                                <i class="fa fa-angle-right ms-1"/>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- DETAIL -->
+                <section class="o_mailbox_preview d-flex flex-column">
+                    <t t-if="state.selectedMessage">
+                        <div class="o_mailbox_preview_toolbar px-4 py-2 border-bottom d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-1">
+                                <button class="btn btn-light btn-sm" t-on-click="onReplyReal" title="Reply">
+                                    <i class="fa fa-reply"/>
+                                </button>
+                                <button class="btn btn-light btn-sm" t-on-click="onForward" title="Forward">
+                                    <i class="fa fa-share"/>
+                                </button>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-1">
+                                <button class="btn btn-light btn-sm" t-on-click="onToggleStar" title="Star">
+                                    <i class="fa fa-star"/>
+                                </button>
+                                <button class="btn btn-light btn-sm" t-on-click="onMoveTrash" title="Trash">
+                                    <i class="fa fa-trash-o"/>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="o_mailbox_preview_scroll flex-grow-1 overflow-auto">
+                            <div class="o_mailbox_preview_content p-4">
+                                <div class="o_mailbox_detail_header mb-4">
+                                    <h1 class="o_mailbox_detail_subject mb-4">
+                                        <t t-esc="state.selectedMessage.name || '(No Subject)'"/>
+                                    </h1>
+
+                                    <div class="d-flex align-items-start gap-3">
+                                        <div class="o_mailbox_detail_avatar">
+                                            <t t-esc="(state.selectedMessage.sender_name || state.selectedMessage.sender || 'M').slice(0,1).toUpperCase()"/>
+                                        </div>
+
+                                        <div class="flex-grow-1 min-w-0">
+                                            <div class="d-flex justify-content-between align-items-start gap-3">
+                                                <div class="min-w-0">
+                                                    <div class="fw-bold">
+                                                        <t t-esc="state.selectedMessage.sender_name || state.selectedMessage.sender || '-'"/>
+                                                    </div>
+                                                    <div class="text-muted small">
+                                                        <t t-esc="state.selectedMessage.sender || '-'"/>
+                                                    </div>
+                                                </div>
+
+                                                <div class="text-end text-muted small">
+                                                    <div>
+                                                        <t t-esc="formatDate(state.selectedMessage.message_date)"/>
+                                                    </div>
+                                                    <div>to me</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div t-if="state.selectedMessage.render_body_html"
+                                     class="o_mailbox_html_body"
+                                     t-out="state.selectedMessage.render_body_html"/>
+
+                                <pre t-elif="state.selectedMessage.render_body_text"
+                                     class="o_mailbox_plain_body"><t t-esc="state.selectedMessage.render_body_text"/></pre>
+
+                                <div t-else="" class="text-muted">
+                                    Không có nội dung email.
+                                </div>
+
+                                <div t-if="state.selectedMessage.attachments &amp;&amp; state.selectedMessage.attachments.length"
+                                     class="o_mailbox_detail_attachments mt-5 pt-4 border-top">
+                                    <div class="d-flex align-items-center gap-2 mb-3">
+                                        <i class="fa fa-paperclip text-muted"/>
+                                        <span class="fw-semibold">
+                                            <t t-esc="state.selectedMessage.attachments.length"/> Attachments
+                                        </span>
+                                    </div>
+
+                                    <div class="o_mailbox_attachment_grid">
+                                        <t t-foreach="state.selectedMessage.attachments" t-as="att" t-key="att.id">
+                                            <div class="o_mailbox_attachment_card"
+                                                 t-on-click="() => this.openAttachment(att)">
+                                                <div class="o_mailbox_attachment_icon">
+                                                    <i class="fa fa-file-o"/>
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <div class="fw-semibold text-truncate">
+                                                        <t t-esc="att.name"/>
+                                                    </div>
+                                                    <div class="text-muted small">
+                                                        <t t-esc="formatAttachmentSize(att.file_size)"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+
+                    <t t-if="!state.selectedMessage">
+                        <div class="o_mailbox_empty_preview d-flex align-items-center justify-content-center h-100 text-muted">
+                            Select an email to preview
+                        </div>
+                    </t>
+                </section>
+            </div>
+
+            <!-- COMPOSE MODAL -->
+            <div t-if="state.composerOpen" class="o_mailbox_compose_overlay">
+                <div class="o_mailbox_compose_modal">
+                    <div class="o_mailbox_compose_header">
+                        <span class="o_mailbox_compose_title">
+                            <t t-esc="state.composerMode === 'forward' ? 'Forward Message' : (state.composerMode === 'reply' ? 'Reply Message' : 'New Message')"/>
+                        </span>
+                        <div class="o_mailbox_compose_header_actions">
+                            <button type="button" class="o_mailbox_icon_btn" title="Minimize">
+                                <i class="fa fa-window-minimize"/>
+                            </button>
+                            <button type="button" class="o_mailbox_icon_btn" title="Expand">
+                                <i class="fa fa-expand"/>
+                            </button>
+                            <button type="button" class="o_mailbox_icon_btn" title="Close" t-on-click="onComposerClose">
+                                <i class="fa fa-times"/>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="o_mailbox_compose_fields">
+                        <div class="o_mailbox_compose_field_row">
+                            <label>To</label>
+                            <input class="o_mailbox_compose_input"
+                                   t-att-value="state.composerData.to_recipients"
+                                   t-on-input="(ev) => this.onComposerInput('to_recipients', ev)"
+                                   placeholder="Recipients"/>
+                            <div class="o_mailbox_compose_field_actions">
+                                <button type="button" class="o_mailbox_text_btn" t-on-click="() => this.toggleComposerExtra('cc')">Cc</button>
+                                <button type="button" class="o_mailbox_text_btn" t-on-click="() => this.toggleComposerExtra('bcc')">Bcc</button>
+                            </div>
+                        </div>
+
+                        <div t-if="state.composerShowCc" class="o_mailbox_compose_field_row">
+                            <label>Cc</label>
+                            <input class="o_mailbox_compose_input"
+                                   t-att-value="state.composerData.cc_recipients"
+                                   t-on-input="(ev) => this.onComposerInput('cc_recipients', ev)"
+                                   placeholder="Cc recipients"/>
+                        </div>
+
+                        <div t-if="state.composerShowBcc" class="o_mailbox_compose_field_row">
+                            <label>Bcc</label>
+                            <input class="o_mailbox_compose_input"
+                                   t-att-value="state.composerData.bcc_recipients"
+                                   t-on-input="(ev) => this.onComposerInput('bcc_recipients', ev)"
+                                   placeholder="Bcc recipients"/>
+                        </div>
+
+                        <div class="o_mailbox_compose_field_row">
+                            <label>Subject</label>
+                            <input class="o_mailbox_compose_input"
+                                   t-att-value="state.composerData.name"
+                                   t-on-input="(ev) => this.onComposerInput('name', ev)"
+                                   placeholder="Subject"/>
+                        </div>
+                    </div>
+
+                    <div t-att-class="'o_mailbox_compose_body_wrap ' + (state.composerDragOver ? 'o_dragover' : '')"
+                         t-on-dragenter="onComposerDragEnter"
+                         t-on-dragover="onComposerDragOver"
+                         t-on-dragleave="onComposerDragLeave"
+                         t-on-drop="onComposerDrop">
+
+                        <div class="o_mailbox_compose_body"
+                             t-ref="composerEditor"
+                             contenteditable="true"
+                             t-on-focus="onComposerEditorFocus"
+                             t-on-keyup="onComposerEditorKeyup"
+                             t-on-mouseup="onComposerEditorMouseup"
+                             t-on-input="onComposerHtmlInput"/>
+
+                        <div class="o_mailbox_compose_autosave">Autosaved</div>
+
+                        <div t-if="state.composerDragOver" class="o_mailbox_compose_dropzone">
+                            <div class="o_mailbox_compose_dropzone_inner">
+                                <i class="fa fa-cloud-upload"/>
+                                <div>Kéo thả tệp vào đây để đính kèm</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="o_mailbox_compose_toolbar">
+                        <div class="o_mailbox_compose_toolbar_left">
+                            <button type="button" class="o_mailbox_icon_btn" t-on-mousedown.prevent="" t-on-click="() => this.applyEditorCommand('bold')" title="Bold">
+                                <i class="fa fa-bold"/>
+                            </button>
+                            <button type="button" class="o_mailbox_icon_btn" t-on-mousedown.prevent="" t-on-click="() => this.applyEditorCommand('italic')" title="Italic">
+                                <i class="fa fa-italic"/>
+                            </button>
+                            <button type="button" class="o_mailbox_icon_btn" t-on-mousedown.prevent="" t-on-click="() => this.applyEditorCommand('underline')" title="Underline">
+                                <i class="fa fa-underline"/>
+                            </button>
+
+                            <span class="o_mailbox_toolbar_divider"/>
+
+                            <button type="button" class="o_mailbox_icon_btn" t-on-mousedown.prevent="" t-on-click="() => this.applyEditorCommand('insertUnorderedList')" title="Bullet List">
+                                <i class="fa fa-list-ul"/>
+                            </button>
+                            <button type="button" class="o_mailbox_icon_btn" t-on-mousedown.prevent="" t-on-click="() => this.applyEditorCommand('insertOrderedList')" title="Numbered List">
+                                <i class="fa fa-list-ol"/>
+                            </button>
+
+                            <span class="o_mailbox_toolbar_divider"/>
+
+                            <button type="button" class="o_mailbox_icon_btn" t-on-mousedown.prevent="" t-on-click="insertEditorLink" title="Insert Link">
+                                <i class="fa fa-link"/>
+                            </button>
+
+                            <label class="o_mailbox_icon_btn mb-0" title="Attach image/file">
+                                <i class="fa fa-image"/>
+                                <input type="file"
+                                       class="d-none"
+                                       multiple="multiple"
+                                       t-on-change="onComposerAttachmentChange"/>
+                            </label>
+                        </div>
+
+                        <div class="o_mailbox_compose_toolbar_right">
+                            <button type="button" class="o_mailbox_icon_btn" t-on-mousedown.prevent="" t-on-click="() => this.applyEditorCommand('removeFormat')" title="Clear format">
+                                <i class="fa fa-eraser"/>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div t-if="state.composerData.attachment_ids.length" class="o_mailbox_compose_attachments">
+                        <t t-foreach="state.composerData.attachment_ids" t-as="att" t-key="att.id">
+                            <div class="o_mailbox_compose_attachment_item">
+                                <div class="d-flex align-items-center gap-2 min-w-0">
+                                    <i class="fa fa-paperclip text-muted"/>
+                                    <div class="text-truncate">
+                                        <span class="fw-semibold"><t t-esc="att.name"/></span>
+                                        <span class="text-muted ms-2"><t t-esc="formatAttachmentSize(att.size)"/></span>
+                                    </div>
+                                </div>
+                                <button type="button"
+                                        class="btn btn-link btn-sm text-danger text-decoration-none"
+                                        t-on-click="() => this.removeComposerAttachment(att.id)">
+                                    <i class="fa fa-times"/>
+                                </button>
+                            </div>
+                        </t>
+                    </div>
+
+                    <details t-if="state.composerData.quoted_html" class="o_mailbox_compose_quote_details">
+                        <summary>Show original message</summary>
+                        <div class="o_mailbox_compose_quote" t-out="composerQuotedMarkup"/>
+                    </details>
+
+                    <div class="o_mailbox_compose_footer">
+                        <div class="o_mailbox_compose_footer_left">
+                            <button class="o_mailbox_send_btn"
+                                    t-on-click="onComposerSend"
+                                    t-att-disabled="state.composerSending ? true : undefined">
+                                <span>Send</span>
+                                <i class="fa fa-paper-plane ms-2"/>
+                            </button>
+
+                            <label class="o_mailbox_icon_btn mb-0" title="Attach file">
+                                <i class="fa fa-paperclip"/>
+                                <input type="file"
+                                       class="d-none"
+                                       multiple="multiple"
+                                       t-on-change="onComposerAttachmentChange"/>
+                            </label>
+                        </div>
+
+                        <div class="o_mailbox_compose_footer_right">
+                            <button class="o_mailbox_discard_btn" t-on-click="onComposerClose">
+                                Discard
+                            </button>
+                            <button type="button" class="o_mailbox_icon_btn" title="Delete draft" t-on-click="onComposerClose">
+                                <i class="fa fa-trash"/>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </t>
+
+</templates>

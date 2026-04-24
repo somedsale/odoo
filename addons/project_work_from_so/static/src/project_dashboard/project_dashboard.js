@@ -405,6 +405,14 @@ export class ProjectWorkDashboard extends Component {
       "payment_vs_acceptance_percent",
       "payment_vs_completed_percent",
       "payment_vs_invoice_percent",
+
+      "total_cost_estimate",
+      "total_cost_with_tax_estimate",
+      "amount_additional_expense_estimate",
+      "amount_additional_expense_with_tax_estimate",
+      "total_cost_expense",
+      "total_spent",
+      "total_not_spent",
     ];
 
     let available = new Set(["name", "partner_id"]);
@@ -545,6 +553,17 @@ export class ProjectWorkDashboard extends Component {
           r.payment_vs_completed_percent,
         );
         const payment_vs_invoice_percent = num(r.payment_vs_invoice_percent);
+        const total_cost_estimate = num(r.total_cost_estimate);
+        const total_cost_with_tax_estimate = num(r.total_cost_with_tax_estimate);
+        const amount_additional_expense_estimate = num(
+          r.amount_additional_expense_estimate,
+        );
+        const amount_additional_expense_with_tax_estimate = num(
+          r.amount_additional_expense_with_tax_estimate,
+        );
+        const total_cost_expense = num(r.total_cost_expense);
+        const total_spent = num(r.total_spent);
+        const total_not_spent = num(r.total_not_spent);
         const signature_date = this.formatDate(r.signature_date);
         const date_start = this.formatDate(r.date_start);
         const date = this.formatDate(r.date);
@@ -581,6 +600,14 @@ export class ProjectWorkDashboard extends Component {
           payment_vs_acceptance_percent,
           payment_vs_completed_percent,
           payment_vs_invoice_percent,
+
+          total_cost_estimate,
+          total_cost_with_tax_estimate,
+          amount_additional_expense_estimate,
+          amount_additional_expense_with_tax_estimate,
+          total_cost_expense,
+          total_spent,
+          total_not_spent,
 
           signature_date,
           date_start,
