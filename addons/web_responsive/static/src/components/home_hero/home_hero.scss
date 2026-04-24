@@ -304,12 +304,13 @@
   font-size: 18px;
   line-height: 1.25;
   font-weight: 800;
-  color: #ffffff;
-}
-
-.o_home_hero__section_title i {
-  color: #ffffff;
-  font-size: 20px;
+  color: var(--hero-text);
+  i {
+    color: #1898e2;
+  }
+  span {
+    color: #1898e2;
+  }
 }
 
 .o_home_hero__card_text {
