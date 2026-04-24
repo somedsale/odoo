@@ -1,4 +1,5 @@
 /** @odoo-module **/
+
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { jsonrpc } from "@web/core/network/rpc_service";
@@ -22,6 +23,7 @@ export class InventoryReport extends Component {
             is_applying: false,
             error: "",
             is_scrolled: false,
+            search: "",
             filters: {
                 date_from: "",
                 date_to: "",
@@ -32,6 +34,13 @@ export class InventoryReport extends Component {
             },
             page: 1,
             page_size: 50,
+            detail_open: false,
+            detail_loading: false,
+            detail: {
+                product: {},
+                summary: {},
+                lines: [],
+            },
         });
 
         this.locations = [];
@@ -39,10 +48,11 @@ export class InventoryReport extends Component {
 
         this.orders = {};
         this.all_lines = [];
-        this.totals = {}; // ✅ NEW
+        this.totals = {};
 
         this._monthKeys = null;
         this._quarterKeys = null;
+        this._autoTimer = null;
 
         onWillStart(async () => {
             await this._initWizard();
@@ -97,10 +107,24 @@ export class InventoryReport extends Component {
         if (!yy || !mm || !dd) return String(s);
         return `${dd}/${mm}/${yy}`;
     }
-    _fmtNum(v, digits = 0) {
+
+    _fmtDateTimeVN(s) {
+        if (!s) return "";
+        const d = new Date(s);
+        if (Number.isNaN(d.getTime())) return String(s);
+        return new Intl.DateTimeFormat("vi-VN", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        }).format(d);
+    }
+
+    _fmtNum(v, digits = 2) {
         const n = Number(v || 0);
         return new Intl.NumberFormat("vi-VN", {
-            minimumFractionDigits: digits,
+            minimumFractionDigits: 0,
             maximumFractionDigits: digits,
         }).format(Number.isFinite(n) ? n : 0);
     }
@@ -144,52 +168,6 @@ export class InventoryReport extends Component {
         return "";
     }
 
-    onChangeDate() {
-        const f = this.state.filters;
-        f.year = "";
-        f.month = "";
-        f.quarter = "";
-    }
-
-    onChangeMonth() {
-        const f = this.state.filters;
-        if (!f.month) return;
-        f.quarter = "";
-        f.date_from = "";
-        f.date_to = "";
-        if (!f.year) f.year = this.defaults.nowY;
-    }
-
-    onChangeQuarter() {
-        const f = this.state.filters;
-        if (!f.quarter) return;
-        f.month = "";
-        f.date_from = "";
-        f.date_to = "";
-        if (!f.year) f.year = this.defaults.nowY;
-    }
-
-    onChangeYear() {
-        const f = this.state.filters;
-        f.date_from = "";
-        f.date_to = "";
-    }
-
-    _detectPeriodType() {
-        const f = this.state.filters;
-        if (f.date_from || f.date_to) return "custom";
-        if (f.month) return "month";
-        if (f.quarter) return "quarter";
-        if (f.year) return "year";
-        return "custom";
-    }
-    onScrollInvrep(ev) {
-        const scrolled = ev.target.scrollTop > 2;
-        if (this.state.is_scrolled !== scrolled) {
-            this.state.is_scrolled = scrolled;
-        }
-    }
-
     get filter_label() {
         const o = this.orders || {};
         const pt = String(o.period_type || "custom");
@@ -214,39 +192,127 @@ export class InventoryReport extends Component {
         return `Toàn bộ thời gian • ${locText}`;
     }
 
-    // Paging
-    get total() {
-        return this.all_lines?.length || 0;
+    onChangeDate() {
+        const f = this.state.filters;
+        f.year = "";
+        f.month = "";
+        f.quarter = "";
+        this._debouncedAutoApply();
     }
+
+    onChangeMonth() {
+        const f = this.state.filters;
+        if (f.month) {
+            f.quarter = "";
+            f.date_from = "";
+            f.date_to = "";
+            if (!f.year) f.year = this.defaults.nowY;
+        }
+        this._debouncedAutoApply();
+    }
+
+    onChangeQuarter() {
+        const f = this.state.filters;
+        if (f.quarter) {
+            f.month = "";
+            f.date_from = "";
+            f.date_to = "";
+            if (!f.year) f.year = this.defaults.nowY;
+        }
+        this._debouncedAutoApply();
+    }
+
+    onChangeYear() {
+        const f = this.state.filters;
+        f.date_from = "";
+        f.date_to = "";
+        this._debouncedAutoApply();
+    }
+
+    onChangeLocation() {
+        this._debouncedAutoApply();
+    }
+
+    onSearchInput() {
+        this.state.page = 1;
+    }
+
+    _detectPeriodType() {
+        const f = this.state.filters;
+        if (f.date_from || f.date_to) return "custom";
+        if (f.month) return "month";
+        if (f.quarter) return "quarter";
+        if (f.year) return "year";
+        return "custom";
+    }
+
+    _debouncedAutoApply() {
+        if (this._autoTimer) {
+            clearTimeout(this._autoTimer);
+        }
+        this._autoTimer = setTimeout(() => {
+            this.apply_filter();
+        }, 250);
+    }
+
+    onScrollInvrep(ev) {
+        const scrolled = ev.target.scrollTop > 2;
+        if (this.state.is_scrolled !== scrolled) {
+            this.state.is_scrolled = scrolled;
+        }
+    }
+
+    get filtered_lines() {
+        const q = String(this.state.search || "").trim().toLowerCase();
+        if (!q) return this.all_lines || [];
+        return (this.all_lines || []).filter((l) => {
+            const name = String(l.product_name || "").toLowerCase();
+            const code = String(l.product_code || "").toLowerCase();
+            return name.includes(q) || code.includes(q);
+        });
+    }
+
+    get total() {
+        return this.filtered_lines.length || 0;
+    }
+
     get total_pages() {
         const ps = parseInt(this.state.page_size || 50, 10) || 50;
         return Math.max(1, Math.ceil(this.total / ps));
     }
+
     get current_page() {
         const p = parseInt(this.state.page || 1, 10) || 1;
         return Math.min(Math.max(p, 1), this.total_pages);
     }
+
     get start_index() {
         const ps = parseInt(this.state.page_size || 50, 10) || 50;
         return (this.current_page - 1) * ps;
     }
+
     get end_index() {
         const ps = parseInt(this.state.page_size || 50, 10) || 50;
         return Math.min(this.start_index + ps, this.total);
     }
+
     get paged_lines() {
-        return (this.all_lines || []).slice(this.start_index, this.end_index);
+        return this.filtered_lines.slice(this.start_index, this.end_index);
     }
+
     prev_page() {
         if (this.current_page > 1) this.state.page = this.current_page - 1;
     }
+
     next_page() {
         if (this.current_page < this.total_pages) this.state.page = this.current_page + 1;
     }
+
     onPageSizeChange() {
         this.state.page_size = parseInt(this.state.page_size || "50", 10) || 50;
         this.state.page = 1;
     }
+
     goToPage() {
         const p = parseInt(this.state.page || "1", 10) || 1;
         this.state.page = Math.min(Math.max(p, 1), this.total_pages);
@@ -262,7 +328,7 @@ export class InventoryReport extends Component {
 
         this.orders = data.orders || {};
         this.all_lines = data.report_lines || [];
-        this.totals = data.totals || {}; // ✅ NEW
+        this.totals = data.totals || {};
         this.state.page = 1;
 
         const o = this.orders || {};
@@ -309,6 +375,7 @@ export class InventoryReport extends Component {
 
             if (f.date_from && f.date_to && f.date_from > f.date_to) {
                 this.state.error = "Ngày bắt đầu không được lớn hơn ngày kết thúc.";
+                this.state.is_applying = false;
                 return;
             }
 
@@ -341,8 +408,9 @@ export class InventoryReport extends Component {
             });
 
             await this.load_data();
+            this.closeDetail();
         } catch (e) {
-            this.state.error = (e && e.message) ? e.message : "Có lỗi khi áp dụng bộ lọc.";
+            this.state.error = (e && e.message) ? e.message : "Có lỗi khi tải dữ liệu.";
             throw e;
         } finally {
             this.state.is_applying = false;
@@ -351,6 +419,7 @@ export class InventoryReport extends Component {
 
     async reset_filters() {
         const f = this.state.filters;
+        this.state.search = "";
         f.date_from = "";
         f.date_to = "";
         f.year = this.defaults.nowY;
@@ -358,6 +427,47 @@ export class InventoryReport extends Component {
         f.quarter = "";
         f.location_id = "";
         await this.apply_filter();
+    }
+
+    async openProductDetail(line) {
+        if (!line || !line.product_id) return;
+
+        this.state.detail_open = true;
+        this.state.detail_loading = true;
+        this.state.detail = {
+            product: {},
+            summary: {},
+            lines: [],
+        };
+
+        try {
+            const data = await jsonrpc("/web/dataset/call_kw/dynamic.inventory.report/inventory_product_detail", {
+                model: "dynamic.inventory.report",
+                method: "inventory_product_detail",
+                args: [this.wizard_id, line.product_id],
+                kwargs: {},
+            });
+
+            this.state.detail = data || {
+                product: {},
+                summary: {},
+                lines: [],
+            };
+        } catch (e) {
+            this.state.error = (e && e.message) ? e.message : "Không tải được chi tiết sản phẩm.";
+        } finally {
+            this.state.detail_loading = false;
+        }
+    }
+
+    closeDetail() {
+        this.state.detail_open = false;
+        this.state.detail_loading = false;
+        this.state.detail = {
+            product: {},
+            summary: {},
+            lines: [],
+        };
     }
 
     async print_pdf(e) {
@@ -400,7 +510,7 @@ export class InventoryReport extends Component {
                 output_format: "xlsx",
                 report_data: JSON.stringify(data.report_lines),
                 report_name: "Inventory Report",
-                dfr_data: JSON.stringify(data), // ✅ có totals bên trong
+                dfr_data: JSON.stringify(data),
             },
         });
     }

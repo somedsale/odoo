@@ -14,6 +14,6 @@ class IrHttp(models.AbstractModel):
             **session,
             "apps_menu": {
                 "search_type": user.apps_menu_search_type,
-                "theme": user.apps_menu_theme,
+                "theme": "milk",
             },
         }

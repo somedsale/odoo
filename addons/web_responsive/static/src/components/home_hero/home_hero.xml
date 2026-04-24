@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="web_responsive.HomeHero">
+        <div t-attf-class="o_home_hero #{state.open ? 'is-open' : ''}" t-att-data-theme="state.theme">
+            <div class="o_home_hero__overlay"></div>
+            <div class="o_home_hero__glow o_home_hero__glow--1"></div>
+            <div class="o_home_hero__glow o_home_hero__glow--2"></div>
+
+            <div class="o_home_hero__container">
+                <main class="o_home_hero__content">
+
+                    <!-- HERO TOP -->
+                    <section class="o_home_hero__hero_grid">
+                        <div class="o_home_hero__hero_main">
+                            <span class="o_home_hero__eyebrow">WORKSPACE OVERVIEW</span>
+
+                            <h2 class="o_home_hero__headline">
+                                <span class="o_home_hero__headline_line">
+                                    <t t-esc="state.greeting"/>
+                                </span>
+                                <span class="o_home_hero__headline_line o_home_hero__headline_name">
+                                    <t t-esc="state.userName"/>
+                                </span>
+                            </h2>
+
+                            <p class="o_home_hero__lead">
+                                Chào mừng bạn đã quay trở lại. Theo dõi bán hàng, dự án, mua hàng và vận hành trong một không gian làm việc thống nhất, trực quan và nhanh hơn.
+                            </p>
+
+                            <div class="o_home_hero__hero_actions">
+                                <button type="button" class="btn o_home_hero__btn o_home_hero__btn--primary" t-on-click="openApps">
+                                    <span>Mở ứng dụng</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="o_home_hero__hero_side">
+                            <div class="o_home_hero__clock_card">
+                                <div class="o_home_hero__clock_head">
+                                    <div class="o_home_hero__clock_icon">
+                                        <i class="fa fa-clock-o"></i>
+                                    </div>
+                                    <span class="o_home_hero__clock_tz">GMT +7</span>
+                                </div>
+
+                                <div class="o_home_hero__clock_body">
+                                    <div class="o_home_hero__clock_time">
+                                        <t t-esc="state.now.toLocaleTimeString()"/>
+                                    </div>
+                                    <div class="o_home_hero__clock_date">
+                                        <t t-esc="state.now.toLocaleDateString()"/>
+                                    </div>
+                                </div>
+
+                                <div class="o_home_hero__clock_footer">
+                                    <i class="fa fa-map-marker"></i>
+                                    <span>HCM, Việt Nam</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- BOTTOM GRID -->
+                    <section class="o_home_hero__bento">
+                        <article class="o_home_hero__card o_home_hero__card--events">
+                            <h3 class="o_home_hero__section_title">
+                                <i class="fa fa-calendar-check-o"></i>
+                                <span>Sắp diễn ra</span>
+                            </h3>
+
+                            <div class="o_home_hero__event_list">
+                                <t t-if="state.loadingEvents">
+                                    <div class="o_home_hero__event_item">
+                                        <div class="o_home_hero__event_info">
+                                            <div class="o_home_hero__event_title">Đang tải lịch...</div>
+                                            <div class="o_home_hero__event_meta">Vui lòng chờ một chút</div>
+                                        </div>
+                                    </div>
+                                </t>
+
+                                <t t-elif="state.upcomingEvents.length > 0">
+                                    <t t-foreach="state.upcomingEvents" t-as="event" t-key="event.id">
+                                        <div class="o_home_hero__event_item">
+                                            <div class="o_home_hero__event_date">
+                                                <div class="o_home_hero__event_month">
+                                                    <t t-esc="formatEventMonth(event.start)"/>
+                                                </div>
+                                                <div class="o_home_hero__event_day">
+                                                    <t t-esc="formatEventDay(event.start)"/>
+                                                </div>
+                                            </div>
+
+                                            <div class="o_home_hero__event_info">
+                                                <div class="o_home_hero__event_title">
+                                                    <t t-esc="event.name"/>
+                                                </div>
+
+                                                <div class="o_home_hero__event_meta">
+                                                    <t t-esc="formatEventTime(event.start)"/>
+                                                    <t t-if="event.stop">
+                                                        <span> - </span>
+                                                        <t t-esc="formatEventTime(event.stop)"/>
+                                                    </t>
+                                                    <t t-if="event.location">
+                                                        <span> • </span>
+                                                        <t t-esc="event.location"/>
+                                                    </t>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </t>
+
+                                <t t-else="">
+                                    <div class="o_home_hero__event_item">
+                                        <div class="o_home_hero__event_info">
+                                            <div class="o_home_hero__event_title">Không có lịch sắp tới</div>
+                                            <div class="o_home_hero__event_meta">Hiện chưa có sự kiện nào trong calendar</div>
+                                        </div>
+                                    </div>
+                                </t>
+
+                                <div class="o_home_hero__project_glow"></div>
+                            </div>
+                        </article>
+
+                        <article class="o_home_hero__card o_home_hero__card--guide">
+                            <div class="o_home_hero__guide_wrap">
+                                <div class="o_home_hero__guide_head">
+                                    <h3 class="o_home_hero__section_title">
+                                        <i class="fa fa-compass"></i>
+                                        <span>Hướng dẫn nhanh</span>
+                                    </h3>
+
+                                    <p class="o_home_hero__card_text">
+                                        Bắt đầu công việc hiệu quả bằng cách mở ứng dụng, theo dõi lịch làm việc và sử dụng đúng chức năng theo vai trò của bạn.
+                                    </p>
+                                </div>
+
+                                <div class="o_home_hero__guide_list">
+                                    <div class="o_home_hero__guide_item">
+                                        <div class="o_home_hero__guide_icon">
+                                            <i class="fa fa-th-large"></i>
+                                        </div>
+                                        <div class="o_home_hero__guide_info">
+                                            <div class="o_home_hero__guide_title">Mở ứng dụng cần dùng</div>
+                                            <div class="o_home_hero__guide_desc">
+                                                Truy cập nhanh các phân hệ từ menu ứng dụng để bắt đầu công việc.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="o_home_hero__guide_item">
+                                        <div class="o_home_hero__guide_icon">
+                                            <i class="fa fa-calendar-check-o"></i>
+                                        </div>
+                                        <div class="o_home_hero__guide_info">
+                                            <div class="o_home_hero__guide_title">Theo dõi lịch làm việc</div>
+                                            <div class="o_home_hero__guide_desc">
+                                                Xem các lịch hẹn và sự kiện sắp tới ở khung bên trái để chủ động thời gian.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="o_home_hero__guide_item">
+                                        <div class="o_home_hero__guide_icon">
+                                            <i class="fa fa-shield"></i>
+                                        </div>
+                                        <div class="o_home_hero__guide_info">
+                                            <div class="o_home_hero__guide_title">Làm việc theo vai trò</div>
+                                            <div class="o_home_hero__guide_desc">
+                                                Nội dung và chức năng hiển thị được đồng bộ theo quyền truy cập của bạn.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </section>
+
+                    <!-- FOOTER -->
+                    <footer class="o_home_hero__footer">
+                        <div class="o_home_hero__footer_left">
+                            <span>© 2026 Somed Workspace</span>
+                            <a href="#">Chính sách bảo mật</a>
+                            <a href="#">Điều khoản sử dụng</a>
+                        </div>
+
+                        <div class="o_home_hero__footer_right">
+                            <span class="o_home_hero__status_dot"></span>
+                            <span>Không gian làm việc đã sẵn sàng</span>
+                        </div>
+                    </footer>
+                </main>
+            </div>
+        </div>
+    </t>
+
+    <t t-inherit="web.NavBar" t-inherit-mode="extension">
+        <xpath expr="//nav[hasclass('o_main_navbar')]" position="after">
+            <HomeHero/>
+        </xpath>
+    </t>
+
+</templates>

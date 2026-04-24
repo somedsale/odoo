@@ -6,6 +6,7 @@
         <field name="arch" type="xml">
             <form string="Giấy đề nghị giải chi" create="true" edit="true">
                 <header>
+                    <field name="can_edit_invoice" invisible="1"/>
                     <field name="can_submit" invisible="1"/>
                     <field name="can_approve_manager" invisible="1"/>
                     <field name="can_approve_accountant" invisible="1"/>
@@ -79,7 +80,8 @@
                     <field name="note" placeholder="Nội dung chi tiết mục đích thanh toán" readonly="state !='draft'"/>
 
                     <separator string="Chi tiết chứng từ" colspan="2"/>
-                    <field name="line_ids" readonly="state != 'draft'" mode="list,form">
+                    <!-- Draft: cho nhập/sửa/thêm dòng -->
+                    <field name="line_ids" invisible="state != 'draft'">
                         <tree editable="bottom">
                             <field name="sequence" widget="handle" string="" width="30"/>
                             <field name="date_from" width="90"/>
@@ -87,10 +89,11 @@
                             <field name="content" string="Nội dung" width="250"/>
                             <field name="uom_id" string="DVT" options="{'no_create':False}"/>
                             <field name="quantity" string="Số lượng"/>
-                            <field name="unit_price" string="Đơn giá" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                            <field name="amount" string="Thành tiền" width="130" widget="monetary" options="{'currency_field': 'currency_id'}" sum="1"/>
+                            <field name="unit_price" string="Đơn giá" options="{'currency_field': 'currency_id'}"/>
+                            <field name="amount" string="Thành tiền" width="130" options="{'currency_field': 'currency_id'}" sum="1" readonly="1"/>
                             <field name="project_id" string="Dự án" width="200" optional="hide"/>
                             <field name="attachment_ids" widget="many2many_binary" width="160"/>
+                            <field name="invoice_id" string="Hóa đơn" width="200" column_invisible="1"/>
                             <field name="note" string="Ghi chú" width="120"/>
                             <field name="currency_id" optional="hide"/>
                         </tree>
@@ -117,6 +120,25 @@
                                 <field name="attachment_ids" widget="many2many_binary"/>
                             </group>
                         </form>
+                    </field>
+
+                    <!-- Không phải draft: không cho thêm dòng, chỉ cho kế toán chọn hóa đơn -->
+                    <field name="line_ids" invisible="state == 'draft'">
+                        <tree editable="bottom" create="0" delete="0">
+                            <field name="sequence" widget="handle" string="" width="30" readonly="1"/>
+                            <field name="date_from" width="90" readonly="1"/>
+                            <field name="date_to" width="90" readonly="1"/>
+                            <field name="content" string="Nội dung" width="250" readonly="1"/>
+                            <field name="uom_id" string="DVT" readonly="1"/>
+                            <field name="quantity" string="Số lượng" readonly="1"/>
+                            <field name="unit_price" string="Đơn giá" options="{'currency_field': 'currency_id'}" readonly="1"/>
+                            <field name="amount" string="Thành tiền" width="130" options="{'currency_field': 'currency_id'}" sum="1" readonly="1"/>
+                            <field name="project_id" string="Dự án" width="200" optional="hide" readonly="1"/>
+                            <field name="attachment_ids" widget="many2many_binary" width="160" readonly="1"/>
+                            <field name="invoice_id" string="Hóa đơn" width="200" options="{'no_create': True, 'no_open': True}" placeholder="Kế toán chọn" readonly="not parent.can_edit_invoice" domain="[('project_id', '=', parent.project_id)]"/>
+                            <field name="note" string="Ghi chú" width="120" readonly="1"/>
+                            <field name="currency_id" optional="hide" readonly="1"/>
+                        </tree>
                     </field>
                     <div class="oe_chatter">
                         <field name="message_follower_ids" widget="mail_followers"/>

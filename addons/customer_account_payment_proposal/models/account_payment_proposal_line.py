@@ -41,6 +41,11 @@ class AccountPaymentProposalLine(models.Model):
         domain=[("res_model", "=", "account.payment.proposal.line")],
         string="Tệp đính kèm"
     )
+    invoice_id = fields.Many2one(
+        "supplier.invoice",
+        string="Hóa đơn liên quan",
+        help="Chọn hóa đơn nhà cung cấp liên quan đến dòng chi này"
+    )
     @api.depends("quantity", "unit_price")
     def _compute_amount(self):
         for rec in self:
@@ -54,5 +59,3 @@ class AccountPaymentProposalLine(models.Model):
 
         record = super().create(vals)
         return record
-
-    
