@@ -134,6 +134,36 @@ class CostEstimateLine(models.Model):
         store=True, readonly=True,
         related_sudo=True,
     )
+    so_xuatxu = fields.Char(
+        string='Xuất xứ (SO)',
+        related='sale_order_line_id.x_xuatxu',
+        store=True, readonly=True,
+        related_sudo=True,
+    )
+    so_price_unit = fields.Float(
+    string='Đơn giá (SO)',
+    related='sale_order_line_id.price_unit',
+    store=True,
+    readonly=True,
+    related_sudo=True,
+    )
+
+    so_price_subtotal = fields.Monetary(
+        string='Thành tiền trước thuế (SO)',
+        related='sale_order_line_id.price_subtotal',
+        store=True,
+        readonly=True,
+        related_sudo=True,
+        currency_field='currency_id',
+    )
+
+    so_price_total = fields.Monetary(
+        string='Thành tiền sau thuế (SO)',
+        related='sale_order_line_id.price_total',
+        store=True,
+        readonly=True,
+        related_sudo=True,
+    )
 
     actual_cost = fields.Float(string="Chi phí thực tế", compute="_compute_actual_cost", store=False)
     difference_cost = fields.Float(string="Chênh lệch", compute="_compute_difference_cost", store=False)
