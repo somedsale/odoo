@@ -74,7 +74,7 @@ class AccountPaymentProposalWizard(models.TransientModel):
         if self.create_payment_request and self.amount_payment_request > 0:
             pay = Payment.create({
                 "date": fields.Date.today(),
-                "total": self.amount_payment_request,
+                "manual_total": self.amount_payment_request,
                 "note": f"Thanh toán chi phí thực tế theo giấy đề nghị {rec.name}",
                 "state": "draft",
                 "payment_proposal_id": rec.id,
