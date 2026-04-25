@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_mailbox_folder_tree" model="ir.ui.view">
+            <field name="name">mailbox.folder.tree</field>
+            <field name="model">mailbox.folder</field>
+            <field name="arch" type="xml">
+                <tree string="Mailbox Folders">
+                    <field name="sequence"/>
+                    <field name="name"/>
+                    <field name="account_id"/>
+                    <field name="code"/>
+                    <field name="imap_name"/>
+                    <field name="mailbox_message_count"/>
+                    <field name="active"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_mailbox_folder_form" model="ir.ui.view">
+            <field name="name">mailbox.folder.form</field>
+            <field name="model">mailbox.folder</field>
+            <field name="arch" type="xml">
+                <form string="Mailbox Folder">
+                    <sheet>
+                        <group col="2">
+                            <group>
+                                <field name="account_id"/>
+                                <field name="name"/>
+                                <field name="code"/>
+                            </group>
+                            <group>
+                                <field name="sequence"/>
+                                <field name="imap_name"/>
+                                <field name="active"/>
+                                <field name="mailbox_message_count"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Messages">
+                                <field name="mailbox_message_ids" readonly="1">
+                                    <tree>
+                                        <field name="message_date"/>
+                                        <field name="name"/>
+                                        <field name="sender"/>
+                                        <field name="to_recipients"/>
+                                        <field name="state"/>
+                                        <field name="is_read"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_mailbox_folder" model="ir.actions.act_window">
+            <field name="name">Folders</field>
+            <field name="res_model">mailbox.folder</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+    </data>
+</odoo>

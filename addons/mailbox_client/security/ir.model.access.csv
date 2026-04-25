@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mailbox_account_user,access.mailbox.account.user,model_mailbox_account,,1,0,0,0
+access_mailbox_account_manager,access.mailbox.account.manager,model_mailbox_account,,1,1,1,1
+access_mailbox_folder_user,access.mailbox.folder.user,model_mailbox_folder,,1,0,0,0
+access_mailbox_folder_manager,access.mailbox.folder.manager,model_mailbox_folder,,1,1,1,1
+access_mailbox_message_user,access.mailbox.message.user,model_mailbox_message,,1,1,1,0
+access_mailbox_message_manager,access.mailbox.message.manager,model_mailbox_message,,1,1,1,1
+access_mailbox_compose_wizard_user,access.mailbox.compose.wizard.user,model_mailbox_compose_wizard,,1,1,1,1
+access_mailbox_compose_wizard_manager,access.mailbox.compose.wizard.manager,model_mailbox_compose_wizard,,1,1,1,1

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="action_mailbox_client_app" model="ir.actions.client">
+            <field name="name">Mailbox</field>
+            <field name="tag">mailbox_client.mailbox_app</field>
+        </record>
+
+            <menuitem
+                id="menu_mailbox_root_outlook"
+                name="Mailbox"
+                sequence="3"
+                web_icon="mailbox_client,static/src/Img/icon.png"/>
+
+        <menuitem id="menu_mailbox_app"
+                  name="Mail"
+                  parent="menu_mailbox_root_outlook"
+                  action="action_mailbox_client_app"
+                  sequence="1"/>
+
+    </data>
+</odoo>

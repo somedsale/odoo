@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="group_mailbox_user" model="res.groups">
+            <field name="name">Mailbox User</field>
+            <field name="category_id" ref="base.module_category_tools"/>
+        </record>
+
+        <record id="group_mailbox_manager" model="res.groups">
+            <field name="name">Mailbox Manager</field>
+            <field name="category_id" ref="base.module_category_tools"/>
+            <field name="implied_ids" eval="[(4, ref('mailbox_client.group_mailbox_user'))]"/>
+        </record>
+    </data>
+</odoo>
