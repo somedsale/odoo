@@ -31,6 +31,16 @@ class ProposalSheet(models.Model):
         ('rejected', 'Bị từ chối'),
         ('canceled', 'Đã hủy'),
     ], string="Trạng thái", default='draft')
+    stock_location_id = fields.Many2one(
+        'stock.location',
+        string='Vị trí kho kiểm kê',
+        domain="[('usage', '=', 'internal')]",
+        default=lambda self: self._default_stock_location_id(),
+        tracking=True,
+    )
+    stock_check_done = fields.Boolean(string='Đã xác nhận tồn thực tế', default=False, copy=False)
+    stock_checked_by = fields.Many2one('res.users', string='Người xác nhận tồn', copy=False, readonly=True)
+    stock_checked_date = fields.Datetime(string='Ngày xác nhận tồn', copy=False, readonly=True)
     cost_additional_expense_line_id = fields.Many2one(
     'cost.additional.expense.line',
     string='Dòng chi phí bổ sung',
@@ -87,6 +97,16 @@ class ProposalSheet(models.Model):
         for r in self:
             r.treasurer_confirmed_note = "Thủ quỹ đã xác nhận" if r.treasurer_confirmed else ""
     @api.model
+    def _default_stock_location_id(self):
+        location = self.env['stock.location'].search([
+            ('usage', '=', 'internal'),
+            '|', ('complete_name', 'ilike', 'Nguyên vật liệu'), ('name', 'ilike', 'Nguyên vật liệu')
+        ], limit=1)
+        if not location:
+            location = self.env['stock.location'].search([('usage', '=', 'internal')], limit=1)
+        return location.id if location else False
+
+    @api.model
     def _default_director_user(self):
         group = self.env.ref('custom_director_role.group_director')  # đổi lại module ID cho đúng
         users = self.env['res.users'].search([('groups_id', 'in', group.id)], limit=1)
@@ -133,6 +153,8 @@ class ProposalSheet(models.Model):
     show_button_cancel = fields.Boolean(compute='_compute_show_buttons')
     show_button_reset_draft = fields.Boolean(compute='_compute_show_buttons')
     show_button_withdraw_submit = fields.Boolean(compute="_compute_show_buttons")
+    show_button_apply_actual_stock = fields.Boolean(compute='_compute_show_buttons')
+    show_button_reset_stock_check = fields.Boolean(compute='_compute_show_buttons')
     is_type_readonly = fields.Boolean(compute='_compute_is_type_readonly', store=False)
     cost_estimate_line_ids = fields.Many2many(
     'cost.estimate.line',
@@ -291,6 +313,116 @@ class ProposalSheet(models.Model):
                 partner_ids.extend(user.partner_id.id for user in accounting_users if user.partner_id.id not in partner_ids)
         return partner_ids
 
+    def _check_can_apply_actual_stock(self):
+        self.ensure_one()
+
+        if self.type != 'material':
+            raise UserError("Chỉ phiếu đề xuất vật tư mới được xác nhận tồn thực tế.")
+
+        if self.state != 'draft':
+            raise UserError("Chỉ được xác nhận tồn thực tế khi phiếu đang ở trạng thái nháp.")
+
+        if self.requested_by.id != self.env.user.id:
+            raise UserError("Chỉ người đề xuất mới được xác nhận tồn thực tế.")
+
+        if not self.stock_location_id:
+            raise UserError("Vui lòng chọn vị trí kho kiểm kê trước khi xác nhận tồn thực tế.")
+
+        if not self.material_line_ids:
+            raise UserError("Phiếu chưa có dòng vật tư để xác nhận tồn thực tế.")
+    def action_apply_actual_stock(self):
+        for rec in self:
+            rec._check_can_apply_actual_stock()
+            log_items = []
+
+            for line in rec.material_line_ids:
+                if not line.product_id:
+                    raise UserError(f"Dòng vật tư '{line.display_name}' chưa có sản phẩm nên không thể cập nhật tồn.")
+                if line.actual_count_qty < 0:
+                    raise UserError(f"Số lượng kiểm kê thực tế của sản phẩm '{line.product_id.display_name}' không được âm.")
+
+                target_qty = line.actual_count_qty or 0.0
+
+                quant = self.env['stock.quant'].sudo().search([
+                    ('product_id', '=', line.product_id.id),
+                    ('location_id', '=', rec.stock_location_id.id),
+                    ('company_id', '=', rec.env.company.id),
+                    ('lot_id', '=', False),
+                    ('package_id', '=', False),
+                    ('owner_id', '=', False),
+                ], limit=1)
+
+                old_qty = quant.quantity if quant else 0.0
+
+                if not quant:
+                    quant = self.env['stock.quant'].sudo().create({
+                        'product_id': line.product_id.id,
+                        'location_id': rec.stock_location_id.id,
+                        'company_id': rec.env.company.id,
+                    })
+
+                # luôn set bằng sudo
+                if 'inventory_quantity' in quant._fields:
+                    quant.sudo().write({
+                        'inventory_quantity': target_qty,
+                    })
+                elif 'inventory_diff_quantity' in quant._fields:
+                    quant.sudo().write({
+                        'inventory_diff_quantity': target_qty - (quant.quantity or 0.0),
+                    })
+                else:
+                    raise UserError("Không tìm thấy trường kiểm kê phù hợp trên stock.quant.")
+
+                # luôn apply bằng sudo
+                quant.with_context(from_proposal_sheet_actual_stock=True).sudo().action_apply_inventory()
+
+                line.write({
+                    'last_counted_qty': target_qty,
+                    'last_counted_by': self.env.user.id,
+                    'last_counted_date': fields.Datetime.now(),
+                })
+
+                log_items.append(
+                    f"<li><b>{line.product_id.display_name}</b>: hệ thống {old_qty:g} → thực tế {target_qty:g} (chênh {(target_qty - old_qty):g})</li>"
+                )
+
+            rec.sudo().write({
+                'stock_check_done': True,
+                'stock_checked_by': self.env.user.id,
+                'stock_checked_date': fields.Datetime.now(),
+            })
+
+            message = (
+                f"<p>Đã xác nhận tồn thực tế cho phiếu <strong>{rec.name}</strong> tại kho "
+                f"<strong>{rec.stock_location_id.display_name}</strong> bởi <em>{self.env.user.name}</em>.</p>"
+                f"<ul>{''.join(log_items)}</ul>"
+            )
+            rec.message_post(body=Markup(message))
+
+        return {'type': 'ir.actions.client', 'tag': 'reload'}
+    def action_reset_stock_check(self):
+        for rec in self:
+            if rec.state != 'draft':
+                raise UserError("Chỉ được reset xác nhận tồn khi phiếu đang ở trạng thái nháp.")
+            if rec.requested_by != self.env.user:
+                raise UserError("Chỉ người đề xuất mới được reset xác nhận tồn.")
+
+            rec.material_line_ids.write({
+                'actual_count_qty': 0.0,
+                'count_note': False,
+                'last_counted_qty': 0.0,
+                'last_counted_by': False,
+                'last_counted_date': False,
+            })
+            rec.write({
+                'stock_check_done': False,
+                'stock_checked_by': False,
+                'stock_checked_date': False,
+            })
+            rec.message_post(body="Đã reset thông tin kiểm kê thực tế trên phiếu đề xuất.")
+
+        return {'type': 'ir.actions.client', 'tag': 'reload'}
+
     def action_submit(self):
         self.ensure_one()
 
@@ -303,6 +435,9 @@ class ProposalSheet(models.Model):
         # 2. Kiểm tra trạng thái
         if self.state != 'draft':
             raise UserError(_("Chỉ phiếu ở trạng thái nháp mới được gửi duyệt."))
+
+        if self.type == 'material' and not self.stock_check_done:
+            raise ValidationError(_("Phiếu vật tư phải được xác nhận tồn thực tế trước khi gửi duyệt."))
         accounting_group = self.env.ref('account.group_account_manager', raise_if_not_found=False)
         is_accounting_user = accounting_group and accounting_group in self.env.user.groups_id
 
@@ -419,14 +554,21 @@ class ProposalSheet(models.Model):
         old_state = self.state
 
         # ✅ Reset về nháp để sửa + reset các dấu duyệt
-        self.write({
+        reset_vals = {
             'state': 'draft',
             'treasurer_confirmed': False,
             'date_proposal': False,
             'date_reviewed_manager': False,
             'date_reviewed_accounting': False,
             'date_approved': False,
-        })
+        }
+        if self.type == 'material':
+            reset_vals.update({
+                'stock_check_done': False,
+                'stock_checked_by': False,
+                'stock_checked_date': False,
+            })
+        self.write(reset_vals)
 
         # ✅ Nếu đang ở bước Giám đốc (approved) thì thường có activity -> đóng lại
         if old_state == 'approved' and self.director_user_id:
@@ -572,28 +714,61 @@ class ProposalSheet(models.Model):
             rec.state = 'done'            
             rec.message_post(body="Phiếu đề xuất đã hoàn tất.")
 
-    @api.depends('state', 'task_id.project_id.user_id')
+    @api.depends(
+        'state',
+        'type',
+        'stock_check_done',
+        'requested_by',
+        'manager_id',
+        'director_user_id',
+        'treasurer_confirmed',
+    )
     def _compute_show_buttons(self):
+        current_user = self.env.user
+        is_accounting_user = current_user.has_group('account.group_account_manager')
+
         for rec in self:
-            is_creator = rec.requested_by == self.env.user
-            is_manager = rec.manager_id.user_id == self.env.user
-            is_accounting = self.env.user.has_group('account.group_account_manager')  # KT
-            is_boss = rec.director_user_id == self.env.user
+            is_creator = rec.requested_by.id == current_user.id
+            is_manager = rec.manager_id.user_id.id == current_user.id if rec.manager_id and rec.manager_id.user_id else False
+            is_boss = rec.director_user_id.id == current_user.id if rec.director_user_id else False
+
+            can_stock_check = (
+                rec.type == 'material'
+                and rec.state == 'draft'
+                and is_creator
+            )
+
             rec.show_button_submit = rec.state == 'draft' and is_creator
             rec.show_button_manager_approve = rec.state == 'reviewed_manager' and is_manager
-            rec.show_button_accounting_approve = rec.state == 'reviewed_accounting' and is_accounting  and rec.treasurer_confirmed
-            rec.show_button_boss_approve = rec.state == 'approved' and is_boss
-            rec.show_button_waiting_accounting_paid = rec.state == 'waiting_accounting_paid' and rec.type in['expense','other']  and is_accounting
-            rec.show_button_done = rec.state in ['approved', 'waiting_accounting_paid'] and is_accounting
-            rec.show_button_reject = (
-                (rec.state == 'reviewed_manager' and is_manager) or
-                (rec.state == 'reviewed_accounting' and is_accounting) or
-                (rec.state == 'approved' and is_boss)
+            rec.show_button_accounting_approve = (
+                rec.state == 'reviewed_accounting'
+                and is_accounting_user
+                and rec.treasurer_confirmed
             )
-            rec.show_button_cancel = rec.state in ['draft'] and is_creator
+            rec.show_button_boss_approve = rec.state == 'approved' and is_boss
+            rec.show_button_waiting_accounting_paid = (
+                rec.state == 'waiting_accounting_paid'
+                and rec.type in ['expense', 'other']
+                and is_accounting_user
+            )
+            rec.show_button_done = rec.state in ['approved', 'waiting_accounting_paid'] and is_accounting_user
+            rec.show_button_reject = (
+                (rec.state == 'reviewed_manager' and is_manager)
+                or (rec.state == 'reviewed_accounting' and is_accounting_user)
+                or (rec.state == 'approved' and is_boss)
+            )
+            rec.show_button_cancel = rec.state == 'draft' and is_creator
             rec.show_button_reset_draft = rec.state == 'rejected' and is_creator
-            rec.show_button_withdraw_submit = rec.state in ['reviewed_manager','reviewed_accounting','approved']  and is_creator
-    
+            rec.show_button_withdraw_submit = (
+                rec.state in ['reviewed_manager', 'reviewed_accounting', 'approved']
+                and is_creator
+            )
+
+            # Nút xác nhận tồn thực tế: chỉ người đề xuất mới được bấm
+            rec.show_button_apply_actual_stock = can_stock_check
+
+            # Nút reset kiểm kho: chỉ người đề xuất mới được bấm sau khi đã xác nhận tồn
+            rec.show_button_reset_stock_check = can_stock_check and rec.stock_check_done
 
     @api.depends('material_line_ids', 'expense_line_ids')
     def _compute_is_type_readonly(self):

@@ -334,7 +334,7 @@ class PurchaseOrder(models.Model):
                 )
 
     def _create_payment_request(self, kind, amount_override=None,
-                                 payment_type="bank", journal_id=False, note=None):
+                                payment_type="bank", journal_id=False, note=None):
         """
         kind: 'advance' | 'full'
         """
@@ -360,14 +360,58 @@ class PurchaseOrder(models.Model):
 
         self._check_can_create_payment_request(kind, pay_amount)
 
-        # chọn 1 phiếu đề xuất đại diện
-        first_sheet = self.proposal_sheet_ids[:1] or self.proposal_sheet_id
+        # lấy toàn bộ phiếu đề xuất từ PO
+        sheets = self.proposal_sheet_ids
+        if not sheets and self.proposal_sheet_id:
+            sheets = self.proposal_sheet_id
+
+        first_sheet = sheets[:1] if sheets else False
 
         project = self.project_id
         task = self.task_id
         contract = self.supplier_contract_id or self._get_or_create_supplier_contract()
-
         cost_classification = "project" if project else "office"
+
+        # chuẩn bị line_ids cho phiếu chi
+        line_vals = []
+        if sheets:
+            total_sheet_amount = sum((sheet.amount_total or 0.0) for sheet in sheets)
+
+            # nếu tổng proposal > 0 => chia theo tỷ lệ
+            if total_sheet_amount > 0:
+                remaining = pay_amount
+                for index, sheet in enumerate(sheets):
+                    if index == len(sheets) - 1:
+                        line_amount = remaining
+                    else:
+                        line_amount = pay_amount * ((sheet.amount_total or 0.0) / total_sheet_amount)
+                        remaining -= line_amount
+
+                    line_vals.append((0, 0, {
+                        "line_type": "proposal",
+                        "proposal_sheet_id": sheet.id,
+                        "amount": line_amount,
+                        "interpretation": sheet.name or _("Chi theo phiếu đề xuất"),
+                    }))
+            else:
+                # nếu proposal không có amount_total thì chia đều
+                count_sheet = len(sheets)
+                if count_sheet:
+                    base_amount = pay_amount / count_sheet
+                    remaining = pay_amount
+                    for index, sheet in enumerate(sheets):
+                        if index == count_sheet - 1:
+                            line_amount = remaining
+                        else:
+                            line_amount = base_amount
+                            remaining -= line_amount
+
+                        line_vals.append((0, 0, {
+                            "line_type": "proposal",
+                            "proposal_sheet_id": sheet.id,
+                            "amount": line_amount,
+                            "interpretation": sheet.name or _("Chi theo phiếu đề xuất"),
+                        }))
 
         vals = {
             "name": "/",
@@ -376,9 +420,8 @@ class PurchaseOrder(models.Model):
             "supplier_contract_id": contract.id,
             "project_id": project.id if project else False,
             "task_id": task.id if task else False,
-            "proposal_person_id": first_sheet.requested_by.id if first_sheet else False,
-            "total": pay_amount,
-            "date": first_sheet.date_proposal or fields.Date.context_today(self),
+            "proposal_person_id": first_sheet.requested_by.id if first_sheet and first_sheet.requested_by else False,
+            "date": first_sheet.date_proposal if first_sheet and first_sheet.date_proposal else fields.Date.context_today(self),
             "currency_id": self.currency_id.id,
             "receive_person": self.partner_id.id,
             "payment_person": self.env.user.partner_id.id,
@@ -393,11 +436,12 @@ class PurchaseOrder(models.Model):
             ),
             "payment_kind": kind,
             "state": "draft",
+            "line_ids": line_vals,
         }
+
         pr = self.env["account.payment.request"].create(vals)
 
-        # giữ shipping_status như logic cũ
-        if self.state in ('purchase', 'done') and self.shipping_status == 'not_shipped':
+        if self.state in ("purchase", "done") and self.shipping_status == "not_shipped":
             pass
         return pr
 

@@ -1,2 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_sale_order_custom,access.sale.order.custom,model_sale_order,,1,1,1,1
+
+access_sale_order_line_user,sale.order.line.user,model_sale_order_line,,1,0,0,0

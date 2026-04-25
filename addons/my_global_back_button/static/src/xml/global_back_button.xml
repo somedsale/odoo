@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-inherit="web.ControlPanel" t-inherit-mode="extension">
+        <xpath expr="//t[@t-slot='control-panel-breadcrumb']/t[@t-call='web.Breadcrumbs']" position="before">
+            <button t-if="['form', 'list'].includes(env.config.viewType)"
+                    type="button"
+                    class="btn btn-outline-secondary o_global_back_btn me-2"
+                    t-on-click.prevent="() => window.history.length > 1 ? window.history.back() : this.actionService.restore()">
+                <i class="fa fa-arrow-left me-1"/> Quay lại
+            </button>
+        </xpath>
+    </t>
+
+</templates>

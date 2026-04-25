@@ -217,6 +217,7 @@ class ContractManagement(models.Model):
             'allow_billable': False,
             'date_start': self.planned_start_date,
             'date': self.planned_end_date,
+            'location': self.location,
             'description': self.description,
         }
 
@@ -352,16 +353,20 @@ class ContractManagement(models.Model):
         res = super(ContractManagement, self).write(vals)
         # Sync một số trường sang Project
         for rec in self:
-            if rec.project_id and any(k in vals for k in ['planned_start_date', 'planned_end_date', 'description', 'attachment_ids']):
+            if self.env.context.get('skip_contract_project_sync'):
+                continue
+            if rec.project_id and any(k in vals for k in ['planned_start_date', 'planned_end_date', 'location', 'description', 'attachment_ids']):
                 pj_vals = {}
                 if 'planned_start_date' in vals:
                     pj_vals['date_start'] = rec.planned_start_date
                 if 'planned_end_date' in vals:
                     pj_vals['date'] = rec.planned_end_date
+                if 'location' in vals:
+                    pj_vals['location'] = rec.location
                 if 'description' in vals:
                     pj_vals['description'] = rec.description
                 if pj_vals:
-                    rec.project_id.write(pj_vals)
+                    rec.project_id.with_context(skip_project_contract_sync=True).sudo().write(pj_vals)
 
                 if 'attachment_ids' in vals:
                     # làm gọn: xóa cũ & copy lại
@@ -547,8 +552,7 @@ class ProjectProject(models.Model):
         related='contract_id.num_contract', store=True, readonly=True
     )
     location = fields.Char(
-        string='Địa điểm thực hiện',
-        related='contract_id.location', store=True, readonly=True
+        string='Địa điểm thực hiện', store=True,
     )
     value_contract = fields.Monetary(
         string='Giá trị hợp đồng trước thuế',
@@ -603,6 +607,12 @@ class ProjectProject(models.Model):
         # Đồng bộ stage Project -> Contract
         if 'stage_id' in vals:
             self._sync_contract_stage_from_project()
+
+        if 'location' in vals and not self.env.context.get('skip_project_contract_sync'):
+            for pr in self.filtered(lambda p: p.contract_id and p.contract_id.location != p.location):
+                pr.contract_id.with_context(skip_contract_project_sync=True).sudo().write({
+                    'location': pr.location,
+                })
 
         return res
     def _map_project_stage_to_contract_stage(self, project_stage_name):

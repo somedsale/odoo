@@ -20,8 +20,20 @@
         "report/report_supplier_invoice.xml",
         "report/supplier_invoice_summary_report.xml",
         "wizard/wizard_views.xml",
-        "wizard/supplier_invoice_wizard.xml"
+        "wizard/supplier_invoice_wizard.xml",
+        "views/supplier_debt_owl_report_action.xml",
+            'views/vendor_debt_share_templates.xml',
     ],
+    "assets": {
+    "web.assets_backend": [
+        "vendor_debt_management/static/src/js/supplier_debt_real_report.js",
+        "vendor_debt_management/static/src/xml/supplier_debt_real_report.xml",
+        "vendor_debt_management/static/src/scss/supplier_debt_real_report.scss",
+                "vendor_debt_management/static/src/js/supplier_debt_owl_report.js",
+        "vendor_debt_management/static/src/xml/supplier_debt_owl_report.xml",
+        "vendor_debt_management/static/src/scss/supplier_debt_owl_report.scss",
+    ],
+},
     "installable": True,
     "application": True,
 }

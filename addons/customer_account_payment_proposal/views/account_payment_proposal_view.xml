@@ -97,6 +97,29 @@
                             <field name="note" string="Ghi chú" width="120"/>
                             <field name="currency_id" optional="hide"/>
                         </tree>
+
+                        <form string="Chi tiết dòng">
+                            <group>
+                                <group>
+                                    <field name="date_from"/>
+                                    <field name="date_to"/>
+                                    <field name="uom_id" string="DVT" options="{'no_create':False}"/>
+                                    <field name="quantity" string="Số lượng"/>
+                                    <field name="project_id" string="Dự án"/>
+                                </group>
+                                <group>
+                                    <field name="unit_price" string="Đơn giá" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="amount" string="Thành tiền" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="1"/>
+                                    <field name="currency_id" invisible="1"/>
+                                </group>
+                            </group>
+
+                            <group>
+                                <field name="content" string="Nội dung"/>
+                                <field name="note" string="Ghi chú"/>
+                                <field name="attachment_ids" widget="many2many_binary"/>
+                            </group>
+                        </form>
                     </field>
 
                     <!-- Không phải draft: không cho thêm dòng, chỉ cho kế toán chọn hóa đơn -->

@@ -4,13 +4,31 @@
         <field name="name">supplier.summary.wizard.form</field>
         <field name="model">supplier.summary.wizard</field>
         <field name="arch" type="xml">
-            <form >
+            <form string="Chọn nhà cung cấp">
                 <group>
                     <field name="partner_id" options="{'no_create': True}"/>
+                    <field
+                        name="available_currency_ids"
+                        invisible="1"
+                    />
+                    <field
+                        name="currency_id"
+                        options="{'no_create': True}"
+                        required="1"
+                    />
                 </group>
                 <footer>
-                    <button name="action_view_report" type="object" string="Xem báo cáo" class="btn-primary"/>
-                    <button string="Hủy" class="btn-secondary" special="cancel"/>
+                    <button
+                        name="action_view_report"
+                        type="object"
+                        string="Xem báo cáo"
+                        class="btn-primary"
+                    />
+                    <button
+                        string="Hủy"
+                        class="btn-secondary"
+                        special="cancel"
+                    />
                 </footer>
             </form>
         </field>
@@ -25,5 +43,11 @@
     </record>
 
     <!-- Menu -->
-    <menuitem id="menu_supplier_summary_report_test_hihi" name="Chi tiết công nợ NCC" parent="menu_supplier_summary_root" action="action_supplier_summary_wizard" sequence="50"/>
+    <menuitem
+        id="menu_supplier_summary_report_test_hihi"
+        name="Chi tiết công nợ NCC"
+        parent="menu_supplier_summary_root"
+        action="action_supplier_summary_wizard"
+        sequence="50"
+    />
 </odoo>

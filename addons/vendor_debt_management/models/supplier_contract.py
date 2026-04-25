@@ -42,6 +42,7 @@ class SupplierContract(models.Model):
     settlement_ids = fields.One2many("supplier.settlement", "contract_id", string="Hồ sơ quyết toán")
     invoice_ids = fields.One2many("supplier.invoice", "contract_id", string="Hóa đơn")
     number_contract = fields.Char("Số hợp đồng", store=True)
+    attachment_ids = fields.Many2many("ir.attachment", string="Tệp đính kèm")
     @api.depends("name", "partner_id.name")
     def _compute_display_name(self):
         for record in self:

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="global_mobile_tree.ListRenderer"
+       t-inherit="web.ListRenderer"
+       t-inherit-mode="extension"
+       owl="1">
+
+        <xpath expr="//div[contains(@class, 'o_list_renderer')]" position="inside">
+            <t t-if="this.shouldUseMobileCards">
+                <div class="o_global_mobile_cards">
+                    <t t-foreach="this.props.list.records" t-as="record" t-key="record.resId">
+                        <div class="o_global_mobile_card"
+                             t-on-click="() => this.openGlobalRecord(record)">
+                            <div class="o_global_mobile_card_body">
+                                <t t-foreach="this.getGlobalVisibleColumns(record)" t-as="column" t-key="column.name">
+                                    <div class="o_global_mobile_item">
+                                        <div class="o_global_mobile_label">
+                                            <t t-esc="this.getGlobalColumnLabel(column)"/>
+                                        </div>
+                                        <div class="o_global_mobile_value">
+                                            <t t-esc="this.getGlobalFieldValue(record, column)"/>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </t>
+        </xpath>
+
+    </t>
+
+</templates>
