@@ -119,7 +119,6 @@ class ProposalMaterialLine(models.Model):
 
     actual_count_qty = fields.Float(
         string="SL kiểm kê thực tế",
-        digits=(16, 4),
         copy=False,
         tracking=True,
     )
