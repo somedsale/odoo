@@ -255,9 +255,9 @@
                     <th class="text-end">% Tiền đã thu / Nghiệm thu</th>
                     <th class="text-end">% Tiền đã thu / Sản lượng đã thực hiện</th>
                     <th class="text-end">% Tiền đã thu / Hóa đơn</th>
-                    <th class="text-end">Tổng dự toán chi phí</th>
+                    <th class="text-end">Tổng dự toán chưa thuế</th>
                     <th class="text-end">Tổng dự toán có thuế</th>
-                    <th class="text-end">Tổng chi phí theo dõi</th>
+                    <th class="text-end">Tổng chi phí</th>
                     <th class="text-end">Tổng đã chi</th>
                     <th class="text-end">Tổng chưa chi</th>
                   </tr>
