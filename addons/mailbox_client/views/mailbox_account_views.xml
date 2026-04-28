@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_mailbox_account_tree" model="ir.ui.view">
+            <field name="name">mailbox.account.tree</field>
+            <field name="model">mailbox.account</field>
+            <field name="arch" type="xml">
+                <tree string="Mailbox Accounts">
+                    <field name="name"/>
+                    <field name="user_id"/>
+                    <field name="email_address"/>
+                    <field name="imap_host"/>
+                    <field name="smtp_host"/>
+                    <field name="idle_status"/>
+                    <field name="last_fetch_date"/>
+                    <field name="last_fetch_status"/>
+                    <field name="active"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_mailbox_account_form" model="ir.ui.view">
+            <field name="name">mailbox.account.form</field>
+            <field name="model">mailbox.account</field>
+            <field name="arch" type="xml">
+                <form string="Mailbox Account">
+                    <header>
+                        <button name="action_test_imap" string="Test IMAP" type="object" class="btn-secondary"/>
+                        <button name="action_test_smtp" string="Test SMTP" type="object" class="btn-secondary"/>
+                        <button name="action_fetch_mail" string="Fetch Mail" type="object" class="btn-primary"/>
+                        <button name="action_start_idle" string="Start IMAP IDLE" type="object" class="btn-primary"/>
+                        <button name="action_stop_idle" string="Stop IMAP IDLE" type="object" class="btn-secondary"/>
+                    </header>
+
+                    <sheet>
+                        <div class="oe_title">
+                            <h1><field name="name" placeholder="Mailbox Name"/></h1>
+                        </div>
+
+                        <group col="2">
+                            <group string="Account">
+                                <field name="active"/>
+                                <field name="user_id"/>
+                                <field name="email_address"/>
+                                <field name="login"/>
+                                <field name="password" password="True"/>
+                            </group>
+
+                            <group string="Realtime / Last Fetch">
+                                <field name="idle_enabled"/>
+                                <field name="idle_status" readonly="1"/>
+                                <field name="idle_last_event" readonly="1"/>
+                                <field name="idle_error_message" readonly="1"/>
+                                <field name="last_fetch_date" readonly="1"/>
+                                <field name="last_fetch_status" readonly="1"/>
+                                <field name="last_fetch_message" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <group col="2">
+                            <group string="IMAP">
+                                <field name="imap_host"/>
+                                <field name="imap_port"/>
+                                <field name="imap_ssl"/>
+                            </group>
+
+                            <group string="SMTP">
+                                <field name="smtp_host"/>
+                                <field name="smtp_port"/>
+                                <field name="smtp_ssl"/>
+                                <field name="smtp_starttls"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <page string="Folders">
+                                <field name="folder_ids">
+                                    <tree editable="bottom">
+                                        <field name="sequence"/>
+                                        <field name="name"/>
+                                        <field name="code"/>
+                                        <field name="imap_name"/>
+                                        <field name="mailbox_message_count" readonly="1"/>
+                                        <field name="active"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                            <page string="Messages">
+                                <field name="mailbox_message_ids" readonly="1">
+                                    <tree>
+                                        <field name="message_date"/>
+                                        <field name="name"/>
+                                        <field name="sender"/>
+                                        <field name="to_recipients"/>
+                                        <field name="folder_id"/>
+                                        <field name="state"/>
+                                        <field name="is_read"/>
+                                        <field name="is_starred"/>
+                                        <field name="attachment_count"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_mailbox_account_search" model="ir.ui.view">
+            <field name="name">mailbox.account.search</field>
+            <field name="model">mailbox.account</field>
+            <field name="arch" type="xml">
+                <search string="Search Mailbox Accounts">
+                    <field name="name"/>
+                    <field name="user_id"/>
+                    <field name="email_address"/>
+                    <field name="imap_host"/>
+                    <field name="smtp_host"/>
+
+                    <filter string="Active" name="filter_active" domain="[('active', '=', True)]"/>
+                    <filter string="Inactive" name="filter_inactive" domain="[('active', '=', False)]"/>
+
+                    <group expand="0" string="Group By">
+                        <filter string="User" name="group_user" context="{'group_by': 'user_id'}"/>
+                        <filter string="Last Fetch Status" name="group_fetch_status" context="{'group_by': 'last_fetch_status'}"/>
+                        <filter string="IDLE Status" name="group_idle_status" context="{'group_by': 'idle_status'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_mailbox_account" model="ir.actions.act_window">
+            <field name="name">Accounts</field>
+            <field name="res_model">mailbox.account</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_mailbox_account_search"/>
+        </record>
+
+    </data>
+    <menuitem id="menu_mailbox_accounts"
+          name="Accounts"
+          parent="menu_mailbox_root_outlook"
+          action="action_mailbox_account"
+          sequence="50"/>
+</odoo>

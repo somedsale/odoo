@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_mailbox_compose_wizard_form" model="ir.ui.view">
+            <field name="name">mailbox.compose.wizard.form</field>
+            <field name="model">mailbox.compose.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Compose Email" create="0" edit="1">
+                    <sheet class="o_mailbox_compose_sheet">
+                        <group col="2">
+                            <group>
+                                <field name="mode"/>
+                                <field name="account_id" options="{'no_create': True}"/>
+                                <field name="parent_message_id" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="reply_to"/>
+                            </group>
+                        </group>
+
+                        <group>
+                            <field name="name" placeholder="Subject"/>
+                            <field name="to_recipients" placeholder="email1@example.com, email2@example.com"/>
+                            <field name="cc_recipients" placeholder="cc1@example.com, cc2@example.com"/>
+                            <field name="bcc_recipients" placeholder="bcc1@example.com, bcc2@example.com"/>
+                        </group>
+
+                        <group string="Email Body">
+                            <field name="body_html"
+                                   widget="html"
+                                   nolabel="1"
+                                   options="{
+                                       'style-inline': true,
+                                       'codeview': true
+                                   }"/>
+                        </group>
+
+                        <group string="Attachments">
+                            <field name="attachment_ids" widget="many2many_binary" nolabel="1"/>
+                        </group>
+
+                        <group string="Plain Text (optional)">
+                            <field name="body_text" nolabel="1" placeholder="Plain text fallback..."/>
+                        </group>
+                    </sheet>
+
+                    <footer>
+                        <button name="action_send" string="Send" type="object" class="btn-primary"/>
+                        <button string="Cancel" special="cancel" class="btn-secondary"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_mailbox_compose_wizard" model="ir.actions.act_window">
+            <field name="name">Compose Email</field>
+            <field name="res_model">mailbox.compose.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="context">{'default_mode': 'new'}</field>
+        </record>
+
+        <menuitem id="menu_mailbox_compose"
+                  name="Compose"
+                  parent="menu_mailbox_root_outlook"
+                  action="action_mailbox_compose_wizard"
+                  sequence="5"/>
+
+    </data>
+</odoo>

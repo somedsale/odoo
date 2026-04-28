@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_mailbox_message_tree" model="ir.ui.view">
+            <field name="name">mailbox.message.tree</field>
+            <field name="model">mailbox.message</field>
+            <field name="arch" type="xml">
+                <tree string="Messages">
+                    <field name="message_date"/>
+                    <field name="name"/>
+                    <field name="sender"/>
+                    <field name="to_recipients"/>
+                    <field name="account_id"/>
+                    <field name="folder_id"/>
+                    <field name="direction"/>
+                    <field name="state"/>
+                    <field name="is_read"/>
+                    <field name="is_starred"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_mailbox_message_form" model="ir.ui.view">
+            <field name="name">mailbox.message.form</field>
+            <field name="model">mailbox.message</field>
+            <field name="arch" type="xml">
+                <form string="Message">
+                    <header>
+                        <button name="action_reply" string="Reply" type="object" class="btn-primary"
+                                invisible="direction != 'incoming'"/>
+                        <button name="action_forward" string="Forward" type="object" class="btn-secondary"/>
+                        <button name="action_mark_read" string="Mark Read" type="object"
+                                invisible="is_read == True"/>
+                        <button name="action_mark_unread" string="Mark Unread" type="object"
+                                invisible="is_read == False"/>
+                        <button name="action_toggle_star" string="Star / Unstar" type="object"/>
+                        <button name="action_move_trash" string="Move to Trash" type="object"
+                                invisible="state == 'trash'"/>
+                        <button name="action_restore_inbox" string="Restore to Inbox" type="object"
+                                invisible="state != 'trash'"/>
+                    </header>
+
+                    <sheet>
+                        <div class="oe_title">
+                            <h1><field name="name" readonly="1"/></h1>
+                        </div>
+
+                        <group col="2">
+                            <group string="Header">
+                                <field name="account_id" readonly="1"/>
+                                <field name="folder_id" readonly="1"/>
+                                <field name="direction" readonly="1"/>
+                                <field name="state" readonly="1"/>
+                                <field name="message_date" readonly="1"/>
+                            </group>
+
+                            <group string="Flags">
+                                <field name="is_read"/>
+                                <field name="is_starred"/>
+                                <field name="message_id_header" readonly="1"/>
+                                <field name="in_reply_to" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <group col="2">
+                            <group string="Addresses">
+                                <field name="sender" readonly="1"/>
+                                <field name="to_recipients" readonly="1"/>
+                                <field name="cc_recipients" readonly="1"/>
+                                <field name="bcc_recipients" readonly="1"/>
+                                <field name="reply_to" readonly="1"/>
+                            </group>
+
+                            <group string="IMAP">
+                                <field name="imap_uid" readonly="1"/>
+                                <field name="imap_folder_name" readonly="1"/>
+                                <field name="is_deleted_server" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <page string="HTML Body">
+                                <field name="body_html" readonly="1"/>
+                            </page>
+                            <page string="Plain Text">
+                                <field name="body_text" readonly="1"/>
+                            </page>
+                            <page string="Attachments">
+                                <field name="attachment_ids" widget="many2many_binary"/>
+                            </page>
+                            <page string="Technical">
+                                <group>
+                                    <field name="references_header" readonly="1"/>
+                                    <field name="fetch_error" readonly="1"/>
+                                    <field name="send_error" readonly="1"/>
+                                </group>
+                            </page>
+                            <page string="Chatter">
+                                <field name="message_follower_ids"/>
+                                <field name="activity_ids"/>
+                                <field name="message_ids"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_mailbox_message_search" model="ir.ui.view">
+            <field name="name">mailbox.message.search</field>
+            <field name="model">mailbox.message</field>
+            <field name="arch" type="xml">
+                <search string="Search Messages">
+                    <field name="name"/>
+                    <field name="sender"/>
+                    <field name="to_recipients"/>
+                    <field name="account_id"/>
+                    <field name="folder_id"/>
+                    <filter string="Unread" name="filter_unread" domain="[('is_read','=',False)]"/>
+                    <filter string="Starred" name="filter_starred" domain="[('is_starred','=',True)]"/>
+                    <filter string="Inbox" name="filter_inbox" domain="[('folder_id.code','=','inbox')]"/>
+                    <filter string="Sent" name="filter_sent" domain="[('folder_id.code','=','sent')]"/>
+                    <filter string="Trash" name="filter_trash" domain="[('folder_id.code','=','trash')]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Account" name="group_account" context="{'group_by': 'account_id'}"/>
+                        <filter string="Folder" name="group_folder" context="{'group_by': 'folder_id'}"/>
+                        <filter string="Direction" name="group_direction" context="{'group_by': 'direction'}"/>
+                        <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_mailbox_message" model="ir.actions.act_window">
+            <field name="name">All Messages</field>
+            <field name="res_model">mailbox.message</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_mailbox_message_search"/>
+        </record>
+
+        <record id="action_mailbox_inbox" model="ir.actions.act_window">
+            <field name="name">Inbox</field>
+            <field name="res_model">mailbox.message</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('folder_id.code','=','inbox')]</field>
+            <field name="search_view_id" ref="view_mailbox_message_search"/>
+        </record>
+
+        <record id="action_mailbox_sent" model="ir.actions.act_window">
+            <field name="name">Sent</field>
+            <field name="res_model">mailbox.message</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('folder_id.code','=','sent')]</field>
+            <field name="search_view_id" ref="view_mailbox_message_search"/>
+        </record>
+
+        <record id="action_mailbox_trash" model="ir.actions.act_window">
+            <field name="name">Trash</field>
+            <field name="res_model">mailbox.message</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('folder_id.code','=','trash')]</field>
+            <field name="search_view_id" ref="view_mailbox_message_search"/>
+        </record>
+
+<menuitem id="menu_mailbox_inbox"
+          name="Inbox"
+          parent="menu_mailbox_root_outlook"
+          action="action_mailbox_inbox"
+          sequence="10"/>
+
+<menuitem id="menu_mailbox_sent"
+          name="Sent"
+          parent="menu_mailbox_root_outlook"
+          action="action_mailbox_sent"
+          sequence="20"/>
+
+<menuitem id="menu_mailbox_trash"
+          name="Trash"
+          parent="menu_mailbox_root_outlook"
+          action="action_mailbox_trash"
+          sequence="30"/>
+
+<menuitem id="menu_mailbox_all"
+          name="All Messages"
+          parent="menu_mailbox_root_outlook"
+          action="action_mailbox_message"
+          sequence="40"/>
+
+<menuitem id="menu_mailbox_accounts"
+          name="Accounts"
+          parent="menu_mailbox_root_outlook"
+          action="action_mailbox_account"
+          sequence="50"/>
+
+<menuitem id="menu_mailbox_folders"
+          name="Folders"
+          parent="menu_mailbox_root_outlook"
+          action="action_mailbox_folder"
+          sequence="60"/>
+
+    </data>
+</odoo>

@@ -363,9 +363,9 @@
                                     <field name="actual_manufacturing_cost" string="Chi phí thực tế sản xuất chung" widget="monetary" options="{'currency_field': 'currency_id'}" invisible="display_type"/>
                                     <field name="actual_cost" string="Chi phí thực tế" widget="monetary" options="{'currency_field': 'currency_id'}" invisible="display_type"/>
                                     <field name="difference_cost" string="Chênh lệch" widget="monetary" options="{'currency_field': 'currency_id'}" invisible="display_type"/>
-                                    <field name="sale_order_price_unit" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}" groups="custom_director_role.group_director" invisible="display_type"/>
-                                    <field name="sale_order_price_subtotal" sum="Tổng" groups="custom_director_role.group_director" invisible="display_type"/>
-                                    <field name="sale_order_price_total" sum="Tổng" groups="custom_director_role.group_director" invisible="display_type"/>
+                                    <field name="sale_order_price_unit" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}" invisible="display_type"/>
+                                    <field name="sale_order_price_subtotal" sum="Tổng" invisible="display_type"/>
+                                    <field name="sale_order_price_total" sum="Tổng" invisible="display_type"/>
                                     <field name="currency_id" column_invisible="True"/>
                                 </tree>
 

@@ -1,0 +1,1260 @@
+#. module: mailbox_client
+#. odoo-python
+#: code:addons/mailbox_client/models/mailbox_account.py:0
+#, python-format
+msgid ""
+"%s '%s' chứa ký tự Unicode. SMTP server hiện tại không hỗ trợ SMTPUTF8."
+msgstr ""
+"%s '%s' chứa ký tự Unicode. Máy chủ SMTP hiện tại không hỗ trợ SMTPUTF8."
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_folder__account_id
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__account_id
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_form
+msgid "Account"
+msgstr "Tài khoản"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#: model:ir.actions.act_window,name:mailbox_client.action_mailbox_account
+#: model:ir.ui.menu,name:mailbox_client.menu_mailbox_accounts
+#, python-format
+msgid "Accounts"
+msgstr "Tài khoản"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__message_needaction
+msgid "Action Needed"
+msgstr "Cần xử lý"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__active
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_folder__active
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_search
+msgid "Active"
+msgstr "Đang hoạt động"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__activity_ids
+msgid "Activities"
+msgstr "Hoạt động"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr "Đánh dấu ngoại lệ hoạt động"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__activity_state
+msgid "Activity State"
+msgstr "Trạng thái hoạt động"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__activity_type_icon
+msgid "Activity Type Icon"
+msgstr "Biểu tượng loại hoạt động"
+
+#. module: mailbox_client
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_folder__code__archive
+msgid "Archive"
+msgstr "Lưu trữ"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Attach file"
+msgstr "Đính kèm tệp"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Attach image/file"
+msgstr "Đính kèm ảnh/tệp"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__message_attachment_count
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__attachment_count
+msgid "Attachment Count"
+msgstr "Số tệp đính kèm"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_compose_wizard__attachment_ids
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__attachment_ids
+#, python-format
+msgid "Attachments"
+msgstr "Tệp đính kèm"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Autosaved"
+msgstr "Đã tự lưu"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_compose_wizard__bcc_recipients
+#, python-format
+msgid "Bcc"
+msgstr "Bcc"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__bcc_recipients
+msgid "Bcc Recipients"
+msgstr "Người nhận Bcc"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Bcc recipients"
+msgstr "Người nhận Bcc"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_compose_wizard__body_html
+msgid "Body"
+msgstr "Nội dung"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__body_html
+msgid "Body Html"
+msgstr "Nội dung HTML"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__body_text
+msgid "Body Text"
+msgstr "Nội dung văn bản"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Bold"
+msgstr "In đậm"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Bullet List"
+msgstr "Danh sách chấm"
+
+#. module: mailbox_client
+#. odoo-python
+#: code:addons/mailbox_client/wizard/mailbox_compose_wizard.py:0
+#, python-format
+msgid "Bạn phải nhập người nhận."
+msgstr "Bạn phải nhập người nhận."
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_compose_wizard__cc_recipients
+#, python-format
+msgid "Cc"
+msgstr "Cc"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__cc_recipients
+msgid "Cc Recipients"
+msgstr "Người nhận Cc"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Cc recipients"
+msgstr "Người nhận Cc"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Clear format"
+msgstr "Xóa định dạng"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Close"
+msgstr "Đóng"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_folder__code
+msgid "Code"
+msgstr "Mã"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Compose"
+msgstr "Soạn thư"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__create_uid
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_compose_wizard__create_uid
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_folder__create_uid
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__create_uid
+msgid "Created by"
+msgstr "Tạo bởi"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__create_date
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_compose_wizard__create_date
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_folder__create_date
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__create_date
+msgid "Created on"
+msgstr "Tạo lúc"
+
+#. module: mailbox_client
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_folder__code__custom
+msgid "Custom"
+msgstr "Tùy chỉnh"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Delete draft"
+msgstr "Xóa thư nháp"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Delete folder"
+msgstr "Xóa thư mục"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__direction
+msgid "Direction"
+msgstr "Chiều thư"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Discard"
+msgstr "Hủy"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__display_name
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_compose_wizard__display_name
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_folder__display_name
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__display_name
+msgid "Display Name"
+msgstr "Tên hiển thị"
+
+#. module: mailbox_client
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_folder__code__draft
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_message__state__draft
+msgid "Draft"
+msgstr "Nháp"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__email_address
+msgid "Email Address"
+msgstr "Địa chỉ email"
+
+#. module: mailbox_client
+#: model:ir.model.constraint,message:mailbox_client.constraint_mailbox_account_mailbox_account_email_user_uniq
+msgid "Email account already exists for this user."
+msgstr "Tài khoản email này đã tồn tại cho người dùng này."
+
+#. module: mailbox_client
+#. odoo-python
+#: code:addons/mailbox_client/models/mailbox_account.py:0
+#, python-format
+msgid "Email gửi đi"
+msgstr "Email gửi đi"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__idle_enabled
+msgid "Enable IMAP IDLE"
+msgstr "Bật IMAP IDLE"
+
+#. module: mailbox_client
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_account__idle_status__error
+msgid "Error"
+msgstr "Lỗi"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Expand"
+msgstr "Mở rộng"
+
+#. module: mailbox_client
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_account__last_fetch_status__failed
+msgid "Failed"
+msgstr "Thất bại"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Fetch"
+msgstr "Lấy mail"
+
+#. module: mailbox_client
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_form
+msgid "Fetch Mail"
+msgstr "Lấy mail"
+
+#. module: mailbox_client
+#. odoo-python
+#: code:addons/mailbox_client/models/mailbox_account.py:0
+#, python-format
+msgid ""
+"Fetch mail failed:\n"
+"%s"
+msgstr ""
+"Lấy mail thất bại:\n"
+"%s"
+
+#. module: mailbox_client
+#. odoo-python
+#: code:addons/mailbox_client/models/mailbox_account.py:0
+#, python-format
+msgid "Fetched immediately by IMAP IDLE."
+msgstr "Đã lấy mail ngay lập tức bằng IMAP IDLE."
+
+#. module: mailbox_client
+#. odoo-python
+#: code:addons/mailbox_client/models/mailbox_account.py:0
+#, python-format
+msgid "Fetched successfully. Total processed: %s"
+msgstr "Lấy mail thành công. Tổng số đã xử lý: %s"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__folder_id
+msgid "Folder"
+msgstr "Thư mục"
+
+#. module: mailbox_client
+#: model:ir.model.constraint,message:mailbox_client.constraint_mailbox_folder_mailbox_folder_account_imap_name_uniq
+msgid "Folder already exists for this account."
+msgstr "Thư mục này đã tồn tại cho tài khoản này."
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__folder_ids
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_form
+#, python-format
+msgid "Folders"
+msgstr "Thư mục"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__message_follower_ids
+msgid "Followers"
+msgstr "Người theo dõi"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__message_partner_ids
+msgid "Followers (Partners)"
+msgstr "Người theo dõi (Đối tác)"
+
+#. module: mailbox_client
+#: model:ir.model.fields,help:mailbox_client.field_mailbox_account__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr "Biểu tượng Font Awesome, ví dụ: fa-tasks"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_compose_wizard__mode__forward
+#, python-format
+msgid "Forward"
+msgstr "Chuyển tiếp"
+
+#. module: mailbox_client
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_search
+msgid "Group By"
+msgstr "Nhóm theo"
+
+#. module: mailbox_client
+#. odoo-python
+#: code:addons/mailbox_client/models/mailbox_account.py:0
+#, python-format
+msgid ""
+"Gửi mail thất bại:\n"
+"%s"
+msgstr ""
+"Gửi mail thất bại:\n"
+"%s"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__has_message
+msgid "Has Message"
+msgstr "Có tin nhắn"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Has attachment"
+msgstr "Có tệp đính kèm"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Help"
+msgstr "Trợ giúp"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__id
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_compose_wizard__id
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_folder__id
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__id
+msgid "ID"
+msgstr "ID"
+
+#. module: mailbox_client
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_search
+msgid "IDLE Status"
+msgstr "Trạng thái IDLE"
+
+#. module: mailbox_client
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_form
+msgid "IMAP"
+msgstr "IMAP"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__imap_host
+msgid "IMAP Host"
+msgstr "Máy chủ IMAP"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__imap_port
+msgid "IMAP Port"
+msgstr "Cổng IMAP"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__imap_ssl
+msgid "IMAP SSL"
+msgstr "IMAP SSL"
+
+#. module: mailbox_client
+#. odoo-python
+#: code:addons/mailbox_client/models/mailbox_account.py:0
+#, python-format
+msgid ""
+"IMAP connection failed:\n"
+"%s"
+msgstr ""
+"Kết nối IMAP thất bại:\n"
+"%s"
+
+#. module: mailbox_client
+#. odoo-python
+#: code:addons/mailbox_client/models/mailbox_account.py:0
+#, python-format
+msgid "IMAP connection successful."
+msgstr "Kết nối IMAP thành công."
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__activity_exception_icon
+msgid "Icon"
+msgstr "Biểu tượng"
+
+#. module: mailbox_client
+#: model:ir.model.fields,help:mailbox_client.field_mailbox_account__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr "Biểu tượng để chỉ ra hoạt động ngoại lệ."
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__idle_error_message
+msgid "Idle Error Message"
+msgstr "Thông báo lỗi IDLE"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__idle_last_event
+msgid "Idle Last Event"
+msgstr "Sự kiện IDLE gần nhất"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__idle_status
+msgid "Idle Status"
+msgstr "Trạng thái IDLE"
+
+#. module: mailbox_client
+#: model:ir.model.fields,help:mailbox_client.field_mailbox_account__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr "Nếu được chọn, có tin nhắn mới cần bạn chú ý."
+
+#. module: mailbox_client
+#: model:ir.model.fields,help:mailbox_client.field_mailbox_account__message_has_error
+msgid "If checked, some messages have a delivery error."
+msgstr "Nếu được chọn, một số tin nhắn gặp lỗi gửi."
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_folder__imap_name
+msgid "Imap Name"
+msgstr "Tên IMAP"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__in_reply_to
+msgid "In Reply To"
+msgstr "Trả lời tới"
+
+#. module: mailbox_client
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_search
+msgid "Inactive"
+msgstr "Ngừng hoạt động"
+
+#. module: mailbox_client
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_folder__code__inbox
+msgid "Inbox"
+msgstr "Hộp thư đến"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_message__direction__incoming
+#, python-format
+msgid "Incoming"
+msgstr "Thư đến"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Insert Link"
+msgstr "Chèn liên kết"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__message_is_follower
+msgid "Is Follower"
+msgstr "Là người theo dõi"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__is_read
+msgid "Is Read"
+msgstr "Đã đọc"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__is_starred
+msgid "Is Starred"
+msgstr "Được gắn sao"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Italic"
+msgstr "In nghiêng"
+
+#. module: mailbox_client
+#. odoo-python
+#: code:addons/mailbox_client/models/mailbox_account.py:0
+#, python-format
+msgid "Không có người nhận hợp lệ."
+msgstr "Không có người nhận hợp lệ."
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Không có nội dung email."
+msgstr "Không có nội dung email."
+
+#. module: mailbox_client
+#. odoo-python
+#: code:addons/mailbox_client/wizard/mailbox_compose_wizard.py:0
+#, python-format
+msgid "Không tìm thấy mailbox account để gửi mail."
+msgstr "Không tìm thấy tài khoản hộp thư để gửi mail."
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__last_fetch_date
+msgid "Last Fetch Date"
+msgstr "Ngày lấy mail gần nhất"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__last_fetch_message
+msgid "Last Fetch Message"
+msgstr "Thông báo lấy mail gần nhất"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__last_fetch_status
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_search
+msgid "Last Fetch Status"
+msgstr "Trạng thái lấy mail gần nhất"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__write_uid
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_compose_wizard__write_uid
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_folder__write_uid
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__write_uid
+msgid "Last Updated by"
+msgstr "Cập nhật lần cuối bởi"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__write_date
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_compose_wizard__write_date
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_folder__write_date
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__write_date
+msgid "Last Updated on"
+msgstr "Cập nhật lần cuối vào"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Loading..."
+msgstr "Đang tải..."
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__login
+msgid "Login"
+msgstr "Đăng nhập"
+
+#. module: mailbox_client
+#: model:ir.ui.menu,name:mailbox_client.menu_mailbox_app
+msgid "Mail"
+msgstr "Mail"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#: model:ir.actions.client,name:mailbox_client.action_mailbox_client_app
+#: model:ir.ui.menu,name:mailbox_client.menu_mailbox_root_outlook
+#, python-format
+msgid "Mailbox"
+msgstr "Hộp thư"
+
+#. module: mailbox_client
+#: model:ir.model,name:mailbox_client.model_mailbox_account
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_compose_wizard__account_id
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_form
+msgid "Mailbox Account"
+msgstr "Tài khoản hộp thư"
+
+#. module: mailbox_client
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_tree
+msgid "Mailbox Accounts"
+msgstr "Các tài khoản hộp thư"
+
+#. module: mailbox_client
+#: model:ir.model,name:mailbox_client.model_mailbox_compose_wizard
+msgid "Mailbox Compose Wizard"
+msgstr "Trình soạn thư hộp thư"
+
+#. module: mailbox_client
+#: model:ir.actions.server,name:mailbox_client.ir_cron_mailbox_fetch_fallback_ir_actions_server
+msgid "Mailbox Fallback Fetch"
+msgstr "Lấy mail dự phòng"
+
+#. module: mailbox_client
+#: model:ir.model,name:mailbox_client.model_mailbox_folder
+msgid "Mailbox Folder"
+msgstr "Thư mục hộp thư"
+
+#. module: mailbox_client
+#: model:res.groups,name:mailbox_client.group_mailbox_manager
+msgid "Mailbox Manager"
+msgstr "Quản lý hộp thư"
+
+#. module: mailbox_client
+#: model:ir.model,name:mailbox_client.model_mailbox_message
+msgid "Mailbox Message"
+msgstr "Thư hộp thư"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_folder__mailbox_message_count
+msgid "Mailbox Message Count"
+msgstr "Số lượng thư"
+
+#. module: mailbox_client
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_form
+msgid "Mailbox Name"
+msgstr "Tên hộp thư"
+
+#. module: mailbox_client
+#: model:res.groups,name:mailbox_client.group_mailbox_user
+msgid "Mailbox User"
+msgstr "Người dùng hộp thư"
+
+#. module: mailbox_client
+#: model:ir.actions.server,name:mailbox_client.ir_cron_mailbox_fetch_ir_actions_server
+msgid "Mailbox: Fetch Emails"
+msgstr "Hộp thư: Lấy email"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Mark Read"
+msgstr "Đánh dấu đã đọc"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Mark Unread"
+msgstr "Đánh dấu chưa đọc"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__message_date
+msgid "Message Date"
+msgstr "Ngày thư"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__message_has_error
+msgid "Message Delivery error"
+msgstr "Lỗi gửi tin nhắn"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__message_id_header
+msgid "Message Id Header"
+msgstr "Message ID Header"
+
+#. module: mailbox_client
+#: model:ir.model.constraint,message:mailbox_client.constraint_mailbox_message_mailbox_message_account_message_id_uniq
+msgid "Message-ID already exists for this account."
+msgstr "Message-ID này đã tồn tại cho tài khoản này."
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__mailbox_message_ids
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__message_ids
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_folder__mailbox_message_ids
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_form
+msgid "Messages"
+msgstr "Thư"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Minimize"
+msgstr "Thu nhỏ"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_compose_wizard__mode
+msgid "Mode"
+msgstr "Chế độ"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Move to Trash"
+msgstr "Chuyển vào thùng rác"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr "Hạn hoạt động của tôi"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__name
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_folder__name
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__name
+msgid "Name"
+msgstr "Tên"
+
+#. module: mailbox_client
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_account__last_fetch_status__never
+msgid "Never"
+msgstr "Chưa từng"
+
+#. module: mailbox_client
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_compose_wizard__mode__new
+msgid "New"
+msgstr "Mới"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "New Folder"
+msgstr "Thư mục mới"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "New Message"
+msgstr "Thư mới"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
+msgstr "Sự kiện lịch hoạt động tiếp theo"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr "Hạn hoạt động tiếp theo"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__activity_summary
+msgid "Next Activity Summary"
+msgstr "Tóm tắt hoạt động tiếp theo"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__activity_type_id
+msgid "Next Activity Type"
+msgstr "Loại hoạt động tiếp theo"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "No emails found."
+msgstr "Không tìm thấy email nào."
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__message_needaction_counter
+msgid "Number of Actions"
+msgstr "Số hành động"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__message_has_error_counter
+msgid "Number of errors"
+msgstr "Số lỗi"
+
+#. module: mailbox_client
+#: model:ir.model.fields,help:mailbox_client.field_mailbox_account__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr "Số tin nhắn cần xử lý"
+
+#. module: mailbox_client
+#: model:ir.model.fields,help:mailbox_client.field_mailbox_account__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr "Số tin nhắn bị lỗi gửi"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Numbered List"
+msgstr "Danh sách số"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Odoo Mail"
+msgstr "Hộp thư"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_message__direction__outgoing
+#, python-format
+msgid "Outgoing"
+msgstr "Thư đi"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_compose_wizard__parent_message_id
+msgid "Parent Message"
+msgstr "Thư cha"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__password
+msgid "Password"
+msgstr "Mật khẩu"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_compose_wizard__body_text
+msgid "Plain Text"
+msgstr "Văn bản thuần"
+
+#. module: mailbox_client
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_form
+msgid "Realtime / Last Fetch"
+msgstr "Thời gian thực / Lần lấy mail gần nhất"
+
+#. module: mailbox_client
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_message__state__received
+msgid "Received"
+msgstr "Đã nhận"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Recipients"
+msgstr "Người nhận"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__references_header
+msgid "References Header"
+msgstr "References Header"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_compose_wizard__mode__reply
+#, python-format
+msgid "Reply"
+msgstr "Trả lời"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__reply_to
+msgid "Reply To"
+msgstr "Trả lời tới"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_compose_wizard__reply_to
+msgid "Reply-To"
+msgstr "Trả lời tới"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__activity_user_id
+msgid "Responsible User"
+msgstr "Người phụ trách"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Restore current"
+msgstr "Khôi phục thư hiện tại"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Restore to Inbox"
+msgstr "Khôi phục về hộp thư đến"
+
+#. module: mailbox_client
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_account__idle_status__running
+msgid "Running"
+msgstr "Đang chạy"
+
+#. module: mailbox_client
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_form
+msgid "SMTP"
+msgstr "SMTP"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__smtp_host
+msgid "SMTP Host"
+msgstr "Máy chủ SMTP"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__smtp_port
+msgid "SMTP Port"
+msgstr "Cổng SMTP"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__smtp_ssl
+msgid "SMTP SSL"
+msgstr "SMTP SSL"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__smtp_starttls
+msgid "SMTP STARTTLS"
+msgstr "SMTP STARTTLS"
+
+#. module: mailbox_client
+#. odoo-python
+#: code:addons/mailbox_client/models/mailbox_account.py:0
+#, python-format
+msgid ""
+"SMTP connection failed:\n"
+"%s"
+msgstr ""
+"Kết nối SMTP thất bại:\n"
+"%s"
+
+#. module: mailbox_client
+#. odoo-python
+#: code:addons/mailbox_client/models/mailbox_account.py:0
+#, python-format
+msgid "SMTP connection successful."
+msgstr "Kết nối SMTP thành công."
+
+#. module: mailbox_client
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_search
+msgid "Search Mailbox Accounts"
+msgstr "Tìm kiếm tài khoản hộp thư"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Search mail..."
+msgstr "Tìm kiếm email..."
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Select an email to preview"
+msgstr "Chọn một email để xem trước"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Send"
+msgstr "Gửi"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__sender
+msgid "Sender"
+msgstr "Người gửi"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__sender_name
+msgid "Sender Name"
+msgstr "Tên người gửi"
+
+#. module: mailbox_client
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_folder__code__sent
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_message__state__sent
+msgid "Sent"
+msgstr "Đã gửi"
+
+#. module: mailbox_client
+#. odoo-python
+#: code:addons/mailbox_client/wizard/mailbox_compose_wizard.py:0
+#, python-format
+msgid "Sent Email"
+msgstr "Email đã gửi"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_folder__sequence
+msgid "Sequence"
+msgstr "Thứ tự"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Settings"
+msgstr "Cài đặt"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Show original message"
+msgstr "Hiện thư gốc"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__snippet
+msgid "Snippet"
+msgstr "Đoạn xem trước"
+
+#. module: mailbox_client
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_folder__code__spam
+msgid "Spam"
+msgstr "Thư rác"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Star"
+msgstr "Gắn sao"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Starred"
+msgstr "Được gắn sao"
+
+#. module: mailbox_client
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_form
+msgid "Start IMAP IDLE"
+msgstr "Bắt đầu IMAP IDLE"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__state
+msgid "State"
+msgstr "Trạng thái"
+
+#. module: mailbox_client
+#: model:ir.model.fields,help:mailbox_client.field_mailbox_account__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+"Trạng thái dựa trên hoạt động\n"
+"Quá hạn: Đã quá ngày đến hạn\n"
+"Hôm nay: Hoạt động diễn ra hôm nay\n"
+"Dự kiến: Hoạt động trong tương lai."
+
+#. module: mailbox_client
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_form
+msgid "Stop IMAP IDLE"
+msgstr "Dừng IMAP IDLE"
+
+#. module: mailbox_client
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_account__idle_status__stopped
+msgid "Stopped"
+msgstr "Đã dừng"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_compose_wizard__name
+#, python-format
+msgid "Subject"
+msgstr "Tiêu đề"
+
+#. module: mailbox_client
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_account__last_fetch_status__success
+msgid "Success"
+msgstr "Thành công"
+
+#. module: mailbox_client
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_form
+msgid "Test IMAP"
+msgstr "Kiểm tra IMAP"
+
+#. module: mailbox_client
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_form
+msgid "Test SMTP"
+msgstr "Kiểm tra SMTP"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "This week"
+msgstr "Tuần này"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_compose_wizard__to_recipients
+#, python-format
+msgid "To"
+msgstr "Đến"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_message__to_recipients
+msgid "To Recipients"
+msgstr "Người nhận"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Today"
+msgstr "Hôm nay"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Toggle Star"
+msgstr "Gắn/Bỏ sao"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Toggle read"
+msgstr "Đánh dấu đã/chưa đọc"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_folder__code__trash
+#: model:ir.model.fields.selection,name:mailbox_client.selection__mailbox_message__state__trash
+#, python-format
+msgid "Trash"
+msgstr "Thùng rác"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Trash current"
+msgstr "Xóa thư hiện tại"
+
+#. module: mailbox_client
+#: model:ir.model.fields,help:mailbox_client.field_mailbox_account__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr "Loại hoạt động ngoại lệ trên bản ghi."
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Tất cả"
+msgstr "Tất cả"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Underline"
+msgstr "Gạch chân"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Unread"
+msgstr "Chưa đọc"
+
+#. module: mailbox_client
+#: model:ir.model.fields,field_description:mailbox_client.field_mailbox_account__user_id
+#: model_terms:ir.ui.view,arch_db:mailbox_client.view_mailbox_account_search
+msgid "User"
+msgstr "Người dùng"
+
+#. module: mailbox_client
+#. odoo-python
+#: code:addons/mailbox_client/models/mailbox_account.py:0
+#, python-format
+msgid "attachment"
+msgstr "tệp đính kèm"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "to me"
+msgstr "gửi cho tôi"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Được gắn sao"
+msgstr "Được gắn sao"
+
+#. module: mailbox_client
+#. odoo-javascript
+#: code:addons/mailbox_client/static/src/xml/mailbox_app.xml:0
+#, python-format
+msgid "Prev"
+msgstr "Trước"
+
+#. module: mailbox_client
+#. odoo-python
+#: code:addons/mailbox_client/models/mailbox_account.py:0
+#, python-format
+msgid ""
+"Địa chỉ email '%s' chứa ký tự Unicode. SMTP server hiện tại không hỗ trợ "
+"SMTPUTF8."
+msgstr ""
+"Địa chỉ email '%s' chứa ký tự Unicode. Máy chủ SMTP hiện tại không hỗ trợ "
+"SMTPUTF8."
