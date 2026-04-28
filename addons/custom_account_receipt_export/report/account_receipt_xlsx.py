@@ -101,7 +101,7 @@ class AccountReceiptXlsx(models.AbstractModel):
         # Hợp đồng / BG
         sheet.write(row, 0, "Thuộc HĐ/BG:", label_format)
         project = records[0].project_id
-       
+        contract = None
 
         if project:
             # Tìm hợp đồng có project_id trùng

@@ -7,6 +7,7 @@
     'depends': ['base', 'report_xlsx', 'custom_accounting_receipt'],  
     'data': [
         'views/account_receipt_report.xml',
+        'report/account_receipt_pdf_report.xml',
     ],
     'installable': True,
     'application': False,

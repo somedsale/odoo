@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="custom_a5_landscape" model="report.paperformat">
+        <field name="name">A5 Landscape</field>
+        <field name="format">A5</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">10</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_spacing">10</field>
+        <field name="dpi">110</field>
+    </record>
+
+    <record id="action_report_payment_request_pdf" model="ir.actions.report">
+        <field name="name">In PDF Phiếu Chi</field>
+        <field name="model">account.payment.request</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_account_payment_request_export.paypdf</field>
+        <field name="report_file">custom_account_payment_request_export.paypdf</field>
+        <field name="paperformat_id" ref="custom_a5_landscape"/>
+        <field name="binding_model_id" ref="custom_account_payment_request.model_account_payment_request"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'PhieuChi_' + (object.name or 'NoName') + '_' + time.strftime('%Y%m%d')</field>
+    </record>
+
+    <template id="paypdf">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.basic_layout">
+
+                    <style>
+                        .pc-page {
+                            font-family: "Times New Roman", Times, serif;
+                            color: #111;
+                            font-size: 13pt;
+                            line-height: 1.35;
+                            position: relative;
+                        }
+
+                        /*
+                         * Bỏ toàn bộ border table.
+                         * Chỉ các dòng .pc-value bên dưới được giữ gạch chấm.
+                         */
+                        .pc-page table,
+                        .pc-page thead,
+                        .pc-page tbody,
+                        .pc-page tfoot,
+                        .pc-page tr,
+                        .pc-page td,
+                        .pc-page th {
+                            border: none !important;
+                            border-color: transparent !important;
+                            outline: none !important;
+                            box-shadow: none !important;
+                        }
+
+                        .pc-header {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 6px;
+                        }
+
+                        .pc-company {
+                            width: 68%;
+                            vertical-align: top;
+                            font-size: 11.5pt;
+                            line-height: 1.35;
+                        }
+
+                        .pc-company-name {
+                            font-weight: bold;
+                            text-transform: uppercase;
+                        }
+
+                        .pc-badge-wrap {
+                            width: 32%;
+                            vertical-align: top;
+                            text-align: right;
+                        }
+
+                        .pc-badge {
+                            display: inline-block;
+                            border: 1.2px solid #111 !important;
+                            padding: 7px 14px;
+                            min-width: 145px;
+                            text-align: center;
+                            font-size: 11.5pt;
+                            font-weight: bold;
+                            font-style: italic;
+                            border-radius: 2px;
+                        }
+
+                        /*
+                         * Tiêu đề căn giữa trang.
+                         * Số phiếu nằm bên phải.
+                         */
+                        .pc-no-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 6px;
+                            margin-bottom: 12px;
+                        }
+
+                        .pc-no-left {
+                            width: 26%;
+                            vertical-align: top;
+                        }
+
+                        .pc-no-center {
+                            width: 48%;
+                            text-align: center;
+                            vertical-align: top;
+                        }
+
+                        .pc-no-right {
+                            width: 26%;
+                            text-align: right;
+                            vertical-align: top;
+                        }
+
+                        .pc-title {
+                            text-align: center;
+                            margin: 0;
+                        }
+
+                        .pc-title h1 {
+                            margin: 0;
+                            font-size: 24pt;
+                            line-height: 1.1;
+                            font-weight: bold;
+                            letter-spacing: 1px;
+                        }
+
+                        .pc-title .pc-date {
+                            margin-top: 3px;
+                            font-size: 13pt;
+                            font-style: italic;
+                            font-weight: bold;
+                        }
+
+                        .pc-number-box {
+                            display: inline-block;
+                            width: 170px;
+                            text-align: left;
+                            font-size: 12.5pt;
+                            line-height: 1.8;
+                        }
+                        .pc-info {
+                            width: 100%;
+                            border-collapse: collapse;
+                            table-layout: fixed;
+                            margin-top: 8px;
+                            font-size: 13pt;
+                        }
+
+                        .pc-info tr {
+                            height: 28px;
+                        }
+
+                        .pc-info td {
+                            padding: 2px 0 !important;
+                            vertical-align: middle !important;
+                            line-height: 1.25;
+                        }
+
+                        .pc-label {
+                            width: 185px;
+                            white-space: nowrap;
+                            padding-right: 8px !important;
+                            vertical-align: middle !important;
+                        }
+
+                        .pc-value {
+                            border-bottom: 1px dotted #333 !important;
+                            padding-left: 6px !important;
+                            vertical-align: middle !important;
+                            line-height: 1.25;
+                            word-break: normal;
+                            overflow-wrap: break-word;
+                        }
+
+                        .pc-value span {
+                            display: inline-block;
+                            vertical-align: middle;
+                        }
+
+                        .pc-value-bold {
+                            font-weight: bold;
+                        }
+
+                        .pc-footer-date {
+                            width: 100%;
+                            text-align: right;
+                            margin-top: 12px;
+                            padding-right: 40px;
+                            font-style: italic;
+                            font-size: 13pt;
+                        }
+
+                        .pc-sign-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 10px;
+                            text-align: center;
+                            font-size: 12.5pt;
+                        }
+
+                        .pc-sign-table td {
+                            width: 25%;
+                            vertical-align: top;
+                            padding: 1px 4px;
+                        }
+
+                        .pc-sign-title {
+                            font-weight: bold;
+                        }
+
+                        .pc-sign-note {
+                            font-size: 11.5pt;
+                            font-style: italic;
+                        }
+
+                        .pc-sign-space td {
+                            height: 64px;
+                        }
+
+                        .pc-received {
+                            margin-top: 4px;
+                            font-size: 13pt;
+                        }
+
+                        .pc-received-line {
+                            display: inline-block;
+                            min-width: 70%;
+                            border-bottom: 1px dotted #333 !important;
+                            padding-left: 6px;
+                            font-style: italic;
+                        }
+
+                        .pc-empty-space {
+                            display: inline-block;
+                            min-height: 18px;
+                        }
+                    </style>
+
+                    <div class="page pc-page">
+
+                        <!-- Header công ty -->
+                        <table class="pc-header">
+                            <tr>
+                                <td class="pc-company">
+                                    <div class="pc-company-name">
+                                        <span t-field="company.name"/>
+                                    </div>
+
+                                    <div>
+                                        <span t-field="company.street"/>
+                                    </div>
+
+                                    <div>
+                                        MST:
+                                        <span t-field="company.vat"/>
+                                    </div>
+                                </td>
+
+                                <td class="pc-badge-wrap">
+                                    <div class="pc-badge">
+                                        LƯU HÀNH NỘI BỘ
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Tiêu đề + Quyển số / Số phiếu -->
+                        <table class="pc-no-table">
+                            <tr>
+                                <td class="pc-no-left">
+                                    &#160;
+                                </td>
+
+                                <td class="pc-no-center">
+                                    <div class="pc-title">
+                                        <h1>PHIẾU CHI</h1>
+                                        <div class="pc-date">
+                                            <span t-esc="format_vn_date(o.date_payment or o.date)"/>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td class="pc-no-right">
+                                    <div class="pc-number-box">
+                                        <div>Quyển số: ......</div>
+                                        <div>
+                                            Số:
+                                            <span t-esc="o.name or ''"/>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Chuẩn bị dữ liệu người nhận -->
+                        <t t-set="receive_name" t-value="''"/>
+
+                        <t t-if="o.receive_type == 'employee' and o.employee_id">
+                            <t t-set="receive_name" t-value="o.employee_id.name"/>
+                        </t>
+                        <t t-elif="o.receive_type == 'supplier' and o.supplier_id">
+                            <t t-set="receive_name" t-value="o.supplier_id.name"/>
+                        </t>
+                        <t t-elif="o.receive_person">
+                            <t t-set="receive_name" t-value="o.receive_person.name"/>
+                        </t>
+
+                        <t t-set="receive_address" t-value="o.receive_person.contact_address if o.receive_person else ''"/>
+
+                        <!-- Nội dung phiếu -->
+                        <table class="pc-info">
+                            <tr>
+                                <td class="pc-label">Họ tên người nhận tiền:</td>
+                                <td class="pc-value">
+                                    <span t-esc="receive_name"/>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="pc-label">Địa chỉ:</td>
+                                <td class="pc-value">
+                                    <span t-esc="receive_address"/>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="pc-label">Lý do chi:</td>
+                                <td class="pc-value">
+                                    <span t-field="o.note"/>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="pc-label">Thuộc dự án:</td>
+                                <td class="pc-value">
+                                    <span t-esc="o.project_id.display_name if o.project_id else ''"/>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="pc-label">Số tiền:</td>
+                                <td class="pc-value pc-value-bold">
+                                    <span t-esc="'{:,.0f}'.format(o.total or 0).replace(',', '.')"/> đ
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="pc-label">Số tiền bằng chữ:</td>
+                                <td class="pc-value">
+                                    <span t-field="o.amount_in_words"/>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="pc-label">Chứng từ kèm theo:</td>
+                                <td class="pc-value">
+                                    <span class="pc-empty-space">&#160;</span>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Ngày ký -->
+                        <div class="pc-footer-date">
+                            <span t-esc="format_vn_date(o.date_payment or o.date)"/>
+                        </div>
+
+                        <!-- Chữ ký -->
+                        <table class="pc-sign-table">
+                            <tr>
+                                <td class="pc-sign-title">Người nhận tiền</td>
+                                <td class="pc-sign-title">Kế toán tổng hợp</td>
+                                <td class="pc-sign-title">Thủ quỹ</td>
+                                <td class="pc-sign-title">Giám đốc</td>
+                            </tr>
+
+                            <tr>
+                                <td class="pc-sign-note">(Ký, họ tên)</td>
+                                <td class="pc-sign-note">(Ký, họ tên)</td>
+                                <td class="pc-sign-note">(Ký, họ tên)</td>
+                                <td class="pc-sign-note">(Ký, họ tên, đóng dấu)</td>
+                            </tr>
+
+                            <tr class="pc-sign-space">
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+
+                            <tr class="pc-sign-space">
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </table>
+
+                        <!-- Đã nhận đủ tiền -->
+                        <div class="pc-received">
+                            Đã nhận đủ tiền:
+                            <span class="pc-received-line">
+                                <span t-field="o.amount_in_words"/>
+                            </span>
+                        </div>
+
+                    </div>
+
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

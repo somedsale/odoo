@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="receipt_a5_landscape" model="report.paperformat">
+        <field name="name">A5 Landscape Receipt</field>
+        <field name="format">A5</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">5</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_spacing">10</field>
+        <field name="dpi">110</field>
+    </record>
+
+    <record id="action_report_account_receipt_pdf" model="ir.actions.report">
+        <field name="name">In PDF Phiếu Thu</field>
+        <field name="model">account.receipt</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_account_receipt_export.receipt_pdf</field>
+        <field name="report_file">custom_account_receipt_export.receipt_pdf</field>
+        <field name="paperformat_id" ref="receipt_a5_landscape"/>
+        <field name="binding_model_id" ref="model_account_receipt"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'PhieuThu_' + (object.name or 'NoName')</field>
+    </record>
+
+    <template id="receipt_pdf">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.basic_layout">
+
+                    <style>
+                        .rt-page {
+                            font-family: "Times New Roman", Times, serif;
+                            color: #111;
+                            font-size: 13pt;
+                            line-height: 1.35;
+                            position: relative;
+                        }
+
+                        .rt-page table,
+                        .rt-page thead,
+                        .rt-page tbody,
+                        .rt-page tfoot,
+                        .rt-page tr,
+                        .rt-page td,
+                        .rt-page th {
+                            border: none !important;
+                            border-color: transparent !important;
+                            outline: none !important;
+                            box-shadow: none !important;
+                        }
+
+                        .rt-header {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 6px;
+                        }
+
+                        .rt-company {
+                            width: 68%;
+                            vertical-align: top;
+                            font-size: 11.5pt;
+                            line-height: 1.35;
+                        }
+
+                        .rt-company-name {
+                            font-weight: bold;
+                            text-transform: uppercase;
+                        }
+
+                        .rt-badge-wrap {
+                            width: 32%;
+                            vertical-align: top;
+                            text-align: right;
+                        }
+
+                        .rt-badge {
+                            display: inline-block;
+                            border: 1.2px solid #111 !important;
+                            padding: 7px 14px;
+                            min-width: 145px;
+                            text-align: center;
+                            font-size: 11.5pt;
+                            font-weight: bold;
+                            font-style: italic;
+                            border-radius: 2px;
+                        }
+
+                        .rt-no-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 6px;
+                            margin-bottom: 12px;
+                        }
+
+                        .rt-no-left {
+                            width: 26%;
+                            vertical-align: top;
+                        }
+
+                        .rt-no-center {
+                            width: 48%;
+                            text-align: center;
+                            vertical-align: top;
+                        }
+
+                        .rt-no-right {
+                            width: 26%;
+                            text-align: right;
+                            vertical-align: top;
+                        }
+
+                        .rt-title {
+                            text-align: center;
+                            margin: 0;
+                        }
+
+                        .rt-title h1 {
+                            margin: 0;
+                            font-size: 24pt;
+                            line-height: 1.1;
+                            font-weight: bold;
+                            letter-spacing: 1px;
+                        }
+
+                        .rt-title .rt-date {
+                            margin-top: 3px;
+                            font-size: 13pt;
+                            font-style: italic;
+                            font-weight: bold;
+                        }
+
+                        .rt-number-box {
+                            display: inline-block;
+                            width: 170px;
+                            text-align: left;
+                            font-size: 12.5pt;
+                            line-height: 1.8;
+                        }
+
+                        .rt-info {
+                            width: 100%;
+                            border-collapse: collapse;
+                            table-layout: fixed;
+                            margin-top: 4px;
+                            font-size: 13pt;
+                        }
+
+                        .rt-info tr {
+                            height: 28px;
+                        }
+
+                        .rt-info td {
+                            padding: 2px 0 !important;
+                            vertical-align: middle !important;
+                            line-height: 1.25;
+                        }
+
+                        .rt-label {
+                            width: 185px;
+                            white-space: nowrap;
+                            padding-right: 8px !important;
+                            vertical-align: middle !important;
+                        }
+
+                        .rt-value {
+                            border-bottom: 1px dotted #333 !important;
+                            padding-left: 6px !important;
+                            vertical-align: middle !important;
+                            line-height: 1.25;
+                            word-break: normal;
+                            overflow-wrap: break-word;
+                        }
+
+                        .rt-value span {
+                            display: inline-block;
+                            vertical-align: middle;
+                        }
+
+                        .rt-value-bold {
+                            font-weight: bold;
+                        }
+
+                        .rt-footer-date {
+                            width: 100%;
+                            text-align: right;
+                            margin-top: 12px;
+                            padding-right: 40px;
+                            font-style: italic;
+                            font-size: 13pt;
+                        }
+
+                        .rt-sign-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 10px;
+                            text-align: center;
+                            font-size: 12.5pt;
+                        }
+
+                        .rt-sign-table td {
+                            width: 25%;
+                            vertical-align: top;
+                            padding: 1px 4px;
+                        }
+
+                        .rt-sign-title {
+                            font-weight: bold;
+                        }
+
+                        .rt-sign-note {
+                            font-size: 11.5pt;
+                            font-style: italic;
+                        }
+
+                        .rt-sign-space td {
+                            height: 64px;
+                        }
+
+                        .rt-received {
+                            margin-top: 4px;
+                            font-size: 13pt;
+                        }
+
+                        .rt-received-line {
+                            display: inline-block;
+                            min-width: 70%;
+                            border-bottom: 1px dotted #333 !important;
+                            padding-left: 6px;
+                            font-style: italic;
+                        }
+
+                        .rt-empty-space {
+                            display: inline-block;
+                            min-height: 18px;
+                        }
+                    </style>
+
+                    <div class="page rt-page">
+
+                        <!-- Header công ty -->
+                        <table class="rt-header">
+                            <tr>
+                                <td class="rt-company">
+                                    <div class="rt-company-name">
+                                        <span t-field="company.name"/>
+                                    </div>
+
+                                    <div>
+                                        <span t-field="company.street"/>
+                                    </div>
+
+                                    <div>
+                                        MST:
+                                        <span t-field="company.vat"/>
+                                    </div>
+                                </td>
+
+                                <td class="rt-badge-wrap">
+                                    <div class="rt-badge">
+                                        LƯU HÀNH NỘI BỘ
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Tiêu đề + Quyển số / Số phiếu -->
+                        <table class="rt-no-table">
+                            <tr>
+                                <td class="rt-no-left">
+                                    &#160;
+                                </td>
+
+                                <td class="rt-no-center">
+                                    <div class="rt-title">
+                                        <h1>PHIẾU THU</h1>
+                                        <div class="rt-date">
+                                            <span t-esc="format_vn_date(o.date)"/>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td class="rt-no-right">
+                                    <div class="rt-number-box">
+                                        <div>Quyển số: .....</div>
+                                        <div>
+                                            Số:
+                                            <span t-esc="o.name or ''"/>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Nội dung phiếu -->
+                        <table class="rt-info">
+                            <tr>
+                                <td class="rt-label">Họ tên người nộp tiền:</td>
+                                <td class="rt-value">
+                                    <span t-esc="get_payer_name(o)"/>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="rt-label">Địa chỉ:</td>
+                                <td class="rt-value">
+                                    <span t-esc="get_payer_address(o)"/>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="rt-label">Lý do thu:</td>
+                                <td class="rt-value">
+                                    <span t-esc="o.note or ''"/>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="rt-label">Thuộc dự án:</td>
+                                <td class="rt-value">
+                                    <span t-esc="o.project_id.name if o.project_id else ''"/>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="rt-label">Số tiền:</td>
+                                <td class="rt-value rt-value-bold">
+                                    <span t-esc="format_money(o.amount)"/> đ
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="rt-label">Số tiền bằng chữ:</td>
+                                <td class="rt-value">
+                                    <span t-esc="o.amount_in_words if 'amount_in_words' in o._fields else ''"/>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="rt-label">Chứng từ kèm theo:</td>
+                                <td class="rt-value">
+                                    <span class="rt-empty-space">&#160;</span>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Ngày ký -->
+                        <div class="rt-footer-date">
+                            <span t-esc="format_vn_date(o.date)"/>
+                        </div>
+
+                        <!-- Chữ ký -->
+                        <table class="rt-sign-table">
+                            <tr>
+                                <td class="rt-sign-title">Người nộp tiền</td>
+                                <td class="rt-sign-title">Kế toán tổng hợp</td>
+                                <td class="rt-sign-title">Thủ quỹ</td>
+                                <td class="rt-sign-title">Giám đốc</td>
+                            </tr>
+
+                            <tr>
+                                <td class="rt-sign-note">(Ký, họ tên)</td>
+                                <td class="rt-sign-note">(Ký, họ tên)</td>
+                                <td class="rt-sign-note">(Ký, họ tên)</td>
+                                <td class="rt-sign-note">(Ký, họ tên, đóng dấu)</td>
+                            </tr>
+
+                            <tr class="rt-sign-space">
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+
+                            <tr class="rt-sign-space">
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </table>
+
+                        <!-- Đã thu đủ tiền -->
+                        <div class="rt-received">
+                            Đã thu đủ tiền:
+                            <span class="rt-received-line">
+                                <span t-esc="o.amount_in_words if 'amount_in_words' in o._fields else ''"/>
+                            </span>
+                        </div>
+
+                    </div>
+
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>
