@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_mailbox_signature_tree" model="ir.ui.view">
+        <field name="name">mailbox.signature.tree</field>
+        <field name="model">mailbox.signature</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="user_id" invisible="1"/>
+                <field name="is_default" string="Mặc định"/>
+                <field name="active" string="Hoạt động"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_mailbox_signature_form" model="ir.ui.view">
+        <field name="name">mailbox.signature.form</field>
+        <field name="model">mailbox.signature</field>
+        <field name="arch" type="xml">
+            <form string="Mailbox Signature">
+                <sheet>
+                    <group col="2">
+                        <group>
+                            <field name="name" string="Tên chữ ký"/>
+                            <field name="user_id" invisible="1"/>
+                            <field name="sequence" invisible="1"/>
+                            <field name="is_default" string="Mặc định"/>
+                            <field name="active" string="Hoạt động"/>
+                        </group>
+                    </group>
+
+                    <group string="Nội dung chữ ký">
+                        <field name="signature_html" string="Chữ ký" widget="html" options="{'style-inline': true}"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_mailbox_signature_search" model="ir.ui.view">
+        <field name="name">mailbox.signature.search</field>
+        <field name="model">mailbox.signature</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="user_id"/>
+                <filter string="Default" name="default_only" domain="[('is_default', '=', True)]"/>
+                <filter string="Active" name="active_only" domain="[('active', '=', True)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="User" name="group_user" context="{'group_by': 'user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_mailbox_signature" model="ir.actions.act_window">
+        <field name="name">Signatures</field>
+        <field name="res_model">mailbox.signature</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem
+        id="menu_mailbox_signature"
+        name="Signatures"
+        parent="mailbox_client.menu_mailbox_root_outlook"
+        action="action_mailbox_signature"
+        sequence="30"/>
+
+</odoo>

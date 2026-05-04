@@ -24,8 +24,8 @@ class SaleOrderLine(models.Model):
     @api.depends('product_id', 'name', 'product_display_name')
     def _compute_display_name(self):
         for line in self:
-            if line.product_id:
-                line.display_name = line.product_display_name
+            if line.product_id :
+                line.display_name = line.product_display_name or line.product_id.name or line.name
             else:
                 line.display_name = line.product_id.name or line.name
     @api.onchange('product_id')

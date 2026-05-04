@@ -25,6 +25,7 @@ Mailbox Client
         "data/mailbox_cron.xml",
         "views/mailbox_client_action.xml",
         "views/mailbox_account_views.xml",
+        "views/mailbox_signature_views.xml",
         # "views/mailbox_folder_views.xml",
         # "views/mailbox_message_views.xml",
         # "views/mailbox_compose_wizard_views.xml",

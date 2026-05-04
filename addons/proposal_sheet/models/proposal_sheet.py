@@ -313,6 +313,12 @@ class ProposalSheet(models.Model):
                 partner_ids.extend(user.partner_id.id for user in accounting_users if user.partner_id.id not in partner_ids)
         return partner_ids
 
+    def _get_stock_check_lines(self):
+        self.ensure_one()
+        if self.type == 'material':
+            return self.material_line_ids
+        return self.env['proposal.material.line']
+
     def _check_can_apply_actual_stock(self):
         self.ensure_one()
 
@@ -330,6 +336,7 @@ class ProposalSheet(models.Model):
 
         if not self.material_line_ids:
             raise UserError("Phiếu chưa có dòng vật tư để xác nhận tồn thực tế.")
+
     def action_apply_actual_stock(self):
         for rec in self:
             rec._check_can_apply_actual_stock()
@@ -437,7 +444,11 @@ class ProposalSheet(models.Model):
             raise UserError(_("Chỉ phiếu ở trạng thái nháp mới được gửi duyệt."))
 
         if self.type == 'material' and not self.stock_check_done:
-            raise ValidationError(_("Phiếu vật tư phải được xác nhận tồn thực tế trước khi gửi duyệt."))
+            has_stock_diff = any(
+                bool(line.count_diff_qty) for line in self.material_line_ids
+            )
+            if has_stock_diff:
+                raise ValidationError(_("Phiếu vật tư phải được xác nhận tồn thực tế trước khi gửi duyệt."))
         accounting_group = self.env.ref('account.group_account_manager', raise_if_not_found=False)
         is_accounting_user = accounting_group and accounting_group in self.env.user.groups_id
 
@@ -732,10 +743,12 @@ class ProposalSheet(models.Model):
             is_manager = rec.manager_id.user_id.id == current_user.id if rec.manager_id and rec.manager_id.user_id else False
             is_boss = rec.director_user_id.id == current_user.id if rec.director_user_id else False
 
+            stock_check_lines = rec._get_stock_check_lines()
+            has_stock_diff = any(bool(line.count_diff_qty) for line in stock_check_lines)
             can_stock_check = (
-                rec.type == 'material'
-                and rec.state == 'draft'
+                rec.state == 'draft'
                 and is_creator
+                and has_stock_diff
             )
 
             rec.show_button_submit = rec.state == 'draft' and is_creator
