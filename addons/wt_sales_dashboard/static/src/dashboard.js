@@ -37,6 +37,7 @@ class SalesDashboard extends Component {
             recent_orders: [],
             filters: {
                 period_type: "custom", // custom | month | quarter | year
+                customer_type: "", // "" | online | direct
                 year: String(today.getFullYear()),
                 month: String(today.getMonth() + 1).padStart(2, "0"),
                 quarter: String(Math.floor(today.getMonth() / 3) + 1),
@@ -162,6 +163,7 @@ class SalesDashboard extends Component {
             if (!saved) return;
 
             this.state.filters.period_type = saved.period_type || this.state.filters.period_type;
+            this.state.filters.customer_type = saved.customer_type || this.state.filters.customer_type;
             this.state.filters.year = saved.year || this.state.filters.year;
             this.state.filters.month = saved.month || this.state.filters.month;
             this.state.filters.quarter = saved.quarter || this.state.filters.quarter;
@@ -189,6 +191,10 @@ class SalesDashboard extends Component {
     // =========================
     // Events filter
     // =========================
+    onCustomerTypeChange(ev) {
+        this.state.filters.customer_type = ev.target.value;
+    }
+
     onPeriodTypeChange(ev) {
         this.state.filters.period_type = ev.target.value;
         this._syncDatesFromPreset();
@@ -223,15 +229,19 @@ class SalesDashboard extends Component {
     // Data
     // =========================
     async fetchData() {
-        const { date_from, date_to } = this.state.filters;
+        const { date_from, date_to, customer_type } = this.state.filters;
+
         try {
             const data = await this.orm.call("wt.sales.dashboard", "get_dashboard_data", [], {
                 date_from,
                 date_to,
+                customer_type,
             });
+
             this.state.kpis = data.kpis || this.state.kpis;
             this.state.charts = data.charts || this.state.charts;
             this.state.recent_orders = data.recent_orders || [];
+
             this.renderCharts();
         } catch (e) {
             console.error(e);
@@ -270,7 +280,18 @@ class SalesDashboard extends Component {
             this._charts.cat = null;
         }
     }
+    _getCustomerTypeDomain() {
+        const customerType = this.state.filters.customer_type;
+        return customerType ? [["customer_type", "=", customerType]] : [];
+    }
 
+    _getDateDomain(fieldName = "date_order") {
+        const { date_from, date_to } = this.state.filters;
+        return [
+            [fieldName, ">=", date_from],
+            [fieldName, "<=", date_to],
+        ];
+    }
     renderCharts() {
         this._destroyCharts();
         const { date_from, date_to } = this.state.filters;
@@ -483,17 +504,18 @@ class SalesDashboard extends Component {
     }
 
     openTotalSales() {
-        const { date_from, date_to } = this.state.filters;
+        const domain = [
+            ...this._getDateDomain("date_order"),
+            ["state", "in", ["sale", "done"]],
+            ...this._getCustomerTypeDomain(),
+        ];
+
         this.action.doAction({
             type: "ir.actions.act_window",
             name: _t("Đơn bán theo khoảng ngày"),
             res_model: "sale.order",
             views: [[false, "list"], [false, "form"]],
-            domain: [
-                ["date_order", ">=", date_from],
-                ["date_order", "<=", date_to],
-                ["state", "in", ["sale", "done"]],
-            ],
+            domain,
             target: "current",
         });
     }
@@ -503,17 +525,18 @@ class SalesDashboard extends Component {
     }
 
     openTotalAmountQuotations() {
-        const { date_from, date_to } = this.state.filters;
+        const domain = [
+            ...this._getDateDomain("date_order"),
+            ["state", "in", ["draft", "sent"]],
+            ...this._getCustomerTypeDomain(),
+        ];
+
         this.action.doAction({
             type: "ir.actions.act_window",
             name: _t("Báo giá theo khoảng ngày"),
             res_model: "sale.order",
             views: [[false, "list"], [false, "form"]],
-            domain: [
-                ["date_order", ">=", date_from],
-                ["date_order", "<=", date_to],
-                ["state", "in", ["sent", "sale"]],
-            ],
+            domain,
             target: "current",
         });
     }

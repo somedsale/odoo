@@ -87,26 +87,25 @@
                             <field name="other_estimate_item" invisible="estimate_choice != 'other'" required="estimate_choice == 'other'" string="Khác"/>
                             <!-- <field name="cost_estimate_line_id" invisible="estimate_choice == 'other'" options="{'no_create': True}" domain="[('project_id', '=', project_id)]" string="Hạng mục dự toán duy nhất" readonly="state != 'draft'"/>
                             <field name="other_estimate_item" invisible="estimate_choice != 'other'" required="estimate_choice == 'other'" string="abc"/> -->
-                            <field name="project_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft' " force_save="context.get('from_task', False)" context="{'tree_view_ref': 'proposal_sheet.view_project_project_tree_popup_simple'}"/>
                             <field name="contract_num" string="Số hợp đồng" invisible="not project_id"/>
-                            <field name="stock_location_id" options="{'no_create': True,'no_open':True}" invisible="type != 'material'" readonly="state != 'draft'"/>
-                            <field name="stock_checked_by" widget="many2one_avatar_user" options="{'no_open':True}" invisible="type != 'material' or not stock_check_done" readonly="1"/>
-                            <field name="stock_checked_date" invisible="type != 'material' or not stock_check_done" readonly="1"/>
+                            <field name="stock_location_id" options="{'no_create': True,'no_open':True}" invisible="1" readonly="state != 'draft'"/>
+
                             <field name="cost_additional_expense_line_id" string="Hạng mục dự toán chi phí gián tiếp" domain="[('project_id', '=', project_id)]"/>
                             <!-- <field name="task_id" options="{'no_create': True,'no_open':True}" readonly="context.get('from_task', False) or state !='draft'" force_save="context.get('from_task', False)" domain="[('project_id', '=', project_id)]" invisible="type=='expense'"/> -->
-                            <field name="requested_by" widget="many2one_avatar_user" readonly="1" options="{'no_open':True}"/>
                             <field name="take_note" placeholder="Ghi chú về phiếu đề xuất" readonly="state != 'draft'"/>
                             <field name="amount_total" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                             <field name="amount_total_taxes" string="Tổng (sau thuế)" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                             <field name="currency_id" invisible="1"/>
                         </group>
                         <group>
+                            <field name="requested_by" widget="many2one_avatar_user" readonly="1" options="{'no_open':True}"/>
                             <field name="department_id" options="{'no_create': True,'no_open':True}" readonly="state !='draft'"/>
                             <field name="manager_id" widget="many2one_avatar_user" options="{'no_create': True,'no_open':True}" readonly="1"/>
                             <field name="type" widget="selection" readonly="is_type_readonly"/>
                             <field name="create_date" string="Ngày Tạo" readonly="1"/>
                             <field name="date_proposal" />
-
+                            <field name="stock_checked_by" widget="many2one_avatar_user" options="{'no_open':True}" invisible="type != 'material' or not stock_check_done" readonly="1"/>
+                            <field name="stock_checked_date" invisible="type != 'material' or not stock_check_done" readonly="1"/>
                         </group>
                     </group>
                     <notebook>

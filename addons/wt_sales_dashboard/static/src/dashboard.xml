@@ -19,7 +19,14 @@
                             <option value="year">Theo năm</option>
                         </select>
                     </div>
-
+                    <div class="wt-filter-item">
+                        <label>Phân loại khách hàng</label>
+                        <select class="wt-select" t-att-value="state.filters.customer_type" t-on-change="onCustomerTypeChange">
+                            <option value="">Tất cả</option>
+                            <option value="online">Online</option>
+                            <option value="direct">Trực tiếp</option>
+                        </select>
+                    </div>
                     <t t-if="state.filters.period_type === 'month' or state.filters.period_type === 'quarter' or state.filters.period_type === 'year'">
                         <div class="wt-filter-item">
                             <label>Năm</label>

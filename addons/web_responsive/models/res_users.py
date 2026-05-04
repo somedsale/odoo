@@ -30,6 +30,7 @@ class ResUsers(models.Model):
         compute="_compute_redirect_home",
         store=True,
         readonly=False,
+        default=True,
     )
 
     @api.depends("action_id")

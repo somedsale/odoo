@@ -11,5 +11,15 @@
             <field name="category_id" ref="base.module_category_tools"/>
             <field name="implied_ids" eval="[(4, ref('mailbox_client.group_mailbox_user'))]"/>
         </record>
+            <record id="mailbox_signature_rule_user_own_only" model="ir.rule">
+        <field name="name">Mailbox Signature: own only</field>
+        <field name="model_id" ref="model_mailbox_signature"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
     </data>
 </odoo>

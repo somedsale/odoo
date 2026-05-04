@@ -1,11 +1,11 @@
-from datetime import datetime
+# -*- coding: utf-8 -*-
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
+
 
 class ProposalSheet(models.Model):
     _inherit = "proposal.sheet"
 
-    # ĐỔI: từ One2many -> Many2many vì 1 PO giờ có thể thuộc nhiều phiếu đề xuất
     purchase_order_ids = fields.Many2many(
         "purchase.order",
         "proposal_sheet_purchase_rel",
@@ -13,8 +13,10 @@ class ProposalSheet(models.Model):
         "purchase_id",
         string="Đơn mua hàng",
     )
+
     purchase_order_count = fields.Integer(
-        string="Số PO", compute="_compute_purchase_order_count"
+        string="Số PO",
+        compute="_compute_purchase_order_count",
     )
 
     def _compute_purchase_order_count(self):
@@ -22,13 +24,7 @@ class ProposalSheet(models.Model):
             rec.purchase_order_count = len(rec.purchase_order_ids)
 
     def action_view_purchase_orders(self):
-        """
-        Mở danh sách PO liên quan.
-        - Nếu chọn nhiều phiếu đề xuất: hiện tất cả PO của tất cả phiếu.
-        - Nếu chỉ có đúng 1 PO -> mở form luôn.
-        """
         domain = [("proposal_sheet_ids", "in", self.ids)]
-        # gom tất cả các PO có liên quan
         pos = self.env["purchase.order"].search(domain)
 
         action = {
@@ -38,54 +34,168 @@ class ProposalSheet(models.Model):
             "view_mode": "tree,form",
             "domain": [("id", "in", pos.ids)],
             "context": {
-                # context mặc định khi tạo PO thủ công từ đây
                 "default_proposal_sheet_ids": [(6, 0, self.ids)],
             },
             "target": "current",
         }
+
         if len(pos) == 1:
             action.update({
                 "view_mode": "form",
                 "res_id": pos.id,
             })
+
         return action
 
+    def _get_purchase_source_lines(self):
+        self.ensure_one()
+
+        if self.type == "material":
+            return self.material_line_ids
+
+        if self.type == "commercial_purchase":
+            if "commercial_material_line_ids" in self._fields:
+                return self.commercial_material_line_ids
+
+            return self.env["proposal.material.line"].search([
+                ("sheet_id", "=", self.id),
+                ("type", "=", "commercial_purchase"),
+            ])
+
+        return self.env["proposal.material.line"]
+
+    def _get_purchase_line_label(self, line):
+        return (
+            (line.product_id and line.product_id.display_name)
+            or (getattr(line, "material_id", False) and line.material_id.display_name)
+            or (line.description or "/")
+        )
+
+    def _get_purchase_line_product(self, line):
+        product = (
+            line.product_id
+            or (
+                getattr(line, "material_id", False)
+                and getattr(line.material_id, "product_id", False)
+            )
+            or False
+        )
+
+        if product:
+            return product
+
+        material = getattr(line, "material_id", False)
+        proposal_uom = line.unit
+
+        if material and proposal_uom:
+            product = self.env["product.product"].create({
+                "name": material.display_name,
+                "type": "service",
+                "uom_id": proposal_uom.id,
+                "uom_po_id": proposal_uom.id,
+                "purchase_ok": True,
+                "sale_ok": False,
+            })
+            return product
+
+        return False
+
+    def _prepare_purchase_order_line_name(self, line, product):
+        """
+        Diễn giải dòng PO.
+
+        Mua hàng thương mại:
+        - Chỉ lấy diễn giải từ sale.order.line.name
+        - Không nối ghi chú phiếu đề xuất vào diễn giải
+
+        Vật tư:
+        - Giữ logic cũ: description nếu có, không thì product/material
+        """
+        if line.sheet_id.type == "commercial_purchase":
+            sale_line = getattr(line, "sale_order_line_id", False)
+            return (
+                sale_line.name
+                if sale_line and sale_line.name
+                else product.display_name
+                or "/"
+            )
+
+        return (
+            line.description
+            or product.display_name
+            or (
+                getattr(line, "material_id", False)
+                and line.material_id.display_name
+            )
+            or "/"
+        )
+
+    def _prepare_purchase_order_notes(self, sheets):
+        """
+        Đưa ghi chú chung của Phiếu đề xuất qua Ghi chú/Terms của Đơn mua.
+
+        Field ghi chú phiếu đề xuất hiện tại: take_note
+        """
+        note_parts = []
+
+        for sheet in sheets:
+            note = getattr(sheet, "take_note", False)
+            if note:
+                note_parts.append(
+                    "Phiếu đề xuất %s:\n%s" % (
+                        sheet.name or "/",
+                        note,
+                    )
+                )
+
+        if not note_parts:
+            return False
+
+        return "Ghi chú từ phiếu đề xuất:\n\n%s" % "\n\n".join(note_parts)
+
+    def _ensure_product_uom_matches_proposal_uom(self, product, proposal_uom):
+        if not product or not proposal_uom:
+            return
+
+        product_tmpl = product.product_tmpl_id
+        product_uom = product.uom_id
+        product_po_uom = product.uom_po_id
+
+        need_update_uom = (
+            not product_uom
+            or product_uom.id != proposal_uom.id
+            or not product_po_uom
+            or product_po_uom.id != proposal_uom.id
+        )
+
+        if need_update_uom:
+            product_tmpl.write({
+                "uom_id": proposal_uom.id,
+                "uom_po_id": proposal_uom.id,
+            })
+
+            product.invalidate_recordset(["uom_id", "uom_po_id"])
+            product_tmpl.invalidate_recordset(["uom_id", "uom_po_id"])
 
     def action_create_purchase_orders(self):
-        """
-        Multi: tạo PO gộp từ nhiều Phiếu Đề Xuất.
-
-        Điều kiện được phép:
-        - Tất cả phiếu đều type = 'material'
-        - Tất cả phiếu đều state thuộc nhóm cho phép
-        - Tất cả phiếu cùng project
-        - Tất cả phiếu cùng currency
-
-        Kết quả:
-        - Gộp theo vendor -> mỗi vendor 1 PO
-        - Mỗi PO chỉ link những phiếu nào thực sự có dòng mua cho vendor đó
-
-        Logic dòng:
-        - Nếu line.product_id có giá trị -> dùng product_id
-        - Ngược lại, dùng material_id.product_id
-        - Nếu cả 2 đều không có -> tạo product tạm từ material_id
-        - Đơn vị tính trên PO lấy theo đơn vị trên Phiếu Đề Xuất
-        - Nếu đơn vị sản phẩm khác đơn vị trên Phiếu Đề Xuất thì tự động cập nhật sản phẩm theo đơn vị trên Phiếu Đề Xuất
-        """
         if not self:
             raise UserError(_("Không có phiếu đề xuất nào được chọn."))
 
-        # 1. Kiểm tra loại phiếu
-        bad_type = self.filtered(lambda s: s.type != "material")
-        if bad_type:
-            raise ValidationError(_("Chỉ tạo Đơn mua cho Phiếu Đề Xuất loại 'Vật Tư'."))
+        allowed_types = ("material", "commercial_purchase")
 
-        # 2. Kiểm tra trạng thái phiếu
+        bad_type = self.filtered(lambda s: s.type not in allowed_types)
+        if bad_type:
+            raise ValidationError(_(
+                "Chỉ tạo Đơn mua cho Phiếu Đề Xuất loại "
+                "'Vật Tư' hoặc 'Mua hàng thương mại'."
+            ))
+
         allowed_states = [
             "reviewed_accounting",
             "approved",
             "waiting_accounting_paid",
         ]
+
         bad_state = self.filtered(lambda s: s.state not in allowed_states)
         if bad_state:
             raise ValidationError(_(
@@ -93,150 +203,108 @@ class ProposalSheet(models.Model):
                 "'KTTH Đang kiểm tra', 'Sếp Đang duyệt', hoặc 'Chờ KT xử lý'."
             ))
 
-        # 3. Kiểm tra cùng dự án
         projects = self.mapped("project_id")
         if len(projects) > 1:
             raise ValidationError(_("Các Phiếu Đề Xuất phải thuộc cùng một Dự án."))
+
         common_project = projects[0] if projects else False
 
-        # Nếu tất cả cùng một task -> gán task, nếu khác nhau -> bỏ trống
         tasks = self.mapped("task_id")
         common_task = tasks[0] if len(tasks) == 1 else False
 
-        # 4. Kiểm tra cùng loại tiền tệ
         currencies = self.mapped("currency_id")
         if len(currencies) > 1:
             raise ValidationError(_("Các Phiếu Đề Xuất phải cùng loại tiền tệ."))
+
         common_currency = currencies[0] if currencies else self.env.company.currency_id
 
-        # 5. Gom theo vendor
         vendor_groups = {}
+
         for sheet in self:
-            for line in sheet.material_line_ids:
+            source_lines = sheet._get_purchase_source_lines()
+
+            if not source_lines:
+                if sheet.type == "commercial_purchase":
+                    raise ValidationError(
+                        _("Phiếu %s chưa có dòng mua hàng thương mại để tạo Đơn mua hàng.")
+                        % sheet.name
+                    )
+                raise ValidationError(
+                    _("Phiếu %s chưa có dòng vật tư để tạo Đơn mua hàng.")
+                    % sheet.name
+                )
+
+            for line in source_lines:
                 qty = line.quantity or 0.0
                 if qty <= 0:
                     continue
 
+                label = sheet._get_purchase_line_label(line)
+
                 if not line.vendor_id:
-                    label = (
-                        (line.product_id and line.product_id.display_name)
-                        or (line.material_id and line.material_id.display_name)
-                        or (line.description or "/")
-                    )
                     raise ValidationError(
-                        _("Dòng vật tư '%s' trong phiếu %s chưa có Nhà cung cấp.")
+                        _("Dòng '%s' trong phiếu %s chưa có Nhà cung cấp.")
                         % (label, sheet.name)
                     )
 
                 if not line.unit:
-                    label = (
-                        (line.product_id and line.product_id.display_name)
-                        or (line.material_id and line.material_id.display_name)
-                        or (line.description or "/")
-                    )
                     raise ValidationError(
-                        _("Dòng vật tư '%s' trong phiếu %s chưa có đơn vị tính.")
+                        _("Dòng '%s' trong phiếu %s chưa có đơn vị tính.")
                         % (label, sheet.name)
                     )
 
                 vendor = line.vendor_id
-                bucket = vendor_groups.setdefault(vendor, {"lines": [], "sheet_ids": set()})
+                bucket = vendor_groups.setdefault(vendor, {
+                    "lines": [],
+                    "sheet_ids": set(),
+                })
                 bucket["lines"].append(line)
                 bucket["sheet_ids"].add(sheet.id)
 
         if not vendor_groups:
-            raise ValidationError(_("Không có dòng vật tư hợp lệ để tạo Đơn mua hàng."))
+            raise ValidationError(_("Không có dòng hợp lệ để tạo Đơn mua hàng."))
 
         created_pos = self.env["purchase.order"]
         all_origin_names = ", ".join(self.mapped("name"))
 
-        # 6. Tạo PO cho từng vendor
         for vendor, data in vendor_groups.items():
             vendor_lines = data["lines"]
             sheets_for_vendor = self.browse(list(data["sheet_ids"]))
 
-            # Gộp line theo (product_id, uom_id, price_unit, name)
             consolidated = {}
 
-            for l in vendor_lines:
-                # --- Xác định product ---
-                product = (
-                    l.product_id
-                    or (l.material_id and getattr(l.material_id, "product_id", False))
-                    or False
-                )
+            for line in vendor_lines:
+                proposal_uom = line.unit
 
-                proposal_uom = l.unit
                 if not proposal_uom:
-                    label = (
-                        l.description
-                        or (l.product_id and l.product_id.display_name)
-                        or (l.material_id and l.material_id.display_name)
-                        or "/"
-                    )
+                    label = self._get_purchase_line_label(line)
                     raise ValidationError(
-                        _("Dòng vật tư '%s' chưa có đơn vị tính trên Phiếu Đề Xuất.") % label
+                        _("Dòng '%s' chưa có đơn vị tính trên Phiếu Đề Xuất.")
+                        % label
                     )
 
-                # Nếu chưa có product -> tạo product tạm theo đơn vị của phiếu đề xuất
-                if not product and l.material_id:
-                    product = self.env["product.product"].create({
-                        "name": l.material_id.display_name,
-                        "type": "service",
-                        "uom_id": proposal_uom.id,
-                        "uom_po_id": proposal_uom.id,
-                        "purchase_ok": True,
-                        "sale_ok": False,
-                    })
+                product = self._get_purchase_line_product(line)
 
                 if not product:
-                    label = l.description or "/"
+                    label = self._get_purchase_line_label(line)
                     raise ValidationError(
-                        _("Không xác định được Sản phẩm cho dòng vật tư '%s'.") % label
+                        _("Không xác định được Sản phẩm cho dòng '%s'.") % label
                     )
 
-                # --- Nếu đơn vị sản phẩm khác đơn vị phiếu đề xuất thì tự cập nhật sản phẩm ---
-                product_tmpl = product.product_tmpl_id
-                product_uom = product.uom_id
-                product_po_uom = product.uom_po_id
+                self._ensure_product_uom_matches_proposal_uom(product, proposal_uom)
 
-                need_update_uom = (
-                    not product_uom
-                    or product_uom.id != proposal_uom.id
-                    or not product_po_uom
-                    or product_po_uom.id != proposal_uom.id
-                )
-
-                if need_update_uom:
-                    # Cập nhật cả đơn vị gốc và đơn vị mua
-                    # theo đúng đơn vị trên phiếu đề xuất
-                    product_tmpl.write({
-                        "uom_id": proposal_uom.id,
-                        "uom_po_id": proposal_uom.id,
-                    })
-
-                    # refresh lại record sau khi write
-                    product.invalidate_recordset(["uom_id", "uom_po_id"])
-                    product_tmpl.invalidate_recordset(["uom_id", "uom_po_id"])
-
-                # --- Dùng đơn vị từ phiếu đề xuất ---
                 uom = proposal_uom
+                line_name = self._prepare_purchase_order_line_name(line, product)
+                unit_price = float(line.price_unit or 0.0)
+                qty = line.quantity or 0.0
 
-                # --- Thông tin dòng PO ---
-                line_name = (
-                    l.description
-                    or product.display_name
-                    or (l.material_id and l.material_id.display_name)
-                    or "/"
-                )
-                unit_price = float(l.price_unit or 0.0)
-                qty = l.quantity or 0.0
+                proposal_line_note = line.description or False
 
-                key = (product.id, uom.id, unit_price, line_name)
+                key = (product.id, uom.id, unit_price, line_name, proposal_line_note)
                 consolidated[key] = consolidated.get(key, 0.0) + qty
 
             order_lines_vals = []
-            for (product_id, uom_id, unit_price, line_name), qty_total in consolidated.items():
+            for (product_id, uom_id, unit_price, line_name, proposal_line_note), qty_total in consolidated.items():
                 order_lines_vals.append((0, 0, {
                     "name": line_name,
                     "product_id": product_id,
@@ -244,9 +312,11 @@ class ProposalSheet(models.Model):
                     "product_uom": uom_id,
                     "price_unit": unit_price,
                     "date_planned": fields.Datetime.now(),
+                    "proposal_line_note": proposal_line_note,
                 }))
 
             main_sheet = sheets_for_vendor[:1] or self[:1]
+            po_notes = self._prepare_purchase_order_notes(sheets_for_vendor)
 
             po_vals = {
                 "partner_id": vendor.id,
@@ -263,6 +333,9 @@ class ProposalSheet(models.Model):
                 "order_line": order_lines_vals,
             }
 
+            if po_notes:
+                po_vals["notes"] = po_notes
+
             po = self.env["purchase.order"].create(po_vals)
             created_pos |= po
 
@@ -272,17 +345,17 @@ class ProposalSheet(models.Model):
                     % (po.name, vendor.display_name, sheet.name)
                 )
 
-        # 7. Sau khi tạo PO: nếu có hàm đẩy stage task thì gọi
         for sheet in self:
             if hasattr(sheet, "_push_task_to_purchase_stage"):
                 sheet._push_task_to_purchase_stage()
 
-        # 8. Trả action mở danh sách PO vừa tạo
         action = self.env.ref("purchase.purchase_form_action").sudo().read()[0]
         action["domain"] = [("id", "in", created_pos.ids)]
+
         if len(created_pos) == 1:
             action.update({
                 "view_mode": "form",
                 "res_id": created_pos.id,
             })
+
         return action

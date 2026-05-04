@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_proposal_sheet_form_inherit_commercial_purchase" model="ir.ui.view">
+        <field name="name">proposal.sheet.form.inherit.commercial.purchase</field>
+        <field name="model">proposal.sheet</field>
+        <field name="inherit_id" ref="proposal_sheet.view_proposal_sheet_form"/>
+
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='stock_check_done']" position="after">
+                <field name="sale_order_product_ids" invisible="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name='project_id']" position="after">
+                <field name="sale_order_id"
+                       string="Đơn bán"
+                       readonly="1"
+                       invisible="not project_id"/>
+            </xpath>
+
+            <xpath expr="//field[@name='stock_checked_by']" position="attributes">
+                <attribute name="invisible">type not in ['material', 'commercial_purchase'] or not stock_check_done</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='stock_checked_date']" position="attributes">
+                <attribute name="invisible">type not in ['material', 'commercial_purchase'] or not stock_check_done</attribute>
+            </xpath>
+
+            <xpath expr="//button[@name='action_apply_actual_stock']" position="attributes">
+                <attribute name="invisible">not show_button_apply_actual_stock</attribute>
+                <attribute name="string">Người đề xuất xác nhận tồn</attribute>
+            </xpath>
+
+            <!-- <xpath expr="//header/button[@name='action_reset_stock_check']" position="after">
+                <button name="action_load_commercial_from_sale_order"
+                        type="object"
+                        string="Nạp từ đơn bán"
+                        class="btn-primary"
+                        invisible="state != 'draft' or type != 'commercial_purchase'"/>
+            </xpath> -->
+
+            <xpath expr="//field[@name='material_line_ids']/ancestor::page[1]" position="after">
+
+                <page name="commercial_purchase_page"
+                      string="Mua hàng thương mại"
+                      invisible="type != 'commercial_purchase'">
+
+                    <field name="commercial_material_line_ids"
+                           context="{'default_type': 'commercial_purchase'}"
+                           readonly="state != 'draft'"
+                           mode="list,form">
+
+                        <tree editable="bottom" default_order="id">
+                            <field name="sheet_id" column_invisible="1"/>
+                            <field name="type" column_invisible="1"/>
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="sale_order_id" column_invisible="1"/>
+                            <field name="allowed_product_ids" column_invisible="1"/>
+
+                            <field name="sale_order_line_id"
+                                   string="Sản phẩm"
+                                   domain="[('order_id', '=', parent.sale_order_id), ('display_type', '=', False)]"
+                                   options="{'no_create': True, 'no_open': True}"/>
+
+                            <!-- <field name="product_id"
+                                   string="Vật tư / hàng hóa"
+                                   domain="[('id', 'in', allowed_product_ids)]"
+                                   context="{
+                                       'default_detailed_type': 'product',
+                                       'default_purchase_ok': True,
+                                       'default_sale_ok': True
+                                   }"
+                                   options="{'no_create': True}"/> -->
+
+                            <!-- <field name="sale_qty"
+                                   string="SL báo giá"
+                                   readonly="1"/>
+
+                            <field name="sale_price_unit"
+                                   string="Giá bán"
+                                   readonly="1"
+                                   widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"/>
+
+                            <field name="sale_subtotal"
+                                   string="Thành tiền bán"
+                                   readonly="1"
+                                   widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"
+                                   sum="Tổng bán"/> -->
+
+                            <field name="stock_qty_on_hand"
+                                   string="Tồn thực tế"
+                                   readonly="1"/>
+
+                            <field name="actual_count_qty"
+                                   string="SL kiểm kê"/>
+
+                            <field name="count_diff_qty"
+                                   string="Chênh lệch"
+                                   readonly="1"/>
+
+                            <field name="last_counted_qty"
+                                   string="SL đã xác nhận"
+                                   readonly="1"
+                                   optional="hide"/>
+
+                            <field name="quantity"
+                                   string="Số lượng đề xuất"
+                                   required="1"/>
+
+                            <field name="unit"
+                                   string="ĐVT"/>
+
+                            <field name="price_unit"
+                                   string="Giá mua đề xuất"
+                                   required="1"
+                                   widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"/>
+
+                            <field name="price_total"
+                                   string="Tổng giá mua đề xuất"
+                                   readonly="1"
+                                   widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"
+                                   sum="Tổng mua"/>
+
+                            <field name="tax_id"
+                                   string="Thuế mua"/>
+
+                            <field name="price_unit_taxed"
+                                   string="Giá mua sau thuế"
+                                   readonly="1"
+                                   widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"
+                                   optional="show"/>
+
+                            <field name="price_total_taxed"
+                                   string="Thành tiền sau thuế"
+                                   readonly="1"
+                                   widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"
+                                   sum="Tổng sau thuế"
+                                   optional="show"/>
+
+                            <field name="vendor_id"
+                                   string="Nhà cung cấp"
+                                   required="1"/>
+
+                            <field name="count_note"
+                                   string="Ghi chú kiểm kho"
+                                   optional="hide"/>
+
+                            <field name="description"
+                                   string="Ghi chú"
+                                   optional="show"/>
+                        </tree>
+
+                        <form string="Chi tiết mua hàng thương mại">
+                            <sheet>
+                                <group>
+                                    <group string="Nguồn từ đơn bán">
+                                        <field name="type" invisible="1"/>
+                                        <field name="currency_id" invisible="1"/>
+                                        <field name="sale_order_id" readonly="1"/>
+                                        <field name="allowed_product_ids" invisible="1"/>
+
+                                        <field name="sale_order_line_id"
+                                               string="Dòng đơn bán"
+                                               domain="[('order_id', '=', sale_order_id), ('display_type', '=', False)]"
+                                               options="{'no_create': True, 'no_open': True}"/>
+
+                                        <field name="product_id"
+                                               string="Vật tư / hàng hóa"
+                                               domain="[('id', 'in', allowed_product_ids)]"
+                                               context="{
+                                                   'default_detailed_type': 'product',
+                                                   'default_purchase_ok': True,
+                                                   'default_sale_ok': True
+                                               }"
+                                               options="{'no_create': True}"/>
+                                    </group>
+
+                                    <group string="Thông tin bán">
+                                        <field name="sale_qty"
+                                               string="SL báo giá"
+                                               readonly="1"/>
+
+                                        <field name="sale_price_unit"
+                                               string="Giá bán"
+                                               readonly="1"
+                                               widget="monetary"
+                                               options="{'currency_field': 'currency_id'}"/>
+
+                                        <field name="sale_subtotal"
+                                               string="Thành tiền bán"
+                                               readonly="1"
+                                               widget="monetary"
+                                               options="{'currency_field': 'currency_id'}"/>
+                                    </group>
+                                </group>
+
+                                <group>
+                                    <group string="Tồn kho thực tế">
+                                        <field name="stock_qty_on_hand"
+                                               string="Tồn hệ thống"
+                                               readonly="1"/>
+
+                                        <field name="actual_count_qty"
+                                               string="Tồn thực tế"/>
+
+                                        <field name="count_diff_qty"
+                                               string="Chênh lệch"
+                                               readonly="1"/>
+
+                                        <field name="last_counted_qty"
+                                               string="SL đã xác nhận"
+                                               readonly="1"/>
+
+                                        <field name="count_note"
+                                               string="Ghi chú kiểm kho"/>
+                                    </group>
+
+                                    <group string="Thông tin đề xuất">
+                                        <field name="quantity"
+                                               string="Số lượng đề xuất"/>
+
+                                        <field name="unit"
+                                               string="ĐVT"/>
+
+                                        <field name="vendor_id"
+                                               string="Nhà cung cấp"/>
+
+                                        <field name="description"
+                                               string="Ghi chú"
+                                               placeholder="Nhập ghi chú nếu có..."/>
+                                    </group>
+                                </group>
+
+                                <group>
+                                    <group string="Giá mua đề xuất">
+                                        <field name="price_unit"
+                                               string="Giá mua đề xuất"
+                                               widget="monetary"
+                                               options="{'currency_field': 'currency_id'}"/>
+
+                                        <field name="price_total"
+                                               string="Tổng giá mua đề xuất"
+                                               readonly="1"
+                                               widget="monetary"
+                                               options="{'currency_field': 'currency_id'}"/>
+
+                                        <field name="tax_id"
+                                               string="Thuế mua"/>
+
+                                        <field name="price_unit_taxed"
+                                               string="Giá mua sau thuế"
+                                               readonly="1"
+                                               widget="monetary"
+                                               options="{'currency_field': 'currency_id'}"/>
+
+                                        <field name="price_total_taxed"
+                                               string="Thành tiền sau thuế"
+                                               readonly="1"
+                                               widget="monetary"
+                                               options="{'currency_field': 'currency_id'}"/>
+                                    </group>
+                                </group>
+                            </sheet>
+                        </form>
+
+                    </field>
+                </page>
+
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

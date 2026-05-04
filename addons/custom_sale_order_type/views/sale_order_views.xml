@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_order_form_inherit_customer_type" model="ir.ui.view">
+        <field name="name">sale.order.form.customer.type</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="customer_type"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="view_quotation_tree_inherit_customer_type" model="ir.ui.view">
+        <field name="name">sale.order.tree.customer.type</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_quotation_tree"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="customer_type" optional="false"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="view_order_tree_inherit_customer_type" model="ir.ui.view">
+        <field name="name">sale.order.order.tree.customer.type</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_tree"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="customer_type" optional="false"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="view_sales_order_filter_inherit_customer_type" model="ir.ui.view">
+        <field name="name">sale.order.search.customer.type</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//filter[@name='my_sale_orders_filter']" position="after">
+                <filter
+                    string="Khách online"
+                    name="customer_type_online"
+                    domain="[('customer_type', '=', 'online')]"
+                />
+
+                <filter
+                    string="Khách trực tiếp"
+                    name="customer_type_direct"
+                    domain="[('customer_type', '=', 'direct')]"
+                />
+            </xpath>
+
+            <xpath expr="//group" position="inside">
+                <filter
+                    string="Loại khách hàng"
+                    name="group_by_customer_type"
+                    context="{'group_by': 'customer_type'}"
+                />
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

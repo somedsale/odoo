@@ -7,3 +7,4 @@ access_mailbox_message_user,access.mailbox.message.user,model_mailbox_message,,1
 access_mailbox_message_manager,access.mailbox.message.manager,model_mailbox_message,,1,1,1,1
 access_mailbox_compose_wizard_user,access.mailbox.compose.wizard.user,model_mailbox_compose_wizard,,1,1,1,1
 access_mailbox_compose_wizard_manager,access.mailbox.compose.wizard.manager,model_mailbox_compose_wizard,,1,1,1,1
+access_mailbox_signature_user,access.mailbox.signature.user,model_mailbox_signature,,1,1,1,1

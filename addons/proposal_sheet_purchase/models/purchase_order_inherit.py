@@ -845,7 +845,11 @@ class PurchaseOrderLine(models.Model):
 
     qty_remaining = fields.Float(
         string="Còn lại", compute="_compute_qty_remaining", store=True)
-
+    proposal_line_note = fields.Text(
+        string="Ghi chú phiếu đề xuất",
+        copy=False,
+        help="Ghi chú lấy từ dòng Phiếu đề xuất khi tạo Đơn mua hàng.",
+    )
     @api.depends('product_qty', 'qty_received', 'state')
     def _compute_goods_status(self):
         for line in self:
