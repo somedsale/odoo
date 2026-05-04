@@ -28,11 +28,15 @@ class MailboxApp extends Component {
             accounts: [],
             folders: [],
             messages: [],
+            signatures: [],
+            selectedSignatureId: false,
+
             selectedAccountId: false,
             selectedFolderId: false,
             selectedMessageId: false,
             selectedMessage: null,
             selectedMessageIds: [],
+
             search: "",
             unreadOnly: false,
             starredOnly: false,
@@ -344,6 +348,44 @@ class MailboxApp extends Component {
 
     get pageEnd() {
         return Math.min(this.state.currentPage * this.state.pageSize, this.state.totalCount || 0);
+    }
+
+    getSelectedSignature(signatureId = null) {
+        const targetId = signatureId || this.state.selectedSignatureId || false;
+        return this.state.signatures.find((s) => s.id === targetId) || null;
+    }
+
+    buildComposerInitialHtml(signatureId = null) {
+        const signature = this.getSelectedSignature(signatureId);
+        const signatureHtml = signature?.signature_html || "";
+        if (signatureHtml) {
+            return `<p><br></p><br/><div class="o_mailbox_signature" data-signature-id="${signature.id}">${signatureHtml}</div>`;
+        }
+        return "<p><br></p>";
+    }
+
+    replaceComposerSignature(newSignatureId) {
+        const editor = this.editorRef.el;
+        const currentHtml = editor ? editor.innerHTML : (this.state.composerData.editor_html || "");
+
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = currentHtml || "";
+
+        wrapper.querySelectorAll(".o_mailbox_signature").forEach((el) => el.remove());
+
+        const newSignature = this.getSelectedSignature(newSignatureId);
+        if (newSignature?.signature_html) {
+            const sigWrapper = document.createElement("div");
+            sigWrapper.className = "o_mailbox_signature";
+            sigWrapper.setAttribute("data-signature-id", newSignature.id);
+            sigWrapper.innerHTML = newSignature.signature_html;
+            wrapper.appendChild(document.createElement("br"));
+            wrapper.appendChild(sigWrapper);
+        }
+
+        const newHtml = wrapper.innerHTML || "<p><br></p>";
+        this.state.composerData.editor_html = newHtml;
+        this.editorInitialized = false;
     }
 
     // =========================================================
@@ -682,6 +724,17 @@ class MailboxApp extends Component {
         }
     }
 
+    onComposerAccountChange(ev) {
+        const newAccountId = Number(ev.target.value || 0) || false;
+        this.state.composerData.account_id = newAccountId;
+    }
+
+    onComposerSignatureChange(ev) {
+        const signatureId = Number(ev.target.value || 0) || false;
+        this.state.selectedSignatureId = signatureId;
+        this.replaceComposerSignature(signatureId);
+    }
+
     // =========================================================
     // Composer attachments + drag drop
     // =========================================================
@@ -890,8 +943,20 @@ class MailboxApp extends Component {
             [],
             ["name", "email_address", "last_fetch_date", "last_fetch_status", "user_id"]
         );
-
         this.state.accounts = accounts || [];
+
+        const signatures = await this.orm.searchRead(
+            "mailbox.signature",
+            [
+                ["user_id", "=", this.user.userId],
+                ["active", "=", true],
+            ],
+            ["name", "signature_html", "is_default", "sequence"],
+            { order: "is_default desc, sequence asc, id desc" }
+        );
+        this.state.signatures = signatures || [];
+        const defaultSignature = this.state.signatures.find((s) => s.is_default) || this.state.signatures[0] || null;
+        this.state.selectedSignatureId = defaultSignature ? defaultSignature.id : false;
 
         if (this.state.accounts.length) {
             this.state.selectedAccountId = this.state.accounts[0].id;
@@ -1164,7 +1229,7 @@ class MailboxApp extends Component {
             name: "",
             body_text: "",
             attachment_ids: [],
-            editor_html: "<p><br></p>",
+            editor_html: this.buildComposerInitialHtml(this.state.selectedSignatureId),
             quoted_html: "",
         };
     }
@@ -1194,7 +1259,7 @@ class MailboxApp extends Component {
             name: this.buildReplySubject(parent.name || ""),
             body_text: "",
             attachment_ids: [],
-            editor_html: "<p><br></p>",
+            editor_html: this.buildComposerInitialHtml(this.state.selectedSignatureId),
             quoted_html: this.buildReplyQuotedHtml(parent),
         };
     }
@@ -1224,7 +1289,7 @@ class MailboxApp extends Component {
             name: this.buildForwardSubject(parent.name || ""),
             body_text: "",
             attachment_ids: [],
-            editor_html: "<p><br></p>",
+            editor_html: this.buildComposerInitialHtml(this.state.selectedSignatureId),
             quoted_html: this.buildForwardQuotedHtml(parent),
         };
     }

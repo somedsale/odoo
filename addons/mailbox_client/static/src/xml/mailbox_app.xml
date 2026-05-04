@@ -4,7 +4,6 @@
     <t t-name="mailbox_client.MailboxApp">
         <div class="o_mailbox_app o_mailbox_hifi d-flex flex-column h-100">
 
-            <!-- TOP BAR -->
             <div class="o_mailbox_topbar d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
                 <div class="d-flex align-items-center gap-4 flex-grow-1 min-w-0">
                     <div class="o_mailbox_brand fw-bold">
@@ -50,10 +49,8 @@
                 </div>
             </div>
 
-            <!-- MAIN -->
             <div class="o_mailbox_body d-flex flex-grow-1 overflow-hidden">
 
-                <!-- SIDEBAR -->
                 <aside class="o_mailbox_sidebar border-end d-flex flex-column">
                     <div class="p-3">
                         <div class="o_mailbox_sidebar_card d-flex align-items-center gap-3 mb-4">
@@ -133,7 +130,7 @@
                         </nav>
                     </div>
 
-                    <!-- <div class="mt-auto p-3 border-top">
+                    <div class="mt-auto p-3 border-top">
                         <div class="o_mailbox_folder_item d-flex align-items-center gap-2">
                             <i class="fa fa-cog"/>
                             <span>Settings</span>
@@ -142,10 +139,9 @@
                             <i class="fa fa-question-circle-o"/>
                             <span>Help</span>
                         </div>
-                    </div> -->
+                    </div>
                 </aside>
 
-                <!-- LIST -->
                 <section class="o_mailbox_list border-end d-flex flex-column">
                     <div class="o_mailbox_list_header px-3 py-2 border-bottom d-flex align-items-center justify-content-between gap-2">
                         <div class="d-flex align-items-center gap-2 min-w-0">
@@ -320,7 +316,6 @@
                     </div>
                 </section>
 
-                <!-- DETAIL -->
                 <section class="o_mailbox_preview d-flex flex-column">
                     <t t-if="state.selectedMessage">
                         <div class="o_mailbox_preview_toolbar px-4 py-2 border-bottom d-flex align-items-center justify-content-between">
@@ -428,7 +423,6 @@
                 </section>
             </div>
 
-            <!-- COMPOSE MODAL -->
             <div t-if="state.composerOpen" class="o_mailbox_compose_overlay">
                 <div class="o_mailbox_compose_modal">
                     <div class="o_mailbox_compose_header">
@@ -449,6 +443,34 @@
                     </div>
 
                     <div class="o_mailbox_compose_fields">
+                        <div class="o_mailbox_compose_field_row">
+                            <label>From</label>
+                            <select class="o_mailbox_compose_input"
+                                    t-att-value="state.composerData.account_id || ''"
+                                    t-on-change="onComposerAccountChange">
+                                <option value="">Select account</option>
+                                <t t-foreach="state.accounts" t-as="acc" t-key="acc.id">
+                                    <option t-att-value="acc.id">
+                                        <t t-esc="acc.name"/> (<t t-esc="acc.email_address"/>)
+                                    </option>
+                                </t>
+                            </select>
+                        </div>
+
+                        <div class="o_mailbox_compose_field_row">
+                            <label>Signature</label>
+                            <select class="o_mailbox_compose_input"
+                                    t-att-value="state.selectedSignatureId || ''"
+                                    t-on-change="onComposerSignatureChange">
+                                <option value="">No signature</option>
+                                <t t-foreach="state.signatures" t-as="sig" t-key="sig.id">
+                                    <option t-att-value="sig.id">
+                                        <t t-esc="sig.name"/>
+                                    </option>
+                                </t>
+                            </select>
+                        </div>
+
                         <div class="o_mailbox_compose_field_row">
                             <label>To</label>
                             <input class="o_mailbox_compose_input"

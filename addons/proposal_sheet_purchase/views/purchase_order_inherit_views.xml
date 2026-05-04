@@ -190,6 +190,29 @@
         </xpath>
       </field>
     </record>
+    <!-- Hiện Ghi chú PĐX trong dòng sản phẩm của PO -->
+    <record id="purchase_order_form_inherit_proposal_line_note" model="ir.ui.view">
+        <field name="name">purchase.order.form.inherit.proposal.line.note</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Chèn sau Đơn giá trong order_line cho dễ thấy -->
+            <xpath expr="//field[@name='order_line']//tree//field[@name='price_unit']" position="after">
+                <field name="proposal_line_note"
+                       string="Ghi chú PĐX"
+                       optional="show"/>
+            </xpath>
+
+            <!-- Chèn trong form popup của dòng PO nếu mở chi tiết dòng -->
+            <xpath expr="//field[@name='order_line']//form//field[@name='price_unit']" position="after">
+                <field name="proposal_line_note"
+                       string="Ghi chú PĐX"
+                       placeholder="Ghi chú từ dòng phiếu đề xuất..."/>
+            </xpath>
+
+        </field>
+    </record>
 
   </data>
 </odoo>
