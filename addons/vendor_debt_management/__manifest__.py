@@ -29,7 +29,7 @@
         "vendor_debt_management/static/src/js/supplier_debt_real_report.js",
         "vendor_debt_management/static/src/xml/supplier_debt_real_report.xml",
         "vendor_debt_management/static/src/scss/supplier_debt_real_report.scss",
-                "vendor_debt_management/static/src/js/supplier_debt_owl_report.js",
+        "vendor_debt_management/static/src/js/supplier_debt_owl_report.js",
         "vendor_debt_management/static/src/xml/supplier_debt_owl_report.xml",
         "vendor_debt_management/static/src/scss/supplier_debt_owl_report.scss",
     ],
