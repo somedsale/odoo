@@ -24,10 +24,15 @@ class SaleOrderLine(models.Model):
     @api.depends('product_id', 'name', 'product_display_name')
     def _compute_display_name(self):
         for line in self:
-            if line.product_id :
-                line.display_name = line.product_display_name or line.product_id.name or line.name
+            if line.product_id:
+                line.display_name = (
+                    (line.product_display_name or '').strip()
+                    or line.product_id.name
+                    or line.name
+                    or ''
+                )
             else:
-                line.display_name = line.product_id.name or line.name
+                line.display_name = line.name or ''
     @api.onchange('product_id')
     def _onchange_product_custom_fields(self):
         if self.product_id:
