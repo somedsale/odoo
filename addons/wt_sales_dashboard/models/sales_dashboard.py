@@ -54,6 +54,7 @@ class SalesDashboard(models.AbstractModel):
 
         # =========================
         # KPI: Đơn bán / Doanh thu
+        # Chỉ tính đơn đã xác nhận
         # =========================
         sales_domain = base_domain + [
             ('state', 'in', ['sale', 'done']),
@@ -63,16 +64,18 @@ class SalesDashboard(models.AbstractModel):
 
         total_sales = sum(sales_orders.mapped('amount_total'))
         order_count = len(sales_orders)
+        avg_order_value = (total_sales / order_count) if order_count else 0.0
 
         # =========================
         # KPI: Báo giá
+        # Quan trọng:
+        # Báo giá phải bao gồm cả các báo giá đã chuyển thành đơn bán/doanh thu.
+        #
         # draft/sent = báo giá chưa xác nhận
-        # sale/done = đơn đã xác nhận
-        # Nếu muốn tổng giá trị báo giá bao gồm cả báo giá đã chuyển thành đơn,
-        # có thể đổi thành ['draft', 'sent', 'sale', 'done']
+        # sale/done = báo giá đã xác nhận, đã nằm trong doanh thu
         # =========================
         quotation_domain = base_domain + [
-            ('state', 'in', ['draft', 'sent']),
+            ('state', 'in', ['draft', 'sent', 'sale', 'done']),
         ]
 
         quotation_orders = SaleOrder.search(quotation_domain)
@@ -82,8 +85,8 @@ class SalesDashboard(models.AbstractModel):
 
         # =========================
         # Tỉ lệ chuyển đổi
-        # Theo giá trị: doanh thu / báo giá
-        # Theo số lượng: số đơn / số báo giá
+        # Theo giá trị: doanh thu / tổng báo giá
+        # Theo số lượng: số đơn đã chốt / tổng số báo giá
         # =========================
         close_rate_value = (total_sales / total_quotations * 100) if total_quotations else 0.0
         close_rate_count = (order_count / quotation_count * 100) if quotation_count else 0.0
@@ -102,14 +105,16 @@ class SalesDashboard(models.AbstractModel):
 
         # =========================
         # Hạng mục bán hàng
-        # Đây là tổng số category trong hệ thống, không phụ thuộc filter
+        # Tổng số category trong hệ thống, không phụ thuộc filter
         # =========================
         category_count = self.env['sale.order.category'].sudo().search_count([])
 
         # =========================
         # Chart: Sales by day
+        # Chỉ lấy doanh thu từ sale/done
         # =========================
         days = (dt_to.date() - dt_from.date()).days + 1
+
         sales_by_day = {
             (dt_from + timedelta(days=i)).strftime('%Y-%m-%d'): 0
             for i in range(days)
@@ -120,6 +125,7 @@ class SalesDashboard(models.AbstractModel):
                 continue
 
             key = o.date_order.strftime('%Y-%m-%d')
+
             if key in sales_by_day:
                 sales_by_day[key] += o.amount_total
 
@@ -128,6 +134,7 @@ class SalesDashboard(models.AbstractModel):
 
         # =========================
         # Chart: Top products
+        # Chỉ lấy sản phẩm từ đơn đã chốt sale/done
         # Dùng SQL nên phải cộng thêm điều kiện customer_type thủ công
         # =========================
         top_products_where = """
@@ -167,14 +174,17 @@ class SalesDashboard(models.AbstractModel):
             name_map.get(r['product_id'], 'Unknown')
             for r in tp_rows
         ]
+
         top_products_values = [
             r['total_qty']
             for r in tp_rows
         ]
+
         top_products_uoms = [
             uom_map.get(r['product_id'], '')
             for r in tp_rows
         ]
+
         top_products_ids = [
             r['product_id']
             for r in tp_rows
@@ -183,6 +193,7 @@ class SalesDashboard(models.AbstractModel):
         # =========================
         # Chart: Hạng mục bán hàng
         # Tính theo số đơn trong khoảng ngày + customer_type
+        # Bao gồm cả báo giá và đơn đã chốt
         # =========================
         all_orders_domain = base_domain + [
             ('state', 'in', ['draft', 'sent', 'sale', 'done']),
@@ -224,6 +235,7 @@ class SalesDashboard(models.AbstractModel):
 
         # =========================
         # Recent orders
+        # Chỉ hiện đơn bán gần đây sale/done
         # =========================
         recent_orders_domain = base_domain + [
             ('state', 'in', ['sale', 'done']),
@@ -240,6 +252,7 @@ class SalesDashboard(models.AbstractModel):
         state_selection = dict(SaleOrder._fields['state'].selection)
 
         customer_type_selection = {}
+
         if 'customer_type' in SaleOrder._fields:
             customer_type_selection = dict(SaleOrder._fields['customer_type'].selection)
 
@@ -262,7 +275,7 @@ class SalesDashboard(models.AbstractModel):
                 'state': state_selection.get(o.state, o.state),
                 'categories': cats,
 
-                # Trả thêm nếu sau này bạn muốn hiện ở bảng recent orders
+                # Trả thêm nếu sau này muốn hiện ở bảng recent orders
                 'customer_type': o.customer_type or '',
                 'customer_type_label': customer_type_selection.get(o.customer_type, ''),
             })
@@ -270,8 +283,10 @@ class SalesDashboard(models.AbstractModel):
         return {
             'kpis': {
                 'total_sales': total_sales,
+                'avg_order_value': avg_order_value,
                 'order_count': order_count,
 
+                # Tổng báo giá đã bao gồm draft/sent/sale/done
                 'total_quotations': total_quotations,
                 'quotation_count': quotation_count,
 
