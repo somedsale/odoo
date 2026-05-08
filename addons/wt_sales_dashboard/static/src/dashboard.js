@@ -36,8 +36,8 @@ class SalesDashboard extends Component {
             },
             recent_orders: [],
             filters: {
-                period_type: "custom", // custom | month | quarter | year
-                customer_type: "", // "" | online | direct
+                period_type: "custom",
+                customer_type: "",
                 year: String(today.getFullYear()),
                 month: String(today.getMonth() + 1).padStart(2, "0"),
                 quarter: String(Math.floor(today.getMonth() / 3) + 1),
@@ -57,6 +57,7 @@ class SalesDashboard extends Component {
         onWillStart(async () => {
             await this.fetchData();
         });
+
         onMounted(() => {
             this.renderCharts();
         });
@@ -102,13 +103,17 @@ class SalesDashboard extends Component {
 
     _syncDatesFromPreset(notify = false) {
         const { period_type, year, month, quarter } = this.state.filters;
+
         if (period_type === "custom") {
             return;
         }
+
         const range = this._getPeriodRange(period_type, year, month, quarter);
+
         if (range) {
             this.state.filters.date_from = range.date_from;
             this.state.filters.date_to = range.date_to;
+
             if (notify) {
                 this.notification.add(_t("Đã cập nhật khoảng ngày theo bộ lọc thời gian."), {
                     type: "info",
@@ -120,9 +125,11 @@ class SalesDashboard extends Component {
     get yearOptions() {
         const current = new Date().getFullYear();
         const years = [];
+
         for (let y = current + 1; y >= current - 5; y--) {
             years.push(String(y));
         }
+
         return years;
     }
 
@@ -159,6 +166,7 @@ class SalesDashboard extends Component {
         try {
             const raw = localStorage.getItem(STORAGE_KEY);
             if (!raw) return;
+
             const saved = JSON.parse(raw);
             if (!saved) return;
 
@@ -169,22 +177,25 @@ class SalesDashboard extends Component {
             this.state.filters.quarter = saved.quarter || this.state.filters.quarter;
             this.state.filters.date_from = saved.date_from || this.state.filters.date_from;
             this.state.filters.date_to = saved.date_to || this.state.filters.date_to;
-        } catch (_) { }
+        } catch (_) {}
     }
 
     _saveFiltersToStorage() {
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...this.state.filters }));
-        } catch (_) { }
+        } catch (_) {}
     }
 
     get periodLabel() {
         const { date_from, date_to } = this.state.filters;
+
         if (!date_from || !date_to) return _t("Không xác định");
+
         const fmt = (s) => {
             const [y, m, d] = String(s).split("-");
             return `${d}/${m}/${y}`;
         };
+
         return `${fmt(date_from)} → ${fmt(date_to)}`;
     }
 
@@ -253,33 +264,21 @@ class SalesDashboard extends Component {
 
     applyFilter() {
         const { date_from, date_to } = this.state.filters;
+
         if (date_from && date_to && date_from > date_to) {
             this.notification.add(_t("Ngày bắt đầu phải ≤ ngày kết thúc."), {
                 type: "warning",
             });
             return;
         }
+
         this._saveFiltersToStorage();
         this.fetchData();
     }
 
     // =========================
-    // Charts
+    // Domains
     // =========================
-    _destroyCharts() {
-        if (this._charts.sales) {
-            this._charts.sales.destroy();
-            this._charts.sales = null;
-        }
-        if (this._charts.top) {
-            this._charts.top.destroy();
-            this._charts.top = null;
-        }
-        if (this._charts.cat) {
-            this._charts.cat.destroy();
-            this._charts.cat = null;
-        }
-    }
     _getCustomerTypeDomain() {
         const customerType = this.state.filters.customer_type;
         return customerType ? [["customer_type", "=", customerType]] : [];
@@ -292,8 +291,58 @@ class SalesDashboard extends Component {
             [fieldName, "<=", date_to],
         ];
     }
+
+    _getDateTimeDomain(fieldName = "date_order") {
+        const { date_from, date_to } = this.state.filters;
+        return [
+            [fieldName, ">=", `${date_from} 00:00:00`],
+            [fieldName, "<=", `${date_to} 23:59:59`],
+        ];
+    }
+
+    _getSalesDomain() {
+        return [
+            ...this._getDateDomain("date_order"),
+            ["state", "in", ["sale", "done"]],
+            ...this._getCustomerTypeDomain(),
+        ];
+    }
+
+    _getQuotationDomain() {
+        return [
+            ...this._getDateDomain("date_order"),
+
+            // Quan trọng:
+            // Báo giá phải bao gồm cả báo giá đã chuyển thành đơn bán/doanh thu.
+            ["state", "in", ["draft", "sent", "sale", "done"]],
+
+            ...this._getCustomerTypeDomain(),
+        ];
+    }
+
+    // =========================
+    // Charts
+    // =========================
+    _destroyCharts() {
+        if (this._charts.sales) {
+            this._charts.sales.destroy();
+            this._charts.sales = null;
+        }
+
+        if (this._charts.top) {
+            this._charts.top.destroy();
+            this._charts.top = null;
+        }
+
+        if (this._charts.cat) {
+            this._charts.cat.destroy();
+            this._charts.cat = null;
+        }
+    }
+
     renderCharts() {
         this._destroyCharts();
+
         const { date_from, date_to } = this.state.filters;
 
         const fmtVN = (s) => {
@@ -307,14 +356,16 @@ class SalesDashboard extends Component {
                 type: "line",
                 data: {
                     labels: this.state.charts.sales_trend.labels,
-                    datasets: [{
-                        label: _t("Doanh thu"),
-                        data: this.state.charts.sales_trend.data,
-                        borderColor: "#4F46E5",
-                        backgroundColor: "rgba(79, 70, 229, 0.1)",
-                        fill: true,
-                        tension: 0.3,
-                    }],
+                    datasets: [
+                        {
+                            label: _t("Doanh thu"),
+                            data: this.state.charts.sales_trend.data,
+                            borderColor: "#4F46E5",
+                            backgroundColor: "rgba(79, 70, 229, 0.1)",
+                            fill: true,
+                            tension: 0.3,
+                        },
+                    ],
                 },
                 options: {
                     responsive: true,
@@ -338,17 +389,23 @@ class SalesDashboard extends Component {
                     },
                     onClick: (evt, elements) => {
                         if (!elements?.length) return;
+
                         const idx = elements[0].index;
                         const day = this.state.charts.sales_trend.labels[idx];
+
                         this.action.doAction({
                             type: "ir.actions.act_window",
                             name: _t("Đơn bán ngày ") + fmtVN(day),
                             res_model: "sale.order",
-                            views: [[false, "list"], [false, "form"]],
+                            views: [
+                                [false, "list"],
+                                [false, "form"],
+                            ],
                             domain: [
                                 ["date_order", ">=", day + " 00:00:00"],
                                 ["date_order", "<=", day + " 23:59:59"],
                                 ["state", "in", ["sale", "done"]],
+                                ...this._getCustomerTypeDomain(),
                             ],
                             target: "current",
                         });
@@ -368,11 +425,13 @@ class SalesDashboard extends Component {
                 type: "bar",
                 data: {
                     labels,
-                    datasets: [{
-                        label: _t("Số lượng bán"),
-                        data,
-                        backgroundColor: ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6"],
-                    }],
+                    datasets: [
+                        {
+                            label: _t("Số lượng bán"),
+                            data,
+                            backgroundColor: ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6"],
+                        },
+                    ],
                 },
                 options: {
                     responsive: true,
@@ -390,6 +449,7 @@ class SalesDashboard extends Component {
                                     const n = new Intl.NumberFormat("vi-VN", {
                                         maximumFractionDigits: 2,
                                     }).format(val);
+
                                     return _t("Số lượng: ") + `${n} ${unit}`;
                                 },
                             },
@@ -397,20 +457,26 @@ class SalesDashboard extends Component {
                     },
                     onClick: (evt, elements) => {
                         if (!elements?.length) return;
+
                         const idx = elements[0].index;
                         const productId = ids[idx];
+
                         if (!productId) return;
 
                         this.action.doAction({
                             type: "ir.actions.act_window",
                             name: _t("Đơn chứa sản phẩm: ") + labels[idx],
                             res_model: "sale.order",
-                            views: [[false, "list"], [false, "form"]],
+                            views: [
+                                [false, "list"],
+                                [false, "form"],
+                            ],
                             domain: [
                                 ["date_order", ">=", date_from],
                                 ["date_order", "<=", date_to],
                                 ["state", "in", ["sale", "done"]],
                                 ["order_line.product_id", "=", productId],
+                                ...this._getCustomerTypeDomain(),
                             ],
                             target: "current",
                         });
@@ -426,6 +492,7 @@ class SalesDashboard extends Component {
                 colors: [],
                 ids: [],
             };
+
             const labels = sc.labels || [];
             const data = sc.data || [];
             const colors = sc.colors?.length
@@ -437,12 +504,14 @@ class SalesDashboard extends Component {
                 type: "doughnut",
                 data: {
                     labels,
-                    datasets: [{
-                        label: _t("Số đơn theo hạng mục"),
-                        data,
-                        backgroundColor: colors,
-                        borderWidth: 1,
-                    }],
+                    datasets: [
+                        {
+                            label: _t("Số đơn theo hạng mục"),
+                            data,
+                            backgroundColor: colors,
+                            borderWidth: 1,
+                        },
+                    ],
                 },
                 options: {
                     responsive: true,
@@ -456,6 +525,7 @@ class SalesDashboard extends Component {
                                     const val = ctx.parsed || 0;
                                     const pct = ((val / total) * 100).toFixed(1);
                                     const n = new Intl.NumberFormat("vi-VN").format(val);
+
                                     return `${ctx.label}: ${n} (${pct}%)`;
                                 },
                             },
@@ -467,20 +537,26 @@ class SalesDashboard extends Component {
                     },
                     onClick: (evt, elements) => {
                         if (!elements?.length) return;
+
                         const idx = elements[0].index;
                         const catId = ids[idx];
+
                         if (!catId) return;
 
                         this.action.doAction({
                             type: "ir.actions.act_window",
                             name: _t("Đơn theo hạng mục: ") + labels[idx],
                             res_model: "sale.order",
-                            views: [[false, "list"], [false, "form"]],
+                            views: [
+                                [false, "list"],
+                                [false, "form"],
+                            ],
                             domain: [
                                 ["date_order", ">=", date_from],
                                 ["date_order", "<=", date_to],
                                 ["state", "in", ["draft", "sent", "sale", "done"]],
                                 ["sales_category_ids", "in", [catId]],
+                                ...this._getCustomerTypeDomain(),
                             ],
                             target: "current",
                         });
@@ -504,18 +580,15 @@ class SalesDashboard extends Component {
     }
 
     openTotalSales() {
-        const domain = [
-            ...this._getDateDomain("date_order"),
-            ["state", "in", ["sale", "done"]],
-            ...this._getCustomerTypeDomain(),
-        ];
-
         this.action.doAction({
             type: "ir.actions.act_window",
             name: _t("Đơn bán theo khoảng ngày"),
             res_model: "sale.order",
-            views: [[false, "list"], [false, "form"]],
-            domain,
+            views: [
+                [false, "list"],
+                [false, "form"],
+            ],
+            domain: this._getSalesDomain(),
             target: "current",
         });
     }
@@ -525,18 +598,15 @@ class SalesDashboard extends Component {
     }
 
     openTotalAmountQuotations() {
-        const domain = [
-            ...this._getDateDomain("date_order"),
-            ["state", "in", ["draft", "sent"]],
-            ...this._getCustomerTypeDomain(),
-        ];
-
         this.action.doAction({
             type: "ir.actions.act_window",
-            name: _t("Báo giá theo khoảng ngày"),
+            name: _t("Báo giá bao gồm đơn đã chốt"),
             res_model: "sale.order",
-            views: [[false, "list"], [false, "form"]],
-            domain,
+            views: [
+                [false, "list"],
+                [false, "form"],
+            ],
+            domain: this._getQuotationDomain(),
             target: "current",
         });
     }
@@ -550,18 +620,25 @@ class SalesDashboard extends Component {
             type: "ir.actions.act_window",
             name: _t("Hạng mục bán hàng"),
             res_model: "sale.order.category",
-            views: [[false, "list"], [false, "form"]],
+            views: [
+                [false, "list"],
+                [false, "form"],
+            ],
             target: "current",
         });
     }
 
     openContracts() {
         const { date_from, date_to } = this.state.filters;
+
         this.action.doAction({
             type: "ir.actions.act_window",
             name: _t("Hợp đồng theo khoảng ngày"),
             res_model: "contract.management",
-            views: [[false, "list"], [false, "form"]],
+            views: [
+                [false, "list"],
+                [false, "form"],
+            ],
             domain: [
                 ["signature_date", ">=", date_from],
                 ["signature_date", "<=", date_to],
