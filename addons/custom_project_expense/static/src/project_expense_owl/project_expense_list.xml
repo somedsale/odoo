@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="project_expense.ProjectExpenseList" owl="1">
+        <div class="o_project_expense_dash d-flex flex-column">
+
+            <div class="card d-flex flex-column">
+
+                <!-- HEADER / TOOLBAR -->
+                <div class="card-header pe-toolbar">
+
+                    <div class="pe-toolbar-top d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+
+                            <button class="btn btn-sm btn-outline-dark" t-on-click="goBack">
+                                <i class="fa fa-arrow-left me-1"/>
+                                Quay lại
+                            </button>
+
+                            <button class="btn btn-sm btn-outline-primary" t-on-click="refresh">
+                                <i class="fa fa-refresh me-1"/>
+                                Làm mới
+                            </button>
+
+                            <button class="btn btn-sm btn-outline-secondary" t-on-click="resetFilters">
+                                <i class="fa fa-filter me-1"/>
+                                Xóa lọc
+                            </button>
+
+                            <button class="btn btn-sm btn-outline-secondary" t-on-click="openClassicList">
+                                <i class="fa fa-list me-1"/>
+                                List mặc định
+                            </button>
+
+                            <button class="btn btn-primary" t-on-click="createRecord">
+                                <i class="fa fa-plus me-1"/>
+                                Tạo chi phí dự án
+                            </button>
+                        </div>
+
+                        <div class="pe-toolbar-title">
+                            <h1 class="fw-bold-title">Chi phí dự án</h1>
+                            <div class="text-muted small">
+                                Theo dõi dự toán, tổng chi phí, đã chi, chưa chi theo NVL / Nhân công / SXC
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KPI -->
+                    <div class="pe-kpi-grid mb-3">
+                        <div class="pe-kpi-card">
+                            <div class="pe-kpi-label">Tổng dự án</div>
+                            <div class="pe-kpi-value" t-esc="state.totals.count"/>
+                        </div>
+
+                        <div class="pe-kpi-card wide">
+                            <div class="pe-kpi-label">Tổng dự toán</div>
+                            <div class="pe-kpi-value money" t-esc="money(state.totals.estimateTotal)"/>
+                        </div>
+
+                        <div class="pe-kpi-card wide">
+                            <div class="pe-kpi-label">Tổng</div>
+                            <div class="pe-kpi-value money" t-esc="money(state.totals.totalCost)"/>
+                        </div>
+
+                        <div class="pe-kpi-card wide">
+                            <div class="pe-kpi-label">Chênh lệch CP - DT</div>
+                            <div class="pe-kpi-value"
+                                 t-att-class="state.totals.varianceEstimate > 0 ? 'pe-kpi-value money danger' : 'pe-kpi-value money success'"
+                                 t-esc="money(state.totals.varianceEstimate)"/>
+                        </div>
+
+                        <div class="pe-kpi-card wide">
+                            <div class="pe-kpi-label">Tổng đã chi</div>
+                            <div class="pe-kpi-value money success" t-esc="money(state.totals.totalSpent)"/>
+                        </div>
+
+                        <div class="pe-kpi-card wide">
+                            <div class="pe-kpi-label">Tổng chưa chi</div>
+                            <div class="pe-kpi-value money danger" t-esc="money(state.totals.totalNotSpent)"/>
+                        </div>
+
+                        <div class="pe-kpi-card wide">
+                            <div class="pe-kpi-label">Tỷ lệ đã chi / dự toán</div>
+                            <div class="pe-kpi-value money" t-esc="percent(state.totals.totalSpent, state.totals.estimateTotal)"/>
+                        </div>
+                    </div>
+
+                    <!-- FILTER -->
+                    <div class="pe-toolbar-grid">
+
+                        <div class="pe-toolbar-item pe-search">
+                            <label class="form-label mb-1">Tìm kiếm</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">
+                                    <i class="fa fa-search"/>
+                                </span>
+                                <input class="form-control"
+                                       placeholder="Dự án / khách hàng / số hợp đồng..."
+                                       t-on-input="onSearch"
+                                       t-att-value="state.keyword || ''"/>
+                            </div>
+                        </div>
+
+                        <div class="pe-toolbar-item">
+                            <label class="form-label mb-1">Bộ lọc</label>
+                            <select class="form-select form-select-sm"
+                                    t-on-change="onChangeFilterMode"
+                                    t-att-value="state.filterMode || ''">
+                                <option value="">Tất cả</option>
+                                <option value="has_spent">Có đã chi</option>
+                                <option value="has_not_spent">Còn chưa chi</option>
+                                <option value="has_material">Có NVL</option>
+                                <option value="has_labor">Có Nhân công</option>
+                                <option value="has_manufacturing">Có SXC</option>
+                                <option value="over_estimate">Vượt dự toán</option>
+                                <option value="under_estimate">Thấp hơn dự toán</option>
+                            </select>
+                        </div>
+
+                        <div class="pe-toolbar-item">
+                            <label class="form-label mb-1">Dòng / trang</label>
+                            <select class="form-select form-select-sm"
+                                    t-on-change="onChangePageSize"
+                                    t-att-value="'' + state.pageSize">
+                                <option value="10">10 dòng</option>
+                                <option value="20">20 dòng</option>
+                                <option value="50">50 dòng</option>
+                                <option value="100">100 dòng</option>
+                            </select>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- TABLE -->
+                <div class="card-body p-0 pe-table-wrap">
+
+                    <t t-if="state.loading">
+                        <div class="pe-state-box">
+                            <div class="text-muted">
+                                <i class="fa fa-spinner fa-spin me-2"/>
+                                Đang tải dữ liệu chi phí dự án...
+                            </div>
+                        </div>
+                    </t>
+
+                    <t t-else="">
+                        <table class="table table-sm table-hover align-middle m-0 pe-table">
+
+                            <colgroup>
+                                <col style="width:80px;"/>
+                                <col style="width:280px;"/>
+                                <col style="width:230px;"/>
+
+                                <!-- Thông tin hợp đồng -->
+                                <col style="width:170px;"/>
+                                <col style="width:130px;"/>
+                                <col style="width:130px;"/>
+                                <col style="width:130px;"/>
+
+                                <!-- Dự toán / So sánh -->
+                                <col style="width:180px;"/>
+                                <col style="width:180px;"/>
+                                <col style="width:190px;"/>
+                                <col style="width:150px;"/>
+
+                                <!-- Tổng theo phân loại -->
+                                <col style="width:170px;"/>
+                                <col style="width:170px;"/>
+                                <col style="width:170px;"/>
+                                <col style="width:190px;"/>
+
+                                <!-- Đã chi -->
+                                <col style="width:170px;"/>
+                                <col style="width:170px;"/>
+                                <col style="width:170px;"/>
+                                <col style="width:190px;"/>
+                                <col style="width:120px;"/>
+
+                                <!-- Chưa chi -->
+                                <col style="width:170px;"/>
+                                <col style="width:170px;"/>
+                                <col style="width:170px;"/>
+                                <col style="width:190px;"/>
+                            </colgroup>
+
+                            <thead class="pe-thead">
+                                <tr class="pe-group-head">
+                                    <th rowspan="2" class="text-center sticky-col sticky-col-0">STT</th>
+                                    <th rowspan="2" class="sticky-col sticky-col-1">Dự án</th>
+                                    <th rowspan="2" class="sticky-col sticky-col-2">Khách hàng</th>
+
+                                    <th colspan="4" class="text-center pe-group-info">Thông tin hợp đồng</th>
+                                    <th colspan="4" class="text-center pe-group-estimate">Dự toán / So sánh</th>
+                                    <th colspan="4" class="text-center pe-group-total">Tổng chi phí</th>
+                                    <th colspan="5" class="text-center pe-group-spent">Đã chi</th>
+                                    <th colspan="4" class="text-center pe-group-not-spent">Chưa chi</th>
+                                </tr>
+
+                                <tr>
+                                    <th>Số hợp đồng</th>
+                                    <th>Ngày ký</th>
+                                    <th>Ngày bắt đầu</th>
+                                    <th>Ngày kết thúc</th>
+
+                                    <th class="text-end">Tổng dự toán</th>
+                                    <th class="text-end">Tổng chi phí</th>
+                                    <th class="text-end">Chênh lệch CP - DT</th>
+                                    <th class="text-end">% Đã chi / DT</th>
+
+                                    <th class="text-end">Nguyên vật liệu</th>
+                                    <th class="text-end">Nhân công</th>
+                                    <th class="text-end">Sản xuất chung</th>
+                                    <th class="text-end">Tổng</th>
+
+                                    <th class="text-end">Nguyên vật liệu</th>
+                                    <th class="text-end">Nhân công</th>
+                                    <th class="text-end">Sản xuất chung</th>
+                                    <th class="text-end">Tổng</th>
+                                    <th class="text-end">% Đã chi</th>
+
+                                    <th class="text-end">Nguyên vật liệu</th>
+                                    <th class="text-end">Nhân công</th>
+                                    <th class="text-end">Sản xuất chung</th>
+                                    <th class="text-end">Tổng</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <t t-if="state.records.length">
+                                    <t t-foreach="state.records" t-as="rec" t-key="rec.id">
+                                        <tr class="cursor-pointer pe-row"
+                                            t-att-data-id="rec.id"
+                                            t-on-click="openRecord"
+                                            t-att-title="'Mở chi phí dự án: ' + many2oneName(rec.project_id)">
+
+                                            <td class="text-center sticky-col sticky-col-0">
+                                                <span class="pe-code" t-esc="pageStart + rec_index"/>
+                                            </td>
+
+                                            <td class="sticky-col sticky-col-1 pe-cell-main">
+                                                <span class="pe-text-wrap fw-semibold" t-esc="many2oneName(rec.project_id)"/>
+                                            </td>
+
+                                            <td class="sticky-col sticky-col-2 pe-cell-partner">
+                                                <span class="pe-text-wrap" t-esc="many2oneName(rec.partner_id)"/>
+                                            </td>
+
+                                            <!-- THÔNG TIN HỢP ĐỒNG -->
+                                            <td>
+                                                <span class="pe-text-wrap" t-esc="rec.contract_number || '-'"/>
+                                            </td>
+
+                                            <td>
+                                                <span t-esc="formatDate(rec.signature_date)"/>
+                                            </td>
+
+                                            <td>
+                                                <span t-esc="formatDate(rec.date_start)"/>
+                                            </td>
+
+                                            <td>
+                                                <span t-esc="formatDate(rec.date_end)"/>
+                                            </td>
+
+                                            <!-- DỰ TOÁN / SO SÁNH -->
+                                            <td class="text-end fw-bold pe-estimate-cell" t-esc="money(rec.estimate_total_with_tax)"/>
+
+                                            <td class="text-end fw-bold" t-esc="money(rec.total_cost)"/>
+
+                                            <td class="text-end">
+                                                <span t-att-class="compareClass(rec.cost_vs_estimate_amount)"
+                                                      t-esc="money(rec.cost_vs_estimate_amount)"/>
+                                            </td>
+
+                                            <td class="text-end pe-border-right">
+                                                <span t-att-class="percentBadgeByValue(rec.spent_vs_estimate_percent)"
+                                                      t-esc="Math.round(rec.spent_vs_estimate_percent || 0) + '%'"/>
+                                            </td>
+
+                                            <!-- TỔNG THEO PHÂN LOẠI -->
+                                            <td class="text-end" t-esc="money(rec.total_material)"/>
+                                            <td class="text-end" t-esc="money(rec.total_labor)"/>
+                                            <td class="text-end" t-esc="money(rec.total_manufacturing)"/>
+                                            <td class="text-end fw-bold pe-final-cell pe-border-right" t-esc="money(rec.total_cost)"/>
+
+                                            <!-- ĐÃ CHI -->
+                                            <td class="text-end" t-esc="money(rec.total_spent_material)"/>
+                                            <td class="text-end" t-esc="money(rec.total_spent_labor)"/>
+                                            <td class="text-end" t-esc="money(rec.total_spent_manufacturing)"/>
+                                            <td class="text-end fw-bold pe-spent-cell" t-esc="money(rec.total_spent)"/>
+                                            <td class="text-end pe-border-right">
+                                                <span t-att-class="percentClass(rec.total_spent, rec.total_cost)"
+                                                      t-esc="percent(rec.total_spent, rec.total_cost)"/>
+                                            </td>
+
+                                            <!-- CHƯA CHI -->
+                                            <td class="text-end" t-esc="money(rec.total_not_spent_material)"/>
+                                            <td class="text-end" t-esc="money(rec.total_not_spent_labor)"/>
+                                            <td class="text-end" t-esc="money(rec.total_not_spent_manufacturing)"/>
+                                            <td class="text-end fw-bold pe-not-spent-cell" t-esc="money(rec.total_not_spent)"/>
+
+                                        </tr>
+                                    </t>
+                                </t>
+
+                                <t t-else="">
+                                    <tr>
+                                        <td colspan="24" class="p-0">
+                                            <div class="pe-empty-state">
+                                                <div class="pe-empty-icon">
+                                                    <i class="fa fa-folder-open-o"/>
+                                                </div>
+                                                <div class="fw-semibold mb-1">Không có chi phí dự án phù hợp</div>
+                                                <div class="text-muted small">
+                                                    Hãy thử thay đổi từ khóa tìm kiếm, bộ lọc hoặc bấm “Xóa lọc”.
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+
+                        </table>
+                    </t>
+
+                </div>
+
+                <!-- PAGINATION -->
+                <div class="card-footer d-flex align-items-center justify-content-between flex-wrap gap-2">
+
+                    <div class="text-muted" style="font-size:12px;">
+                        Trang
+                        <b><t t-esc="state.page"/></b>
+                        /
+                        <b><t t-esc="totalPages"/></b>
+                        —
+                        Hiển thị
+                        <b><t t-esc="pageStart"/></b>
+                        -
+                        <b><t t-esc="pageEnd"/></b>
+                        /
+                        <b><t t-esc="state.totalCount"/></b>
+                        dự án
+
+                        <t t-if="state.keyword">
+                            - lọc theo:
+                            "<t t-esc="state.keyword"/>"
+                        </t>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="text-muted" style="font-size:12px;">/ trang</span>
+                            <select class="form-select form-select-sm"
+                                    style="width:90px;"
+                                    t-on-change="onChangePageSize"
+                                    t-att-value="'' + state.pageSize">
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-sm btn-outline-secondary"
+                                t-on-click="firstPage"
+                                t-att-disabled="state.page &lt;= 1"
+                                title="Trang đầu">
+                            «
+                        </button>
+
+                        <button class="btn btn-sm btn-outline-secondary"
+                                t-on-click="prevPage"
+                                t-att-disabled="state.page &lt;= 1"
+                                title="Trang trước">
+                            ‹
+                        </button>
+
+                        <div class="btn-group btn-group-sm" role="group">
+                            <t t-foreach="pageTokens" t-as="pg" t-key="pg.key">
+                                <button t-if="!pg.ellipsis"
+                                        class="btn"
+                                        t-att-class="pg.page === state.page ? 'btn-primary' : 'btn-outline-secondary'"
+                                        t-att-data-page="pg.page"
+                                        t-on-click="onClickPage">
+                                    <t t-esc="pg.label"/>
+                                </button>
+
+                                <span t-else=""
+                                      class="btn btn-outline-secondary disabled"
+                                      style="pointer-events:none;">
+                                    …
+                                </span>
+                            </t>
+                        </div>
+
+                        <button class="btn btn-sm btn-outline-secondary"
+                                t-on-click="nextPage"
+                                t-att-disabled="state.page &gt;= totalPages"
+                                title="Trang sau">
+                            ›
+                        </button>
+
+                        <button class="btn btn-sm btn-outline-secondary"
+                                t-on-click="lastPage"
+                                t-att-disabled="state.page &gt;= totalPages"
+                                title="Trang cuối">
+                            »
+                        </button>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </t>
+
+</templates>
