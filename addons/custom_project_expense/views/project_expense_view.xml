@@ -37,7 +37,7 @@
 
                 <field name="total_manufacturing" string="Tổng SXC" widget="monetary" options="{'currency_field': 'currency_id'}" optional="hide" decoration-info="total_manufacturing &gt; 0" decoration-bf="total_manufacturing &gt; 0" decoration-muted="total_manufacturing == 0"/>
 
-                <field name="total_cost" string="Tổng theo dõi" sum="Tổng theo dõi" widget="monetary" options="{'currency_field': 'currency_id'}" decoration-primary="total_cost &gt; 0" decoration-bf="total_cost &gt; 0" decoration-muted="total_cost == 0"/>
+                <field name="total_cost" string="Tổng" sum="Tổng" widget="monetary" options="{'currency_field': 'currency_id'}" decoration-primary="total_cost &gt; 0" decoration-bf="total_cost &gt; 0" decoration-muted="total_cost == 0"/>
 
                 <field name="currency_id" invisible="1" optional="hide"/>
             </tree>
@@ -117,7 +117,7 @@
                         </group>
 
                         <group string="Tổng quan chi phí">
-                            <field name="total_cost" string="Tổng theo dõi" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_cost" string="Tổng" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                             <field name="total_spent" string="Tổng đã chi" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                             <field name="total_not_spent" string="Tổng chưa chi" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                         </group>
@@ -197,9 +197,27 @@
         <!-- Context ép readonly -->
         <field name="context">{'readonly_by_ctx': True}</field>
     </record>
+<record id="action_project_expense_owl" model="ir.actions.client">
+    <field name="name">Chi phí dự án</field>
+    <field name="tag">project_expense_owl_list</field>
+</record>
 
+<record id="action_project_expense_readonly_owl" model="ir.actions.client">
+    <field name="name">Chi phí dự án</field>
+    <field name="tag">project_expense_owl_list</field>
+    <field name="context">{'readonly_by_ctx': True}</field>
+</record>
     <!-- Menu -->
-    <menuitem id="menu_project_expense" name="Chi phí dự án" parent="custom_account_menu.menu_accounting_project" action="action_project_expense" sequence="10"/>
-    <menuitem id="menu_project_expense_in_project" name="Chi phí dự án" parent="project.menu_main_pm" action="action_project_expense_readonly" sequence="50" />
+<menuitem id="menu_project_expense"
+          name="Chi phí dự án"
+          parent="custom_account_menu.menu_accounting_project"
+          action="action_project_expense_owl"
+          sequence="10"/>
+
+<menuitem id="menu_project_expense_in_project"
+          name="Chi phí dự án"
+          parent="project.menu_main_pm"
+          action="action_project_expense_readonly_owl"
+          sequence="50"/>
     <!-- <menuitem id="menu_project_expense_in_project_user" name="Chi phí dự án" parent="custom_project_role.menu_main_pm_user" action="action_project_expense_readonly" sequence="50" /> -->
 </odoo>

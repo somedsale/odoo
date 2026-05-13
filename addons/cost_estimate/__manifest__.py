@@ -15,6 +15,9 @@
     'assets': {
     'web.assets_backend': [
         'cost_estimate/static/src/css/popup.css',
+            "cost_estimate/static/src/cost_estimate_owl/cost_estimate_list.js",
+            "cost_estimate/static/src/cost_estimate_owl/cost_estimate_list.xml",
+            "cost_estimate/static/src/cost_estimate_owl/cost_estimate_list.scss",
     ],
 },
     'installable': True,

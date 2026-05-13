@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="cost_estimate.CostEstimateList" owl="1">
+        <div class="o_cost_estimate_dash d-flex flex-column">
+
+            <div class="card flex-grow-1 d-flex flex-column">
+
+                <!-- HEADER / TOOLBAR -->
+                <div class="card-header ce-toolbar">
+
+                    <div class="ce-toolbar-top d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+
+                            <button class="btn btn-sm btn-outline-dark" t-on-click="goBack">
+                                <i class="fa fa-arrow-left me-1"/>
+                                Quay lại
+                            </button>
+
+                            <button class="btn btn-sm btn-outline-primary" t-on-click="refresh">
+                                <i class="fa fa-refresh me-1"/>
+                                Làm mới
+                            </button>
+
+                            <button class="btn btn-sm btn-outline-secondary" t-on-click="resetFilters">
+                                <i class="fa fa-filter me-1"/>
+                                Xóa lọc
+                            </button>
+
+                            <button class="btn btn-sm btn-outline-secondary" t-on-click="openClassicList">
+                                <i class="fa fa-list me-1"/>
+                                List mặc định
+                            </button>
+
+                            <button class="btn btn-primary" t-on-click="createRecord">
+                                <i class="fa fa-plus me-1"/>
+                                Tạo dự toán
+                            </button>
+                        </div>
+
+                        <div class="ce-toolbar-title">
+                            <h1 class="fw-bold-title">Dự toán chi phí Dự án</h1>
+                            <div class="text-muted small">
+                                Theo dõi dự toán trước thuế, sau thuế và phát sinh theo từng dự án
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KPI -->
+                    <div class="ce-kpi-grid mb-3">
+                        <div class="ce-kpi-card">
+                            <div class="ce-kpi-label">Tổng phiếu</div>
+                            <div class="ce-kpi-value" t-esc="state.totals.count"/>
+                        </div>
+
+                        <div class="ce-kpi-card">
+                            <div class="ce-kpi-label">Nháp</div>
+                            <div class="ce-kpi-value" t-esc="state.totals.draft"/>
+                        </div>
+
+                        <div class="ce-kpi-card">
+                            <div class="ce-kpi-label">Chờ duyệt</div>
+                            <div class="ce-kpi-value" t-esc="state.totals.submitted"/>
+                        </div>
+
+                        <div class="ce-kpi-card">
+                            <div class="ce-kpi-label">Đã duyệt</div>
+                            <div class="ce-kpi-value" t-esc="state.totals.approved"/>
+                        </div>
+
+                        <div class="ce-kpi-card wide">
+                            <div class="ce-kpi-label">Phát sinh trước thuế</div>
+                            <div class="ce-kpi-value money" t-esc="money(state.totals.additionalNonTax)"/>
+                        </div>
+
+                        <div class="ce-kpi-card wide">
+                            <div class="ce-kpi-label">Phát sinh sau thuế</div>
+                            <div class="ce-kpi-value money" t-esc="money(state.totals.additionalWithTax)"/>
+                        </div>
+
+                        <div class="ce-kpi-card wide">
+                            <div class="ce-kpi-label">Tổng trước thuế</div>
+                            <div class="ce-kpi-value money" t-esc="money(state.totals.totalFinalNonTax)"/>
+                        </div>
+
+                        <div class="ce-kpi-card wide">
+                            <div class="ce-kpi-label">Tổng sau thuế</div>
+                            <div class="ce-kpi-value money" t-esc="money(state.totals.totalFinalTax)"/>
+                        </div>
+                    </div>
+
+                    <!-- FILTER -->
+                    <div class="ce-toolbar-grid">
+
+                        <div class="ce-toolbar-item ce-search">
+                            <label class="form-label mb-1">Tìm kiếm</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">
+                                    <i class="fa fa-search"/>
+                                </span>
+                                <input class="form-control"
+                                       placeholder="Mã / dự án / khách hàng / đơn hàng..."
+                                       t-on-input="onSearch"
+                                       t-att-value="state.keyword || ''"/>
+                            </div>
+                        </div>
+
+                        <div class="ce-toolbar-item">
+                            <label class="form-label mb-1">Trạng thái</label>
+                            <select class="form-select form-select-sm"
+                                    t-on-change="onChangeStateFilter"
+                                    t-att-value="state.stateFilter || ''">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="draft">Nháp</option>
+                                <option value="submitted">Gửi duyệt</option>
+                                <option value="approved">Đã phê duyệt</option>
+                                <option value="rejected">Bị từ chối</option>
+                                <option value="cancel">Hủy bỏ</option>
+                            </select>
+                        </div>
+
+                        <div class="ce-toolbar-item">
+                            <label class="form-label mb-1">Dòng / trang</label>
+                            <select class="form-select form-select-sm"
+                                    t-on-change="onChangePageSize"
+                                    t-att-value="'' + state.pageSize">
+                                <option value="10">10 dòng</option>
+                                <option value="20">20 dòng</option>
+                                <option value="50">50 dòng</option>
+                                <option value="100">100 dòng</option>
+                            </select>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- TABLE -->
+                <div class="card-body p-0 flex-grow-1 ce-table-wrap">
+
+                    <t t-if="state.loading">
+                        <div class="ce-state-box">
+                            <div class="text-muted">
+                                <i class="fa fa-spinner fa-spin me-2"/>
+                                Đang tải dữ liệu dự toán...
+                            </div>
+                        </div>
+                    </t>
+
+                    <t t-else="">
+                        <table class="table table-sm table-hover align-middle m-0 ce-table">
+
+<colgroup>
+    <col style="width:90px;"/>
+    <col style="width:260px;"/>
+    <col style="width:220px;"/>
+
+    <!-- Thông tin hợp đồng -->
+    <col style="width:200px;"/>
+    <col style="width:150px;"/>
+    <col style="width:130px;"/>
+    <col style="width:130px;"/>
+    <col style="width:130px;"/>
+
+    <!-- Dự toán trước thuế -->
+    <col style="width:170px;"/>
+    <col style="width:170px;"/>
+    <col style="width:170px;"/>
+    <col style="width:190px;"/>
+    <col style="width:190px;"/>
+
+    <!-- Dự toán sau thuế -->
+    <col style="width:170px;"/>
+    <col style="width:170px;"/>
+    <col style="width:170px;"/>
+    <col style="width:190px;"/>
+    <col style="width:190px;"/>
+
+    <!-- Trạng thái -->
+    <col style="width:140px;"/>
+</colgroup>
+
+                            <thead class="ce-thead">
+
+                                <tr class="ce-group-head">
+                                    <th rowspan="2" class="text-center sticky-col sticky-col-0">Mã</th>
+                                    <th rowspan="2" class="sticky-col sticky-col-1">Dự án</th>
+                                    <th rowspan="2" class="sticky-col sticky-col-2">Khách hàng</th>
+
+                                    <th colspan="5" class="text-center ce-group-info">Thông tin hợp đồng</th>
+                                    <th colspan="5" class="text-center ce-group-before">Dự toán trước thuế</th>
+                                    <th colspan="5" class="text-center ce-group-after">Dự toán sau thuế</th>
+
+                                    <th rowspan="2" class="text-center">Trạng thái</th>
+                                </tr>
+
+                                <tr>
+                                    <th>Đơn hàng</th>
+                                    <th>Hợp đồng</th>
+                                    <th>Ngày ký</th>
+                                    <th>Ngày bắt đầu</th>
+                                    <th>Ngày kết thúc</th>
+
+                                    <th class="text-end">Nguyên vật liệu</th>
+                                    <th class="text-end">Nhân công</th>
+                                    <th class="text-end">Sản xuất chung</th>
+                                    <th class="text-end">Phát sinh</th>
+                                    <th class="text-end">Tổng</th>
+
+                                    <th class="text-end">Nguyên vật liệu</th>
+                                    <th class="text-end">Nhân công</th>
+                                    <th class="text-end">Sản xuất chung</th>
+                                    <th class="text-end">Phát sinh</th>
+                                    <th class="text-end">Tổng</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+                                <t t-if="state.records.length">
+                                    <t t-foreach="state.records" t-as="rec" t-key="rec.id">
+                                        <tr class="cursor-pointer ce-row"
+                                            t-att-data-id="rec.id"
+                                            t-on-click="openRecord"
+                                            t-att-title="'Mở dự toán dự án: ' + many2oneName(rec.project_id)">
+
+                                            <td class="text-center sticky-col sticky-col-0">
+                                                <span class="ce-code" t-esc="rec.code || '-'"/>
+                                            </td>
+
+                                            <td class="sticky-col sticky-col-1 ce-cell-main">
+                                                <span class="ce-text-wrap fw-semibold" t-esc="many2oneName(rec.project_id)"/>
+                                            </td>
+
+                                            <td class="sticky-col sticky-col-2 ce-cell-partner">
+                                                <span class="ce-text-wrap" t-esc="many2oneName(rec.sale_order_partner)"/>
+                                            </td>
+
+                                            <!-- THÔNG TIN HỢP ĐỒNG -->
+                                            <td>
+                                                <span class="ce-text-wrap" t-esc="many2oneName(rec.sale_order_id)"/>
+                                            </td>
+
+                                            <td>
+                                                <span class="ce-text-wrap" t-esc="many2oneName(rec.contract_id)"/>
+                                            </td>
+
+                                            <td>
+                                                <span t-esc="formatDate(rec.signature_date)"/>
+                                            </td>
+
+                                            <td>
+                                                <span t-esc="formatDate(rec.date_start)"/>
+                                            </td>
+
+                                            <td>
+                                                <span t-esc="formatDate(rec.date_end)"/>
+                                            </td>
+
+                                            <!-- DỰ TOÁN TRƯỚC THUẾ -->
+                                            <td class="text-end" t-esc="money(rec.estimate_material_total)"/>
+<td class="text-end" t-esc="money(rec.estimate_labor_total)"/>
+<td class="text-end" t-esc="money(rec.estimate_manufacturing_total)"/>
+<td class="text-end fw-bold ce-extra-cell" t-esc="money(rec.amount_additional_expense)"/>
+<td class="text-end fw-bold ce-final-cell ce-border-right" t-esc="money(rec.total_final_non_tax)"/>
+
+                                            <!-- DỰ TOÁN SAU THUẾ -->
+                                            <td class="text-end" t-esc="money(rec.estimate_material_total_with_tax)"/>
+<td class="text-end" t-esc="money(rec.estimate_labor_total_with_tax)"/>
+<td class="text-end" t-esc="money(rec.estimate_manufacturing_total_with_tax)"/>
+<td class="text-end fw-bold ce-extra-cell" t-esc="money(rec.amount_additional_expense_with_tax)"/>
+<td class="text-end fw-bold ce-final-cell" t-esc="money(rec.total_final_tax)"/>
+
+                                            <!-- TRẠNG THÁI -->
+                                            <td class="text-center">
+                                                <span t-att-class="stateBadgeClass(rec.state)"
+                                                      t-esc="stateLabel(rec.state)"/>
+                                            </td>
+
+                                        </tr>
+                                    </t>
+                                </t>
+
+                                <t t-else="">
+                                    <tr>
+                                        <td colspan="19" class="p-0">
+                                            <div class="ce-empty-state">
+                                                <div class="ce-empty-icon">
+                                                    <i class="fa fa-folder-open-o"/>
+                                                </div>
+                                                <div class="fw-semibold mb-1">Không có dự toán phù hợp</div>
+                                                <div class="text-muted small">
+                                                    Hãy thử thay đổi từ khóa tìm kiếm, trạng thái hoặc bấm “Xóa lọc”.
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+
+                        </table>
+                    </t>
+
+                </div>
+
+                <!-- PAGINATION -->
+                <div class="card-footer d-flex align-items-center justify-content-between flex-wrap gap-2">
+
+                    <div class="text-muted" style="font-size:12px;">
+                        Trang
+                        <b><t t-esc="state.page"/></b>
+                        /
+                        <b><t t-esc="totalPages"/></b>
+                        —
+                        Hiển thị
+                        <b><t t-esc="pageStart"/></b>
+                        -
+                        <b><t t-esc="pageEnd"/></b>
+                        /
+                        <b><t t-esc="state.totalCount"/></b>
+                        dự toán
+
+                        <t t-if="state.keyword">
+                            - lọc theo:
+                            "<t t-esc="state.keyword"/>"
+                        </t>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="text-muted" style="font-size:12px;">/ trang</span>
+                            <select class="form-select form-select-sm"
+                                    style="width:90px;"
+                                    t-on-change="onChangePageSize"
+                                    t-att-value="'' + state.pageSize">
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-sm btn-outline-secondary"
+                                t-on-click="firstPage"
+                                t-att-disabled="state.page &lt;= 1"
+                                title="Trang đầu">
+                            «
+                        </button>
+
+                        <button class="btn btn-sm btn-outline-secondary"
+                                t-on-click="prevPage"
+                                t-att-disabled="state.page &lt;= 1"
+                                title="Trang trước">
+                            ‹
+                        </button>
+
+                        <div class="btn-group btn-group-sm" role="group">
+                            <t t-foreach="pageTokens" t-as="pg" t-key="pg.key">
+                                <button t-if="!pg.ellipsis"
+                                        class="btn"
+                                        t-att-class="pg.page === state.page ? 'btn-primary' : 'btn-outline-secondary'"
+                                        t-att-data-page="pg.page"
+                                        t-on-click="onClickPage">
+                                    <t t-esc="pg.label"/>
+                                </button>
+
+                                <span t-else=""
+                                      class="btn btn-outline-secondary disabled"
+                                      style="pointer-events:none;">
+                                    …
+                                </span>
+                            </t>
+                        </div>
+
+                        <button class="btn btn-sm btn-outline-secondary"
+                                t-on-click="nextPage"
+                                t-att-disabled="state.page &gt;= totalPages"
+                                title="Trang sau">
+                            ›
+                        </button>
+
+                        <button class="btn btn-sm btn-outline-secondary"
+                                t-on-click="lastPage"
+                                t-att-disabled="state.page &gt;= totalPages"
+                                title="Trang cuối">
+                            »
+                        </button>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </t>
+
+</templates>

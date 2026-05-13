@@ -43,7 +43,140 @@ class ProjectExpenseCustom(models.Model):
     total_not_spent_material = fields.Float(string="Chưa chi NVL", compute='_compute_costs', store=True)
     total_not_spent_labor = fields.Float(string="Chưa chi Nhân công", compute='_compute_costs', store=True)
     total_not_spent_manufacturing = fields.Float(string="Chưa chi Sản xuất chung", compute='_compute_costs', store=True)
+    # ===== Dự toán / So sánh với chi phí =====
+    cost_estimate_id = fields.Many2one(
+        'cost.estimate',
+        string="Dự toán",
+        compute="_compute_cost_estimate_compare",
+        store=False,
+    )
 
+    estimate_total_non_tax = fields.Float(
+        string="Tổng dự toán trước thuế",
+        compute="_compute_cost_estimate_compare",
+        store=False,
+    )
+
+    estimate_total_with_tax = fields.Float(
+        string="Tổng dự toán sau thuế",
+        compute="_compute_cost_estimate_compare",
+        store=False,
+    )
+
+    estimate_material_with_tax = fields.Float(
+        string="Dự toán NVL sau thuế",
+        compute="_compute_cost_estimate_compare",
+        store=False,
+    )
+
+    estimate_labor_with_tax = fields.Float(
+        string="Dự toán Nhân công sau thuế",
+        compute="_compute_cost_estimate_compare",
+        store=False,
+    )
+
+    estimate_manufacturing_with_tax = fields.Float(
+        string="Dự toán SXC sau thuế",
+        compute="_compute_cost_estimate_compare",
+        store=False,
+    )
+
+    estimate_additional_with_tax = fields.Float(
+        string="Dự toán phát sinh sau thuế",
+        compute="_compute_cost_estimate_compare",
+        store=False,
+    )
+
+    cost_vs_estimate_amount = fields.Float(
+        string="Chênh lệch chi phí / dự toán",
+        compute="_compute_cost_estimate_compare",
+        store=False,
+    )
+
+    remaining_estimate_amount = fields.Float(
+        string="Còn lại theo dự toán",
+        compute="_compute_cost_estimate_compare",
+        store=False,
+    )
+
+    cost_vs_estimate_percent = fields.Float(
+        string="% sử dụng dự toán",
+        compute="_compute_cost_estimate_compare",
+        store=False,
+    )
+
+    spent_vs_estimate_percent = fields.Float(
+        string="% đã chi / dự toán",
+        compute="_compute_cost_estimate_compare",
+        store=False,
+    )
+
+    @api.depends(
+        'project_id',
+        'total_cost',
+        'total_spent',
+        'total_not_spent',
+    )
+    def _compute_cost_estimate_compare(self):
+        CostEstimate = self.env['cost.estimate']
+
+        for record in self:
+            record.cost_estimate_id = False
+
+            record.estimate_total_non_tax = 0.0
+            record.estimate_total_with_tax = 0.0
+
+            record.estimate_material_with_tax = 0.0
+            record.estimate_labor_with_tax = 0.0
+            record.estimate_manufacturing_with_tax = 0.0
+            record.estimate_additional_with_tax = 0.0
+
+            record.cost_vs_estimate_amount = 0.0
+            record.remaining_estimate_amount = 0.0
+            record.cost_vs_estimate_percent = 0.0
+            record.spent_vs_estimate_percent = 0.0
+
+            if not record.project_id:
+                continue
+
+            # Ưu tiên dự toán đã duyệt
+            estimate = CostEstimate.search([
+                ('project_id', '=', record.project_id.id),
+                ('state', '=', 'approved'),
+            ], order='create_date desc', limit=1)
+
+            # Nếu chưa có bản đã duyệt thì lấy bản mới nhất
+            if not estimate:
+                estimate = CostEstimate.search([
+                    ('project_id', '=', record.project_id.id),
+                ], order='create_date desc', limit=1)
+
+            if not estimate:
+                continue
+
+            estimate_non_tax = estimate.total_final_non_tax or 0.0
+            estimate_with_tax = estimate.total_final_tax or 0.0
+            total_cost = record.total_cost or 0.0
+            total_spent = record.total_spent or 0.0
+
+            record.cost_estimate_id = estimate.id
+
+            record.estimate_total_non_tax = estimate_non_tax
+            record.estimate_total_with_tax = estimate_with_tax
+
+            record.estimate_material_with_tax = estimate.estimate_material_total_with_tax or 0.0
+            record.estimate_labor_with_tax = estimate.estimate_labor_total_with_tax or 0.0
+            record.estimate_manufacturing_with_tax = estimate.estimate_manufacturing_total_with_tax or 0.0
+            record.estimate_additional_with_tax = estimate.amount_additional_expense_with_tax or 0.0
+
+            # Chi phí - Dự toán
+            # > 0: vượt dự toán
+            # < 0: còn dưới dự toán
+            record.cost_vs_estimate_amount = total_cost - estimate_with_tax
+
+            if estimate_with_tax:
+                record.cost_vs_estimate_percent = total_cost / estimate_with_tax * 100.0
+                record.spent_vs_estimate_percent = total_spent / estimate_with_tax * 100.0
     @api.depends(
         'payment_request_ids.total',
         'payment_request_ids.state',        # <-- dùng state

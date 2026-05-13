@@ -223,5 +223,6 @@
     <menuitem id="menu_account_payment_proposal_root" web_icon="customer_account_payment_proposal,static/description/icon.png" name="Đề nghị giải chi" sequence="90"/>
 
     <menuitem id="menu_account_payment_proposal" name="Giấy đề nghị chi" parent="menu_account_payment_proposal_root" action="action_account_payment_proposal"/>
+    <menuitem id="menu_account_payment_proposal" name="Giấy đề nghị chi" parent="project_work_from_so.menu_internal_project" action="action_account_payment_proposal"/>
     <menuitem id="menu_account_payment_proposal_for_accounting" name="Quyết toán tạm ứng" parent="custom_account_menu.menu_accounting_vouchers" action="action_account_payment_proposal"/>
 </odoo>
