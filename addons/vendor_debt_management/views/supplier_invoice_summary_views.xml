@@ -143,6 +143,7 @@
                                     <field name="name"/>
                                     <field name="project_id"/>
                                     <field name="supplier_contract_id"/>
+                                    <field name="note" string="Nội dung"/>
                                     <field name="invoice_id"/>
                                     <field name="date"/>
                                     <field name="date_payment" string="Ngày chi"/>

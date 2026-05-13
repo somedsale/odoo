@@ -36,7 +36,7 @@
           <field name="date" string="Ngày kết thúc"/>
           <field name="value_finalized" string="Giá trị Thanh / quyết toán" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng giá trị"/>
           <field name="customer_invoice_count" string="Số Hóa đơn"/>
-          <field name="customer_invoice_untaxed_total" string="Tổng chưa thuế" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng trước thuế"/>
+          <field name="customer_invoice_untaxed_total" string="Tổng hóa đơn trước thuế" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng trước thuế"/>
           <field name="customer_invoice_amount_total" string="Tổng hóa đơn sau thuế" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng sau thuế"/>
           <field name="customer_invoice_received_total" string="Tổng tiền đã thu" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng đã thu"/>
           <field name="customer_invoice_remaining_total" string="Tổng còn phải thu theo hóa đơn" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng còn phải thu theo hóa đơn"/>

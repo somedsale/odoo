@@ -436,8 +436,15 @@ class PurchaseOrder(models.Model):
             ),
             "payment_kind": kind,
             "state": "draft",
-            "line_ids": line_vals,
         }
+
+        # Nếu PO có phiếu đề xuất thì tạo dòng chi tiết theo proposal
+        if line_vals:
+            vals["line_ids"] = line_vals
+
+        # Nếu PO không có phiếu đề xuất thì gán tiền vào manual_total
+        else:
+            vals["manual_total"] = pay_amount
 
         pr = self.env["account.payment.request"].create(vals)
 

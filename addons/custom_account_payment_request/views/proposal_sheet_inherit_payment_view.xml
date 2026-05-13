@@ -11,6 +11,7 @@
                             <field name="payment_name" string="Phiếu chi"/>
                             <field name="payment_create_date" string="Ngày tạo chi"/>
                             <field name="payment_date" string="Ngày chi"/>
+                            <field name="note" string="Nội dung"/>
                             <field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng"/>
                             <field name="currency_id" optional="hide"/>
                             <field name="note"/>
