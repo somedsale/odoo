@@ -13,7 +13,13 @@
     'views/report_monthly_revenue_expense_template.xml',
     'views/account_payment_request.xml',
 ],
-
+"assets": {
+    "web.assets_backend": [
+        "monthly_revenue_expense_report/static/src/js/revenue_expense_report.js",
+        "monthly_revenue_expense_report/static/src/xml/revenue_expense_report.xml",
+        "monthly_revenue_expense_report/static/src/scss/revenue_expense_report.scss",
+    ],
+},
     'application': False,
     'installable': True,
 }

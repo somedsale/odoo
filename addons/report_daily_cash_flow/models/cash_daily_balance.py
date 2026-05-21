@@ -1,12 +1,13 @@
-# models/cash_daily_balance.py
-from odoo import models, fields, api
-from odoo.exceptions import ValidationError
+# -*- coding: utf-8 -*-
+from odoo import models, fields
+
 
 class CashDailyBalance(models.Model):
-    _name = 'cash.daily.balance'
-    _description = 'Daily Closing Balance (Bank/Cash)'
-    _order = 'date desc, id desc'
-    _rec_name = 'date'
+    _name = "cash.daily.balance"
+    _description = "Daily Closing Balance Bank/Cash"
+    _order = "date desc, id desc"
+    _rec_name = "date"
+
     company_id = fields.Many2one(
         "res.company",
         required=True,
@@ -14,12 +15,35 @@ class CashDailyBalance(models.Model):
         index=True,
     )
 
-    date = fields.Date(required=True, index=True)
-    currency_id = fields.Many2one('res.currency', default=lambda self: self.env.company.currency_id)
+    date = fields.Date(
+        string="Ngày",
+        required=True,
+        index=True,
+    )
 
-    closing_bank = fields.Monetary(currency_field='currency_id', string='Closing Bank', default=0.0)
-    closing_cash = fields.Monetary(currency_field='currency_id', string='Closing Cash', default=0.0)
+    currency_id = fields.Many2one(
+        "res.currency",
+        string="Tiền tệ",
+        default=lambda self: self.env.company.currency_id,
+        required=True,
+    )
+
+    closing_bank = fields.Monetary(
+        string="Tồn cuối - Ngân hàng",
+        currency_field="currency_id",
+        default=0.0,
+    )
+
+    closing_cash = fields.Monetary(
+        string="Tồn cuối - Tiền mặt",
+        currency_field="currency_id",
+        default=0.0,
+    )
 
     _sql_constraints = [
-        ('uniq_company_date', 'unique(date)', 'Đã có tồn cuối cho ngày này trong công ty này.')
+        (
+            "uniq_company_date",
+            "unique(company_id, date)",
+            "Đã có tồn cuối cho ngày này trong công ty này.",
+        )
     ]
