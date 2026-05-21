@@ -1,365 +1,363 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Template QWeb -->
     <template id="report_monthly_revenue_layout">
         <t t-call="web.html_container">
-            <t t-set="o" t-value="o or list"/>
-            <div class="header" style="display: flex; justify-content: space-between; font-family: Times New Roman;">
-                <table style="width:100%; border-collapse: collapse; border: 1px solid #fff;">
+            <div class="header" style="display:flex; justify-content:space-between; font-family:'Times New Roman';">
+                <table style="width:100%; border-collapse:collapse; border:1px solid #fff;">
                     <tr>
-                        <!-- Cột logo bên trái -->
-                        <td style="text-align: left; vertical-align: middle; border-collapse: collapse; border: 1px solid #fff; width: 50%;">
-                            <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id" alt="Company Logo" style="max-width: 160px;"/>
+                        <td style="text-align:left; vertical-align:middle; border:1px solid #fff; width:50%;">
+                            <img t-att-src="'/web/image/res.company/%s/logo' % res_company.id"
+                                 alt="Company Logo"
+                                 style="max-width:160px;"/>
                         </td>
 
-                        <!-- Cột thông tin công ty bên phải -->
-                        <td style="text-align: right; vertical-align: middle; border-collapse: collapse; border: 1px solid #fff; font-size: 11px; text-transform: capitalize; width: 50%;">
-                            <span t-esc="res_company.name" style="text-transform: uppercase;"/>
+                        <td style="text-align:right; vertical-align:middle; border:1px solid #fff; font-size:11px; text-transform:capitalize; width:50%;">
+                            <span t-esc="res_company.name" style="text-transform:uppercase;"/>
                             <br/>
-                MST: <span t-esc="res_company.partner_id.vat"/>
-                        <br/>
-                Địa chỉ: <span t-esc="res_company.partner_id.street"/>
-                    <br/>
-                SĐT: <span t-esc="res_company.phone_accounting"/>
-                <br/>
-                Email: <span style="text-transform: lowercase;" t-esc="res_company.account_email"/>
-            </td>
-        </tr>
-    </table>
+                            MST:
+                            <span t-esc="res_company.partner_id.vat"/>
+                            <br/>
+                            Địa chỉ:
+                            <span t-esc="res_company.partner_id.street"/>
+                            <br/>
+                            SĐT:
+                            <span t-esc="res_company.phone_accounting"/>
+                            <br/>
+                            Email:
+                            <span style="text-transform:lowercase;" t-esc="res_company.account_email"/>
+                        </td>
+                    </tr>
+                </table>
+            </div>
 
+            <div class="article" style="font-family:'Times New Roman'; font-size:11pt; line-height:1.5; padding-top:15px;">
+                <t t-raw="0"/>
+            </div>
 
-</div>
-<div class="article" style="font-family: Times New Roman; font-size: 11pt; line-height: 1.5; padding-top: 15px;">
-    <t t-raw="0"/>
-    <!-- Nội dung chính của báo cáo -->
-</div>
-<div class="footer" style="text-align: center; padding: 5mm; font-size: 10pt; font-family: Times New Roman;">
-    <p>
-        <span class="page"/>
-    </p>
-</div>
-</t>
-</template>
-<template id="report_template">
-<t t-call="monthly_revenue_expense_report.report_monthly_revenue_layout">
-<div class="page">
+            <div class="footer" style="text-align:center; padding:5mm; font-size:10pt; font-family:'Times New Roman';">
+                <p>
+                    <span class="page"/>
+                </p>
+            </div>
+        </t>
+    </template>
 
-    <!-- ===== CSS ===== -->
-    <style>
-                    .page { font-family: "Times New Roman"; font-size: 12pt; }
-                    .styled-table { border-collapse: collapse; width: 100%; border: 1px solid #000; }
-                    .styled-table th, .styled-table td {
-                        border: 1px solid #000;
-                        padding: 6px;
-                        vertical-align: middle;
+    <template id="report_template">
+        <t t-call="monthly_revenue_expense_report.report_monthly_revenue_layout">
+            <div class="page">
+
+                <style>
+                    .page {
+                        font-family: "Times New Roman";
+                        font-size: 12pt;
+                        color: #000;
                     }
+
+                    .styled-table {
+                        border-collapse: collapse;
+                        margin: 0 auto;
+                        font-size: 12pt;
+                        width: 100%;
+                        border: 1px solid #000;
+                        table-layout: fixed;
+                    }
+
                     .styled-table thead tr {
                         background-color: #C6E0B4;
                         font-weight: bold;
+                        color: #000;
                         text-align: center;
                     }
+
+                    .styled-table th,
+                    .styled-table td {
+                        font-size: 10pt;
+                        padding: 8px 12px;
+                        border: 1px solid #000;
+                        vertical-align: middle;
+                        overflow: hidden;
+                        word-wrap: break-word;
+                        overflow-wrap: anywhere;
+                    }
+
                     .section-header {
                         background-color: #BDD7EE;
                         font-weight: bold;
                         text-transform: uppercase;
                         text-align: left;
                     }
+
                     .group-header {
                         background-color: #E2EFDA;
                         font-weight: bold;
                         text-transform: uppercase;
                     }
-                    .text-right { text-align: right; }
-                    .text-left { text-align: left; }
-                    .text-center { text-align: center; }
-                      .page { font-family: "Times New Roman"; font-size: 12pt; color: #000; }
 
-  .styled-table {
-    border-collapse: collapse;
-    margin: 0 auto;
-    font-size: 12pt;
-    width: 100%;                 
-    border: 1px solid #000;
-    table-layout: fixed;          
-  }
+                    .text-center {
+                        text-align: center;
+                    }
 
-  .styled-table thead tr {
-    background-color: #C6E0B4;
-    font-weight: bold;
-    color: #000;
-    text-align: center;
-  }
+                    .text-left {
+                        text-align: left;
+                    }
 
-  .table-item{
-    text-transform: uppercase;
-    background-color: #E2EFDA;
-    font-weight: bold;
-    color: #000;
-  }
+                    .text-right {
+                        text-align: right;
+                    }
 
-  .styled-table th, .styled-table td {
-    font-size: 10pt;
-    padding: 8px 12px;
-    border: 1px solid #000;
-    vertical-align: middle;
-    overflow: hidden;            
-    word-wrap: break-word;       
-    overflow-wrap: anywhere;
-  }
+                    .num {
+                        white-space: nowrap;
+                    }
+                </style>
 
-  .styled-table tbody tr:hover { background-color: #D9EAD3; }
+                <h2 style="text-align:center; margin-bottom:15px; text-transform:uppercase;">
+                    <t t-if="period_type == 'month'">
+                        Báo cáo Doanh thu - Chi phí tháng
+                        <t t-esc="month"/>
+                        / năm
+                        <t t-esc="year"/>
+                    </t>
 
-  .text-center { text-align: center; }
-  .text-right  { text-align: right; }
+                    <t t-if="period_type == 'quarter'">
+                        Báo cáo Doanh thu - Chi phí quý
+                        <t t-esc="quarter"/>
+                        / năm
+                        <t t-esc="year"/>
+                    </t>
 
-  .num { white-space: nowrap; }
-    </style>
+                    <t t-if="period_type == 'year'">
+                        Báo cáo Doanh thu - Chi phí năm
+                        <t t-esc="year"/>
+                    </t>
+                </h2>
 
-    <!-- ===== Tiêu đề ===== -->
-    <h2 style="text-align:center; margin-bottom:15px; text-transform: uppercase;">
-        <t t-if="period_type == 'month'">
-    Báo cáo Doanh thu - Chi phí tháng <t t-esc="month"/>
- / năm <t t-esc="year"/>
-    </t>
-    <t t-if="period_type == 'quarter'">
-    Báo cáo Doanh thu - Chi phí quý <t t-esc="quarter"/>
- / năm <t t-esc="year"/>
-</t>
-<t t-if="period_type == 'year'">
-    Báo cáo Doanh thu - Chi phí năm <t t-esc="year"/>
-</t>
-</h2>
-
-<!-- ===== Bảng nội dung ===== -->
-<table class="styled-table">
-<thead>
-    <tr>
-        <th style="width:5%;">STT</th>
-        <th style="width:35%;">DIỄN GIẢI</th>
-        <th style="width:20%;">DOANH THU</th>
-        <th style="width:20%;">CHI PHÍ</th>
-        <th style="width:20%;">CHÊNH LỆCH</th>
-    </tr>
-</thead>
-
-<tbody>
-    <tr style="font-weight:bold; background-color:#DDEBF7;">
-        <td colspan="2">TỔNG</td>
-
-        <td class="text-right">
-            <t t-esc="'{:,.0f}'.format(total_revenue)"/>
- đ</td>
-        <td class="text-right">
-            <t t-esc="'{:,.0f}'.format(total_expense)"/>
- đ</td>
-        <td class="text-right">
-            <t t-esc="'{:,.0f}'.format(net_profit)"/>
- đ</td>
-    </tr>
-    <!-- ===================== -->
-    <!-- I. DOANH THU -->
-    <!-- ===================== -->
-    <!-- <tr class="section-header">
-                            <td colspan="5">I. DOANH THU</td>
-                        </tr> -->
-    <tr class="section-header">
-        <td colspan="2">I. DOANH THU</td>
-        <td class="text-right">
-            <t t-esc="'{:,.0f}'.format(total_revenue)"/>
- đ</td>
-        <td></td>
-        <td></td>
-    </tr>
-
-    <t t-if="revenue_data">
-        <t t-foreach="revenue_data" t-as="grp">
-            <!-- Mục con A, B, C -->
-            <t t-set="stt" t-value="0"/>
-            <tr class="group-header">
-                <td colspan="2">
-                    <t t-esc="grp['type_label']"/>
-                </td>
-                <td class="text-right">
-                    <t t-esc="'{:,.0f}'.format(grp['subtotal'])"/>
- đ</td>
-                <td class="text-right">0</td>
-                <td class="text-right">
-                    <t t-esc="'{:,.0f}'.format(grp['subtotal'])"/>
- đ</td>
-            </tr>
-
-            <!-- Danh sách chi tiết dự án / khoản -->
-            <t t-foreach="grp['projects']" t-as="p">
-                <t t-set="stt" t-value="stt + 1"/>
-                <tr>
-                    <td class="text-center">
-                        <t t-esc="stt"/>
-                    </td>
-                    <td class="text-left">
-                        <t t-esc="p['name']"/>
-                    </td>
-                    <td class="text-right">
-                        <t t-esc="'{:,.0f}'.format(p['revenue'])"/>
-                    </td>
-                    <td class="text-right">0</td>
-                    <td class="text-right">
-                        <t t-esc="'{:,.0f}'.format(p['revenue'])"/>
-                    </td>
-                </tr>
-            </t>
-        </t>
-    </t>
-
-    <!-- ===================== -->
-    <!-- II. CHI PHÍ -->
-    <!-- ===================== -->
-    <!-- <tr class="section-header">
-                            <td colspan="5">II. CHI PHÍ</td>
-                        </tr> -->
-
-    <t t-if="expense_data">
-        <tr class="section-header">
-            <td colspan="2">II. CHI PHÍ</td>
-            <td></td>
-            <td class="text-right">
-                <t t-esc="'{:,.0f}'.format(total_expense)"/>
- đ</td>
-            <td></td>
-        </tr>
-
-        <t t-foreach="expense_data" t-as="grp">
-            <t t-set="stt" t-value="0"/>
-
-            <!-- Hàng nhóm lớn -->
-            <tr class="group-header">
-
-                <td colspan="2">
-                    <t t-esc="grp['type_label']"/>
-                </td>
-                <td class="text-right">0</td>
-                <td class="text-right">
-                    <t t-esc="'{:,.0f}'.format(grp['subtotal'])"/>
- đ</td>
-                <td class="text-right">
-                    <t t-esc="'{:,.0f}'.format(-grp['subtotal'])"/>
- đ</td>
-            </tr>
-
-            <!-- Nếu có subgroup (B: có a/b) -->
-            <t t-if="grp.get('subgroups')">
-                <t t-foreach="grp['subgroups']" t-as="sub">
-                    <t t-set="stt" t-value="0"/>
-                    <tr style="background:#F7F7F7; font-weight:bold;">
-
-                        <td colspan="2">
-                            <t t-esc="sub['sub_label']"/>
-                        </td>
-                        <td class="text-right">0</td>
-                        <td class="text-right">
-                            <t t-esc="'{:,.0f}'.format(sub['subtotal'])"/>
- đ</td>
-                        <td class="text-right">
-                            <t t-esc="'{:,.0f}'.format(-sub['subtotal'])"/>
- đ</td>
-                    </tr>
-
-                    <!-- Các dòng con -->
-                    <t t-foreach="sub['lines']" t-as="p">
-                        <t t-set="stt" t-value="stt + 1"/>
+                <table class="styled-table">
+                    <thead>
                         <tr>
-                            <td class="text-center">
-                                <t t-esc="stt"/>
-                            </td>
-                            <td class="text-left">
-                                <t t-esc="p['name']"/>
-                            </td>
-                            <td class="text-right">0</td>
+                            <th style="width:5%;">STT</th>
+                            <th style="width:35%;">DIỄN GIẢI</th>
+                            <th style="width:20%;">DOANH THU</th>
+                            <th style="width:20%;">CHI PHÍ</th>
+                            <th style="width:20%;">CHÊNH LỆCH</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr style="font-weight:bold; background-color:#DDEBF7;">
+                            <td colspan="2">TỔNG</td>
                             <td class="text-right">
-                                <t t-esc="'{:,.0f}'.format(p['expense'])"/>
+                                <t t-esc="'{:,.0f}'.format(total_revenue)"/>
+                                đ
                             </td>
                             <td class="text-right">
-                                <t t-esc="'{:,.0f}'.format(-p['expense'])"/>
+                                <t t-esc="'{:,.0f}'.format(total_expense)"/>
+                                đ
+                            </td>
+                            <td class="text-right">
+                                <t t-esc="'{:,.0f}'.format(net_profit)"/>
+                                đ
                             </td>
                         </tr>
-                    </t>
-                </t>
-            </t>
 
-            <!-- Nếu nhóm không có subgroup -->
-            <t t-if="not grp.get('subgroups')">
-                <t t-foreach="grp['lines']" t-as="p">
-                    <t t-set="stt" t-value="stt + 1"/>
-                    <tr>
-                        <td class="text-center">
-                            <t t-esc="stt"/>
-                        </td>
-                        <td class="text-left">
-                            <t t-esc="p['name']"/>
-                        </td>
-                        <td class="text-right">0</td>
-                        <td class="text-right">
-                            <t t-esc="'{:,.0f}'.format(p['expense'])"/>
-                        </td>
-                        <td class="text-right">
-                            <t t-esc="'{:,.0f}'.format(-p['expense'])"/>
-                        </td>
-                    </tr>
-                </t>
-            </t>
+                        <tr class="section-header">
+                            <td colspan="2">I. DOANH THU</td>
+                            <td class="text-right">
+                                <t t-esc="'{:,.0f}'.format(total_revenue)"/>
+                                đ
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+
+                        <t t-if="revenue_data">
+                            <t t-foreach="revenue_data" t-as="grp">
+                                <t t-set="stt" t-value="0"/>
+
+                                <tr class="group-header">
+                                    <td colspan="2">
+                                        <t t-esc="grp['type_label']"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <t t-esc="'{:,.0f}'.format(grp['subtotal'])"/>
+                                        đ
+                                    </td>
+                                    <td class="text-right">0</td>
+                                    <td class="text-right">
+                                        <t t-esc="'{:,.0f}'.format(grp['subtotal'])"/>
+                                        đ
+                                    </td>
+                                </tr>
+
+                                <t t-foreach="grp['projects']" t-as="p">
+                                    <t t-set="stt" t-value="stt + 1"/>
+                                    <tr>
+                                        <td class="text-center">
+                                            <t t-esc="stt"/>
+                                        </td>
+                                        <td class="text-left">
+                                            <t t-esc="p['name']"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <t t-esc="'{:,.0f}'.format(p['revenue'])"/>
+                                        </td>
+                                        <td class="text-right">0</td>
+                                        <td class="text-right">
+                                            <t t-esc="'{:,.0f}'.format(p['revenue'])"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </t>
+                        </t>
+
+                        <t t-if="expense_data">
+                            <tr class="section-header">
+                                <td colspan="2">II. CHI PHÍ</td>
+                                <td></td>
+                                <td class="text-right">
+                                    <t t-esc="'{:,.0f}'.format(total_expense)"/>
+                                    đ
+                                </td>
+                                <td></td>
+                            </tr>
+
+                            <t t-foreach="expense_data" t-as="grp">
+                                <t t-set="stt" t-value="0"/>
+
+                                <tr class="group-header">
+                                    <td colspan="2">
+                                        <t t-esc="grp['type_label']"/>
+                                    </td>
+                                    <td class="text-right">0</td>
+                                    <td class="text-right">
+                                        <t t-esc="'{:,.0f}'.format(grp['subtotal'])"/>
+                                        đ
+                                    </td>
+                                    <td class="text-right">
+                                        <t t-esc="'{:,.0f}'.format(-grp['subtotal'])"/>
+                                        đ
+                                    </td>
+                                </tr>
+
+                                <t t-if="grp.get('subgroups')">
+                                    <t t-foreach="grp['subgroups']" t-as="sub">
+                                        <t t-set="stt" t-value="0"/>
+
+                                        <tr style="background:#F7F7F7; font-weight:bold;">
+                                            <td colspan="2">
+                                                <t t-esc="sub['sub_label']"/>
+                                            </td>
+                                            <td class="text-right">0</td>
+                                            <td class="text-right">
+                                                <t t-esc="'{:,.0f}'.format(sub['subtotal'])"/>
+                                                đ
+                                            </td>
+                                            <td class="text-right">
+                                                <t t-esc="'{:,.0f}'.format(-sub['subtotal'])"/>
+                                                đ
+                                            </td>
+                                        </tr>
+
+                                        <t t-foreach="sub['lines']" t-as="p">
+                                            <t t-set="stt" t-value="stt + 1"/>
+                                            <tr>
+                                                <td class="text-center">
+                                                    <t t-esc="stt"/>
+                                                </td>
+                                                <td class="text-left">
+                                                    <t t-esc="p['name']"/>
+                                                </td>
+                                                <td class="text-right">0</td>
+                                                <td class="text-right">
+                                                    <t t-esc="'{:,.0f}'.format(p['expense'])"/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <t t-esc="'{:,.0f}'.format(-p['expense'])"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                </t>
+
+                                <t t-if="not grp.get('subgroups')">
+                                    <t t-foreach="grp['lines']" t-as="p">
+                                        <t t-set="stt" t-value="stt + 1"/>
+                                        <tr>
+                                            <td class="text-center">
+                                                <t t-esc="stt"/>
+                                            </td>
+                                            <td class="text-left">
+                                                <t t-esc="p['name']"/>
+                                            </td>
+                                            <td class="text-right">0</td>
+                                            <td class="text-right">
+                                                <t t-esc="'{:,.0f}'.format(p['expense'])"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <t t-esc="'{:,.0f}'.format(-p['expense'])"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </t>
+                            </t>
+                        </t>
+                    </tbody>
+                </table>
+
+                <div style="page-break-inside:avoid; margin-top:40px; font-family:'Times New Roman'; font-size:12pt;">
+                    <table style="width:100%; border:none; border-collapse:collapse; text-align:center; border-color:#fff;">
+                        <tr style="border-color:#fff;">
+                            <td style="width:50%; vertical-align:top; border-color:#fff;">
+                                <div>
+                                    <strong>Người lập biểu</strong>
+                                </div>
+
+                                <div style="height:65px; margin-top:5px;">
+                                    <t t-if="user_id and user_id.digital_signature">
+                                        <img t-att-src="'data:image/png;base64,' + (user_id.digital_signature.decode() if isinstance(user_id.digital_signature, bytes) else user_id.digital_signature)"
+                                             style="max-height:65px; max-width:150px;"/>
+                                    </t>
+                                </div>
+
+                                <div>
+                                    <span t-esc="user_id.name if user_id else ''"/>
+                                </div>
+                            </td>
+
+                            <td style="width:50%; vertical-align:top; border-color:#fff;">
+                                <div>
+                                    TP. Hồ Chí Minh, ngày
+                                    <span t-esc="datetime.datetime.today().day"/>
+                                    tháng
+                                    <span t-esc="datetime.datetime.today().month"/>
+                                    năm
+                                    <span t-esc="datetime.datetime.today().year"/>
+                                </div>
+
+                                <div>
+                                    <strong>Giám đốc</strong>
+                                </div>
+
+                                <div style="height:65px; margin-top:5px;">
+                                    <t t-set="director_group" t-value="env.ref('custom_director_role.group_director', raise_if_not_found=False)"/>
+                                    <t t-set="director" t-value="director_group and env['res.users'].search([('groups_id', 'in', director_group.id)], limit=1) or False"/>
+
+                                    <t t-if="director and director.digital_signature">
+                                        <img t-att-src="'data:image/png;base64,' + (director.digital_signature.decode() if isinstance(director.digital_signature, bytes) else director.digital_signature)"
+                                             style="max-height:65px; max-width:150px;"/>
+                                    </t>
+                                </div>
+
+                                <div>
+                                    <span t-esc="director.name if director else 'Đỗ Minh Toàn'"/>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+            </div>
         </t>
-    </t>
+    </template>
 
-
-</tbody>
-</table>
-<!-- ====== CHỮ KÝ CUỐI TRANG ====== -->
-<!-- ====== CHỮ KÝ CUỐI TRANG (ỔN ĐỊNH KHI XUẤT PDF) ====== -->
-<div style="page-break-inside: avoid; margin-top:40px; font-family:'Times New Roman'; font-size:12pt;">
-<table style="width:100%; border:none; border-collapse:collapse; text-align:center; border-color:#fff;">
-    <tr style="border-color:#fff;">
-        <!-- Cột 1: Người lập biểu -->
-        <td style="width:50%; vertical-align:top; border-color:#fff;">
-            <div>
-                <strong>Người lập biểu</strong>
-            </div>
-            <div style="height:65px; margin-top:5px;">
-                <t t-if="user_id.digital_signature">
-                    <img t-att-src="'data:image/png;base64,' + (user_id.digital_signature.decode() if isinstance(user_id.digital_signature, bytes) else user_id.digital_signature)" style="max-height:65px; max-width:150px;" />
-                </t>
-            </div>
-            <div>
-                <span t-field="user_id.name"/>
-            </div>
-        </td>
-
-        <!-- Cột 2: Giám đốc -->
-        <td style="width:50%; vertical-align:top; border-color:#fff;">
-            <div>
-                    TP. Hồ Chí Minh, ngày <span t-esc="datetime.datetime.today().day"/>
-                    tháng <span t-esc="datetime.datetime.today().month"/>
-                    năm <span t-esc="datetime.datetime.today().year"/>
-    </div>
-    <div>
-        <strong>Giám đốc</strong>
-    </div>
-    <div style="height:65px; margin-top:5px;">
-        <t t-set="director_group" t-value="env.ref('custom_director_role.group_director')"/>
-        <t t-set="director" t-value="env['res.users'].search([('groups_id', 'in', director_group.id)], limit=1)"/>
-        <t t-if="director and director.digital_signature">
-            <img t-att-src="'data:image/png;base64,' + (director.digital_signature.decode() if isinstance(director.digital_signature, bytes) else director.digital_signature)" style="max-height:65px; max-width:150px;" />
-        </t>
-    </div>
-    <div>
-        <span t-esc="director.name if director else 'Đỗ Minh Toàn'"/>
-    </div>
-</td>
-</tr>
-</table>
-</div>
-
-
-</div>
-</t>
-</template>
 </odoo>

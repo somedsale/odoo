@@ -15,7 +15,7 @@
     <record id="daily_cash_flow_report" model="ir.actions.report">
         <field name="name">Báo cáo thu chi</field>
         <field name="model">daily.cash.flow.wizard</field>
-        <field name="report_type">qweb-html</field>
+        <field name="report_type">qweb-pdf</field>
         <field name="report_name">report_daily_cash_flow.daily_cash_flow_report_template</field>
         <field name="print_report_name">'Báo cáo thu chi'</field>
         <field name="paperformat_id" ref="custom_sale_report_a4_portrait"/>

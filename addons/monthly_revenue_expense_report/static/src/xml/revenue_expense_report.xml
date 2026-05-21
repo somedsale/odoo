@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="monthly_revenue_expense_report.RevenueExpenseReport">
+        <div class="o_revenue_expense_report h-100 overflow-auto bg-light">
+            <div class="container-fluid py-4">
+
+                <!-- FILTER BAR -->
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-body">
+                        <div class="row g-3 align-items-end">
+
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">Kỳ báo cáo</label>
+                                <select class="form-select"
+                                        t-model="state.filters.period_type">
+                                    <option value="month">Theo tháng</option>
+                                    <option value="quarter">Theo quý</option>
+                                    <option value="year">Theo năm</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2" t-if="state.filters.period_type === 'month'">
+                                <label class="form-label fw-bold">Tháng</label>
+                                <select class="form-select"
+                                        t-model="state.filters.month">
+                                    <t t-foreach="monthOptions" t-as="m" t-key="m.value">
+                                        <option t-att-value="m.value">
+                                            <t t-esc="m.label"/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2" t-if="state.filters.period_type === 'quarter'">
+                                <label class="form-label fw-bold">Quý</label>
+                                <select class="form-select"
+                                        t-model="state.filters.quarter">
+                                    <t t-foreach="quarterOptions" t-as="q" t-key="q.value">
+                                        <option t-att-value="q.value">
+                                            <t t-esc="q.label"/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">Năm</label>
+                                <select class="form-select"
+                                        t-model="state.filters.year">
+                                    <t t-foreach="yearOptions" t-as="y" t-key="y.value">
+                                        <option t-att-value="y.value">
+                                            <t t-esc="y.label"/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Tìm kiếm trong báo cáo</label>
+                                <input type="text"
+                                       class="form-control"
+                                       placeholder="Nhập tên dự án, khoản mục, nhóm chi phí..."
+                                       t-model="state.search"/>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold d-block">Thao tác</label>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-primary flex-fill"
+                                            t-on-click="loadReport"
+                                            t-att-disabled="state.loading">
+                                        <i class="fa fa-refresh me-1"/>
+                                        Tải
+                                    </button>
+
+                                    <button class="btn btn-success flex-fill"
+                                            t-on-click="exportExcel"
+                                            t-att-disabled="state.loading || state.exportingExcel">
+                                        <i class="fa fa-file-excel-o me-1"/>
+                                        <t t-if="!state.exportingExcel">Excel</t>
+                                        <t t-if="state.exportingExcel">...</t>
+                                    </button>
+
+                                    <button class="btn btn-danger flex-fill"
+                                            t-on-click="exportPdf"
+                                            t-att-disabled="state.loading || state.exportingPdf">
+                                        <i class="fa fa-file-pdf-o me-1"/>
+                                        <t t-if="!state.exportingPdf">PDF</t>
+                                        <t t-if="state.exportingPdf">...</t>
+                                    </button>
+
+                                    <button class="btn btn-outline-secondary"
+                                            t-on-click="clearFilters"
+                                            t-att-disabled="state.loading">
+                                        Xóa
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <t t-if="state.loading">
+                    <div class="text-center py-5">
+                        <i class="fa fa-spinner fa-spin me-2"/>
+                        Đang tải báo cáo...
+                    </div>
+                </t>
+
+                <t t-if="!state.loading and state.data">
+
+                    <!-- HEADER -->
+                    <div class="card shadow-sm border-0 mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start gap-3">
+                                <div class="d-flex gap-3 align-items-center">
+                                    <img t-att-src="state.data.company.logo_url"
+                                         style="max-height:64px; max-width:160px;"
+                                         alt="Logo"/>
+
+                                    <div>
+                                        <div class="fw-bold text-uppercase">
+                                            <t t-esc="state.data.company.name"/>
+                                        </div>
+                                        <div class="small text-muted">
+                                            MST:
+                                            <t t-esc="state.data.company.vat"/>
+                                        </div>
+                                        <div class="small text-muted">
+                                            Địa chỉ:
+                                            <t t-esc="state.data.company.address"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr/>
+
+                            <h3 class="text-center text-uppercase fw-bold mb-0">
+                                Báo cáo Doanh thu - Chi phí
+                                <t t-esc="state.data.period_label"/>
+                            </h3>
+                        </div>
+                    </div>
+
+                    <!-- SUMMARY -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="text-muted small">Tổng doanh thu</div>
+                                    <div class="fs-4 fw-bold text-success">
+                                        <t t-esc="formatMoney(state.data.total_revenue)"/> đ
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="text-muted small">Tổng chi phí</div>
+                                    <div class="fs-4 fw-bold text-danger">
+                                        <t t-esc="formatMoney(state.data.total_expense)"/> đ
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="text-muted small">Chênh lệch</div>
+                                    <div t-att-class="'fs-4 fw-bold ' + (state.data.net_profit >= 0 ? 'text-primary' : 'text-danger')">
+                                        <t t-esc="formatMoney(state.data.net_profit)"/> đ
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TABLE -->
+                    <div class="card shadow-sm border-0">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover mb-0 align-middle">
+                                <thead class="table-success text-center sticky-top">
+                                    <tr>
+                                        <th style="width: 70px;">STT</th>
+                                        <th>Diễn giải</th>
+                                        <th style="width: 220px;">Doanh thu</th>
+                                        <th style="width: 220px;">Chi phí</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <!-- TỔNG CỘNG -->
+                                    <tr class="fw-bold table-primary">
+                                        <td colspan="2">TỔNG CỘNG</td>
+                                        <td class="text-end">
+                                            <t t-esc="formatMoney(state.data.total_revenue)"/> đ
+                                        </td>
+                                        <td class="text-end">
+                                            <t t-esc="formatMoney(state.data.total_expense)"/> đ
+                                        </td>
+                                    </tr>
+
+                                    <!-- DOANH THU -->
+                                    <tr class="fw-bold table-info">
+                                        <td colspan="2">I. DOANH THU</td>
+                                        <td class="text-end">
+                                            <t t-esc="formatMoney(state.data.total_revenue)"/> đ
+                                        </td>
+                                        <td class="text-end">0</td>
+                                    </tr>
+
+                                    <t t-foreach="filteredRevenueData" t-as="grp" t-key="grp.type_key">
+                                        <tr class="fw-bold table-success o_clickable_report_row"
+                                            t-on-click="() => this.openDetail(grp, grp.type_label)">
+                                            <td colspan="2">
+                                                <t t-esc="grp.type_label"/>
+                                            </td>
+                                            <td class="text-end">
+                                                <t t-esc="formatMoney(grp.subtotal)"/> đ
+                                            </td>
+                                            <td class="text-end">0</td>
+                                        </tr>
+
+                                        <t t-set="rev_stt" t-value="0"/>
+                                        <t t-foreach="grp.projects" t-as="line" t-key="line.name">
+                                            <t t-set="rev_stt" t-value="rev_stt + 1"/>
+                                            <tr class="o_clickable_report_row"
+                                                t-on-click="() => this.openDetail(line, line.name)">
+                                                <td class="text-center">
+                                                    <t t-esc="rev_stt"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="line.name"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-esc="formatMoney(line.revenue)"/> đ
+                                                </td>
+                                                <td class="text-end">0</td>
+                                            </tr>
+                                        </t>
+                                    </t>
+
+                                    <!-- CHI PHÍ -->
+                                    <tr class="fw-bold table-warning">
+                                        <td colspan="2">II. CHI PHÍ</td>
+                                        <td class="text-end">0</td>
+                                        <td class="text-end">
+                                            <t t-esc="formatMoney(state.data.total_expense)"/> đ
+                                        </td>
+                                    </tr>
+
+                                    <t t-foreach="filteredExpenseData" t-as="grp" t-key="grp.type_label">
+                                        <tr class="fw-bold table-secondary o_clickable_report_row"
+                                            t-on-click="() => this.openDetail(grp, grp.type_label)">
+                                            <td colspan="2">
+                                                <t t-esc="grp.type_label"/>
+                                            </td>
+                                            <td class="text-end">0</td>
+                                            <td class="text-end">
+                                                <t t-esc="formatMoney(grp.subtotal)"/> đ
+                                            </td>
+                                        </tr>
+
+                                        <t t-if="grp.subgroups">
+                                            <t t-foreach="grp.subgroups" t-as="sub" t-key="sub.sub_label">
+                                                <tr class="fw-bold bg-light o_clickable_report_row"
+                                                    t-on-click="() => this.openDetail(sub, sub.sub_label)">
+                                                    <td colspan="2">
+                                                        <t t-esc="sub.sub_label"/>
+                                                    </td>
+                                                    <td class="text-end">0</td>
+                                                    <td class="text-end">
+                                                        <t t-esc="formatMoney(sub.subtotal)"/> đ
+                                                    </td>
+                                                </tr>
+
+                                                <t t-set="exp_stt" t-value="0"/>
+                                                <t t-foreach="sub.lines" t-as="line" t-key="line.name">
+                                                    <t t-set="exp_stt" t-value="exp_stt + 1"/>
+                                                    <tr class="o_clickable_report_row"
+                                                        t-on-click="() => this.openDetail(line, line.name)">
+                                                        <td class="text-center">
+                                                            <t t-esc="exp_stt"/>
+                                                        </td>
+                                                        <td>
+                                                            <t t-esc="line.name"/>
+                                                        </td>
+                                                        <td class="text-end">0</td>
+                                                        <td class="text-end">
+                                                            <t t-esc="formatMoney(line.expense)"/> đ
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </t>
+                                        </t>
+
+                                        <t t-if="!grp.subgroups">
+                                            <t t-set="exp2_stt" t-value="0"/>
+                                            <t t-foreach="grp.lines" t-as="line" t-key="line.name">
+                                                <t t-set="exp2_stt" t-value="exp2_stt + 1"/>
+                                                <tr class="o_clickable_report_row"
+                                                    t-on-click="() => this.openDetail(line, line.name)">
+                                                    <td class="text-center">
+                                                        <t t-esc="exp2_stt"/>
+                                                    </td>
+                                                    <td>
+                                                        <t t-esc="line.name"/>
+                                                    </td>
+                                                    <td class="text-end">0</td>
+                                                    <td class="text-end">
+                                                        <t t-esc="formatMoney(line.expense)"/> đ
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </t>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+
+            </div>
+        </div>
+    </t>
+
+</templates>

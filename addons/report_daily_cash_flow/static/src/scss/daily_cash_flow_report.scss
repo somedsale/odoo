@@ -1,0 +1,238 @@
+.o_daily_cash_flow_report {
+    background: #f5f7fb;
+
+    .o_cash_filter_card {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 14px;
+    }
+
+    .o_cash_loading {
+        min-height: 300px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .o_cash_summary_card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+
+        .summary-value {
+            font-size: 22px;
+            font-weight: 800;
+            margin-top: 6px;
+            color: #111827;
+        }
+
+        &.summary-bank {
+            border-left: 5px solid #2563eb;
+        }
+
+        &.summary-cash {
+            border-left: 5px solid #16a34a;
+        }
+    }
+
+    .o_cash_table_wrap {
+        max-height: calc(100vh - 285px);
+        overflow: auto;
+        position: relative;
+        background: #fff;
+    }
+
+    .o_cash_report_table {
+        min-width: 1450px;
+        width: 1450px;
+        table-layout: fixed;
+        font-size: 13px;
+        border-collapse: separate;
+        border-spacing: 0;
+        border: 1px solid #9ca3af;
+
+        col.col-stt {
+            width: 60px;
+        }
+
+        col.col-date {
+            width: 115px;
+        }
+
+        col.col-content {
+            width: 300px;
+        }
+
+        col.col-money {
+            width: 150px;
+        }
+
+        col.col-project {
+            width: 310px;
+        }
+
+        th,
+        td {
+            vertical-align: middle;
+            background-clip: padding-box;
+            overflow: hidden;
+
+            // FIX BORDER ĐẦY ĐỦ
+            border-right: 1px solid #9ca3af !important;
+            border-bottom: 1px solid #9ca3af !important;
+            border-left: 0 !important;
+            border-top: 0 !important;
+        }
+
+        tr th:first-child,
+        tr td:first-child {
+            border-left: 1px solid #9ca3af !important;
+        }
+
+        thead tr:first-child th {
+            border-top: 1px solid #9ca3af !important;
+        }
+
+        th {
+            text-align: center;
+            font-weight: 700;
+            white-space: normal;
+            line-height: 1.25;
+        }
+
+        td {
+            line-height: 1.35;
+            background-color: #fff;
+        }
+
+        th:nth-child(1),
+        td:nth-child(1) {
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        td:nth-child(2),
+        td:nth-child(6) {
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        td:nth-child(3),
+        td:nth-child(7),
+        td:nth-child(10) {
+            white-space: normal;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        td:nth-child(4),
+        td:nth-child(5),
+        td:nth-child(8),
+        td:nth-child(9) {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        thead {
+            position: relative;
+            z-index: 20;
+        }
+
+        thead tr:first-child th {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            height: 34px;
+            min-height: 34px;
+            max-height: 34px;
+            vertical-align: middle;
+
+            // FIX BORDER STICKY HEADER DÒNG 1
+            box-shadow:
+                inset 0 1px 0 #9ca3af,
+                inset 0 -1px 0 #9ca3af,
+                inset -1px 0 0 #9ca3af;
+        }
+
+        thead tr:nth-child(2) th {
+            position: sticky;
+            top: 34px;
+            z-index: 29;
+            height: 40px;
+            min-height: 40px;
+            max-height: 40px;
+            vertical-align: middle;
+
+            // FIX BORDER STICKY HEADER DÒNG 2
+            box-shadow:
+                inset 0 -1px 0 #9ca3af,
+                inset -1px 0 0 #9ca3af;
+        }
+
+        thead th[rowspan="2"] {
+            position: sticky;
+            top: 0;
+            z-index: 31;
+            height: 74px;
+            min-height: 74px;
+            max-height: 74px;
+            vertical-align: middle;
+
+            // FIX BORDER Ô STT ROWSPAN
+            box-shadow:
+                inset 0 1px 0 #9ca3af,
+                inset 0 -1px 0 #9ca3af,
+                inset 1px 0 0 #9ca3af,
+                inset -1px 0 0 #9ca3af;
+        }
+
+        .stt-head {
+            background: #d9e1f2 !important;
+            color: #111827;
+        }
+
+        .thu-head {
+            background: #92d050 !important;
+            color: #111827;
+        }
+
+        .chi-head {
+            background: #fff2cc !important;
+            color: #111827;
+        }
+
+        tbody tr:hover td {
+            background: #f8fbff;
+        }
+
+        .opening-row td {
+            background: #f8fafc;
+        }
+
+        .total-row td {
+            background: #f3f4f6;
+        }
+
+        .closing-row td {
+            background: #eef6ff;
+        }
+
+        .opening-row td,
+        .total-row td,
+        .closing-row td {
+            vertical-align: middle;
+        }
+
+        .cursor-pointer {
+            cursor: pointer;
+        }
+
+        .cursor-pointer:hover {
+            text-decoration: underline;
+        }
+    }
+}

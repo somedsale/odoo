@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Wizard form -->
+
+    <!-- Wizard vẫn giữ để dùng nội bộ hoặc nếu muốn mở popup thủ công -->
     <record id="view_monthly_revenue_expense_wizard" model="ir.ui.view">
         <field name="name">monthly.revenue.expense.report.form</field>
         <field name="model">monthly.revenue.expense.report</field>
@@ -12,16 +13,27 @@
                     <field name="quarter" invisible="period_type != 'quarter'"/>
                     <field name="year" widget="yearpicker"/>
                 </group>
+
                 <footer>
-                    <button string="Xem Báo cáo" type="object" name="action_view_report" class="btn-primary"/>
-                    <button string="Xuất Excel" type="object" name="action_export_excel" class="btn-primary"/>
-                    <button string="Đóng" class="btn-secondary" special="cancel"/>
+                    <button string="Xem Báo cáo"
+                            type="object"
+                            name="action_view_report"
+                            class="btn-primary"/>
+
+                    <button string="Xuất Excel"
+                            type="object"
+                            name="action_export_excel"
+                            class="btn-primary"/>
+
+                    <button string="Đóng"
+                            class="btn-secondary"
+                            special="cancel"/>
                 </footer>
             </form>
         </field>
     </record>
 
-    <!-- Action mở wizard -->
+    <!-- Action mở wizard nếu sau này cần -->
     <record id="action_monthly_revenue_expense_wizard" model="ir.actions.act_window">
         <field name="name">Báo cáo Doanh thu - Chi phí</field>
         <field name="res_model">monthly.revenue.expense.report</field>
@@ -29,22 +41,45 @@
         <field name="target">new</field>
     </record>
 
-    <!-- Menu -->
-    <menuitem id="menu_report_revenue_expense_root" name="Báo cáo Doanh thu - Chi phí" parent="custom_account_menu.menu_accounting_reporting" action="action_monthly_revenue_expense_wizard" sequence="20"/>
+    <!-- OWL Client Action -->
+    <record id="action_monthly_revenue_expense_owl_report" model="ir.actions.client">
+        <field name="name">Báo cáo Doanh thu - Chi phí</field>
+        <field name="tag">monthly_revenue_expense_report.owl_report</field>
+    </record>
+
+    <!-- Menu mở thẳng OWL report -->
+    <menuitem id="menu_report_revenue_expense_root"
+              name="Báo cáo Doanh thu - Chi phí"
+              parent="custom_account_menu.menu_accounting_reporting"
+              action="action_monthly_revenue_expense_owl_report"
+              sequence="20"/>
+
+    <!-- Paperformat PDF -->
     <record id="revenue_report_a4_landscape" model="report.paperformat">
         <field name="name">Report A4 Landscape</field>
         <field name="format">A4</field>
         <field name="orientation">Landscape</field>
-        <field name="margin_top">30</field>        <!-- Điều chỉnh từ 40mm xuống 30mm -->
-        <field name="margin_bottom">30</field>        <!-- Tăng từ 23mm lên 30mm -->
-        <field name="margin_left">10</field>        <!-- Tăng từ 7mm lên 10mm -->
-        <field name="margin_right">10</field>        <!-- Tăng từ 7mm lên 10mm -->
-        <field name="header_spacing">25</field>        <!-- Giảm từ 35mm xuống 25mm -->
+        <field name="margin_top">30</field>
+        <field name="margin_bottom">30</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_spacing">25</field>
         <field name="dpi">110</field>
     </record>
-    <!-- QWeb report definition -->
+
+    <!-- PDF Report -->
+    <record id="report_monthly_revenue_expense_action_pdf" model="ir.actions.report">
+        <field name="name">Báo cáo Doanh thu - Chi phí PDF</field>
+        <field name="model">monthly.revenue.expense.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">monthly_revenue_expense_report.report_template</field>
+        <field name="report_file">monthly_revenue_expense_report.report_template</field>
+        <field name="paperformat_id" ref="revenue_report_a4_landscape"/>
+    </record>
+
+    <!-- HTML report cũ, có thể giữ nếu cần -->
     <record id="report_monthly_revenue_expense_action_html" model="ir.actions.report">
-        <field name="name">Báo cáo Doanh thu - Chi phí</field>
+        <field name="name">Báo cáo Doanh thu - Chi phí HTML</field>
         <field name="model">monthly.revenue.expense.report</field>
         <field name="report_type">qweb-html</field>
         <field name="report_name">monthly_revenue_expense_report.report_template</field>
