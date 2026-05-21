@@ -1,0 +1,27 @@
+.o_revenue_expense_report {
+    .o_clickable_report_row {
+        cursor: pointer;
+    }
+
+    .o_clickable_report_row:hover {
+        background-color: #eef7ff !important;
+    }
+
+    table {
+        font-size: 14px;
+    }
+
+    th {
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    td {
+        vertical-align: middle;
+    }
+
+    .sticky-top {
+        top: 0;
+        z-index: 2;
+    }
+}

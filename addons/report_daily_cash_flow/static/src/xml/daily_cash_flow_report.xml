@@ -1,0 +1,509 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="report_daily_cash_flow.DailyCashFlowReport">
+        <div class="o_daily_cash_flow_report h-100 d-flex flex-column">
+
+            <div class="o_cash_report_header bg-white border-bottom px-4 py-3">
+                <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                    <div>
+                        <h2 class="m-0 fw-bold">Báo cáo thu chi</h2>
+
+                        <div class="text-muted mt-1" t-if="state.report">
+                            <t t-esc="state.report.title"/>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button
+                            class="btn btn-primary"
+                            t-on-click="loadReport"
+                            t-att-disabled="state.loading || state.syncingOpening">
+
+                            <i class="fa fa-refresh me-1"/>
+                            Tải dữ liệu
+                        </button>
+
+                        <button
+                            class="btn btn-outline-success"
+                            t-on-click="exportExcel"
+                            t-att-disabled="state.loading || state.syncingOpening">
+
+                            <i class="fa fa-file-excel-o me-1"/>
+                            Xuất Excel
+                        </button>
+
+                        <button
+                            class="btn btn-outline-danger"
+                            t-on-click="exportPdf"
+                            t-att-disabled="state.loading || state.syncingOpening">
+
+                            <i class="fa fa-file-pdf-o me-1"/>
+                            Xuất PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div class="o_cash_filter_card mt-3">
+                    <div class="row g-3 align-items-end">
+
+                        <div class="col-12 col-md-2">
+                            <label class="form-label fw-semibold">Kỳ báo cáo</label>
+
+                            <select
+                                class="form-select"
+                                name="period_type"
+                                t-on-change="updateFilter"
+                                t-att-value="state.filters.period_type">
+
+                                <option value="custom">Khoảng ngày</option>
+                                <option value="month">Tháng</option>
+                                <option value="quarter">Quý</option>
+                                <option value="year">Năm</option>
+                            </select>
+                        </div>
+
+                        <t t-if="state.filters.period_type === 'custom'">
+                            <div class="col-12 col-md-2">
+                                <label class="form-label fw-semibold">Từ ngày</label>
+
+                                <input
+                                    type="date"
+                                    class="form-control"
+                                    name="date_from"
+                                    t-att-value="state.filters.date_from"
+                                    t-on-change="updateFilter"/>
+                            </div>
+
+                            <div class="col-12 col-md-2">
+                                <label class="form-label fw-semibold">Đến ngày</label>
+
+                                <input
+                                    type="date"
+                                    class="form-control"
+                                    name="date_to"
+                                    t-att-value="state.filters.date_to"
+                                    t-on-change="updateFilter"/>
+                            </div>
+                        </t>
+
+                        <t t-if="state.filters.period_type === 'month'">
+                            <div class="col-12 col-md-2">
+                                <label class="form-label fw-semibold">Tháng</label>
+
+                                <select
+                                    class="form-select"
+                                    name="month"
+                                    t-on-change="updateFilter"
+                                    t-att-value="state.filters.month">
+
+                                    <t t-foreach="months" t-as="m" t-key="m.value">
+                                        <option t-att-value="m.value" t-esc="m.label"/>
+                                    </t>
+                                </select>
+                            </div>
+                        </t>
+
+                        <t t-if="state.filters.period_type === 'quarter'">
+                            <div class="col-12 col-md-2">
+                                <label class="form-label fw-semibold">Quý</label>
+
+                                <select
+                                    class="form-select"
+                                    name="quarter"
+                                    t-on-change="updateFilter"
+                                    t-att-value="state.filters.quarter">
+
+                                    <t t-foreach="quarters" t-as="q" t-key="q.value">
+                                        <option t-att-value="q.value" t-esc="q.label"/>
+                                    </t>
+                                </select>
+                            </div>
+                        </t>
+
+                        <t t-if="state.filters.period_type !== 'custom'">
+                            <div class="col-12 col-md-2">
+                                <label class="form-label fw-semibold">Năm</label>
+
+                                <input
+                                    type="number"
+                                    class="form-control"
+                                    name="year"
+                                    t-att-value="state.filters.year"
+                                    t-on-change="updateFilter"/>
+                            </div>
+                        </t>
+
+                        <div class="col-12 col-md-2">
+                            <label class="form-label fw-semibold">Tồn đầu NH</label>
+
+                            <input
+                                type="text"
+                                inputmode="numeric"
+                                autocomplete="off"
+                                class="form-control text-end"
+                                name="opening_bank"
+                                t-att-value="formatInputMoney(state.filters.opening_bank)"
+                                t-on-input="onMoneyInput"
+                                t-on-focus="onMoneyFocus"
+                                t-on-blur="onMoneyBlur"/>
+                        </div>
+
+                        <div class="col-12 col-md-2">
+                            <label class="form-label fw-semibold">Tồn đầu TM</label>
+
+                            <input
+                                type="text"
+                                inputmode="numeric"
+                                autocomplete="off"
+                                class="form-control text-end"
+                                name="opening_cash"
+                                t-att-value="formatInputMoney(state.filters.opening_cash)"
+                                t-on-input="onMoneyInput"
+                                t-on-focus="onMoneyFocus"
+                                t-on-blur="onMoneyBlur"/>
+                        </div>
+
+                    </div>
+
+                    <div class="mt-2 text-muted small">
+                        Tồn đầu kỳ sẽ tự lấy theo tồn cuối gần nhất trước ngày bắt đầu.
+                        Nếu chưa có dữ liệu, nhập tay rồi bấm “Tải dữ liệu” để lưu lại.
+                    </div>
+                </div>
+            </div>
+
+            <div class="o_cash_report_body flex-grow-1 overflow-auto p-4">
+
+                <t t-if="state.loading || state.syncingOpening">
+                    <div class="o_cash_loading">
+                        <div class="spinner-border text-primary"/>
+                        <div class="mt-2 text-muted">Đang tải báo cáo...</div>
+                    </div>
+                </t>
+
+                <t t-if="!state.loading and !state.syncingOpening and state.report">
+
+                    <div class="row g-3 mb-3">
+
+                        <div class="col-12 col-md-3">
+                            <div class="o_cash_summary_card">
+                                <div class="text-muted">Tồn đầu ngân hàng</div>
+
+                                <div class="summary-value">
+                                    <t t-esc="formatMoney(state.report.opening_bank)"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-3">
+                            <div class="o_cash_summary_card">
+                                <div class="text-muted">Tồn đầu tiền mặt</div>
+
+                                <div class="summary-value">
+                                    <t t-esc="formatMoney(state.report.opening_cash)"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-3">
+                            <div class="o_cash_summary_card summary-bank">
+                                <div class="text-muted">Tồn cuối ngân hàng</div>
+
+                                <div class="summary-value">
+                                    <t t-esc="formatMoney(state.report.closing_bank)"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-3">
+                            <div class="o_cash_summary_card summary-cash">
+                                <div class="text-muted">Tồn cuối tiền mặt</div>
+
+                                <div class="summary-value">
+                                    <t t-esc="formatMoney(state.report.closing_cash)"/>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- PHÂN TRANG TRÊN -->
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-muted">Hiển thị</span>
+
+                            <select
+                                class="form-select form-select-sm"
+                                style="width: auto;"
+                                t-att-value="state.pagination.pageSize"
+                                t-on-change="setPageSize">
+
+                                <t t-foreach="pageSizeOptions" t-as="size" t-key="size">
+                                    <option t-att-value="size" t-esc="size"/>
+                                </t>
+                            </select>
+
+                            <span class="text-muted">dòng / trang</span>
+                        </div>
+
+                        <div class="text-muted small">
+                            Hiển thị
+                            <strong><t t-esc="pageStart"/></strong>
+                            -
+                            <strong><t t-esc="pageEnd"/></strong>
+                            trên
+                            <strong><t t-esc="totalRows"/></strong>
+                            dòng
+                        </div>
+                    </div>
+
+                    <div class="o_cash_table_wrap bg-white border rounded overflow-auto">
+                        <table class="table table-sm table-bordered o_cash_report_table mb-0">
+                            <colgroup>
+                                <!-- STT -->
+                                <col class="col-stt"/>
+
+                                <!-- THU TIỀN -->
+                                <col class="col-date"/>
+                                <col class="col-content"/>
+                                <col class="col-money"/>
+                                <col class="col-money"/>
+
+                                <!-- CHI TIỀN -->
+                                <col class="col-date"/>
+                                <col class="col-content"/>
+                                <col class="col-money"/>
+                                <col class="col-money"/>
+                                <col class="col-project"/>
+                            </colgroup>
+
+                            <thead>
+                                <tr>
+                                    <th rowspan="2" class="text-center stt-head">STT</th>
+                                    <th colspan="4" class="text-center thu-head">THU TIỀN</th>
+                                    <th colspan="5" class="text-center chi-head">CHI TIỀN</th>
+                                </tr>
+
+                                <tr>
+                                    <th class="thu-head text-center">Ngày</th>
+                                    <th class="thu-head text-center">Nội dung thu</th>
+                                    <th class="thu-head text-center">Ngân hàng</th>
+                                    <th class="thu-head text-center">Tiền mặt</th>
+
+                                    <th class="chi-head text-center">Ngày</th>
+                                    <th class="chi-head text-center">Nội dung chi</th>
+                                    <th class="chi-head text-center">Ngân hàng</th>
+                                    <th class="chi-head text-center">Tiền mặt</th>
+                                    <th class="chi-head text-center">Gói thầu / Công trình</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr class="fw-bold opening-row">
+                                    <td></td>
+                                    <td></td>
+
+                                    <td class="text-center">
+                                        TỒN ĐẦU KỲ
+                                        <br/>
+                                        <span class="text-muted">
+                                            Từ ngày <t t-esc="state.report.date_from_label"/>
+                                        </span>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <t t-esc="formatMoney(state.report.opening_bank)"/>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <t t-esc="formatMoney(state.report.opening_cash)"/>
+                                    </td>
+
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+
+                                <t t-if="state.report.rows.length === 0">
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td class="text-center text-muted py-5">
+                                            Không có dữ liệu thu/chi trong kỳ này.
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </t>
+
+                                <t t-foreach="paginatedRows" t-as="row" t-key="row.index">
+                                    <tr>
+                                        <td class="text-center" t-esc="row.index"/>
+
+                                        <td
+                                            class="text-center cursor-pointer"
+                                            t-on-click="() => this.openReceipt(row)">
+                                            <t t-esc="row.receipt_date"/>
+                                        </td>
+
+                                        <td
+                                            class="cursor-pointer"
+                                            t-on-click="() => this.openReceipt(row)">
+                                            <t t-esc="row.receipt_note"/>
+                                        </td>
+
+                                        <td class="text-end">
+                                            <t t-if="row.receipt_bank">
+                                                <t t-esc="formatMoney(row.receipt_bank)"/>
+                                            </t>
+                                        </td>
+
+                                        <td class="text-end">
+                                            <t t-if="row.receipt_cash">
+                                                <t t-esc="formatMoney(row.receipt_cash)"/>
+                                            </t>
+                                        </td>
+
+                                        <td
+                                            class="text-center cursor-pointer"
+                                            t-on-click="() => this.openPayment(row)">
+                                            <t t-esc="row.payment_date"/>
+                                        </td>
+
+                                        <td
+                                            class="cursor-pointer"
+                                            t-on-click="() => this.openPayment(row)">
+                                            <t t-esc="row.payment_note"/>
+                                        </td>
+
+                                        <td class="text-end">
+                                            <t t-if="row.payment_bank">
+                                                <t t-esc="formatMoney(row.payment_bank)"/>
+                                            </t>
+                                        </td>
+
+                                        <td class="text-end">
+                                            <t t-if="row.payment_cash">
+                                                <t t-esc="formatMoney(row.payment_cash)"/>
+                                            </t>
+                                        </td>
+
+                                        <td>
+                                            <t t-esc="row.project_text"/>
+                                        </td>
+                                    </tr>
+                                </t>
+
+                                <tr class="fw-bold total-row">
+                                    <td></td>
+                                    <td></td>
+
+                                    <td class="text-center">TỔNG THU / CHI</td>
+
+                                    <td class="text-end">
+                                        <t t-esc="formatMoney(state.report.sum_receipt_bank)"/>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <t t-esc="formatMoney(state.report.sum_receipt_cash)"/>
+                                    </td>
+
+                                    <td></td>
+                                    <td></td>
+
+                                    <td class="text-end">
+                                        <t t-esc="formatMoney(state.report.sum_payment_bank)"/>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <t t-esc="formatMoney(state.report.sum_payment_cash)"/>
+                                    </td>
+
+                                    <td></td>
+                                </tr>
+
+                                <tr class="fw-bold closing-row">
+                                    <td></td>
+                                    <td></td>
+
+                                    <td class="text-center">
+                                        TỒN TIỀN
+                                        <br/>
+                                        NGÂN HÀNG / MẶT
+                                        <br/>
+                                        <span class="text-muted">
+                                            Đến ngày <t t-esc="state.report.date_to_label"/>
+                                        </span>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <t t-esc="formatMoney(state.report.closing_bank)"/>
+                                    </td>
+
+                                    <td class="text-end">
+                                        <t t-esc="formatMoney(state.report.closing_cash)"/>
+                                    </td>
+
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- PHÂN TRANG DƯỚI -->
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+                        <div class="text-muted small">
+                            Trang
+                            <strong><t t-esc="currentPage"/></strong>
+                            /
+                            <strong><t t-esc="totalPages"/></strong>
+                        </div>
+
+                        <div class="btn-group">
+                            <button
+                                class="btn btn-sm btn-outline-secondary"
+                                t-on-click="prevPage"
+                                t-att-disabled="currentPage &lt;= 1">
+
+                                <i class="fa fa-angle-left me-1"/>
+                                Trước
+                            </button>
+
+                            <t t-foreach="visiblePageNumbers" t-as="page" t-key="page">
+                                <button
+                                    t-att-class="page === currentPage ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline-secondary'"
+                                    t-on-click="() => this.goToPage(page)">
+
+                                    <t t-esc="page"/>
+                                </button>
+                            </t>
+
+                            <button
+                                class="btn btn-sm btn-outline-secondary"
+                                t-on-click="nextPage"
+                                t-att-disabled="currentPage &gt;= totalPages">
+
+                                Sau
+                                <i class="fa fa-angle-right ms-1"/>
+                            </button>
+                        </div>
+                    </div>
+
+                </t>
+            </div>
+        </div>
+    </t>
+
+</templates>
