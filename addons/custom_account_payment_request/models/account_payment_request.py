@@ -8,6 +8,7 @@ class AccountingPaymentRequest(models.Model):
     _description = 'Yêu cầu chi tiền kế toán'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = "create_date desc"
+    create_date = fields.Datetime(string="Ngày tạo", readonly=False, copy=False)
 
     name = fields.Char(string="Mã phiếu chi", required=True, copy=False, readonly=True, default='/')
 

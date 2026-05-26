@@ -1,0 +1,494 @@
+
+/* Font theo yêu cầu */
+.o_bid_page,
+.o_bid_project_list_page,
+.o_bid_import_steps,
+.o_bid_card,
+.o_bid_empty_panel,
+.o_bid_content_card,
+.o_bid_modal,
+.o_bid_vendor_form,
+.o_bid_material_form,
+.o_bid_page input,
+.o_bid_page textarea,
+.o_bid_page select,
+.o_bid_page button,
+.o_bid_page table,
+.o_bid_project_list_page input,
+.o_bid_project_list_page textarea,
+.o_bid_project_list_page select,
+.o_bid_project_list_page button,
+.o_bid_project_list_page table {
+    font-family: "Times New Roman", Times, serif !important;
+}
+
+.o_bid_page {
+    padding: 16px;
+    background: #f8f9fa;
+    min-height: calc(100vh - 46px);
+}
+
+.o_bid_loading,
+.o_bid_empty_state {
+    min-height: 360px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #6c757d;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+}
+.o_bid_empty_state i { font-size: 42px; color: #875A7B; }
+.o_bid_empty_state h3 { margin: 0; color: #212529; }
+
+.o_bid_action_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+.o_bid_module_label {
+    color: #6c757d;
+    font-size: 12px;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: .04em;
+}
+.o_bid_action_header h2 {
+    margin: 4px 0 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #212529;
+}
+.o_bid_header_actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+.o_bid_project_select { min-width: 280px; max-width: 420px; }
+
+.o_bid_summary_grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.o_bid_summary_card {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 14px 16px;
+}
+.o_bid_summary_card span {
+    display: block;
+    color: #6c757d;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+.o_bid_summary_card strong {
+    font-size: 20px;
+    color: #212529;
+}
+.o_bid_summary_card.primary strong { color: #875A7B; }
+.o_bid_summary_card.compact strong { font-size: 18px; }
+
+.o_bid_content_card {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.o_bid_section_bar {
+    border-bottom: 1px solid #dee2e6;
+    background: #f8f9fa;
+    overflow-x: auto;
+}
+.o_bid_section_tabs {
+    display: flex;
+    gap: 0;
+    min-width: max-content;
+}
+.o_bid_section_tabs button {
+    border: 0;
+    background: transparent;
+    padding: 12px 16px;
+    color: #495057;
+    border-bottom: 3px solid transparent;
+    text-align: left;
+    max-width: 260px;
+}
+.o_bid_section_tabs button span {
+    display: block;
+    font-weight: 600;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.o_bid_section_tabs button small {
+    display: block;
+    color: #6c757d;
+    margin-top: 2px;
+}
+.o_bid_section_tabs button.active {
+    background: #fff;
+    color: #875A7B;
+    border-bottom-color: #875A7B;
+}
+
+.o_bid_table_header {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+    border-bottom: 1px solid #dee2e6;
+}
+.o_bid_table_header h3 { margin: 0; font-size: 18px; font-weight: 600; }
+.o_bid_table_header p { margin: 4px 0 0; color: #6c757d; }
+.o_bid_search_box { position: relative; min-width: 320px; }
+.o_bid_search_box i { position: absolute; left: 10px; top: 10px; color: #6c757d; }
+.o_bid_search_box input { padding-left: 30px; }
+
+.o_bid_table_wrap { padding: 12px 16px 18px; overflow-x: auto; }
+.o_bid_empty_inline { padding: 40px; text-align: center; color: #6c757d; }
+.o_bid_item_group { margin-bottom: 14px; border: 1px solid #e9ecef; border-radius: 8px; overflow: hidden; }
+.o_bid_item_title {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+    padding: 10px 12px;
+    background: #f1f3f5;
+    border-bottom: 1px solid #dee2e6;
+}
+.o_bid_item_code {
+    display: inline-block;
+    min-width: 48px;
+    font-family: "Times New Roman", Times, serif;
+    color: #875A7B;
+    font-weight: 700;
+    margin-right: 8px;
+}
+.o_bid_item_total { white-space: nowrap; color: #495057; }
+
+.o_bid_material_table { min-width: 1150px; margin-bottom: 0; }
+.o_bid_material_table thead th {
+    background: #fff;
+    color: #6c757d;
+    font-size: 12px;
+    text-transform: uppercase;
+    font-weight: 700;
+    border-bottom: 1px solid #dee2e6;
+}
+.o_col_toggle { width: 34px; text-align: center; cursor: pointer; color: #875A7B; }
+.o_bid_mono { font-family: "Times New Roman", Times, serif; }
+.o_bid_line_name { font-weight: 600; color: #212529; }
+.o_bid_line_note { margin-top: 2px; color: #6c757d; font-size: 12px; max-width: 620px; white-space: pre-wrap; line-height: 1.45; }
+.o_bid_spec_textarea { min-height: 96px; white-space: pre-wrap; resize: vertical; }
+.o_bid_quote_badge {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    font-size: 11px;
+    background: #e9ecef;
+    color: #495057;
+}
+.o_bid_quote_badge.rich { background: #e6f4ea; color: #137333; }
+.o_bid_quote_badge.normal { background: #fff4e5; color: #8a5a00; }
+.o_bid_quote_badge.empty { background: #f1f3f5; color: #868e96; }
+.o_bid_best_vendor span { display: block; font-weight: 600; }
+.o_bid_best_vendor b { color: #137333; }
+.o_bid_material_row.good td:nth-child(8),
+.o_bid_material_row.good td:nth-child(9) { background: #f0fff4; }
+.o_bid_material_row.bad td:nth-child(8),
+.o_bid_material_row.bad td:nth-child(9) { background: #fff5f5; }
+.o_bid_percent { font-size: 11px; color: #6c757d; }
+
+.o_bid_vendor_detail_row > td { background: #fafafa; padding: 0 !important; }
+.o_bid_vendor_box { padding: 12px 16px 16px; border-left: 4px solid #875A7B; }
+.o_bid_vendor_box_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.o_bid_vendor_table { margin-bottom: 0; background: #fff; }
+.o_bid_vendor_table tr.best td { background: #f0fff4; }
+.o_bid_vendor_table tr.selected td { font-weight: 600; }
+.o_bid_no_quote_box { color: #6c757d; padding: 12px; background: #fff; border: 1px dashed #ced4da; border-radius: 6px; }
+
+@media (max-width: 992px) {
+    .o_bid_action_header,
+    .o_bid_table_header { flex-direction: column; align-items: stretch; }
+    .o_bid_summary_grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .o_bid_project_select, .o_bid_search_box { width: 100%; max-width: none; min-width: 0; }
+}
+@media (max-width: 576px) {
+    .o_bid_summary_grid { grid-template-columns: 1fr; }
+    .o_bid_page { padding: 8px; }
+}
+
+.o_bid_vendor_form {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+.o_bid_vendor_form_title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    color: #212529;
+}
+.o_bid_vendor_form_grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1.4fr 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    align-items: end;
+}
+.o_bid_field label {
+    display: block;
+    color: #6c757d;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.o_bid_field_full {
+    grid-column: span 3;
+}
+.o_bid_check_field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 31px;
+    margin: 0;
+    color: #495057;
+    font-weight: 500;
+}
+.o_bid_vendor_form_actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+.o_bid_vendor_actions {
+    white-space: nowrap;
+}
+
+@media (max-width: 1200px) {
+    .o_bid_vendor_form_grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .o_bid_field_full { grid-column: span 2; }
+}
+@media (max-width: 768px) {
+    .o_bid_vendor_form_grid { grid-template-columns: 1fr; }
+    .o_bid_field_full { grid-column: span 1; }
+}
+
+.o_bid_table_tools {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.o_bid_vendor_header_actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.o_bid_line_form {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px;
+    margin: 10px 12px 12px;
+}
+.o_bid_line_form_title {
+    margin-bottom: 10px;
+    color: #212529;
+}
+.o_bid_line_form_grid {
+    display: grid;
+    grid-template-columns: 80px minmax(260px, 2fr) 100px 120px 150px minmax(260px, 2fr);
+    gap: 10px;
+    align-items: end;
+}
+.o_bid_line_name_field {
+    min-width: 260px;
+}
+.o_bid_line_form_actions {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+.o_bid_material_row {
+    cursor: pointer;
+}
+.o_bid_material_table { min-width: 1020px; }
+
+@media (max-width: 1200px) {
+    .o_bid_line_form_grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 768px) {
+    .o_bid_table_tools { align-items: stretch; }
+    .o_bid_line_form_grid { grid-template-columns: 1fr; }
+}
+
+
+/* Searchable supplier select */
+.o_bid_supplier_combo {
+    position: relative;
+}
+.o_bid_supplier_combo_input {
+    padding-right: 28px;
+}
+.o_bid_supplier_clear {
+    position: absolute;
+    right: 6px;
+    top: 5px;
+    border: 0;
+    background: transparent;
+    color: #6c757d;
+    font-size: 18px;
+    line-height: 1;
+    padding: 0 4px;
+}
+.o_bid_supplier_clear:hover { color: #dc3545; }
+.o_bid_supplier_dropdown {
+    position: absolute;
+    z-index: 25;
+    left: 0;
+    right: 0;
+    top: calc(100% + 3px);
+    max-height: 240px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .12);
+}
+.o_bid_supplier_option {
+    width: 100%;
+    border: 0;
+    background: #fff;
+    padding: 7px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    text-align: left;
+    color: #212529;
+}
+.o_bid_supplier_option:hover,
+.o_bid_supplier_option.selected {
+    background: #f1edf3;
+    color: #875A7B;
+}
+.o_bid_supplier_no_result {
+    padding: 10px;
+    color: #6c757d;
+    font-size: 12px;
+}
+.o_bid_material_row:hover td {
+    background: #f8f0f7;
+}
+.o_bid_material_row .o_col_toggle {
+    user-select: none;
+}
+
+.o_bid_parent_material_meta {
+    margin-left: 8px;
+    color: #6c757d;
+    font-weight: 400;
+    font-size: 13px;
+}
+
+
+.o_bid_modal_backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(33, 37, 41, .35);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+.o_bid_modal {
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 18px 48px rgba(0,0,0,.18);
+    width: 560px;
+    max-width: 100%;
+    overflow: hidden;
+}
+.o_bid_project_edit_modal { max-width: 560px; }
+.o_bid_modal_header,
+.o_bid_modal_footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #dee2e6;
+}
+.o_bid_modal_footer {
+    justify-content: flex-end;
+    border-top: 1px solid #dee2e6;
+    border-bottom: 0;
+}
+.o_bid_modal_header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+}
+.o_bid_modal_body { padding: 16px; }
+.o_bid_project_quick_actions .btn { padding-left: 4px; padding-right: 4px; }
+
+/* Bổ sung border dọc cho các bảng OWL */
+.o_bid_page table.o_bid_material_table,
+.o_bid_page table.o_bid_vendor_table {
+    border-collapse: collapse;
+    border: 1px solid #dee2e6;
+}
+.o_bid_page table.o_bid_material_table th,
+.o_bid_page table.o_bid_material_table td,
+.o_bid_page table.o_bid_vendor_table th,
+.o_bid_page table.o_bid_vendor_table td {
+    border-left: 1px solid #dee2e6 !important;
+    border-right: 1px solid #dee2e6 !important;
+    border-bottom: 1px solid #dee2e6 !important;
+}
+.o_bid_page table.o_bid_material_table th:first-child,
+.o_bid_page table.o_bid_material_table td:first-child,
+.o_bid_page table.o_bid_vendor_table th:first-child,
+.o_bid_page table.o_bid_vendor_table td:first-child {
+    border-left: 1px solid #dee2e6 !important;
+}
+.o_bid_page table.o_bid_material_table th:last-child,
+.o_bid_page table.o_bid_material_table td:last-child,
+.o_bid_page table.o_bid_vendor_table th:last-child,
+.o_bid_page table.o_bid_vendor_table td:last-child {
+    border-right: 1px solid #dee2e6 !important;
+}
+.o_bid_vendor_detail_row > td {
+    border-left: 1px solid #dee2e6 !important;
+    border-right: 1px solid #dee2e6 !important;
+}
+.o_bid_supplier_import_modal {
+    width: 640px;
+    max-width: 100%;
+}

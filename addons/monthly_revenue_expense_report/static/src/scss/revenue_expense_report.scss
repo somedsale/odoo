@@ -7,6 +7,19 @@
         background-color: #eef7ff !important;
     }
 
+    .o_edit_bucket_btn {
+        opacity: 0.45;
+        min-width: 22px;
+    }
+
+    .o_clickable_report_row:hover .o_edit_bucket_btn {
+        opacity: 1;
+    }
+
+    .o_edit_bucket_btn:hover {
+        text-decoration: none;
+    }
+
     table {
         font-size: 14px;
     }

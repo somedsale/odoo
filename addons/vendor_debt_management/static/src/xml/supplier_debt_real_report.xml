@@ -4,13 +4,14 @@
     <t t-name="vendor_debt_management.SupplierDebtRealReport">
         <div class="o_supplier_debt_report_view">
             <div class="o_supplier_debt_report_header">
-            
+
                 <div>
                     <h1 class="o_supplier_debt_report_title">Báo cáo công nợ nhà cung cấp thực tế</h1>
                     <div class="o_supplier_debt_report_subtitle">
-                        Màn hình báo cáo có tìm kiếm, bộ lọc, phân trang và xuất PDF
+                        Màn hình báo cáo có tìm kiếm, bộ lọc, phân trang, sắp xếp và xuất PDF
                     </div>
                 </div>
+
                 <div class="o_supplier_debt_report_actions">
                     <button type="button" class="btn btn-outline-secondary" t-on-click="refreshData">
                         Tải lại
@@ -31,9 +32,16 @@
                 <div class="o_supplier_debt_filters card">
                     <div class="card-body">
                         <div class="o_supplier_debt_filters_grid">
+
                             <div class="o_filter_item o_filter_item_search">
                                 <label class="form-label">Tìm kiếm</label>
-                                <input type="text" class="form-control" placeholder="Tìm theo nhà cung cấp, hạng mục, hạn thanh toán..." t-att-value="state.search" t-on-input="onSearchInput"/>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    placeholder="Tìm theo nhà cung cấp, hạng mục, hạn thanh toán..."
+                                    t-att-value="state.search"
+                                    t-on-input="onSearchInput"
+                                />
                             </div>
 
                             <div class="o_filter_item">
@@ -56,6 +64,30 @@
                             </div>
 
                             <div class="o_filter_item">
+                                <label class="form-label">Sắp xếp theo</label>
+                                <select class="form-select" t-on-change="onSortFieldChange">
+                                    <option value="default" t-att-selected="state.sortField === 'default'">Mặc định</option>
+                                    <option value="partner_name" t-att-selected="state.sortField === 'partner_name'">Nhà cung cấp</option>
+                                    <option value="supply_category_name" t-att-selected="state.sortField === 'supply_category_name'">Hạng mục cung cấp</option>
+                                    <option value="old_debt" t-att-selected="state.sortField === 'old_debt'">Công nợ cũ</option>
+                                    <option value="contract_amount" t-att-selected="state.sortField === 'contract_amount'">Tổng giá trị HĐ</option>
+                                    <option value="invoice_amount" t-att-selected="state.sortField === 'invoice_amount'">Tổng giá trị hóa đơn</option>
+                                    <option value="paid_hd" t-att-selected="state.sortField === 'paid_hd'">Đã thanh toán</option>
+                                    <option value="advance_amount" t-att-selected="state.sortField === 'advance_amount'">Tạm ứng / Chưa hóa đơn</option>
+                                    <option value="residual_amount" t-att-selected="state.sortField === 'residual_amount'">Còn nợ</option>
+                                    <option value="due_days" t-att-selected="state.sortField === 'due_days'">Hạn thanh toán</option>
+                                </select>
+                            </div>
+
+                            <div class="o_filter_item">
+                                <label class="form-label">Thứ tự</label>
+                                <select class="form-select" t-on-change="onSortDirectionChange">
+                                    <option value="asc" t-att-selected="state.sortDirection === 'asc'">Tăng dần</option>
+                                    <option value="desc" t-att-selected="state.sortDirection === 'desc'">Giảm dần</option>
+                                </select>
+                            </div>
+
+                            <div class="o_filter_item">
                                 <label class="form-label">Số dòng / trang</label>
                                 <select class="form-select" t-on-change="onPageSizeChange">
                                     <option value="10" t-att-selected="state.pageSize === 10">10</option>
@@ -64,6 +96,14 @@
                                     <option value="100" t-att-selected="state.pageSize === 100">100</option>
                                 </select>
                             </div>
+
+                            <div class="o_filter_item">
+                                <label class="form-label">&#160;</label>
+                                <button type="button" class="btn btn-outline-secondary w-100" t-on-click="resetFilters">
+                                    Xóa lọc
+                                </button>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -75,24 +115,28 @@
                             <t t-esc="totalRows"/>
                         </div>
                     </div>
+
                     <div class="o_summary_card">
                         <div class="o_summary_card_label">Công nợ cũ</div>
                         <div class="o_summary_card_value">
                             <t t-esc="formatMoney(totals.old_debt)"/>
                         </div>
                     </div>
+
                     <div class="o_summary_card">
                         <div class="o_summary_card_label">Tổng hóa đơn</div>
                         <div class="o_summary_card_value">
                             <t t-esc="formatMoney(totals.invoice_amount)"/>
                         </div>
                     </div>
+
                     <div class="o_summary_card">
                         <div class="o_summary_card_label">Đã thanh toán</div>
                         <div class="o_summary_card_value">
                             <t t-esc="formatMoney(totals.paid_hd)"/>
                         </div>
                     </div>
+
                     <div class="o_summary_card">
                         <div class="o_summary_card_label">Còn nợ</div>
                         <div class="o_summary_card_value">
@@ -106,183 +150,194 @@
 
                         <div class="o_supplier_debt_table_toolbar">
                             <div class="o_supplier_debt_pager_info">
-                Hiển thị <strong>
-                                <t t-esc="pageStart"/>
-                            </strong> -
-                            <strong>
-                                <t t-esc="pageEnd"/>
-                            </strong>
-                trên <strong>
-                            <t t-esc="totalRows"/>
-                        </strong> dòng
+                                Hiển thị
+                                <strong><t t-esc="pageStart"/></strong>
+                                -
+                                <strong><t t-esc="pageEnd"/></strong>
+                                trên
+                                <strong><t t-esc="totalRows"/></strong>
+                                dòng
+                            </div>
+
+                            <div class="o_supplier_debt_pager_actions">
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-secondary"
+                                    t-att-disabled="state.page &lt;= 1"
+                                    t-on-click="prevPage"
+                                >
+                                    Trước
+                                </button>
+
+                                <span class="o_supplier_debt_page_status">
+                                    Trang
+                                    <strong><t t-esc="state.page"/></strong>
+                                    /
+                                    <strong><t t-esc="totalPages"/></strong>
+                                </span>
+
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-secondary"
+                                    t-att-disabled="state.page &gt;= totalPages"
+                                    t-on-click="nextPage"
+                                >
+                                    Sau
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="o_supplier_debt_table_wrap">
+                            <table class="table table-sm table-bordered mb-0 o_supplier_debt_table">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center">STT</th>
+                                        <th>Nhà cung cấp</th>
+                                        <th>Hạng mục cung cấp</th>
+                                        <th class="text-end">Công nợ cũ</th>
+                                        <th class="text-end">Tổng giá trị HĐ</th>
+                                        <th class="text-end">Tổng giá trị Hóa đơn</th>
+                                        <th class="text-end">Đã thanh toán</th>
+                                        <th class="text-end">Tạm ứng / Chưa hóa đơn</th>
+                                        <th class="text-end">Còn nợ</th>
+                                        <th>Hạn thanh toán</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <tr class="o_supplier_debt_total_row">
+                                        <td colspan="3">TỔNG CÔNG NỢ PHẢI TRẢ</td>
+                                        <td class="text-end">
+                                            <t t-esc="formatMoney(totals.old_debt)"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <t t-esc="formatMoney(totals.contract_amount)"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <t t-esc="formatMoney(totals.invoice_amount)"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <t t-esc="formatMoney(totals.paid_hd)"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <t t-esc="formatMoney(totals.advance_amount)"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <t t-esc="formatMoney(totals.residual_amount)"/>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+
+                                    <t t-if="!groupedPagedRows.length">
+                                        <tr>
+                                            <td colspan="10" class="text-center py-4">
+                                                Không có dữ liệu phù hợp.
+                                            </td>
+                                        </tr>
+                                    </t>
+
+                                    <t t-foreach="groupedPagedRows" t-as="item" t-key="item.key">
+
+                                        <t t-if="item.type === 'section'">
+                                            <tr class="o_group_section_row">
+                                                <td colspan="3">
+                                                    <t t-esc="item.label"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-esc="formatMoney(item.totals.old_debt)"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-esc="formatMoney(item.totals.contract_amount)"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-esc="formatMoney(item.totals.invoice_amount)"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-esc="formatMoney(item.totals.paid_hd)"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-esc="formatMoney(item.totals.advance_amount)"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-esc="formatMoney(item.totals.residual_amount)"/>
+                                                </td>
+                                                <td></td>
+                                            </tr>
+                                        </t>
+
+                                        <t t-if="item.type === 'supplier_type'">
+                                            <tr class="o_group_supplier_type_row">
+                                                <td colspan="3">
+                                                    <t t-esc="item.label"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-esc="formatMoney(item.totals.old_debt)"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-esc="formatMoney(item.totals.contract_amount)"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-esc="formatMoney(item.totals.invoice_amount)"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-esc="formatMoney(item.totals.paid_hd)"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-esc="formatMoney(item.totals.advance_amount)"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-esc="formatMoney(item.totals.residual_amount)"/>
+                                                </td>
+                                                <td></td>
+                                            </tr>
+                                        </t>
+
+                                        <t t-if="item.type === 'row'">
+                                            <tr class="o_clickable_supplier_row" t-on-click="() => this.openDetailReport(item.data)">
+                                                <td class="text-center">
+                                                    <t t-esc="item.data.stt"/>
+                                                </td>
+                                                <td>
+                                                    <div class="fw-bold">
+                                                        <t t-esc="item.data.partner_name || ''"/>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="item.data.supply_category_name || ''"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-esc="formatMoney(item.data.old_debt)"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-esc="formatMoney(item.data.contract_amount)"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-esc="formatMoney(item.data.invoice_amount)"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-esc="formatMoney(item.data.paid_hd)"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-esc="formatMoney(item.data.advance_amount)"/>
+                                                </td>
+                                                <td class="text-end fw-bold">
+                                                    <t t-esc="formatMoney(item.data.residual_amount)"/>
+                                                </td>
+                                                <td>
+                                                    <t t-esc="item.data.due_days || ''"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+
                     </div>
-
-                    <div class="o_supplier_debt_pager_actions">
-                        <button type="button" class="btn btn-outline-secondary" t-att-disabled="state.page &lt;= 1" t-on-click="prevPage">
-                    Trước
-                        </button>
-
-                        <span class="o_supplier_debt_page_status">
-                    Trang <strong>
-                            <t t-esc="state.page"/>
-                        </strong> /                        <strong>
-                            <t t-esc="totalPages"/>
-                        </strong>
-                    </span>
-
-                    <button type="button" class="btn btn-outline-secondary" t-att-disabled="state.page &gt;= totalPages" t-on-click="nextPage">
-                    Sau
-                    </button>
                 </div>
-            </div>
-
-            <div class="o_supplier_debt_table_wrap">
-                <table class="table table-sm table-bordered mb-0 o_supplier_debt_table">
-                    <thead>
-                        <tr>
-                            <th class="text-center">STT</th>
-                            <th>Nhà cung cấp</th>
-                            <th>Hạng mục cung cấp</th>
-                            <th class="text-end">Công nợ cũ</th>
-                            <th class="text-end">Tổng giá trị HĐ</th>
-                            <th class="text-end">Tổng giá trị Hóa đơn</th>
-                            <th class="text-end">Đã thanh toán</th>
-                            <th class="text-end">Tạm ứng / Chưa hóa đơn</th>
-                            <th class="text-end">Còn nợ</th>
-                            <th>Hạn thanh toán</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="o_supplier_debt_total_row">
-                            <td colspan="3">TỔNG CÔNG NỢ PHẢI TRẢ</td>
-                            <td class="text-end">
-                                <t t-esc="formatMoney(totals.old_debt)"/>
-                            </td>
-                            <td class="text-end">
-                                <t t-esc="formatMoney(totals.contract_amount)"/>
-                            </td>
-                            <td class="text-end">
-                                <t t-esc="formatMoney(totals.invoice_amount)"/>
-                            </td>
-                            <td class="text-end">
-                                <t t-esc="formatMoney(totals.paid_hd)"/>
-                            </td>
-                            <td class="text-end">
-                                <t t-esc="formatMoney(totals.advance_amount)"/>
-                            </td>
-                            <td class="text-end">
-                                <t t-esc="formatMoney(totals.residual_amount)"/>
-                            </td>
-                            <td></td>
-                        </tr>
-
-                        <t t-if="!groupedPagedRows.length">
-                            <tr>
-                                <td colspan="10" class="text-center py-4">
-                                Không có dữ liệu phù hợp.
-                                </td>
-                            </tr>
-                        </t>
-
-                        <t t-foreach="groupedPagedRows" t-as="item" t-key="item.key">
-                            <t t-if="item.type === 'section'">
-                                <tr class="o_group_section_row">
-                                    <td colspan="3">
-                                        <t t-esc="item.label"/>
-                                    </td>
-                                    <td class="text-end">
-                                        <t t-esc="formatMoney(item.totals.old_debt)"/>
-                                    </td>
-                                    <td class="text-end">
-                                        <t t-esc="formatMoney(item.totals.contract_amount)"/>
-                                    </td>
-                                    <td class="text-end">
-                                        <t t-esc="formatMoney(item.totals.invoice_amount)"/>
-                                    </td>
-                                    <td class="text-end">
-                                        <t t-esc="formatMoney(item.totals.paid_hd)"/>
-                                    </td>
-                                    <td class="text-end">
-                                        <t t-esc="formatMoney(item.totals.advance_amount)"/>
-                                    </td>
-                                    <td class="text-end">
-                                        <t t-esc="formatMoney(item.totals.residual_amount)"/>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                            </t>
-
-                            <t t-if="item.type === 'supplier_type'">
-                                <tr class="o_group_supplier_type_row">
-                                    <td colspan="3">
-                                        <t t-esc="item.label"/>
-                                    </td>
-                                    <td class="text-end">
-                                        <t t-esc="formatMoney(item.totals.old_debt)"/>
-                                    </td>
-                                    <td class="text-end">
-                                        <t t-esc="formatMoney(item.totals.contract_amount)"/>
-                                    </td>
-                                    <td class="text-end">
-                                        <t t-esc="formatMoney(item.totals.invoice_amount)"/>
-                                    </td>
-                                    <td class="text-end">
-                                        <t t-esc="formatMoney(item.totals.paid_hd)"/>
-                                    </td>
-                                    <td class="text-end">
-                                        <t t-esc="formatMoney(item.totals.advance_amount)"/>
-                                    </td>
-                                    <td class="text-end">
-                                        <t t-esc="formatMoney(item.totals.residual_amount)"/>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                            </t>
-
-                            <t t-if="item.type === 'row'">
-                                <tr class="o_clickable_supplier_row" t-on-click="() => this.openDetailReport(item.data)">
-                                    <td class="text-center">
-                                        <t t-esc="item.data.stt"/>
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold">
-                                            <t t-esc="item.data.partner_name || ''"/>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <t t-esc="item.data.supply_category_name || ''"/>
-                                    </td>
-                                    <td class="text-end">
-                                        <t t-esc="formatMoney(item.data.old_debt)"/>
-                                    </td>
-                                    <td class="text-end">
-                                        <t t-esc="formatMoney(item.data.contract_amount)"/>
-                                    </td>
-                                    <td class="text-end">
-                                        <t t-esc="formatMoney(item.data.invoice_amount)"/>
-                                    </td>
-                                    <td class="text-end">
-                                        <t t-esc="formatMoney(item.data.paid_hd)"/>
-                                    </td>
-                                    <td class="text-end">
-                                        <t t-esc="formatMoney(item.data.advance_amount)"/>
-                                    </td>
-                                    <td class="text-end fw-bold">
-                                        <t t-esc="formatMoney(item.data.residual_amount)"/>
-                                    </td>
-                                    <td>
-                                        <t t-esc="item.data.due_days || ''"/>
-                                    </td>
-                                </tr>
-                            </t>
-                        </t>
-                    </tbody>
-                </table>
-            </div>
+            </t>
         </div>
-    </div>
-</t>
-</div>
-</t>
+    </t>
 
 </templates>

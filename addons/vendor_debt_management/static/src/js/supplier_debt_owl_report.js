@@ -53,9 +53,10 @@ export class SupplierDebtOwlReport extends Component {
             this.state.data = data;
             this.state.loading = false;
 
-            for (const project of (data.projects || [])) {
+            for (const project of data.projects || []) {
                 this.state.expandedProjects[project.id] = true;
-                for (const contract of (project.contracts || [])) {
+
+                for (const contract of project.contracts || []) {
                     this.state.expandedContracts[`${project.id}_${contract.id}`] = true;
                 }
             }
@@ -70,10 +71,12 @@ export class SupplierDebtOwlReport extends Component {
 
     formatMoney(amount, symbol = "") {
         const value = Number(amount || 0);
+
         const formatted = new Intl.NumberFormat("vi-VN", {
             minimumFractionDigits: 0,
             maximumFractionDigits: 0,
         }).format(value);
+
         return symbol ? `${formatted} ${symbol}` : formatted;
     }
 
@@ -81,10 +84,13 @@ export class SupplierDebtOwlReport extends Component {
         if (!dateStr) {
             return "";
         }
-        const [y, m, d] = dateStr.split("-");
+
+        const [y, m, d] = String(dateStr).split("-");
+
         if (!y || !m || !d) {
             return dateStr;
         }
+
         return `${d}/${m}/${y}`;
     }
 
@@ -120,6 +126,7 @@ export class SupplierDebtOwlReport extends Component {
                 "action_print_pdf_report",
                 [[this.summaryId]]
             );
+
             if (action) {
                 return this.action.doAction(action);
             }
@@ -133,148 +140,289 @@ export class SupplierDebtOwlReport extends Component {
 
     openPdfInNewTab() {
         const url = this.state.data?.summary?.pdf_url;
+
         if (url) {
             window.open(url, "_blank");
         }
     }
 
-get filteredProjects() {
-    const projects = this.state.data?.projects || [];
-    const term = this.state.search;
+    openContract(contract) {
+        const selection = window.getSelection?.().toString();
 
-    const result = projects
-        .map((project) => {
-            const clonedProject = {
-                ...project,
-                contracts: (project.contracts || []).map((contract) => {
-                    const rows = (contract.rows || []).filter((row) => {
-                        if (this.state.onlyResidual && !(Number(row.residual_display || 0) > 0)) {
-                            return false;
-                        }
-                        if (this.state.onlyOrphanPayments && row.note !== "Không có hóa đơn") {
-                            return false;
-                        }
-                        if (!term) {
-                            return true;
-                        }
-
-                        const haystack = [
-                            project.project_name,
-                            contract.contract_name,
-                            row.invoice_note,
-                            this.formatDate(contract.contract_date),
-                            row.invoice_name,
-                            this.formatDate(row.invoice_date),
-                            this.formatDate(row.invoice_due_date),
-                            row.payment_name,
-                            this.formatDate(row.payment_date),
-                            row.note,
-                        ]
-                            .filter(Boolean)
-                            .join(" ")
-                            .toLowerCase();
-
-                        return haystack.includes(term);
-                    });
-
-                    return {
-                        ...contract,
-                        rows,
-                        invoice_total: rows
-                            .filter((r) => r.show_invoice)
-                            .reduce((sum, r) => sum + Number(r.invoice_amount || 0), 0),
-                        payment_total: rows.reduce((sum, r) => sum + Number(r.payment_amount || 0), 0),
-                        residual_total: rows
-                            .filter((r) => r.show_invoice && r.residual_display !== false)
-                            .reduce((sum, r) => sum + Number(r.residual_display || 0), 0),
-                    };
-                }).filter((contract) => contract.rows.length > 0),
-            };
-
-            clonedProject.invoice_total = clonedProject.contracts.reduce(
-                (sum, c) => sum + Number(c.invoice_total || 0),
-                0
-            );
-            clonedProject.payment_total = clonedProject.contracts.reduce(
-                (sum, c) => sum + Number(c.payment_total || 0),
-                0
-            );
-            clonedProject.residual_total = clonedProject.contracts.reduce(
-                (sum, c) => sum + Number(c.residual_total || 0),
-                0
-            );
-
-            return clonedProject;
-        })
-        .filter((project) => project.contracts.length > 0);
-
-    // Đánh lại STT theo đúng thứ tự đang hiển thị từ trên xuống dưới
-for (const project of result) {
-    let projectIndex = 1;
-    for (const contract of project.contracts) {
-        for (const row of contract.rows) {
-            row.display_stt = projectIndex++;
+        if (selection) {
+            return;
         }
-    }
-}
 
-    return result;
-}
-goBack() {
-    window.history.back();
-}
-async shareReport() {
-    try {
-        const result = await this.orm.call(
-            "supplier.invoice.payment.summary",
-            "action_generate_share_link",
-            [[this.summaryId]]
-        );
-
-        const shareUrl = result?.url || result?.share_url || result;
-
-        if (!shareUrl) {
-            this.notification.add("Không tạo được link chia sẻ.", {
-                type: "danger",
+        if (!contract || !contract.contract_id) {
+            this.notification.add("Dòng này chưa có hợp đồng để mở.", {
+                type: "warning",
             });
             return;
         }
 
-        if (navigator.clipboard && window.isSecureContext) {
-            await navigator.clipboard.writeText(shareUrl);
-            this.notification.add("Đã copy link chia sẻ vào clipboard.", {
-                type: "success",
-            });
-        } else {
-            window.prompt("Copy link chia sẻ:", shareUrl);
-        }
-
-        window.open(shareUrl, "_blank");
-    } catch (error) {
-        console.error("shareReport error", error);
-        this.notification.add("Không tạo được link chia sẻ.", {
-            type: "danger",
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Hợp đồng",
+            res_model: contract.contract_model || "customer.contract",
+            res_id: contract.contract_id,
+            views: [[false, "form"]],
+            view_mode: "form",
+            target: "current",
         });
     }
-}
+
+    openInvoice(row) {
+        const selection = window.getSelection?.().toString();
+
+        if (selection) {
+            return;
+        }
+
+        if (!row || !row.invoice_id) {
+            this.notification.add("Dòng này chưa có hóa đơn để mở.", {
+                type: "warning",
+            });
+            return;
+        }
+
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Hóa đơn",
+            res_model: row.invoice_model || "customer.invoice",
+            res_id: row.invoice_id,
+            views: [[false, "form"]],
+            view_mode: "form",
+            target: "current",
+        });
+    }
+
+    openPayment(row) {
+        const selection = window.getSelection?.().toString();
+
+        if (selection) {
+            return;
+        }
+
+        if (!row || !row.payment_id) {
+            this.notification.add("Dòng này chưa có phiếu chi để mở.", {
+                type: "warning",
+            });
+            return;
+        }
+
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Phiếu chi",
+            res_model: row.payment_model || "account.payment.request",
+            res_id: row.payment_id,
+            views: [[false, "form"]],
+            view_mode: "form",
+            target: "current",
+        });
+    }
+
+    getContractResidualTotal(rows) {
+        /*
+         * Cách tính đúng:
+         * - 1 hóa đơn có thể có nhiều phiếu chi.
+         * - Mỗi dòng phiếu chi có residual_display là số dư chạy.
+         * - Không được cộng tất cả residual_display.
+         * - Với mỗi invoice_id, chỉ lấy residual_display của dòng cuối cùng.
+         */
+        const invoiceResidualMap = new Map();
+        let noInvoiceResidual = 0;
+
+        for (const row of rows || []) {
+            const hasResidual =
+                row.residual_display !== false &&
+                row.residual_display !== null &&
+                row.residual_display !== undefined;
+
+            if (!hasResidual) {
+                continue;
+            }
+
+            const residualValue = Number(row.residual_display || 0);
+
+            if (row.invoice_id) {
+                invoiceResidualMap.set(row.invoice_id, residualValue);
+            } else {
+                noInvoiceResidual += residualValue;
+            }
+        }
+
+        let total = noInvoiceResidual;
+
+        for (const value of invoiceResidualMap.values()) {
+            total += Number(value || 0);
+        }
+
+        return total;
+    }
+
+    get filteredProjects() {
+        const projects = this.state.data?.projects || [];
+        const term = this.state.search;
+
+        const result = projects
+            .map((project) => {
+                const clonedProject = {
+                    ...project,
+                    contracts: (project.contracts || [])
+                        .map((contract) => {
+                            const rows = (contract.rows || []).filter((row) => {
+                                if (
+                                    this.state.onlyResidual &&
+                                    !(Number(row.residual_display || 0) > 0)
+                                ) {
+                                    return false;
+                                }
+
+                                if (
+                                    this.state.onlyOrphanPayments &&
+                                    row.note !== "Không có hóa đơn"
+                                ) {
+                                    return false;
+                                }
+
+                                if (!term) {
+                                    return true;
+                                }
+
+                                const haystack = [
+                                    project.project_name,
+                                    contract.contract_name,
+                                    row.invoice_note,
+                                    this.formatDate(contract.contract_date),
+                                    row.invoice_name,
+                                    this.formatDate(row.invoice_date),
+                                    this.formatDate(row.invoice_due_date),
+                                    row.payment_name,
+                                    row.payment_note,
+                                    this.formatDate(row.payment_date),
+                                    row.note,
+                                ]
+                                    .filter(Boolean)
+                                    .join(" ")
+                                    .toLowerCase();
+
+                                return haystack.includes(term);
+                            });
+
+                            return {
+                                ...contract,
+                                rows,
+                                invoice_total: rows
+                                    .filter((r) => r.show_invoice)
+                                    .reduce(
+                                        (sum, r) => sum + Number(r.invoice_amount || 0),
+                                        0
+                                    ),
+                                payment_total: rows.reduce(
+                                    (sum, r) => sum + Number(r.payment_amount || 0),
+                                    0
+                                ),
+                                residual_total: this.getContractResidualTotal(rows),
+                            };
+                        })
+                        .filter((contract) => contract.rows.length > 0),
+                };
+
+                clonedProject.invoice_total = clonedProject.contracts.reduce(
+                    (sum, c) => sum + Number(c.invoice_total || 0),
+                    0
+                );
+
+                clonedProject.payment_total = clonedProject.contracts.reduce(
+                    (sum, c) => sum + Number(c.payment_total || 0),
+                    0
+                );
+
+                clonedProject.residual_total = clonedProject.contracts.reduce(
+                    (sum, c) => sum + Number(c.residual_total || 0),
+                    0
+                );
+
+                return clonedProject;
+            })
+            .filter((project) => project.contracts.length > 0);
+
+        // Đánh lại STT theo đúng thứ tự đang hiển thị từ trên xuống dưới
+        for (const project of result) {
+            let projectIndex = 1;
+
+            for (const contract of project.contracts) {
+                for (const row of contract.rows) {
+                    row.display_stt = projectIndex++;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    goBack() {
+        window.history.back();
+    }
+
+    async shareReport() {
+        try {
+            const result = await this.orm.call(
+                "supplier.invoice.payment.summary",
+                "action_generate_share_link",
+                [[this.summaryId]]
+            );
+
+            const shareUrl = result?.url || result?.share_url || result;
+
+            if (!shareUrl) {
+                this.notification.add("Không tạo được link chia sẻ.", {
+                    type: "danger",
+                });
+                return;
+            }
+
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(shareUrl);
+                this.notification.add("Đã copy link chia sẻ vào clipboard.", {
+                    type: "success",
+                });
+            } else {
+                window.prompt("Copy link chia sẻ:", shareUrl);
+            }
+
+            window.open(shareUrl, "_blank");
+        } catch (error) {
+            console.error("shareReport error", error);
+            this.notification.add("Không tạo được link chia sẻ.", {
+                type: "danger",
+            });
+        }
+    }
+
     async openRecordList(type) {
         if (!this.summaryId) {
             return;
         }
+
         const mapping = {
             invoices: "action_open_invoices",
             contracts: "action_open_contracts",
             payments: "action_open_payments",
         };
+
         const method = mapping[type];
+
         if (!method) {
             return;
         }
+
         const action = await this.orm.call(
             "supplier.invoice.payment.summary",
             method,
             [[this.summaryId]]
         );
+
         if (action) {
             this.action.doAction(action);
         }

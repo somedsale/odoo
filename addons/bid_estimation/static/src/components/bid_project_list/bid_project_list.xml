@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="bid_estimation.BidProjectListAction">
+        <div class="o_bid_page o_bid_project_list_page">
+            <div class="o_bid_list_header">
+                <div>
+                    <div class="o_bid_module_label">Dự toán dự thầu</div>
+                    <h2>Danh sách dự án</h2>
+                    <p>Quản lý dự án dự thầu, hạng mục, vật tư và báo giá nhà cung cấp.</p>
+                </div>
+                <div class="o_bid_header_actions">
+                    <button class="btn btn-primary" type="button" t-on-click="openImport">
+                        <i class="fa fa-upload me-1"/> Import Excel
+                    </button>
+                    <button class="btn btn-outline-secondary" type="button" t-on-click="refresh">
+                        <i class="fa fa-refresh me-1"/> Tải lại
+                    </button>
+                    <button class="btn btn-outline-secondary" type="button" t-on-click="openBackendList">
+                        <i class="fa fa-list me-1"/> List mặc định
+                    </button>
+                </div>
+            </div>
+
+            <t t-if="state.loading">
+                <div class="o_bid_loading">
+                    <i class="fa fa-spinner fa-spin me-2"/>Đang tải danh sách dự án...
+                </div>
+            </t>
+            <t t-else="">
+                <div class="o_bid_summary_grid o_bid_list_summary">
+                    <div class="o_bid_summary_card primary">
+                        <span>Số dự án</span>
+                        <strong><t t-esc="filteredProjects.length"/></strong>
+                    </div>
+                    <div class="o_bid_summary_card">
+                        <span>Tổng giá dự thầu</span>
+                        <strong><t t-esc="formatMoney(totalAmount)"/> đ</strong>
+                    </div>
+                    <div class="o_bid_summary_card">
+                        <span>Tổng giá NCC tốt nhất</span>
+                        <strong><t t-esc="formatMoney(totalBestAmount)"/> đ</strong>
+                    </div>
+                    <div class="o_bid_summary_card">
+                        <span>Chênh lệch dự kiến</span>
+                        <strong><t t-esc="formatMoney(totalSavingAmount)"/> đ</strong>
+                    </div>
+                </div>
+
+                <div class="o_bid_content_card">
+                    <div class="o_bid_list_toolbar">
+                        <div class="o_bid_search_box">
+                            <i class="fa fa-search"/>
+                            <input type="text" class="form-control" placeholder="Tìm tên dự án..." t-att-value="state.searchText" t-on-input="onSearch"/>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <button type="button" t-att-class="state.viewMode === 'card' ? 'btn btn-secondary' : 'btn btn-outline-secondary'" t-on-click="() => this.setViewMode('card')">
+                                <i class="fa fa-th-large"/> Card
+                            </button>
+                            <button type="button" t-att-class="state.viewMode === 'table' ? 'btn btn-secondary' : 'btn btn-outline-secondary'" t-on-click="() => this.setViewMode('table')">
+                                <i class="fa fa-table"/> Bảng
+                            </button>
+                        </div>
+                    </div>
+
+                    <t t-if="!filteredProjects.length">
+                        <div class="o_bid_empty_state o_bid_empty_list">
+                            <i class="fa fa-folder-open-o"/>
+                            <h3>Chưa có dự án dự thầu</h3>
+                            <p>Import file Excel để tạo dự án đầu tiên.</p>
+                            <button class="btn btn-primary" t-on-click="openImport">
+                                <i class="fa fa-upload me-1"/> Import Excel
+                            </button>
+                        </div>
+                    </t>
+
+                    <t t-elif="state.viewMode === 'card'">
+                        <div class="o_bid_project_grid">
+                            <t t-foreach="filteredProjects" t-as="project" t-key="project.id">
+                                <div class="o_bid_project_card" t-on-click="() => this.openProject(project)">
+                                    <div class="o_bid_project_card_top">
+                                        <div>
+                                            <h3 t-esc="project.name"/>
+                                            <p t-if="project.note" t-esc="project.note"/>
+                                            <p t-else="" class="text-muted">Chưa có ghi chú</p>
+                                        </div>
+                                        <div class="d-flex gap-1 o_bid_project_quick_actions">
+                                            <button class="btn btn-link btn-sm" title="Sửa tên dự toán" type="button" t-on-click.stop="() => this.openEditProject(project)">
+                                                <i class="fa fa-pencil"/>
+                                            </button>
+                                            <button class="btn btn-link btn-sm" title="Xuất Excel" type="button" t-on-click.stop="() => this.openExportExcel(project)">
+                                                <i class="fa fa-download"/>
+                                            </button>
+                                            <button class="btn btn-link btn-sm" title="Mở form Odoo" type="button" t-on-click.stop="() => this.openProjectForm(project)">
+                                                <i class="fa fa-external-link"/>
+                                            </button>
+                                            <button class="btn btn-link btn-sm text-danger" title="Xóa dự toán" type="button" t-on-click.stop="() => this.deleteProject(project)">
+                                                <i class="fa fa-trash"/>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="o_bid_project_amount">
+                                        <span>Tổng dự thầu</span>
+                                        <strong><t t-esc="formatMoney(project.amount_total)"/> đ</strong>
+                                    </div>
+                                    <div class="o_bid_project_metrics">
+                                        <div>
+                                            <span>Hạng mục</span>
+                                            <b t-esc="project.section_count"/>
+                                        </div>
+                                        <div>
+                                            <span>Vật tư</span>
+                                            <b t-esc="project.line_count"/>
+                                        </div>
+                                        <div>
+                                            <span>Báo giá NCC</span>
+                                            <b t-esc="project.supplier_quote_count"/>
+                                        </div>
+                                    </div>
+                                    <div class="o_bid_project_compare">
+                                        <div>
+                                            <span>NCC tốt nhất</span>
+                                            <b><t t-esc="formatMoney(project.supplier_best_amount_total)"/> đ</b>
+                                        </div>
+                                        <div>
+                                            <span>Chênh lệch</span>
+                                            <b><t t-esc="formatMoney(project.saving_amount_total)"/> đ</b>
+                                        </div>
+                                    </div>
+                                    <div class="o_bid_project_footer">
+                                        <span>Cập nhật: <t t-esc="formatDateTime(project.write_date)"/></span>
+                                        <i class="fa fa-angle-right"/>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+
+                    <t t-else="">
+                        <div class="o_bid_table_wrap p-0">
+                            <table class="table table-hover o_bid_project_table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Dự án</th>
+                                        <th class="text-end">Hạng mục</th>
+                                        <th class="text-end">Vật tư</th>
+                                        <th class="text-end">Báo giá NCC</th>
+                                        <th class="text-end">Tổng dự thầu</th>
+                                        <th class="text-end">NCC tốt nhất</th>
+                                        <th class="text-end">Chênh lệch</th>
+                                        <th style="width:110px" class="text-center">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="filteredProjects" t-as="project" t-key="project.id">
+                                        <tr t-on-click="() => this.openProject(project)">
+                                            <td>
+                                                <strong t-esc="project.name"/>
+                                                <div class="text-muted small">Cập nhật: <t t-esc="formatDateTime(project.write_date)"/></div>
+                                            </td>
+                                            <td class="text-end" t-esc="project.section_count"/>
+                                            <td class="text-end" t-esc="project.line_count"/>
+                                            <td class="text-end" t-esc="project.supplier_quote_count"/>
+                                            <td class="text-end o_bid_mono"><t t-esc="formatMoney(project.amount_total)"/> đ</td>
+                                            <td class="text-end o_bid_mono"><t t-esc="formatMoney(project.supplier_best_amount_total)"/> đ</td>
+                                            <td class="text-end o_bid_mono"><t t-esc="formatMoney(project.saving_amount_total)"/> đ</td>
+                                            <td class="text-center">
+                                                <button class="btn btn-link btn-sm" type="button" t-on-click.stop="() => this.openProject(project)">Mở</button>
+                                                <button class="btn btn-link btn-sm" type="button" t-on-click.stop="() => this.openEditProject(project)">Sửa</button>
+                                                <button class="btn btn-link btn-sm" type="button" t-on-click.stop="() => this.openExportExcel(project)">Excel</button>
+                                                <button class="btn btn-link btn-sm text-danger" type="button" t-on-click.stop="() => this.deleteProject(project)">Xóa</button>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </t>
+                </div>
+            </t>
+
+
+            <t t-if="state.projectFormOpen">
+                <div class="o_bid_modal_backdrop">
+                    <div class="o_bid_modal o_bid_project_edit_modal">
+                        <div class="o_bid_modal_header">
+                            <h3>Sửa dự toán dự thầu</h3>
+                            <button type="button" class="btn btn-link" t-on-click="cancelProjectForm">
+                                <i class="fa fa-times"/>
+                            </button>
+                        </div>
+                        <div class="o_bid_modal_body">
+                            <label class="form-label">Tên dự toán dự thầu</label>
+                            <input class="form-control" type="text" placeholder="Nhập tên dự toán" t-model="state.projectForm.name"/>
+                            <label class="form-label mt-3">Ghi chú</label>
+                            <textarea class="form-control" rows="3" placeholder="Ghi chú nếu có" t-model="state.projectForm.note"/>
+                        </div>
+                        <div class="o_bid_modal_footer">
+                            <button type="button" class="btn btn-outline-secondary" t-on-click="cancelProjectForm">Hủy</button>
+                            <button type="button" class="btn btn-primary" t-on-click="saveProject">Lưu</button>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

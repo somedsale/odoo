@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!-- A. Tổng định phí -->
+    <record id="expense_bucket_rent_office_factory" model="account.payment.request.expense.bucket">
+        <field name="name">Chi phí thuê văn phòng + xưởng</field>
+        <field name="code">rent_office_factory</field>
+        <field name="section">fixed</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <!-- B/a. Chi phí công ty -->
+    <record id="expense_bucket_loan_principal" model="account.payment.request.expense.bucket">
+        <field name="name">Trả gốc vay (Ngân hàng + cá nhân)</field>
+        <field name="code">loan_principal</field>
+        <field name="section">company</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <record id="expense_bucket_loan_interest" model="account.payment.request.expense.bucket">
+        <field name="name">Lãi vay (Ngân hàng, Cá nhân)</field>
+        <field name="code">loan_interest</field>
+        <field name="section">company</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="expense_bucket_bank_fee" model="account.payment.request.expense.bucket">
+        <field name="name">Phí ngân hàng (CK, Phí số dư, mua SEC,...)</field>
+        <field name="code">bank_fee</field>
+        <field name="section">company</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="expense_bucket_salary_board" model="account.payment.request.expense.bucket">
+        <field name="name">Chi phí lương ban Giám Đốc</field>
+        <field name="code">salary_board</field>
+        <field name="section">company</field>
+        <field name="sequence">40</field>
+    </record>
+
+    <record id="expense_bucket_salary_sales" model="account.payment.request.expense.bucket">
+        <field name="name">Chi phí lương Kinh Doanh</field>
+        <field name="code">salary_sales</field>
+        <field name="section">company</field>
+        <field name="sequence">50</field>
+    </record>
+
+    <record id="expense_bucket_salary_accounting" model="account.payment.request.expense.bucket">
+        <field name="name">Chi phí lương Kế Toán</field>
+        <field name="code">salary_accounting</field>
+        <field name="section">company</field>
+        <field name="sequence">60</field>
+    </record>
+
+    <record id="expense_bucket_salary_planning_tech_production" model="account.payment.request.expense.bucket">
+        <field name="name">Chi phí lương bộ phận kế hoạch kỹ thuật và sản xuất</field>
+        <field name="code">salary_planning_tech_production</field>
+        <field name="section">company</field>
+        <field name="sequence">70</field>
+    </record>
+
+    <record id="expense_bucket_insurance_215" model="account.payment.request.expense.bucket">
+        <field name="name">Chi phí BHXH, BHYT, BHTN 21,5%</field>
+        <field name="code">insurance_215</field>
+        <field name="section">company</field>
+        <field name="sequence">80</field>
+    </record>
+
+    <record id="expense_bucket_electric_water" model="account.payment.request.expense.bucket">
+        <field name="name">Chi phí điện, Nước sinh hoạt</field>
+        <field name="code">electric_water</field>
+        <field name="section">company</field>
+        <field name="sequence">90</field>
+    </record>
+
+    <record id="expense_bucket_phone_fee" model="account.payment.request.expense.bucket">
+        <field name="name">Chi phí Cước điện thoại (di động, cố định, số hotline...)</field>
+        <field name="code">phone_fee</field>
+        <field name="section">company</field>
+        <field name="sequence">100</field>
+    </record>
+
+    <record id="expense_bucket_internet_fee" model="account.payment.request.expense.bucket">
+        <field name="name">Cước Internet văn phòng</field>
+        <field name="code">internet_fee</field>
+        <field name="section">company</field>
+        <field name="sequence">110</field>
+    </record>
+
+    <record id="expense_bucket_stationery_hygiene_shipping" model="account.payment.request.expense.bucket">
+        <field name="name">Văn phòng phẩm + vật dụng vệ sinh + cước vận chuyển</field>
+        <field name="code">stationery_hygiene_shipping</field>
+        <field name="section">company</field>
+        <field name="sequence">120</field>
+    </record>
+
+    <record id="expense_bucket_garbage_fee" model="account.payment.request.expense.bucket">
+        <field name="name">Chi phí đổ rác</field>
+        <field name="code">garbage_fee</field>
+        <field name="section">company</field>
+        <field name="sequence">130</field>
+    </record>
+
+    <record id="expense_bucket_reception" model="account.payment.request.expense.bucket">
+        <field name="name">Chi phí Tiếp khách</field>
+        <field name="code">reception</field>
+        <field name="section">company</field>
+        <field name="sequence">140</field>
+    </record>
+
+    <record id="expense_bucket_drinking_water" model="account.payment.request.expense.bucket">
+        <field name="name">Chi phí nước uống bình nhân viên</field>
+        <field name="code">drinking_water</field>
+        <field name="section">company</field>
+        <field name="sequence">150</field>
+    </record>
+
+    <record id="expense_bucket_badminton" model="account.payment.request.expense.bucket">
+        <field name="name">Chi phí cầu lông (đặt sân, mua cầu..)</field>
+        <field name="code">badminton</field>
+        <field name="section">company</field>
+        <field name="sequence">160</field>
+    </record>
+
+    <record id="expense_bucket_worship" model="account.payment.request.expense.bucket">
+        <field name="name">Chi phí cúng (mùng 1,15, ....)</field>
+        <field name="code">worship</field>
+        <field name="section">company</field>
+        <field name="sequence">170</field>
+    </record>
+
+</odoo>

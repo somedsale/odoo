@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_payment_request_expense_bucket_tree" model="ir.ui.view">
+        <field name="name">account.payment.request.expense.bucket.tree</field>
+        <field name="model">account.payment.request.expense.bucket</field>
+        <field name="arch" type="xml">
+            <tree string="Khoản mục báo cáo chi phí" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="section"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_account_payment_request_expense_bucket_form" model="ir.ui.view">
+        <field name="name">account.payment.request.expense.bucket.form</field>
+        <field name="model">account.payment.request.expense.bucket</field>
+        <field name="arch" type="xml">
+            <form string="Khoản mục báo cáo chi phí">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="section"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <field name="note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_account_payment_request_expense_bucket_search" model="ir.ui.view">
+        <field name="name">account.payment.request.expense.bucket.search</field>
+        <field name="model">account.payment.request.expense.bucket</field>
+        <field name="arch" type="xml">
+            <search string="Tìm khoản mục báo cáo">
+                <field name="name"/>
+                <field name="code"/>
+                <filter name="active" string="Đang sử dụng" domain="[('active', '=', True)]"/>
+                <filter name="fixed" string="A. Định phí" domain="[('section', '=', 'fixed')]"/>
+                <filter name="company" string="B/a. Chi phí công ty" domain="[('section', '=', 'company')]"/>
+                <group expand="0" string="Nhóm">
+                    <filter name="group_by_section" string="Nhóm báo cáo" context="{'group_by': 'section'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_account_payment_request_expense_bucket" model="ir.actions.act_window">
+        <field name="name">Khoản mục báo cáo chi phí</field>
+        <field name="res_model">account.payment.request.expense.bucket</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_active': 1}</field>
+    </record>
+
+    <menuitem id="menu_account_payment_request_expense_bucket"
+              name="Khoản mục báo cáo chi phí"
+              parent="monthly_revenue_expense_report.menu_report_revenue_expense_root"
+              action="action_account_payment_request_expense_bucket"
+              sequence="15"/>
+
+</odoo>

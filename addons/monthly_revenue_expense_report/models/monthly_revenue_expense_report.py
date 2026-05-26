@@ -81,7 +81,7 @@ class MonthlyRevenueExpenseReport(models.TransientModel):
         return date_from, date_to
 
     # =========================================================
-    # DATE RANGE - FILTER OWL
+    # DATE RANGE - OWL FILTER
     # =========================================================
     @api.model
     def _get_date_range_from_filters(self, filters=None):
@@ -108,7 +108,7 @@ class MonthlyRevenueExpenseReport(models.TransientModel):
         return date_from, date_to
 
     # =========================================================
-    # OPEN OWL REPORT FROM WIZARD - NẾU CÒN DÙNG WIZARD
+    # OPEN OWL REPORT FROM WIZARD
     # =========================================================
     def action_view_report(self):
         self.ensure_one()
@@ -129,7 +129,7 @@ class MonthlyRevenueExpenseReport(models.TransientModel):
         }
 
     # =========================================================
-    # CREATE TEMP WIZARD FROM OWL FILTER
+    # CREATE TEMP WIZARD FROM OWL FILTERS
     # =========================================================
     @api.model
     def _create_wizard_from_filters(self, filters=None):
@@ -229,7 +229,35 @@ class MonthlyRevenueExpenseReport(models.TransientModel):
         }
 
     # =========================================================
-    # EXPORT EXCEL FROM OWL FILTER
+    # UPDATE EXPENSE BUCKET NAME FROM OWL
+    # =========================================================
+    @api.model
+    def update_expense_bucket_name(self, bucket_id, new_name):
+        if not bucket_id:
+            raise UserError(_("Thiếu khoản mục cần sửa."))
+
+        new_name = (new_name or "").strip()
+
+        if not new_name:
+            raise UserError(_("Tên khoản mục không được để trống."))
+
+        bucket = self.env["account.payment.request.expense.bucket"].browse(int(bucket_id)).exists()
+
+        if not bucket:
+            raise UserError(_("Không tìm thấy khoản mục báo cáo."))
+
+        bucket.write({
+            "name": new_name,
+        })
+
+        return {
+            "success": True,
+            "bucket_id": bucket.id,
+            "name": bucket.name,
+        }
+
+    # =========================================================
+    # EXPORT EXCEL FROM OWL FILTERS
     # =========================================================
     @api.model
     def action_export_excel_from_filters(self, filters=None):
@@ -237,7 +265,7 @@ class MonthlyRevenueExpenseReport(models.TransientModel):
         return wizard.action_export_excel()
 
     # =========================================================
-    # EXPORT PDF FROM OWL FILTER
+    # EXPORT PDF FROM OWL FILTERS
     # =========================================================
     @api.model
     def action_export_pdf_from_filters(self, filters=None):
@@ -680,85 +708,96 @@ class AccountReceiptReport(models.AbstractModel):
             })
 
         # =====================================================
-        # CHI PHÍ
+        # CHI PHÍ - KHOẢN MỤC ĐỘNG
         # =====================================================
-        FIXED_A = [
-            ("rent_office_factory", "Chi phí thuê văn phòng + xưởng"),
-        ]
-
-        FIXED_B_COMPANY = [
-            ("loan_principal", "Trả gốc vay (Ngân hàng + cá nhân)"),
-            ("loan_interest", "Lãi vay (Ngân hàng, Cá nhân)"),
-            ("bank_fee", "Phí ngân hàng (CK, Phí số dư, mua SEC,...)"),
-            ("salary_board", "Chi phí lương ban Giám Đốc"),
-            ("salary_sales", "Chi phí lương Kinh Doanh"),
-            ("salary_accounting", "Chi phí lương Kế Toán"),
-            ("salary_planning_tech_production", "Chi phí lương bộ phận kế hoạch kỹ thuật và sản xuất"),
-            ("insurance_215", "Chi phí BHXH, BHYT, BHTN 21,5%"),
-            ("electric_water", "Chi phí điện, Nước sinh hoạt"),
-            ("phone_fee", "Chi phí Cước điện thoại (di động, cố định, số hotline...)"),
-            ("internet_fee", "Cước Internet văn phòng"),
-            ("stationery_hygiene_shipping", "Văn phòng phẩm + vật dụng vệ sinh + cước vận chuyển"),
-            ("garbage_fee", "Chi phí đổ rác"),
-            ("reception", "Chi phí Tiếp khách"),
-            ("drinking_water", "Chi phí nước uống bình nhân viên"),
-            ("badminton", "Chi phí cầu lông (đặt sân, mua cầu..)"),
-            ("worship", "Chi phí cúng (mùng 1,15, ....)"),
-        ]
-
-        A_KEYS = [k for k, _label in FIXED_A]
-        B_KEYS = [k for k, _label in FIXED_B_COMPANY]
-
         payments = self.env["account.payment.request"].search(payment_base_domain)
 
-        def _sum_fixed(records, keys):
-            sums = {k: 0.0 for k in keys}
-            unknown = 0.0
+        Bucket = self.env["account.payment.request.expense.bucket"]
 
-            for p in records:
-                key = p.expense_bucket
-                amount = p.total or 0.0
+        fixed_buckets = Bucket.search([
+            ["section", "=", "fixed"],
+            ["active", "=", True],
+        ], order="sequence, id")
 
-                if key in sums:
-                    sums[key] += amount
-                else:
-                    unknown += amount
+        company_buckets = Bucket.search([
+            ["section", "=", "company"],
+            ["active", "=", True],
+        ], order="sequence, id")
 
-            return sums, unknown
+        A_IDS = fixed_buckets.ids
+        B_IDS = company_buckets.ids
+        A_CODES = fixed_buckets.mapped("code")
+        B_CODES = company_buckets.mapped("code")
 
-        A_recs = payments.filtered(lambda x: x.expense_bucket in A_KEYS)
-        A_SUMS, A_UNKNOWN = _sum_fixed(A_recs, A_KEYS)
+        def _payment_match_bucket(payment, bucket):
+            if payment.expense_bucket_id:
+                return payment.expense_bucket_id.id == bucket.id
 
-        B_recs = payments.filtered(lambda x: x.expense_bucket in B_KEYS)
-        B_SUMS, B_UNKNOWN = _sum_fixed(B_recs, B_KEYS)
+            return payment.expense_bucket == bucket.code
+
+        def _sum_bucket(bucket):
+            total = 0.0
+
+            for payment in payments:
+                if _payment_match_bucket(payment, bucket):
+                    total += payment.total or 0.0
+
+            return total
+
+        def _bucket_domain(bucket):
+            return expression.AND([
+                payment_base_domain,
+                expression.OR([
+                    [["expense_bucket_id", "=", bucket.id]],
+                    [["expense_bucket", "=", bucket.code]],
+                ]),
+            ])
+
+        fixed_domain = expression.AND([
+            payment_base_domain,
+            expression.OR([
+                [["expense_bucket_id", "in", A_IDS]],
+                [["expense_bucket", "in", A_CODES]],
+            ]),
+        ])
+
+        company_domain = expression.AND([
+            payment_base_domain,
+            expression.OR([
+                [["expense_bucket_id", "in", B_IDS]],
+                [["expense_bucket", "in", B_CODES]],
+            ]),
+        ])
 
         A_LINES = [
             {
-                "key": key,
-                "name": label,
-                "expense": A_SUMS.get(key, 0.0) or 0.0,
+                "bucket_id": bucket.id,
+                "key": bucket.code,
+                "name": bucket.name,
+                "expense": _sum_bucket(bucket),
                 "model": "account.payment.request",
-                "domain": payment_base_domain + [
-                    ["expense_bucket", "=", key],
-                ],
+                "domain": _bucket_domain(bucket),
+                "can_edit_name": True,
             }
-            for key, label in FIXED_A
+            for bucket in fixed_buckets
         ]
 
         B_LINES = [
             {
-                "key": key,
-                "name": label,
-                "expense": B_SUMS.get(key, 0.0) or 0.0,
+                "bucket_id": bucket.id,
+                "key": bucket.code,
+                "name": bucket.name,
+                "expense": _sum_bucket(bucket),
                 "model": "account.payment.request",
-                "domain": payment_base_domain + [
-                    ["expense_bucket", "=", key],
-                ],
+                "domain": _bucket_domain(bucket),
+                "can_edit_name": True,
             }
-            for key, label in FIXED_B_COMPANY
+            for bucket in company_buckets
         ]
 
-        # B/b. Chi phí công trình
+        # =====================================================
+        # B/b. CHI PHÍ CÔNG TRÌNH
+        # =====================================================
         project_costs = defaultdict(float)
         project_cost_domains = {}
 
@@ -790,11 +829,14 @@ class AccountReceiptReport(models.AbstractModel):
                 "expense": amount,
                 "model": "account.payment.request",
                 "domain": project_cost_domains[line_key]["domain"],
+                "can_edit_name": False,
             }
             for line_key, amount in project_costs.items()
         ]
 
-        # C. Biến phí không thường xuyên
+        # =====================================================
+        # C. BIẾN PHÍ KHÔNG THƯỜNG XUYÊN
+        # =====================================================
         irregular_costs = defaultdict(float)
         irregular_cost_domains = {}
 
@@ -826,6 +868,7 @@ class AccountReceiptReport(models.AbstractModel):
                 "expense": amount,
                 "model": "account.payment.request",
                 "domain": irregular_cost_domains[line_key]["domain"],
+                "can_edit_name": False,
             }
             for line_key, amount in irregular_costs.items()
         ]
@@ -833,7 +876,8 @@ class AccountReceiptReport(models.AbstractModel):
         group_b_domain = expression.AND([
             payment_base_domain,
             expression.OR([
-                [["expense_bucket", "in", B_KEYS]],
+                [["expense_bucket_id", "in", B_IDS]],
+                [["expense_bucket", "in", B_CODES]],
                 [["cost_classification", "=", "project"]],
             ]),
         ])
@@ -842,9 +886,7 @@ class AccountReceiptReport(models.AbstractModel):
             {
                 "type_label": "A. TỔNG ĐỊNH PHÍ",
                 "model": "account.payment.request",
-                "domain": payment_base_domain + [
-                    ["expense_bucket", "in", A_KEYS],
-                ],
+                "domain": fixed_domain,
                 "lines": A_LINES,
                 "subtotal": sum(x["expense"] for x in A_LINES),
             },
@@ -856,9 +898,7 @@ class AccountReceiptReport(models.AbstractModel):
                     {
                         "sub_label": "a. Chi phí công ty",
                         "model": "account.payment.request",
-                        "domain": payment_base_domain + [
-                            ["expense_bucket", "in", B_KEYS],
-                        ],
+                        "domain": company_domain,
                         "lines": B_LINES,
                         "subtotal": sum(x["expense"] for x in B_LINES),
                     },

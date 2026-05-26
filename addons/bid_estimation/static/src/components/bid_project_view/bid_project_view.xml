@@ -1,0 +1,508 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="bid_estimation.BidProjectViewAction">
+        <div class="o_bid_page o_bid_project_page">
+            <t t-if="state.loading">
+                <div class="o_bid_loading">
+                    <i class="fa fa-spinner fa-spin me-2"/>Đang tải dữ liệu dự án...
+                </div>
+            </t>
+
+            <t t-elif="!state.project">
+                <div class="o_bid_empty_state">
+                    <i class="fa fa-folder-open-o"/>
+                    <h3>Chưa có dự án dự thầu</h3>
+                    <p>Import Excel để tạo dự án, hạng mục, đầu mục và vật tư.</p>
+                    <button class="btn btn-primary" t-on-click="openImport">
+                        <i class="fa fa-upload me-1"/> Import Excel
+                    </button>
+                </div>
+            </t>
+
+            <t t-else="">
+                <div class="o_bid_action_header">
+                    <div>
+                        <div class="o_bid_module_label">Dự toán dự thầu</div>
+                        <h2 t-esc="state.project.name"/>
+                        <p t-if="state.project.note" class="text-muted mb-0" t-esc="state.project.note"/>
+                    </div>
+                    <div class="o_bid_header_actions">
+                        <button class="btn btn-outline-secondary" type="button" t-on-click="openProjectList">
+                            <i class="fa fa-arrow-left me-1"/> Danh sách
+                        </button>
+                        <select class="form-select o_bid_project_select" t-on-change="onChangeProject">
+                            <t t-foreach="state.projects" t-as="project" t-key="project.id">
+                                <option t-att-value="project.id" t-att-selected="project.id === state.selectedProjectId">
+                                    <t t-esc="project.name"/>
+                                </option>
+                            </t>
+                        </select>
+                        <button class="btn btn-outline-primary" type="button" t-on-click="openImport">
+                            <i class="fa fa-upload me-1"/> Import Excel
+                        </button>
+                        <button class="btn btn-outline-success" type="button" t-on-click="openExportExcel">
+                            <i class="fa fa-download me-1"/> Xuất Excel
+                        </button>
+                        <button class="btn btn-outline-success" type="button" t-on-click="openSupplierImport">
+                            <i class="fa fa-file-excel-o me-1"/> Import NCC
+                        </button>
+                        <button class="btn btn-outline-primary" type="button" t-on-click="openEditProject">
+                            <i class="fa fa-pencil me-1"/> Sửa tên
+                        </button>
+                        <button class="btn btn-outline-secondary" type="button" t-on-click="openProjectForm">
+                            <i class="fa fa-edit me-1"/> Form
+                        </button>
+                        <button class="btn btn-outline-danger" type="button" t-on-click="deleteProject">
+                            <i class="fa fa-trash me-1"/> Xóa
+                        </button>
+                        <button class="btn btn-secondary" type="button" t-on-click="() => this.refresh(true)">
+                            <i class="fa fa-refresh me-1"/> Tải lại
+                        </button>
+                    </div>
+                </div>
+
+                <div class="o_bid_summary_grid">
+                    <div class="o_bid_summary_card primary">
+                        <span>Tổng giá dự thầu</span>
+                        <strong><t t-esc="formatMoney(state.project.amount_total)"/> đ</strong>
+                    </div>
+                    <div class="o_bid_summary_card">
+                        <span>Giá NCC tốt nhất</span>
+                        <strong><t t-esc="formatMoney(state.project.supplier_best_amount_total)"/> đ</strong>
+                    </div>
+                    <div class="o_bid_summary_card">
+                        <span>Chênh lệch dự kiến</span>
+                        <strong><t t-esc="formatMoney(state.project.saving_amount_total)"/> đ</strong>
+                    </div>
+                    <div class="o_bid_summary_card compact">
+                        <span>Hạng mục / Vật tư / Báo giá</span>
+                        <strong>
+                            <t t-esc="state.sections.length"/> / <t t-esc="state.lines.length"/> / <t t-esc="state.project.supplier_quote_count"/>
+                        </strong>
+                    </div>
+                </div>
+
+                <div class="o_bid_content_card">
+                    <div class="o_bid_section_bar">
+                        <div class="o_bid_section_tabs">
+                            <t t-foreach="state.sections" t-as="section" t-key="section.id">
+                                <button type="button"
+                                        t-att-class="section.id === state.selectedSectionId ? 'active' : ''"
+                                        t-on-click="() => this.selectSection(section.id)">
+                                    <span t-esc="section.name"/>
+                                    <small><t t-esc="formatMoney(section.amount_total)"/> đ</small>
+                                </button>
+                            </t>
+                        </div>
+                    </div>
+
+                    <div class="o_bid_table_header">
+                        <div>
+                            <h3 t-if="selectedSection" t-esc="selectedSection.name"/>
+                            <h3 t-else="">Vật tư dự thầu</h3>
+                            <p>
+                                <t t-esc="sectionLines.length"/> vật tư · Dự thầu
+                                <b><t t-esc="formatMoney(sectionTotalAmount)"/> đ</b>
+                                <t t-if="sectionBestAmount">
+                                    · NCC tốt nhất <b><t t-esc="formatMoney(sectionBestAmount)"/> đ</b>
+                                </t>
+                            </p>
+                        </div>
+                        <div class="o_bid_table_tools">
+                            <button class="btn btn-primary" type="button" t-on-click="() => this.openAddLineForm(null)">
+                                <i class="fa fa-plus me-1"/> Thêm vật tư
+                            </button>
+                            <div class="o_bid_search_box">
+                                <i class="fa fa-search"/>
+                                <input type="text" class="form-control" placeholder="Tìm vật tư, ghi chú..." t-on-input="onSearch" t-att-value="state.searchText"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="o_bid_table_wrap">
+                        <t t-if="!sectionLines.length">
+                            <div class="o_bid_empty_inline">
+                                Không có vật tư trong hạng mục này.
+                                <div class="mt-2">
+                                    <button class="btn btn-primary btn-sm" type="button" t-on-click="() => this.openAddLineForm(null)">
+                                        <i class="fa fa-plus me-1"/> Thêm vật tư
+                                    </button>
+                                </div>
+                            </div>
+                        </t>
+
+                        <t t-if="isLooseLineFormOpen() &amp;&amp; !getLooseLines().length">
+                            <t t-call="bid_estimation.BidLineForm"/>
+                        </t>
+
+                        <t t-foreach="sectionDisplayItems" t-as="item" t-key="item.id">
+                            <t t-set="itemLines" t-value="getItemLines(item.id)"/>
+                            <div class="o_bid_item_group" t-if="itemLines.length || !state.searchText">
+                                <div class="o_bid_item_title" t-att-style="getItemIndentStyle(item)">
+                                    <div>
+                                        <span class="o_bid_item_code" t-if="item.code" t-esc="item.code"/>
+                                        <strong t-esc="item.name"/>
+                                        <span class="o_bid_parent_material_meta" t-if="item.is_material_parent">
+                                            <t t-if="item.uom_name"> · ĐVT: <t t-esc="item.uom_name"/></t>
+                                            <t t-if="item.quantity"> · SL: <t t-esc="formatNumber(item.quantity)"/></t>
+                                        </span>
+                                    </div>
+                                    <div class="o_bid_item_total">
+                                        Dự thầu: <b><t t-esc="formatMoney(item.amount_total)"/> đ</b>
+                                        <t t-if="item.supplier_best_amount_total">
+                                            · NCC: <b><t t-esc="formatMoney(item.supplier_best_amount_total)"/> đ</b>
+                                        </t>
+                                        <button class="btn btn-outline-primary btn-sm ms-2" type="button" t-on-click="() => this.openAddLineForm(item)">
+                                            <i class="fa fa-plus me-1"/> Vật tư
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <t t-if="isLineFormOpenForItem(item)">
+                                    <t t-call="bid_estimation.BidLineForm"/>
+                                </t>
+
+                                <table class="table table-hover table-sm o_bid_material_table" t-if="itemLines.length">
+                                    <thead>
+                                        <tr>
+                                            <th class="o_col_toggle"></th>
+                                            <th style="width:72px">STT</th>
+                                            <th>Vật tư</th>
+                                            <th style="width:80px">ĐVT</th>
+                                            <th class="text-end" style="width:110px">SL</th>
+                                            <th class="text-end" style="width:130px">Đơn giá DT</th>
+                                            <th class="text-end" style="width:145px">Thành tiền DT</th>
+                                            <th style="width:180px">NCC tốt nhất</th>
+                                            <th class="text-end" style="width:120px">Chênh lệch</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="itemLines" t-as="line" t-key="line.id">
+                                            <t t-call="bid_estimation.BidProjectLineRow">
+                                                <t t-set="line" t-value="line"/>
+                                            </t>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </t>
+
+                        <t t-set="looseLines" t-value="getLooseLines()"/>
+                        <div class="o_bid_item_group" t-if="looseLines.length">
+                            <div class="o_bid_item_title">
+                                <strong>Vật tư chưa thuộc đầu mục</strong>
+                                <button class="btn btn-outline-primary btn-sm" type="button" t-on-click="() => this.openAddLineForm(null)">
+                                    <i class="fa fa-plus me-1"/> Vật tư
+                                </button>
+                            </div>
+                            <t t-if="isLooseLineFormOpen()">
+                                <t t-call="bid_estimation.BidLineForm"/>
+                            </t>
+                            <table class="table table-hover table-sm o_bid_material_table">
+                                <thead>
+                                    <tr>
+                                        <th class="o_col_toggle"></th>
+                                        <th style="width:72px">STT</th>
+                                        <th>Vật tư</th>
+                                        <th style="width:80px">ĐVT</th>
+                                        <th class="text-end" style="width:110px">SL</th>
+                                        <th class="text-end" style="width:130px">Đơn giá DT</th>
+                                        <th class="text-end" style="width:145px">Thành tiền DT</th>
+                                        <th style="width:180px">NCC tốt nhất</th>
+                                        <th class="text-end" style="width:120px">Chênh lệch</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="looseLines" t-as="line" t-key="line.id">
+                                        <t t-call="bid_estimation.BidProjectLineRow">
+                                            <t t-set="line" t-value="line"/>
+                                        </t>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <t t-if="state.supplierImportOpen">
+                <div class="o_bid_modal_backdrop">
+                    <div class="o_bid_modal o_bid_supplier_import_modal">
+                        <div class="o_bid_modal_header">
+                            <h3>Import báo giá nhà cung cấp</h3>
+                            <button type="button" class="btn btn-link" t-on-click="cancelSupplierImport">
+                                <i class="fa fa-times"/>
+                            </button>
+                        </div>
+                        <div class="o_bid_modal_body">
+                            <div class="alert alert-info mb-3">
+                                File NCC dùng format giống file dự toán/import ban đầu, mỗi hạng mục là một sheet riêng:
+                                <b>STT</b> | <b>Tên vật tư</b> | <b>Đơn vị</b> | <b>Khối lượng</b> |
+                                <b>Đơn giá trước thuế</b> | <b>Thành tiền</b> | <b>Thông số kỹ thuật/Ghi chú</b>.
+                                Khi import, nhập <b>Tên NCC</b> ở ô bên dưới. Hệ thống sẽ lấy cột
+                                <b>Đơn giá trước thuế</b> làm đơn giá NCC và dò vật tư theo <b>STT</b> trước,
+                                nếu không có thì dò theo <b>Tên vật tư</b>.
+                            </div>
+                            <label class="form-label">Tên nhà cung cấp</label>
+                            <input class="form-control mb-3"
+                                   type="text"
+                                   placeholder="Ví dụ: Công ty TNHH Thiết bị ABC"
+                                   t-model="state.supplierImportSupplierName"
+                                   t-att-disabled="state.supplierImportLoading"/>
+                            <label class="form-label">File Excel báo giá NCC</label>
+                            <input class="form-control" type="file" accept=".xls,.xlsx,.xlsm" t-on-change="onSupplierImportFileChange" t-att-disabled="state.supplierImportLoading"/>
+                            <div class="text-muted small mt-2" t-if="state.supplierImportFilename">
+                                Đã chọn: <b t-esc="state.supplierImportFilename"/>
+                            </div>
+                        </div>
+                        <div class="o_bid_modal_footer">
+                            <button type="button" class="btn btn-outline-secondary" t-on-click="cancelSupplierImport" t-att-disabled="state.supplierImportLoading">Hủy</button>
+                            <button type="button" class="btn btn-primary" t-on-click="importSupplierExcel" t-att-disabled="state.supplierImportLoading || !state.supplierImportContent || !state.supplierImportSupplierName">
+                                <i t-if="state.supplierImportLoading" class="fa fa-spinner fa-spin me-1"/>
+                                <i t-else="" class="fa fa-upload me-1"/>
+                                Import NCC
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <t t-if="state.projectFormOpen">
+                <div class="o_bid_modal_backdrop">
+                    <div class="o_bid_modal o_bid_project_edit_modal">
+                        <div class="o_bid_modal_header">
+                            <h3>Sửa dự toán dự thầu</h3>
+                            <button type="button" class="btn btn-link" t-on-click="cancelProjectForm">
+                                <i class="fa fa-times"/>
+                            </button>
+                        </div>
+                        <div class="o_bid_modal_body">
+                            <label class="form-label">Tên dự toán dự thầu</label>
+                            <input class="form-control" type="text" placeholder="Nhập tên dự toán" t-model="state.projectForm.name"/>
+                            <label class="form-label mt-3">Ghi chú</label>
+                            <textarea class="form-control" rows="3" placeholder="Ghi chú nếu có" t-model="state.projectForm.note"/>
+                        </div>
+                        <div class="o_bid_modal_footer">
+                            <button type="button" class="btn btn-outline-secondary" t-on-click="cancelProjectForm">Hủy</button>
+                            <button type="button" class="btn btn-primary" t-on-click="saveProject">Lưu</button>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+
+    <t t-name="bid_estimation.BidProjectLineRow">
+        <tr t-att-class="'o_bid_material_row ' + getCompareClass(line)" t-on-click="() => this.toggleLine(line)">
+            <td class="o_col_toggle" t-on-click.stop="() => this.toggleLine(line)">
+                <i t-att-class="isLineExpanded(line) ? 'fa fa-angle-down' : 'fa fa-angle-right'"/>
+            </td>
+            <td class="o_bid_mono" t-esc="getLineStt(line)"/>
+            <td>
+                <div class="o_bid_line_name" t-att-style="getLineNameStyle(line)" t-esc="line.name"/>
+                <div class="o_bid_line_note" t-if="line.technical_note" t-esc="line.technical_note"/>
+                <span t-att-class="'o_bid_quote_badge ' + getSupplierBadgeClass(line)">
+                    <t t-esc="line.supplier_quote_count || 0"/> báo giá
+                </span>
+            </td>
+            <td t-esc="line.uom_name"/>
+            <td class="text-end o_bid_mono" t-esc="formatNumber(line.quantity)"/>
+            <td class="text-end o_bid_mono" t-esc="formatMoney(line.price_unit)"/>
+            <td class="text-end o_bid_mono fw-bold"><t t-esc="formatMoney(line.amount_total)"/> đ</td>
+            <td>
+                <t t-set="bestQuote" t-value="getBestQuote(line)"/>
+                <t t-if="bestQuote">
+                    <div class="o_bid_best_vendor">
+                        <span t-esc="bestQuote.partner_id[1]"/>
+                        <b><t t-esc="formatMoney(bestQuote.price_unit)"/> đ</b>
+                    </div>
+                </t>
+                <t t-else="">
+                    <span class="text-muted">Chưa có báo giá</span>
+                </t>
+            </td>
+            <td class="text-end o_bid_mono">
+                <t t-if="line.supplier_quote_count">
+                    <t t-esc="formatMoney(line.saving_amount)"/> đ
+                    <div class="o_bid_percent"><t t-esc="formatNumber(line.saving_percent)"/>%</div>
+                </t>
+                <t t-else="">-</t>
+            </td>
+        </tr>
+        <tr class="o_bid_vendor_detail_row" t-if="isLineExpanded(line)">
+            <td colspan="9">
+                <div class="o_bid_vendor_box">
+                    <div class="o_bid_vendor_box_header">
+                        <div>
+                            <strong t-esc="line.name"/>
+                            <div class="text-muted small">Sửa vật tư, thêm NCC và so sánh báo giá ngay tại đây.</div>
+                        </div>
+                        <div class="o_bid_vendor_header_actions">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" t-on-click.stop="() => this.openEditLineForm(line)">
+                                <i class="fa fa-pencil me-1"/> Sửa vật tư
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" type="button" t-on-click.stop="() => this.deleteLine(line)">
+                                <i class="fa fa-trash me-1"/> Xóa vật tư
+                            </button>
+                            <button class="btn btn-primary btn-sm" type="button" t-on-click.stop="() => this.openAddSupplierForm(line)">
+                                <i class="fa fa-plus me-1"/> Thêm NCC
+                            </button>
+                        </div>
+                    </div>
+                    <t t-if="isEditingLine(line)">
+                        <t t-call="bid_estimation.BidLineForm"/>
+                    </t>
+                    <t t-if="isSupplierFormOpen(line)">
+                        <div class="o_bid_vendor_form">
+                            <div class="o_bid_vendor_form_title">
+                                <strong t-if="state.editingQuoteId">Sửa báo giá NCC</strong>
+                                <strong t-else="">Thêm báo giá NCC</strong>
+                            </div>
+                            <div class="o_bid_vendor_form_grid">
+                                <div class="o_bid_field">
+                                    <label>Tìm / chọn NCC có sẵn</label>
+                                    <div class="o_bid_supplier_combo">
+                                        <input class="form-control form-control-sm o_bid_supplier_combo_input"
+                                               placeholder="Gõ tên NCC để tìm và chọn..."
+                                               t-att-value="state.supplierSearch"
+                                               t-on-focus="openSupplierDropdown"
+                                               t-on-click="openSupplierDropdown"
+                                               t-on-input="onSupplierSearchInput"
+                                               t-on-blur="closeSupplierDropdown"/>
+                                        <button t-if="state.supplierForm.partner_id || state.supplierSearch"
+                                                class="o_bid_supplier_clear"
+                                                type="button"
+                                                title="Bỏ chọn NCC"
+                                                t-on-mousedown.prevent="clearSupplierPartner">×</button>
+                                        <div class="o_bid_supplier_dropdown" t-if="state.supplierDropdownOpen">
+                                            <t t-set="partners" t-value="filteredPartners()"/>
+                                            <t t-if="partners.length">
+                                                <t t-foreach="partners" t-as="partner" t-key="partner.id">
+                                                    <button type="button"
+                                                            t-att-class="'o_bid_supplier_option ' + (partner.id == state.supplierForm.partner_id ? 'selected' : '')"
+                                                            t-on-mousedown.prevent="() => this.chooseSupplierPartner(partner)">
+                                                        <span t-esc="partner.name"/>
+                                                        <i t-if="partner.id == state.supplierForm.partner_id" class="fa fa-check"/>
+                                                    </button>
+                                                </t>
+                                            </t>
+                                            <t t-else="">
+                                                <div class="o_bid_supplier_no_result">Không tìm thấy NCC phù hợp. Có thể nhập NCC mới bên cạnh.</div>
+                                            </t>
+                                        </div>
+                                    </div>
+                                    <div class="text-muted small mt-1">Gõ trực tiếp trong ô chọn NCC, danh sách sẽ lọc ngay.</div>
+                                </div>
+                                <div class="o_bid_field">
+                                    <label>Hoặc nhập NCC mới</label>
+                                    <input class="form-control form-control-sm" name="partner_name" placeholder="Tên nhà cung cấp mới" t-att-value="state.supplierForm.partner_name" t-on-input="onSupplierInput"/>
+                                </div>
+                                <div class="o_bid_field">
+                                    <label>Đơn giá NCC <span class="text-danger">*</span></label>
+                                    <input class="form-control form-control-sm text-end o_bid_mono" name="price_unit" type="number" min="0" step="1" t-att-value="state.supplierForm.price_unit" t-on-input="onSupplierInput"/>
+                                </div>
+                                <div class="o_bid_field o_bid_field_full">
+                                    <label>Ghi chú</label>
+                                    <input class="form-control form-control-sm" name="note" placeholder="Ghi chú báo giá, điều kiện, model..." t-att-value="state.supplierForm.note" t-on-input="onSupplierInput"/>
+                                </div>
+                                <label class="o_bid_check_field">
+                                    <input type="checkbox" name="is_selected" t-att-checked="state.supplierForm.is_selected" t-on-change="onSupplierInput"/>
+                                    <span>Chọn NCC này cho vật tư</span>
+                                </label>
+                            </div>
+                            <div class="o_bid_vendor_form_actions">
+                                <button class="btn btn-primary btn-sm" type="button" t-on-click.stop="() => this.saveSupplierQuote(line)">
+                                    <i class="fa fa-save me-1"/> Lưu NCC
+                                </button>
+                                <button class="btn btn-secondary btn-sm" type="button" t-on-click.stop="cancelSupplierForm">Hủy</button>
+                            </div>
+                        </div>
+                    </t>
+                    <t t-set="quotes" t-value="getLineQuotes(line.id)"/>
+                    <t t-set="bestQuote" t-value="getBestQuote(line)"/>
+                    <t t-if="!quotes.length">
+                        <div class="o_bid_no_quote_box">Chưa có báo giá NCC cho vật tư này. Bấm <b>Thêm NCC</b> để nhập báo giá đầu tiên.</div>
+                    </t>
+                    <t t-else="">
+                        <table class="table table-sm o_bid_vendor_table">
+                            <thead>
+                                <tr>
+                                    <th>Nhà cung cấp</th>
+                                    <th class="text-end">Đơn giá NCC</th>
+                                    <th class="text-end">Thành tiền NCC</th>
+                                    <th class="text-end">Chênh lệch</th>
+                                    <th class="text-center">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="quotes" t-as="quote" t-key="quote.id">
+                                    <tr t-att-class="(quote.is_selected ? 'selected ' : '') + (bestQuote &amp;&amp; bestQuote.id === quote.id ? 'best' : '')">
+                                        <td>
+                                            <strong t-esc="quote.partner_id[1]"/>
+                                            <span t-if="quote.is_selected" class="badge text-bg-primary ms-1">Đã chọn</span>
+                                            <span t-if="bestQuote &amp;&amp; bestQuote.id === quote.id" class="badge text-bg-success ms-1">Thấp nhất</span>
+                                            <div class="text-muted small" t-if="quote.note" t-esc="quote.note"/>
+                                        </td>
+                                        <td class="text-end o_bid_mono"><t t-esc="formatMoney(quote.price_unit)"/> đ</td>
+                                        <td class="text-end o_bid_mono"><t t-esc="formatMoney(quote.amount_total)"/> đ</td>
+                                        <td class="text-end o_bid_mono">
+                                            <t t-esc="formatMoney(quote.diff_amount_total)"/> đ
+                                            <div class="o_bid_percent"><t t-esc="formatNumber(quote.diff_percent)"/>%</div>
+                                        </td>
+                                        <td class="text-center o_bid_vendor_actions">
+                                            <button t-if="!quote.is_selected" class="btn btn-outline-primary btn-sm" type="button" t-on-click.stop="() => this.selectQuote(quote)">Chọn</button>
+                                            <button class="btn btn-link btn-sm" type="button" t-on-click.stop="() => this.openEditSupplierForm(quote)">Sửa</button>
+                                            <button class="btn btn-link btn-sm text-danger" type="button" t-on-click.stop="() => this.deleteSupplierQuote(quote)">Xóa</button>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
+                </div>
+            </td>
+        </tr>
+    </t>
+
+    <t t-name="bid_estimation.BidLineForm">
+        <div class="o_bid_line_form">
+            <div class="o_bid_line_form_title">
+                <strong t-if="state.editingLineId">Sửa vật tư</strong>
+                <strong t-else="">Thêm vật tư</strong>
+            </div>
+            <div class="o_bid_line_form_grid">
+                <div class="o_bid_field">
+                    <label>STT</label>
+                    <input class="form-control form-control-sm o_bid_mono" name="stt" placeholder="VD: 1" t-att-value="state.lineForm.stt" t-on-input="onLineInput"/>
+                </div>
+                <div class="o_bid_field o_bid_line_name_field">
+                    <label>Tên vật tư <span class="text-danger">*</span></label>
+                    <input class="form-control form-control-sm" name="name" placeholder="Nhập tên vật tư" t-att-value="state.lineForm.name" t-on-input="onLineInput"/>
+                </div>
+                <div class="o_bid_field">
+                    <label>ĐVT</label>
+                    <input class="form-control form-control-sm" name="uom_name" placeholder="cái, bộ, m..." t-att-value="state.lineForm.uom_name" t-on-input="onLineInput"/>
+                </div>
+                <div class="o_bid_field">
+                    <label>Số lượng</label>
+                    <input class="form-control form-control-sm text-end o_bid_mono" name="quantity" type="number" step="0.01" t-att-value="state.lineForm.quantity" t-on-input="onLineInput"/>
+                </div>
+                <div class="o_bid_field">
+                    <label>Đơn giá dự thầu</label>
+                    <input class="form-control form-control-sm text-end o_bid_mono" name="price_unit" type="number" step="1" t-att-value="state.lineForm.price_unit" t-on-input="onLineInput"/>
+                </div>
+                <div class="o_bid_field o_bid_field_full">
+                    <label>Thông số kỹ thuật/Ghi chú</label>
+                    <textarea class="form-control form-control-sm o_bid_spec_textarea" name="technical_note" rows="4" placeholder="Model, thông số, ghi chú..." t-att-value="state.lineForm.technical_note" t-on-input="onLineInput"></textarea>
+                </div>
+            </div>
+            <div class="o_bid_line_form_actions">
+                <button class="btn btn-primary btn-sm" type="button" t-on-click="saveLine">
+                    <i class="fa fa-save me-1"/> Lưu vật tư
+                </button>
+                <button class="btn btn-secondary btn-sm" type="button" t-on-click="cancelLineForm">Hủy</button>
+            </div>
+        </div>
+    </t>
+
+</templates>
