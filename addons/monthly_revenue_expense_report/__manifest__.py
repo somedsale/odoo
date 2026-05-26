@@ -12,6 +12,9 @@
     'views/report_revenue_expense_action.xml',
     'views/report_monthly_revenue_expense_template.xml',
     'views/account_payment_request.xml',
+    'views/report_expense_bucket_views.xml',
+    'data/migrate_expense_bucket_server_action.xml',
+    'data/report_expense_bucket_data.xml',
 ],
 "assets": {
     "web.assets_backend": [

@@ -51,8 +51,12 @@
     <menuitem id="menu_report_revenue_expense_root"
               name="Báo cáo Doanh thu - Chi phí"
               parent="custom_account_menu.menu_accounting_reporting"
-              action="action_monthly_revenue_expense_owl_report"
               sequence="20"/>
+    <menuitem id="menu_report_revenue_expense_owl"
+              name="Báo cáo"
+              parent="monthly_revenue_expense_report.menu_report_revenue_expense_root"
+              action="action_monthly_revenue_expense_owl_report"
+              sequence="10"/>
 
     <!-- Paperformat PDF -->
     <record id="revenue_report_a4_landscape" model="report.paperformat">

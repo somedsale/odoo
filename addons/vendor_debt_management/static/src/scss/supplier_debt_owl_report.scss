@@ -348,4 +348,51 @@
 .o_row_payment_orphan td {
     background: #fff8e1 !important;
 }
+.o_supplier_debt_table tr.o_clickable_payment {
+    cursor: pointer;
+}
+
+.o_supplier_debt_table tr.o_clickable_payment:hover {
+    background-color: #f8fafc;
+}
+.o_supplier_debt_table tr.o_clickable_contract,
+.o_supplier_debt_table tr.o_clickable_invoice,
+.o_supplier_debt_table tr.o_clickable_payment {
+    cursor: pointer;
+}
+
+.o_supplier_debt_table tr.o_clickable_contract:hover,
+.o_supplier_debt_table tr.o_clickable_invoice:hover,
+.o_supplier_debt_table tr.o_clickable_payment:hover {
+    background-color: #f8fafc;
+}
+
+.o_supplier_debt_table .o_payment_name {
+    font-weight: 500;
+}
+.o_supplier_debt_table tr.o_clickable_contract,
+.o_supplier_debt_table tr.o_clickable_invoice,
+.o_supplier_debt_table tr.o_clickable_payment {
+    cursor: pointer;
+}
+
+.o_supplier_debt_table tr.o_clickable_contract:hover,
+.o_supplier_debt_table tr.o_clickable_invoice:hover,
+.o_supplier_debt_table tr.o_clickable_payment:hover {
+    background-color: #f8fafc;
+}
+
+.o_supplier_debt_table .o_payment_name {
+    font-weight: 500;
+}
+
+.o_supplier_debt_table .o_payment_status_note {
+    color: #334155;
+    font-weight: 500;
+}
+
+.o_supplier_debt_table .o_payment_note {
+    color: #64748b;
+    font-size: 12px;
+}
 }

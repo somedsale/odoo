@@ -162,6 +162,44 @@ export class RevenueExpenseReport extends Component {
         }
     }
 
+    async editExpenseBucketName(ev, line) {
+        ev.stopPropagation();
+
+        if (!line || !line.bucket_id) {
+            return;
+        }
+
+        const oldName = line.name || "";
+        const newName = window.prompt("Nhập tên khoản mục báo cáo mới:", oldName);
+
+        if (newName === null) {
+            return;
+        }
+
+        const cleanName = String(newName || "").trim();
+
+        if (!cleanName) {
+            window.alert("Tên khoản mục không được để trống.");
+            return;
+        }
+
+        if (cleanName === oldName) {
+            return;
+        }
+
+        await this.orm.call(
+            "monthly.revenue.expense.report",
+            "update_expense_bucket_name",
+            [],
+            {
+                bucket_id: line.bucket_id,
+                new_name: cleanName,
+            }
+        );
+
+        await this.loadReport();
+    }
+
     formatMoney(value) {
         const number = Number(value || 0);
         return number.toLocaleString("vi-VN");

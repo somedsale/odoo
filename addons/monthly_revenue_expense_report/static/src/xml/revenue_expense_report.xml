@@ -289,7 +289,19 @@
                                                             <t t-esc="exp_stt"/>
                                                         </td>
                                                         <td>
-                                                            <t t-esc="line.name"/>
+                                                            <div class="d-flex align-items-center justify-content-between gap-2">
+                                                                <span>
+                                                                    <t t-esc="line.name"/>
+                                                                </span>
+
+                                                                <button t-if="line.can_edit_name"
+                                                                        type="button"
+                                                                        class="btn btn-sm btn-link text-primary p-0 o_edit_bucket_btn"
+                                                                        title="Sửa tên khoản mục"
+                                                                        t-on-click="(ev) => this.editExpenseBucketName(ev, line)">
+                                                                    <i class="fa fa-pencil"/>
+                                                                </button>
+                                                            </div>
                                                         </td>
                                                         <td class="text-end">0</td>
                                                         <td class="text-end">
@@ -310,7 +322,19 @@
                                                         <t t-esc="exp2_stt"/>
                                                     </td>
                                                     <td>
-                                                        <t t-esc="line.name"/>
+                                                        <div class="d-flex align-items-center justify-content-between gap-2">
+                                                            <span>
+                                                                <t t-esc="line.name"/>
+                                                            </span>
+
+                                                            <button t-if="line.can_edit_name"
+                                                                    type="button"
+                                                                    class="btn btn-sm btn-link text-primary p-0 o_edit_bucket_btn"
+                                                                    title="Sửa tên khoản mục"
+                                                                    t-on-click="(ev) => this.editExpenseBucketName(ev, line)">
+                                                                <i class="fa fa-pencil"/>
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                     <td class="text-end">0</td>
                                                     <td class="text-end">

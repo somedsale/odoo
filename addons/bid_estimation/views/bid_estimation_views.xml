@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_bid_project_tree" model="ir.ui.view">
+        <field name="name">bid.project.tree</field>
+        <field name="model">bid.project</field>
+        <field name="arch" type="xml">
+            <tree string="Dự án dự thầu">
+                <field name="name"/>
+                <field name="section_count"/>
+                <field name="line_count"/>
+                <field name="supplier_quote_count"/>
+                <field name="amount_total" sum="Tổng dự thầu"/>
+                <field name="supplier_best_amount_total" sum="Tổng NCC tốt nhất"/>
+                <field name="saving_amount_total" sum="Chênh lệch"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_bid_project_form" model="ir.ui.view">
+        <field name="name">bid.project.form</field>
+        <field name="model">bid.project</field>
+        <field name="arch" type="xml">
+            <form string="Dự án dự thầu">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_owl_project_view" type="object" class="oe_stat_button" icon="fa-desktop">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Xem OWL</span>
+                            </div>
+                        </button>
+                        <button name="action_open_sections" type="object" class="oe_stat_button" icon="fa-folder-open">
+                            <field name="section_count" widget="statinfo" string="Hạng mục"/>
+                        </button>
+                        <button name="action_open_lines" type="object" class="oe_stat_button" icon="fa-list">
+                            <field name="line_count" widget="statinfo" string="Vật tư"/>
+                        </button>
+                        <button name="action_open_supplier_quotes" type="object" class="oe_stat_button" icon="fa-truck">
+                            <field name="supplier_quote_count" widget="statinfo" string="Báo giá NCC"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="note"/>
+                        </group>
+                        <group string="Tổng hợp so sánh">
+                            <field name="amount_total" readonly="1"/>
+                            <field name="supplier_best_amount_total" readonly="1"/>
+                            <field name="saving_amount_total" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Hạng mục">
+                            <field name="section_ids">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                    <field name="amount_total" readonly="1"/>
+                                    <field name="supplier_best_amount_total" readonly="1"/>
+                                    <field name="saving_amount_total" readonly="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Vật tư / so sánh NCC">
+                            <field name="line_ids" readonly="1">
+                                <tree>
+                                    <field name="section_id"/>
+                                    <field name="item_id"/>
+                                    <field name="sequence"/>
+                                    <field name="name"/>
+                                    <field name="uom_name"/>
+                                    <field name="quantity"/>
+                                    <field name="price_unit"/>
+                                    <field name="amount_total"/>
+                                    <field name="supplier_quote_count"/>
+                                    <field name="supplier_best_partner_id"/>
+                                    <field name="supplier_best_price_unit"/>
+                                    <field name="supplier_best_amount_total"/>
+                                    <field name="saving_amount"/>
+                                    <field name="saving_percent"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bid_project" model="ir.actions.act_window">
+        <field name="name">Dự án dự thầu</field>
+        <field name="res_model">bid.project</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_bid_section_tree" model="ir.ui.view">
+        <field name="name">bid.section.tree</field>
+        <field name="model">bid.section</field>
+        <field name="arch" type="xml">
+            <tree string="Hạng mục">
+                <field name="sequence"/>
+                <field name="project_id"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="amount_total" sum="Tổng dự thầu"/>
+                <field name="supplier_best_amount_total" sum="Tổng NCC tốt nhất"/>
+                <field name="saving_amount_total" sum="Chênh lệch"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_bid_section_form" model="ir.ui.view">
+        <field name="name">bid.section.form</field>
+        <field name="model">bid.section</field>
+        <field name="arch" type="xml">
+            <form string="Hạng mục">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="project_id"/>
+                            <field name="sequence"/>
+                            <field name="name"/>
+                            <field name="code"/>
+                        </group>
+                        <group string="Tổng hợp so sánh">
+                            <field name="amount_total" readonly="1"/>
+                            <field name="supplier_best_amount_total" readonly="1"/>
+                            <field name="saving_amount_total" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Đầu mục">
+                            <field name="item_ids">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="parent_id"/>
+                                    <field name="amount_total" readonly="1"/>
+                                    <field name="supplier_best_amount_total" readonly="1"/>
+                                    <field name="saving_amount_total" readonly="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Vật tư / báo giá NCC">
+                            <field name="line_ids">
+                                <tree editable="bottom">
+                                    <field name="sequence"/>
+                                    <field name="item_id"/>
+                                    <field name="name"/>
+                                    <field name="uom_name"/>
+                                    <field name="quantity"/>
+                                    <field name="price_unit"/>
+                                    <field name="amount_total" readonly="1"/>
+                                    <field name="supplier_quote_count" readonly="1"/>
+                                    <field name="supplier_best_partner_id" readonly="1"/>
+                                    <field name="supplier_best_price_unit" readonly="1"/>
+                                    <field name="supplier_best_amount_total" readonly="1"/>
+                                    <field name="saving_amount" readonly="1"/>
+                                    <field name="technical_note"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bid_section" model="ir.actions.act_window">
+        <field name="name">Hạng mục</field>
+        <field name="res_model">bid.section</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_bid_line_tree" model="ir.ui.view">
+        <field name="name">bid.line.tree</field>
+        <field name="model">bid.line</field>
+        <field name="arch" type="xml">
+            <tree string="Vật tư">
+                <field name="project_id"/>
+                <field name="section_id"/>
+                <field name="item_id"/>
+                <field name="sequence"/>
+                <field name="stt"/>
+                <field name="name"/>
+                <field name="uom_name"/>
+                <field name="quantity" sum="Tổng KL"/>
+                <field name="price_unit"/>
+                <field name="amount_total" sum="Tổng dự thầu"/>
+                <field name="supplier_quote_count"/>
+                <field name="supplier_best_partner_id"/>
+                <field name="supplier_best_price_unit"/>
+                <field name="supplier_best_amount_total" sum="Tổng NCC"/>
+                <field name="saving_amount" sum="Chênh lệch"/>
+                <field name="saving_percent"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_bid_line_form" model="ir.ui.view">
+        <field name="name">bid.line.form</field>
+        <field name="model">bid.line</field>
+        <field name="arch" type="xml">
+            <form string="Vật tư">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="project_id"/>
+                            <field name="section_id"/>
+                            <field name="item_id"/>
+                            <field name="sequence"/>
+                            <field name="stt"/>
+                            <field name="name"/>
+                            <field name="uom_name"/>
+                            <field name="quantity"/>
+                            <field name="technical_note"/>
+                        </group>
+                        <group string="Giá dự thầu từ Excel">
+                            <field name="price_unit"/>
+                            <field name="amount_total" readonly="1"/>
+                        </group>
+                        <group string="So sánh NCC">
+                            <field name="supplier_quote_count" readonly="1"/>
+                            <field name="supplier_best_partner_id" readonly="1"/>
+                            <field name="supplier_best_price_unit" readonly="1"/>
+                            <field name="supplier_best_amount_total" readonly="1"/>
+                            <field name="saving_amount" readonly="1"/>
+                            <field name="saving_percent" readonly="1"/>
+                            <field name="selected_quote_id" readonly="1"/>
+                            <field name="selected_partner_id" readonly="1"/>
+                            <field name="selected_price_unit" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Báo giá nhà cung cấp">
+                            <field name="supplier_quote_ids" context="{'default_line_id': id}">
+                                <tree editable="bottom" decoration-success="is_selected" decoration-muted="price_unit &gt; bid_price_unit">
+                                    <field name="is_selected"/>
+                                    <field name="partner_id"/>
+                                    <field name="quantity" readonly="1"/>
+                                    <field name="bid_price_unit" readonly="1"/>
+                                    <field name="price_unit"/>
+                                    <field name="amount_total" readonly="1"/>
+                                    <field name="diff_price_unit" readonly="1"/>
+                                    <field name="diff_amount_total" readonly="1"/>
+                                    <field name="diff_percent" readonly="1"/>
+                                    <field name="warranty"/>
+                                    <field name="delivery_time"/>
+                                    <field name="payment_term"/>
+                                    <field name="note"/>
+                                    <button name="action_select_quote" type="object" string="Chọn" class="btn-primary"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bid_line" model="ir.actions.act_window">
+        <field name="name">Vật tư</field>
+        <field name="res_model">bid.line</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_bid_supplier_quote_tree" model="ir.ui.view">
+        <field name="name">bid.supplier.quote.tree</field>
+        <field name="model">bid.supplier.quote</field>
+        <field name="arch" type="xml">
+            <tree string="Báo giá NCC" decoration-success="is_selected" decoration-muted="price_unit &gt; bid_price_unit">
+                <field name="project_id"/>
+                <field name="section_id"/>
+                <field name="item_id"/>
+                <field name="line_id"/>
+                <field name="partner_id"/>
+                <field name="quantity"/>
+                <field name="uom_name"/>
+                <field name="bid_price_unit"/>
+                <field name="price_unit"/>
+                <field name="amount_total" sum="Tổng NCC"/>
+                <field name="diff_price_unit"/>
+                <field name="diff_amount_total" sum="Tổng chênh"/>
+                <field name="diff_percent"/>
+                <field name="is_selected"/>
+                <field name="delivery_time"/>
+                <field name="warranty"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_bid_supplier_quote_form" model="ir.ui.view">
+        <field name="name">bid.supplier.quote.form</field>
+        <field name="model">bid.supplier.quote</field>
+        <field name="arch" type="xml">
+            <form string="Báo giá nhà cung cấp">
+                <header>
+                    <button name="action_select_quote" type="object" string="Chọn báo giá này" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="line_id"/>
+                            <field name="project_id" readonly="1"/>
+                            <field name="section_id" readonly="1"/>
+                            <field name="item_id" readonly="1"/>
+                            <field name="partner_id"/>
+                            <field name="is_selected"/>
+                        </group>
+                        <group string="Giá">
+                            <field name="quantity" readonly="1"/>
+                            <field name="uom_name" readonly="1"/>
+                            <field name="bid_price_unit" readonly="1"/>
+                            <field name="price_unit"/>
+                            <field name="amount_total" readonly="1"/>
+                            <field name="diff_price_unit" readonly="1"/>
+                            <field name="diff_amount_total" readonly="1"/>
+                            <field name="diff_percent" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Điều kiện thương mại">
+                        <field name="warranty"/>
+                        <field name="delivery_time"/>
+                        <field name="payment_term"/>
+                        <field name="note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bid_supplier_quote" model="ir.actions.act_window">
+        <field name="name">Báo giá NCC</field>
+        <field name="res_model">bid.supplier.quote</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+    </record>
+</odoo>

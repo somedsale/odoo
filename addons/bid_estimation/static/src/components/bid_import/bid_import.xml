@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="bid_estimation.BidImportAction">
+        <div class="o_bid_page o_bid_import_page">
+            <div class="o_bid_action_header">
+                <div>
+                    <div class="o_bid_module_label">Dự toán dự thầu</div>
+                    <h2>Import Excel dự thầu</h2>
+                </div>
+                <div class="o_bid_header_actions">
+                    <button class="btn btn-primary" type="button" t-on-click="createProject" t-att-disabled="state.creating or !state.preview">
+                        <i class="fa fa-save me-1"/>
+                        <t t-if="state.creating">Đang tạo...</t>
+                        <t t-else="">Tạo dự án</t>
+                    </button>
+                </div>
+            </div>
+
+            <div class="o_bid_import_steps">
+                <div t-att-class="hasFile ? 'done' : 'active'">1. Chọn file</div>
+                <div t-att-class="state.sheetInfo ? 'done' : (hasFile ? 'active' : '')">2. Chọn sheet</div>
+                <div t-att-class="state.preview ? 'done' : (selectedSheetCount ? 'active' : '')">3. Preview</div>
+                <div t-att-class="state.preview ? 'active' : ''">4. Tạo dự án</div>
+            </div>
+
+            <div class="o_bid_import_grid">
+                <div class="o_bid_import_left">
+                    <div class="o_bid_card">
+                        <div class="o_bid_card_header">
+                            <div>
+                                <h3>Thông tin dự án</h3>
+                                <p>Thông tin này sẽ dùng để tạo dự án dự thầu trong Odoo.</p>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tên dự án dự thầu</label>
+                            <input class="form-control" placeholder="Ví dụ: Gói thầu hệ thống cơ điện..." t-model="state.projectName"/>
+                        </div>
+                        <div>
+                            <label class="form-label">Ghi chú</label>
+                            <textarea class="form-control" rows="3" t-model="state.note" placeholder="Ghi chú nội bộ nếu có"/>
+                        </div>
+                    </div>
+
+                    <div class="o_bid_card">
+                        <div class="o_bid_card_header">
+                            <div>
+                                <h3>File Excel</h3>
+                                <p>Upload file, hệ thống sẽ đọc danh sách sheet trước khi import.</p>
+                            </div>
+                            <button class="btn btn-outline-primary" type="button" t-on-click="loadSheets" t-att-disabled="state.loadingSheets or !hasFile">
+                                <i class="fa fa-table me-1"/>
+                                <t t-if="state.loadingSheets">Đang đọc...</t>
+                                <t t-else="">Đọc sheet</t>
+                            </button>
+                        </div>
+
+                        <label class="o_bid_drop_zone">
+                            <i class="fa fa-cloud-upload"/>
+                            <strong>Kéo thả hoặc bấm để chọn file Excel</strong>
+                            <span>Hỗ trợ .xls, .xlsx, .xlsm</span>
+                            <em t-if="state.filename">File đã chọn: <t t-esc="state.filename"/></em>
+                            <input type="file" accept=".xls,.xlsx,.xlsm" t-on-change="onFileChange"/>
+                        </label>
+
+                        <t t-if="state.error">
+                            <div class="alert alert-danger mt-3 mb-0" t-esc="state.error"/>
+                        </t>
+                    </div>
+                </div>
+
+                <div class="o_bid_import_right">
+                    <div class="o_bid_card" t-if="state.sheetInfo">
+                        <div class="o_bid_card_header">
+                            <div>
+                                <h3>Chọn sheet import</h3>
+                                <p>
+                                    File <b t-esc="state.sheetInfo.filename"/> có
+                                    <b t-esc="state.sheetInfo.sheet_count"/> sheet,
+                                    đang chọn <b t-esc="selectedSheetCount"/> sheet.
+                                </p>
+                            </div>
+                            <div class="o_bid_sheet_actions">
+                                <button class="btn btn-link btn-sm" type="button" t-on-click="selectDataSheetsOnly">Có dữ liệu</button>
+                                <button class="btn btn-link btn-sm" type="button" t-on-click="selectAllSheets">Tất cả</button>
+                                <button class="btn btn-link btn-sm" type="button" t-on-click="clearSheetSelection">Bỏ chọn</button>
+                            </div>
+                        </div>
+
+                        <div class="o_bid_sheet_list">
+                            <t t-foreach="state.sheetInfo.sheets" t-as="sheet" t-key="sheet.name">
+                                <label t-att-class="sheet.selected ? 'o_bid_sheet_row selected' : 'o_bid_sheet_row'">
+                                    <input type="checkbox" t-att-checked="sheet.selected" t-on-change="() => this.toggleSheet(sheet)"/>
+                                    <div class="o_bid_sheet_name">
+                                        <strong t-esc="sheet.title || sheet.name"/>
+                                        <small t-if="sheet.title &amp;&amp; sheet.title !== sheet.name">Sheet: <t t-esc="sheet.name"/></small>
+                                        <small t-if="!sheet.has_data">Không thấy vật tư theo cấu trúc hiện tại</small>
+                                    </div>
+                                    <div class="o_bid_sheet_meta">
+                                        <span><t t-esc="sheet.item_count"/> đầu mục</span>
+                                        <span><t t-esc="sheet.line_count"/> vật tư</span>
+                                        <span><t t-esc="formatNumber(sheet.amount_total)"/> đ</span>
+                                    </div>
+                                </label>
+                            </t>
+                        </div>
+
+                        <div class="o_bid_card_footer">
+                            <button class="btn btn-primary" type="button" t-on-click="previewExcel" t-att-disabled="state.loadingPreview or !selectedSheetCount">
+                                <i class="fa fa-eye me-1"/>
+                                <t t-if="state.loadingPreview">Đang preview...</t>
+                                <t t-else="">Preview sheet đã chọn</t>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="o_bid_empty_panel" t-if="!state.sheetInfo">
+                        <i class="fa fa-file-excel-o"/>
+                        <h3>Chưa có danh sách sheet</h3>
+                        <p>Chọn file Excel để hệ thống đọc sheet và thống kê số dòng vật tư.</p>
+                    </div>
+                </div>
+            </div>
+
+            <t t-if="state.preview">
+                <div class="o_bid_summary_grid o_bid_import_summary">
+                    <div class="o_bid_summary_card"><span>File</span><strong t-esc="state.preview.filename"/></div>
+                    <div class="o_bid_summary_card"><span>Sheet đã chọn</span><strong t-esc="state.preview.selected_sheets.length"/></div>
+                    <div class="o_bid_summary_card"><span>Dòng vật tư</span><strong t-esc="state.preview.line_count"/></div>
+                    <div class="o_bid_summary_card primary"><span>Tổng tiền dự thầu</span><strong><t t-esc="formatNumber(state.preview.amount_total)"/> đ</strong></div>
+                </div>
+
+                <div class="o_bid_content_card o_bid_preview_card">
+                    <div class="o_bid_section_bar">
+                        <div class="o_bid_section_tabs">
+                            <t t-foreach="state.preview.sections" t-as="section" t-key="section_index">
+                                <button type="button"
+                                        t-att-class="section_index === state.activeSectionIndex ? 'active' : ''"
+                                        t-on-click="() => this.selectSection(section_index)">
+                                    <span t-esc="section.name"/>
+                                    <small><t t-esc="section.lines.length"/> dòng · <t t-esc="formatNumber(section.amount_total)"/> đ</small>
+                                </button>
+                            </t>
+                        </div>
+                    </div>
+
+                    <t t-if="activeSection">
+                        <div class="o_bid_table_header">
+                            <div>
+                                <h3 t-esc="activeSection.name"/>
+                                <p><t t-esc="activeSection.items.length"/> đầu mục · <t t-esc="activeSection.lines.length"/> vật tư</p>
+                            </div>
+                        </div>
+                        <div class="o_bid_table_wrap">
+                            <table class="table table-sm table-hover o_bid_preview_table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:70px">STT</th>
+                                        <th>Tên vật tư / đầu mục</th>
+                                        <th style="width:90px">ĐVT</th>
+                                        <th class="text-end" style="width:120px">Khối lượng</th>
+                                        <th class="text-end" style="width:135px">Đơn giá DT</th>
+                                        <th class="text-end" style="width:145px">Thành tiền</th>
+                                        <th style="width:260px">Ghi chú</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="activeSection.items" t-as="item" t-key="item_index">
+                                        <tr class="o_bid_preview_group_row">
+                                            <td t-esc="item.code"/>
+                                            <td colspan="4"><strong t-esc="item.name"/></td>
+                                            <td class="text-end fw-bold"><t t-esc="formatNumber(item.amount_total)"/> đ</td>
+                                            <td/>
+                                        </tr>
+                                        <t t-foreach="item.lines" t-as="line" t-key="line_index">
+                                            <tr>
+                                                <td t-esc="line.stt"/>
+                                                <td><strong t-esc="line.name"/></td>
+                                                <td t-esc="line.uom_name"/>
+                                                <td class="text-end" t-esc="formatNumber(line.quantity)"/>
+                                                <td class="text-end" t-esc="formatNumber(line.price_unit)"/>
+                                                <td class="text-end fw-bold"><t t-esc="formatNumber(line.amount_total)"/> đ</td>
+                                                <td class="text-muted small o_bid_import_note" t-esc="line.technical_note"/>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                    <t t-if="!activeSection.items.length">
+                                        <t t-foreach="activeSection.lines" t-as="line" t-key="line_index">
+                                            <tr>
+                                                <td t-esc="line.stt"/>
+                                                <td><strong t-esc="line.name"/></td>
+                                                <td t-esc="line.uom_name"/>
+                                                <td class="text-end" t-esc="formatNumber(line.quantity)"/>
+                                                <td class="text-end" t-esc="formatNumber(line.price_unit)"/>
+                                                <td class="text-end fw-bold"><t t-esc="formatNumber(line.amount_total)"/> đ</td>
+                                                <td class="text-muted small o_bid_import_note" t-esc="line.technical_note"/>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </t>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

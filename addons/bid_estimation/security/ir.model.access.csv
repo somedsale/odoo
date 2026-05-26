@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_bid_project_user,bid.project.user,model_bid_project,base.group_user,1,1,1,1
+access_bid_section_user,bid.section.user,model_bid_section,base.group_user,1,1,1,1
+access_bid_item_user,bid.item.user,model_bid_item,base.group_user,1,1,1,1
+access_bid_line_user,bid.line.user,model_bid_line,base.group_user,1,1,1,1
+access_bid_supplier_quote_user,bid.supplier.quote.user,model_bid_supplier_quote,base.group_user,1,1,1,1
