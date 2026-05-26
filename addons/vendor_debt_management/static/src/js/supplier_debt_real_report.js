@@ -7,47 +7,52 @@ import { useService } from "@web/core/utils/hooks";
 export class SupplierDebtRealReport extends Component {
     static template = "vendor_debt_management.SupplierDebtRealReport";
 
-setup() {
-    this.orm = useService("orm");
-    this.action = useService("action");
-    this.notification = useService("notification");
+    setup() {
+        this.orm = useService("orm");
+        this.action = useService("action");
+        this.notification = useService("notification");
 
-    this.openDetailReport = this.openDetailReport.bind(this);
-    this.prevPage = this.prevPage.bind(this);
-    this.nextPage = this.nextPage.bind(this);
-    this.refreshData = this.refreshData.bind(this);
-    this.exportPdf = this.exportPdf.bind(this);
+        this.openDetailReport = this.openDetailReport.bind(this);
+        this.prevPage = this.prevPage.bind(this);
+        this.nextPage = this.nextPage.bind(this);
+        this.refreshData = this.refreshData.bind(this);
+        this.exportPdf = this.exportPdf.bind(this);
+        this.resetFilters = this.resetFilters.bind(this);
 
-    this.state = useState({
-        loading: true,
-        search: "",
-        sectionFilter: "all",
-        supplierTypeFilter: "all",
-        page: 1,
-        pageSize: 20,
-        data: {
-            done_domestic_labor: [],
-            done_domestic_material: [],
-            done_foreign: [],
-            pending_domestic_labor: [],
-            pending_domestic_material: [],
-            pending_foreign: [],
-        },
-    });
+        this.state = useState({
+            loading: true,
+            search: "",
+            sectionFilter: "all",
+            supplierTypeFilter: "all",
+            sortField: "default",
+            sortDirection: "asc",
+            page: 1,
+            pageSize: 20,
+            data: {
+                done_domestic_labor: [],
+                done_domestic_material: [],
+                done_foreign: [],
+                pending_domestic_labor: [],
+                pending_domestic_material: [],
+                pending_foreign: [],
+            },
+        });
 
-    onWillStart(async () => {
-        await this.loadData();
-    });
-}
+        onWillStart(async () => {
+            await this.loadData();
+        });
+    }
 
     async loadData() {
         try {
             this.state.loading = true;
+
             const result = await this.orm.call(
                 "supplier.invoice.payment.summary",
                 "get_supplier_debt_real_report_data",
                 []
             );
+
             this.state.data = result || {
                 done_domestic_labor: [],
                 done_domestic_material: [],
@@ -158,8 +163,54 @@ setup() {
         });
     }
 
+    _getSortValue(row, field) {
+        if (!row || !field || field === "default") {
+            return "";
+        }
+
+        const numericFields = [
+            "old_debt",
+            "contract_amount",
+            "invoice_amount",
+            "paid_hd",
+            "advance_amount",
+            "residual_amount",
+        ];
+
+        if (numericFields.includes(field)) {
+            return Number(row[field] || 0);
+        }
+
+        return (row[field] || "").toString().trim().toLowerCase();
+    }
+
+    get sortedRows() {
+        const rows = [...this.filteredRows];
+
+        if (!this.state.sortField || this.state.sortField === "default") {
+            return rows;
+        }
+
+        const field = this.state.sortField;
+        const direction = this.state.sortDirection === "desc" ? -1 : 1;
+
+        return rows.sort((a, b) => {
+            const valueA = this._getSortValue(a, field);
+            const valueB = this._getSortValue(b, field);
+
+            if (typeof valueA === "number" && typeof valueB === "number") {
+                return (valueA - valueB) * direction;
+            }
+
+            return valueA.localeCompare(valueB, "vi", {
+                numeric: true,
+                sensitivity: "base",
+            }) * direction;
+        });
+    }
+
     get totalRows() {
-        return this.filteredRows.length;
+        return this.sortedRows.length;
     }
 
     get totalPages() {
@@ -169,7 +220,7 @@ setup() {
     get pagedRows() {
         const start = (this.state.page - 1) * this.state.pageSize;
         const end = start + this.state.pageSize;
-        return this.filteredRows.slice(start, end);
+        return this.sortedRows.slice(start, end);
     }
 
     get pageStart() {
@@ -186,12 +237,12 @@ setup() {
     sumRows(rows) {
         return (rows || []).reduce(
             (acc, row) => {
-                acc.old_debt += row.old_debt || 0;
-                acc.contract_amount += row.contract_amount || 0;
-                acc.invoice_amount += row.invoice_amount || 0;
-                acc.paid_hd += row.paid_hd || 0;
-                acc.advance_amount += row.advance_amount || 0;
-                acc.residual_amount += row.residual_amount || 0;
+                acc.old_debt += Number(row.old_debt || 0);
+                acc.contract_amount += Number(row.contract_amount || 0);
+                acc.invoice_amount += Number(row.invoice_amount || 0);
+                acc.paid_hd += Number(row.paid_hd || 0);
+                acc.advance_amount += Number(row.advance_amount || 0);
+                acc.residual_amount += Number(row.residual_amount || 0);
                 return acc;
             },
             {
@@ -206,7 +257,7 @@ setup() {
     }
 
     get totals() {
-        return this.sumRows(this.filteredRows);
+        return this.sumRows(this.sortedRows);
     }
 
     get groupedPagedRows() {
@@ -221,6 +272,7 @@ setup() {
 
         for (const sectionKey of sectionOrder) {
             const sectionRows = rows.filter((r) => r.sectionKey === sectionKey);
+
             if (!sectionRows.length) {
                 continue;
             }
@@ -234,6 +286,7 @@ setup() {
 
             for (const supplierTypeKey of supplierTypeOrder) {
                 const typeRows = sectionRows.filter((r) => r.supplierTypeKey === supplierTypeKey);
+
                 if (!typeRows.length) {
                     continue;
                 }
@@ -264,17 +317,37 @@ setup() {
     }
 
     onSectionFilterChange(ev) {
-        this.state.sectionFilter = ev.target.value;
+        this.state.sectionFilter = ev.target.value || "all";
         this.state.page = 1;
     }
 
     onSupplierTypeFilterChange(ev) {
-        this.state.supplierTypeFilter = ev.target.value;
+        this.state.supplierTypeFilter = ev.target.value || "all";
+        this.state.page = 1;
+    }
+
+    onSortFieldChange(ev) {
+        this.state.sortField = ev.target.value || "default";
+        this.state.page = 1;
+    }
+
+    onSortDirectionChange(ev) {
+        this.state.sortDirection = ev.target.value || "asc";
         this.state.page = 1;
     }
 
     onPageSizeChange(ev) {
         this.state.pageSize = parseInt(ev.target.value, 10) || 20;
+        this.state.page = 1;
+    }
+
+    resetFilters() {
+        this.state.search = "";
+        this.state.sectionFilter = "all";
+        this.state.supplierTypeFilter = "all";
+        this.state.sortField = "default";
+        this.state.sortDirection = "asc";
+        this.state.pageSize = 20;
         this.state.page = 1;
     }
 
@@ -305,32 +378,33 @@ setup() {
             maximumFractionDigits: 0,
         }).format(value || 0);
     }
-openDetailReport(row) {
-    console.log("CLICK ROW:", row);
 
-    if (!row || !row.summary_id) {
-        this.notification.add(
-            `Không tìm thấy dữ liệu chi tiết của nhà cung cấp này. summary_id=${row?.summary_id || false}, partner_id=${row?.partner_id || false}, currency_id=${row?.currency_id || false}`,
-            { type: "warning" }
-        );
-        return;
+    openDetailReport(row) {
+        console.log("CLICK ROW:", row);
+
+        if (!row || !row.summary_id) {
+            this.notification.add(
+                `Không tìm thấy dữ liệu chi tiết của nhà cung cấp này. summary_id=${row?.summary_id || false}, partner_id=${row?.partner_id || false}, currency_id=${row?.currency_id || false}`,
+                { type: "warning" }
+            );
+            return;
+        }
+
+        this.action.doAction({
+            type: "ir.actions.client",
+            name: "Báo cáo chi tiết công nợ NCC",
+            tag: "vendor_debt_management.supplier_debt_owl_report",
+            target: "current",
+            context: {
+                active_model: "supplier.invoice.payment.summary",
+                active_id: row.summary_id,
+                active_ids: [row.summary_id],
+            },
+            params: {
+                summary_id: row.summary_id,
+            },
+        });
     }
-
-    this.action.doAction({
-        type: "ir.actions.client",
-        name: "Báo cáo chi tiết công nợ NCC",
-        tag: "vendor_debt_management.supplier_debt_owl_report",
-        target: "current",
-        context: {
-            active_model: "supplier.invoice.payment.summary",
-            active_id: row.summary_id,
-            active_ids: [row.summary_id],
-        },
-        params: {
-            summary_id: row.summary_id,
-        },
-    });
-}
 }
 
 registry.category("actions").add(

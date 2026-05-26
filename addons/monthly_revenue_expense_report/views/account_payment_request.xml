@@ -5,8 +5,12 @@
         <field name="inherit_id" ref="custom_account_payment_request.view_account_payment_request_form"/>
         <field name="arch" type="xml">
 
-            <xpath expr="//field[@name='expense_category_id']" position="after">
-                <field name="expense_bucket"/>
+            <xpath expr="//field[@name='cost_classification']" position="after">
+                <field name="expense_bucket_id"
+                    options="{'no_create_edit': False, 'no_create': False}"/>
+
+                <field name="expense_bucket_section" invisible="1"/>
+                <field name="expense_bucket" invisible="1"/>
             </xpath>
         </field>
     </record>
