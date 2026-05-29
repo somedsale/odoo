@@ -4,14 +4,14 @@
         <field name="name">somed.leave.reject.wizard.form</field>
         <field name="model">somed.leave.reject.wizard</field>
         <field name="arch" type="xml">
-            <form string="Nhập lý do từ chối">
+            <form string="Từ chối đơn nghỉ phép">
                 <group>
-                    <field name="leave_request_id" invisible="1"/>
-                    <field name="reason" placeholder="Nhập lý do từ chối đơn xin nghỉ phép..."/>
+                    <field name="request_id" readonly="1"/>
+                    <field name="reason" placeholder="Nhập lý do từ chối..."/>
                 </group>
                 <footer>
                     <button name="action_confirm_reject" string="Xác nhận từ chối" type="object" class="btn-primary"/>
-                    <button string="Hủy" class="btn-secondary" special="cancel"/>
+                    <button string="Đóng" special="cancel" class="btn-secondary"/>
                 </footer>
             </form>
         </field>

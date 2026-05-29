@@ -207,16 +207,12 @@
                             background: #fcfcfc !important;
                             font-style: italic;
                             color: #000000 !important;
-                            border: 1px solid #000000 !important;
-                            vertical-align: top !important;
                         }
 
                         .so_note_text {
                             padding-left: 8px;
                             color: #000000 !important;
                             line-height: 1.25 !important;
-                            white-space: normal !important;
-                            word-break: break-word !important;
                         }
 
                         .so_spec_row td {
@@ -330,22 +326,22 @@
                             <t t-set="sttLM" t-value="0"/>
 
                             <t t-foreach="doc.order_line" t-as="line">
-                                <t t-set="total_cols"
-                                   t-value="9
-                                            + (1 if doc.is_show_image else 0)
-                                            + (1 if doc.is_show_ma_sp else 0)
-                                            + (1 if doc.is_show_chi_phi_nhan_cong else 0)"/>
 
                                 <!-- Dòng section -->
                                 <t t-if="line.display_type == 'line_section'">
                                     <t t-set="sttLM" t-value="sttLM + 1"/>
                                     <t t-set="stt" t-value="0"/>
 
+                                    <t t-set="section_colspan"
+                                       t-value="7 + (1 if doc.is_show_image else 0)
+                                                  + (1 if doc.is_show_ma_sp else 0)
+                                                  + (1 if doc.is_show_chi_phi_nhan_cong else 0)"/>
+
                                     <tr class="so_section_row so_keep_block">
                                         <td class="so_center">
                                             <span t-esc="doc.int_to_roman(sttLM)"/>
                                         </td>
-                                        <td t-att-colspan="total_cols - 1"
+                                        <td t-att-colspan="section_colspan"
                                             style="text-align:left; vertical-align:middle; font-weight:bold;">
                                             <span t-field="line.name"/>
                                         </td>
@@ -354,9 +350,14 @@
 
                                 <!-- Dòng note -->
                                 <t t-elif="line.display_type == 'line_note'">
+                                    <t t-set="note_colspan"
+                                       t-value="7 + (1 if doc.is_show_image else 0)
+                                                  + (1 if doc.is_show_ma_sp else 0)
+                                                  + (1 if doc.is_show_chi_phi_nhan_cong else 0)"/>
+
                                     <tr class="so_note_row">
-                                        <td class="so_center"></td>
-                                        <td t-att-colspan="total_cols - 1" style="text-align:left; vertical-align:top;">
+                                        <td></td>
+                                        <td t-att-colspan="note_colspan">
                                             <div class="so_note_text">
                                                 <span t-field="line.name"/>
                                             </div>

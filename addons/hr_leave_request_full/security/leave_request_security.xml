@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Không tạo group nhân viên riêng. Tất cả user nội bộ đều dùng được menu/module. -->
-    <record id="module_category_somed_leave" model="ir.module.category">
-        <field name="name">Somed Xin nghỉ phép</field>
-        <field name="sequence">35</field>
+    <record id="group_somed_leave_user" model="res.groups">
+        <field name="name">Người dùng nghỉ phép</field>
+        <field name="category_id" ref="base.module_category_human_resources"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
     </record>
 </odoo>
