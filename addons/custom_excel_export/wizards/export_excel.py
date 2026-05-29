@@ -44,15 +44,22 @@ class ExportExcelWizard(models.TransientModel):
         align_top_left = Alignment(horizontal='left', vertical='top', wrap_text=True)
         align_top_center = Alignment(horizontal='center', vertical='top', wrap_text=True)
         align_left_no_wrap = Alignment(horizontal='left', vertical='center', wrap_text=False)
+
         thin_side = Side(style='thin', color='000000')
         dashed_side = Side(style='dashed', color='888888')
 
         border_all = Border(
-            left=thin_side, right=thin_side, top=thin_side, bottom=thin_side
+            left=thin_side,
+            right=thin_side,
+            top=thin_side,
+            bottom=thin_side,
         )
 
         border_spec = Border(
-            left=thin_side, right=thin_side, top=dashed_side, bottom=dashed_side
+            left=thin_side,
+            right=thin_side,
+            top=dashed_side,
+            bottom=dashed_side,
         )
 
         fill_header = PatternFill(start_color='E9EEF5', end_color='E9EEF5', fill_type='solid')
@@ -99,6 +106,16 @@ class ExportExcelWizard(models.TransientModel):
 
         def qty_format(cell):
             cell.number_format = '#,##0.##'
+
+        def get_spec_text(line):
+            """
+            Ưu tiên lấy field thông số riêng.
+            Không lấy line.name để tránh sản phẩm không có thông số vẫn sinh dòng thông số.
+            """
+            for field_name in ['x_thongso', 'x_thong_so']:
+                if field_name in line._fields:
+                    return (getattr(line, field_name, '') or '').strip()
+            return ''
 
         for doc_index, doc in enumerate(sale_orders, start=1):
             if doc_index > 1:
@@ -216,7 +233,12 @@ class ExportExcelWizard(models.TransientModel):
                     img_io.seek(0)
                     logo = Image(img_io)
                     ws.add_image(logo, f'A{current_row}')
-                    ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row + 3, end_column=min(4, total_cols))
+                    ws.merge_cells(
+                        start_row=current_row,
+                        start_column=1,
+                        end_row=current_row + 3,
+                        end_column=min(4, total_cols)
+                    )
                 except Exception:
                     pass
 
@@ -226,7 +248,7 @@ class ExportExcelWizard(models.TransientModel):
             right_start = max(5, total_cols - 4)
             merge_row_text(
                 current_row, right_start, total_cols,
-                "Somed Co., Ltd",
+                "CÔNG TY TNHH GIẢI PHÁP KỸ THUẬT Y TẾ MIỀN NAM",
                 font=font_company, alignment=align_right
             )
             merge_row_text(
@@ -253,7 +275,11 @@ class ExportExcelWizard(models.TransientModel):
             # =========================
             # Title
             # =========================
-            merge_row_text(current_row, 1, total_cols, "BẢNG BÁO GIÁ", font=font_title, alignment=align_center)
+            merge_row_text(
+                current_row, 1, total_cols,
+                "BẢNG BÁO GIÁ",
+                font=font_title, alignment=align_center
+            )
             set_row_height(current_row, 30)
             current_row += 1
 
@@ -304,6 +330,7 @@ class ExportExcelWizard(models.TransientModel):
                 ("Điện thoại:", doc.partner_contact_id.phone or doc.partner_id.phone or "", "Điện thoại:", emp.mobile_phone or ""),
                 ("Email:", doc.partner_contact_id.email or doc.partner_id.email or "", "Email:", sale_user_email),
             ]
+
             for left_label, left_value, right_label, right_value in info_rows:
                 ws.cell(row=current_row, column=left_label_col).value = left_label
                 ws.cell(row=current_row, column=left_label_col).font = font_bold
@@ -407,6 +434,7 @@ class ExportExcelWizard(models.TransientModel):
 
                 stt += 1
 
+                # Main row
                 ws.cell(row=current_row, column=stt_col).value = stt
                 ws.cell(row=current_row, column=stt_col).font = font_bold
                 ws.cell(row=current_row, column=stt_col).alignment = align_center
@@ -489,38 +517,38 @@ class ExportExcelWizard(models.TransientModel):
                 current_row += 1
 
                 # =========================
-                # Spec rows
+                # Spec rows - only if has actual spec text
                 # =========================
-                spec_text = (line.name or getattr(line, 'x_thongso', '') or '').strip()
-                spec_lines = [s.strip() for s in spec_text.split('\n') if s.strip()]
+                spec_text = get_spec_text(line)
+                if spec_text:
+                    spec_lines = [s.strip() for s in spec_text.split('\n') if s.strip()]
+                    for spec_line in spec_lines:
+                        for c in range(1, total_cols + 1):
+                            cell = ws.cell(row=current_row, column=c)
+                            cell.border = border_spec
+                            cell.fill = fill_spec
+                            cell.alignment = align_top_left
 
-                for spec_line in spec_lines:
-                    for c in range(1, total_cols + 1):
-                        cell = ws.cell(row=current_row, column=c)
-                        cell.border = border_spec
-                        cell.fill = fill_spec
-                        cell.alignment = align_top_left
+                        ws.cell(row=current_row, column=product_col).value = spec_line
+                        ws.cell(row=current_row, column=product_col).font = font_spec
+                        ws.cell(row=current_row, column=product_col).alignment = align_top_left
 
-                    ws.cell(row=current_row, column=product_col).value = spec_line
-                    ws.cell(row=current_row, column=product_col).font = font_spec
-                    ws.cell(row=current_row, column=product_col).alignment = align_top_left
+                        ws.cell(row=current_row, column=stt_col).alignment = align_top_center
+                        if image_col:
+                            ws.cell(row=current_row, column=image_col).alignment = align_top_center
+                        if ma_sp_col:
+                            ws.cell(row=current_row, column=ma_sp_col).alignment = align_top_center
+                        ws.cell(row=current_row, column=xuatxu_col).alignment = align_top_center
+                        ws.cell(row=current_row, column=uom_col).alignment = align_top_center
+                        ws.cell(row=current_row, column=qty_col).alignment = align_top_center
+                        if labor_col:
+                            ws.cell(row=current_row, column=labor_col).alignment = align_right
+                        ws.cell(row=current_row, column=price_col).alignment = align_right
+                        ws.cell(row=current_row, column=subtotal_col).alignment = align_right
+                        ws.cell(row=current_row, column=note_col).alignment = align_top_left
 
-                    ws.cell(row=current_row, column=stt_col).alignment = align_top_center
-                    if image_col:
-                        ws.cell(row=current_row, column=image_col).alignment = align_top_center
-                    if ma_sp_col:
-                        ws.cell(row=current_row, column=ma_sp_col).alignment = align_top_center
-                    ws.cell(row=current_row, column=xuatxu_col).alignment = align_top_center
-                    ws.cell(row=current_row, column=uom_col).alignment = align_top_center
-                    ws.cell(row=current_row, column=qty_col).alignment = align_top_center
-                    if labor_col:
-                        ws.cell(row=current_row, column=labor_col).alignment = align_right
-                    ws.cell(row=current_row, column=price_col).alignment = align_right
-                    ws.cell(row=current_row, column=subtotal_col).alignment = align_right
-                    ws.cell(row=current_row, column=note_col).alignment = align_top_left
-
-                    set_row_height(current_row, 22)
-                    current_row += 1
+                        set_row_height(current_row, 22)
+                        current_row += 1
 
             # =========================
             # Summary
@@ -589,7 +617,11 @@ class ExportExcelWizard(models.TransientModel):
             # =========================
             # Commercial conditions
             # =========================
-            merge_row_text(current_row, 1, total_cols, "Điều kiện thương mại:", font=font_header, alignment=align_left)
+            merge_row_text(
+                current_row, 1, total_cols,
+                "Điều kiện thương mại:",
+                font=font_header, alignment=align_left
+            )
             set_row_height(current_row, 22)
             current_row += 1
 

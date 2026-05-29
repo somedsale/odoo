@@ -331,6 +331,7 @@ export class RevenueExpenseReport extends Component {
             target: "current",
             context: {
                 active_test: false,
+                ...(line.context || {}),
             },
         });
     }

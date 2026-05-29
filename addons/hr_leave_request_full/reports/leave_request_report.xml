@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="paperformat_somed_leave_request_a4_portrait" model="report.paperformat">
+        <field name="name">Đơn xin nghỉ phép - A4 dọc</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">12</field>
+        <field name="margin_bottom">12</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_somed_leave_request" model="ir.actions.report">
+        <field name="name">Đơn xin nghỉ phép</field>
+        <field name="model">somed.leave.request</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">hr_leave_request_full.report_somed_leave_request_document</field>
+        <field name="report_file">hr_leave_request_full.report_somed_leave_request_document</field>
+        <field name="binding_model_id" ref="model_somed_leave_request"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="hr_leave_request_full.paperformat_somed_leave_request_a4_portrait"/>
+        <field name="print_report_name">'Don xin nghi phep - %s' % (object.name)</field>
+    </record>
+
+    <template id="report_somed_leave_request_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t>
+                    <style>
+                        .somed-leave-page { color:#000; font-family: 'DejaVu Sans', Arial, sans-serif; font-size:14px; }
+                        .somed-leave-page table { border-collapse: collapse; }
+                        .somed-no-border,
+                        .somed-no-border table,
+                        .somed-no-border tr,
+                        .somed-no-border td,
+                        .somed-no-border th,
+                        .somed-no-border div {
+                            border: none !important;
+                            border-color: transparent !important;
+                            border-style: none !important;
+                            outline: none !important;
+                            box-shadow: none !important;
+                        }
+                        .leave-table th, .leave-table td { border:1px solid #000; padding:5px; }
+                        .somed-signature-area, .somed-signature-area * { border:0 none transparent !important; border-color:transparent !important; border-style:none !important; outline:0 !important; box-shadow:none !important; }
+                    </style>
+                    <div class="page somed-leave-page">
+                        <div style="text-align:center; font-weight:700; font-size:16px;">
+                            CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+                        </div>
+                        <div style="text-align:center; font-weight:700;">
+                            Độc lập – Tự do – Hạnh phúc
+                        </div>
+                        <div style="text-align:center; margin-bottom:12px;">
+                            ---------------------------
+                        </div>
+
+                        <h2 style="text-align:center; font-size:22px; margin:10px 0 18px 0; font-weight:700;">
+                            XÁC NHẬN NGHỈ PHÉP
+                        </h2>
+
+                        <div style="line-height:1.8;">
+                            <p>
+                                <strong>Kính gửi:</strong>
+                                Ban Giám Đốc Công Ty TNHH Giải Pháp Kỹ Thuật Y Tế Miền Nam
+                            </p>
+                            <p>
+                                <strong>Trưởng bộ phận phòng</strong>
+                                <span t-esc="o.department_id.name or ''"/>........................................................................
+                            </p>
+                            <p>
+                                <strong>Họ và tên:</strong>
+                                <span t-esc="o.employee_id.name or ''"/>..............................................................................................
+                            </p>
+                            <p>
+                                <strong>Vị trí:</strong>
+                                <span t-esc="o.job_id.name or ''"/>....................................................................................................
+                            </p>
+                        </div>
+
+                        <table class="leave-table" style="width:100%; margin-top:8px; font-size:13px;">
+                            <thead>
+                                <tr style="text-align:center; font-weight:700;">
+                                    <th style="width:6%;">STT</th>
+                                    <th style="width:24%;">Nội dung</th>
+                                    <th style="width:18%;">Từ ngày</th>
+                                    <th style="width:18%;">Đến ngày</th>
+                                    <th style="width:16%;">Tổng ngày nghỉ</th>
+                                    <th style="width:18%;">Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-if="o.line_ids">
+                                    <t t-foreach="o.line_ids" t-as="line">
+                                        <tr>
+                                            <td style="text-align:center;"><span t-esc="line_index + 1"/></td>
+                                            <td><span t-esc="dict(line._fields['leave_type'].selection).get(line.leave_type)"/></td>
+                                            <td style="text-align:center;"><span t-esc="line.date_from.strftime('%d/%m/%Y') if line.date_from else ''"/></td>
+                                            <td style="text-align:center;"><span t-esc="line.date_to.strftime('%d/%m/%Y') if line.date_to else ''"/></td>
+                                            <td style="text-align:center;"><span t-esc="line.total_days"/></td>
+                                            <td><span t-esc="line.note or ''"/></td>
+                                        </tr>
+                                    </t>
+                                    <tr>
+                                        <td colspan="4" style="text-align:right; font-weight:700;">Tổng cộng</td>
+                                        <td style="text-align:center; font-weight:700;"><span t-esc="o.total_days"/></td>
+                                        <td><span t-esc="o.note or ''"/></td>
+                                    </tr>
+                                </t>
+                                <t t-else="">
+                                    <tr>
+                                        <td style="text-align:center;">1</td>
+                                        <td><span t-esc="dict(o._fields['leave_type'].selection).get(o.leave_type)"/></td>
+                                        <td style="text-align:center;"><span t-esc="o.date_from.strftime('%d/%m/%Y') if o.date_from else ''"/></td>
+                                        <td style="text-align:center;"><span t-esc="o.date_to.strftime('%d/%m/%Y') if o.date_to else ''"/></td>
+                                        <td style="text-align:center;"><span t-esc="o.total_days"/></td>
+                                        <td><span t-esc="o.note or ''"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <div style="line-height:1.8; margin-top:10px;">
+                            <p>
+                                <strong>Lý do:</strong>
+                                <span t-esc="o.reason or ''"/>............................................................................................
+                            </p>
+                            <p style="margin-bottom:3px;">
+                                <strong>Người phụ trách công việc trong thời gian tôi nghỉ phép:</strong>
+                            </p>
+                            <ul style="margin-top:0;">
+                                <li>
+                                    <strong>Họ tên:</strong>
+                                    <span t-esc="o.handover_employee_id.name or ''"/>............................................................
+                                </li>
+                                <li>
+                                    <strong>Số điện thoại:</strong>
+                                    <span t-esc="o.handover_phone or ''"/>............................................................
+                                </li>
+                            </ul>
+                            <p>
+                                Tôi cam đoan đã sắp xếp công việc, không làm ảnh hưởng đến tiến độ công việc của Công ty trong thời gian tôi nghỉ phép.
+                            </p>
+                            <p>Rất mong Ban Lãnh Đạo xem xét và chấp thuận.</p>
+                            <p>Tôi xin chân thành cảm ơn!</p>
+                        </div>
+
+                        <div class="somed-signature-area" style="width:100%; margin-top:22px; color:#000; border:0 none transparent !important; border-style:none !important; outline:0 !important; box-shadow:none !important;">
+                            <table border="0" cellpadding="0" cellspacing="0" rules="none" frame="void" style="color:#000; width:100%; font-size:14px; line-height:1.6; border:0 none transparent !important; border-color:transparent !important; border-style:none !important; outline:0 !important; border-collapse:collapse; box-shadow:none !important; background:transparent;">
+                                <tbody style="border:0 none transparent !important; border-style:none !important;">
+                                    <tr style="border:0 none transparent !important; border-style:none !important; color:#000 !important; background:transparent;">
+                                        <td style="width:25%; text-align:center; vertical-align:top; border:0 none transparent !important; border-color:transparent !important; border-style:none !important; outline:0 !important; padding:0 5px; background:transparent;">
+                                            <div style="border:0 none transparent !important; border-style:none !important;">
+                                                <span t-esc="o.request_date.strftime('%d/%m/%Y') if o.request_date else '.... / .... / ....'"/>
+                                            </div>
+                                            <div style="border:0 none transparent !important; border-style:none !important; font-weight:700; text-transform:uppercase;">NGƯỜI ĐỀ XUẤT</div>
+                                            <div style="border:0 none transparent !important; border-style:none !important; font-style:italic;">(Ký, họ tên)</div>
+                                            <div style="border:0 none transparent !important; border-style:none !important; margin-top:6px; font-style:italic; font-weight:700;">(Đã Xác Nhận)</div>
+                                            <div style="border:0 none transparent !important; border-style:none !important; margin-top:14px; font-style:italic;"><span t-esc="o.employee_id.name or ''"/></div>
+                                        </td>
+                                        <td style="width:25%; text-align:center; vertical-align:top; border:0 none transparent !important; border-color:transparent !important; border-style:none !important; outline:0 !important; padding:0 5px; background:transparent;">
+                                            <div style="border:0 none transparent !important; border-style:none !important;">
+                                                <span t-esc="o.manager_approved_date.strftime('%d/%m/%Y') if o.manager_approved_date else '.... / .... / ....'"/>
+                                            </div>
+                                            <div style="border:0 none transparent !important; border-style:none !important; font-weight:700; text-transform:uppercase;">TRƯỞNG BỘ PHẬN</div>
+                                            <div style="border:0 none transparent !important; border-style:none !important; font-style:italic;">(Ký, họ tên)</div>
+                                            <div t-if="o.manager_approved_by" style="border:0 none transparent !important; border-style:none !important; margin-top:6px; font-style:italic; font-weight:700;">(Đã Xác Nhận)</div>
+                                            <div t-if="o.manager_approved_by" style="border:0 none transparent !important; border-style:none !important; margin-top:14px; font-style:italic;"><span t-esc="o.manager_approved_by.name or ''"/></div>
+                                        </td>
+                                        <td style="width:25%; text-align:center; vertical-align:top; border:0 none transparent !important; border-color:transparent !important; border-style:none !important; outline:0 !important; padding:0 5px; background:transparent;">
+                                            <div style="border:0 none transparent !important; border-style:none !important;">
+                                                <span t-esc="o.hr_approved_date.strftime('%d/%m/%Y') if o.hr_approved_date else '.... / .... / ....'"/>
+                                            </div>
+                                            <div style="border:0 none transparent !important; border-style:none !important; font-weight:700; text-transform:uppercase;">QUẢN TRỊ VIÊN HR</div>
+                                            <div style="border:0 none transparent !important; border-style:none !important; font-style:italic;">(Ký, họ tên)</div>
+                                            <div t-if="o.hr_approved_by" style="border:0 none transparent !important; border-style:none !important; margin-top:6px; font-style:italic; font-weight:700;">(Đã Xác Nhận)</div>
+                                            <div t-if="o.hr_approved_by" style="border:0 none transparent !important; border-style:none !important; margin-top:14px; font-style:italic;"><span t-esc="o.hr_approved_by.name or ''"/></div>
+                                        </td>
+                                        <td style="width:25%; text-align:center; vertical-align:top; border:0 none transparent !important; border-color:transparent !important; border-style:none !important; outline:0 !important; padding:0 5px; background:transparent;">
+                                            <div style="border:0 none transparent !important; border-style:none !important;">
+                                                <span t-esc="o.director_approved_date.strftime('%d/%m/%Y') if o.director_approved_date else '.... / .... / ....'"/>
+                                            </div>
+                                            <div style="border:0 none transparent !important; border-style:none !important; font-weight:700; text-transform:uppercase;">GIÁM ĐỐC</div>
+                                            <div style="border:0 none transparent !important; border-style:none !important; font-style:italic;">(Ký, họ tên)</div>
+                                            <div t-if="o.director_approved_by" style="border:0 none transparent !important; border-style:none !important; margin-top:6px; font-style:italic; font-weight:700;">(Đã Xác Nhận)</div>
+                                            <div t-if="o.director_approved_by" style="border:0 none transparent !important; border-style:none !important; margin-top:14px; font-style:italic;"><span t-esc="o.director_approved_by.name or ''"/></div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

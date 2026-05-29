@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_somed_advance_reject_wizard_form" model="ir.ui.view">
+        <field name="name">somed.advance.reject.wizard.form</field>
+        <field name="model">somed.advance.reject.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Từ chối phiếu tạm ứng">
+                <group>
+                    <field name="advance_id" readonly="1"/>
+                    <field name="reason" placeholder="Nhập lý do từ chối..." required="1"/>
+                </group>
+                <footer>
+                    <button name="action_confirm_reject" string="Xác nhận từ chối" type="object" class="btn-primary"/>
+                    <button string="Đóng" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

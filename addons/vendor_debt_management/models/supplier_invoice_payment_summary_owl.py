@@ -64,20 +64,11 @@ class SupplierInvoicePaymentSummaryOwl(models.Model):
 
     def _owl_get_payment_note(self, payment):
         """
-        Lấy ghi chú / diễn giải của phiếu chi.
-        Tùy module có thể đặt tên field khác nhau.
+        Chỉ lấy ghi chú phiếu chi từ field notebook.
+        Nếu không có notebook hoặc notebook trống thì để trống.
         """
-        for field_name in [
-            "note",
-            "description",
-            "reason",
-            "payment_note",
-            "memo",
-            "communication",
-            "ref",
-        ]:
-            if field_name in payment._fields and getattr(payment, field_name, False):
-                return getattr(payment, field_name) or ""
+        if "notebook" in payment._fields and getattr(payment, "notebook", False):
+            return payment.notebook or ""
 
         return ""
 

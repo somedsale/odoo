@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_somed_leave_reject_wizard_form" model="ir.ui.view">
+        <field name="name">somed.leave.reject.wizard.form</field>
+        <field name="model">somed.leave.reject.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Nhập lý do từ chối">
+                <group>
+                    <field name="leave_request_id" invisible="1"/>
+                    <field name="reason" placeholder="Nhập lý do từ chối đơn xin nghỉ phép..."/>
+                </group>
+                <footer>
+                    <button name="action_confirm_reject" string="Xác nhận từ chối" type="object" class="btn-primary"/>
+                    <button string="Hủy" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

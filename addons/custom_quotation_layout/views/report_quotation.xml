@@ -207,12 +207,16 @@
                             background: #fcfcfc !important;
                             font-style: italic;
                             color: #000000 !important;
+                            border: 1px solid #000000 !important;
+                            vertical-align: top !important;
                         }
 
                         .so_note_text {
                             padding-left: 8px;
                             color: #000000 !important;
                             line-height: 1.25 !important;
+                            white-space: normal !important;
+                            word-break: break-word !important;
                         }
 
                         .so_spec_row td {
@@ -326,23 +330,22 @@
                             <t t-set="sttLM" t-value="0"/>
 
                             <t t-foreach="doc.order_line" t-as="line">
+                                <t t-set="total_cols"
+                                   t-value="9
+                                            + (1 if doc.is_show_image else 0)
+                                            + (1 if doc.is_show_ma_sp else 0)
+                                            + (1 if doc.is_show_chi_phi_nhan_cong else 0)"/>
 
                                 <!-- Dòng section -->
                                 <t t-if="line.display_type == 'line_section'">
                                     <t t-set="sttLM" t-value="sttLM + 1"/>
                                     <t t-set="stt" t-value="0"/>
 
-                                    <!-- Tổng số cột còn lại sau cột STT -->
-                                    <t t-set="section_colspan"
-                                       t-value="7 + (1 if doc.is_show_image else 0)
-                                                  + (1 if doc.is_show_ma_sp else 0)
-                                                  + (1 if doc.is_show_chi_phi_nhan_cong else 0)"/>
-
                                     <tr class="so_section_row so_keep_block">
                                         <td class="so_center">
                                             <span t-esc="doc.int_to_roman(sttLM)"/>
                                         </td>
-                                        <td t-att-colspan="section_colspan"
+                                        <td t-att-colspan="total_cols - 1"
                                             style="text-align:left; vertical-align:middle; font-weight:bold;">
                                             <span t-field="line.name"/>
                                         </td>
@@ -351,14 +354,9 @@
 
                                 <!-- Dòng note -->
                                 <t t-elif="line.display_type == 'line_note'">
-                                    <t t-set="note_colspan"
-                                       t-value="8 + (1 if doc.is_show_image else 0)
-                                                  + (1 if doc.is_show_ma_sp else 0)
-                                                  + (1 if doc.is_show_chi_phi_nhan_cong else 0)"/>
-
                                     <tr class="so_note_row">
-                                        <td></td>
-                                        <td t-att-colspan="note_colspan">
+                                        <td class="so_center"></td>
+                                        <td t-att-colspan="total_cols - 1" style="text-align:left; vertical-align:top;">
                                             <div class="so_note_text">
                                                 <span t-field="line.name"/>
                                             </div>
@@ -369,14 +367,9 @@
                                 <!-- Dòng sản phẩm thật -->
                                 <t t-else="">
                                     <t t-set="stt" t-value="stt + 1"/>
-                                    <t t-set="spec_text" t-value="(line.name or line.x_thongso or '')"/>
-                                    <t t-set="spec_lines" t-value="[s.strip() for s in spec_text.split('\n') if s and s.strip()]"/>
-
-                                    <t t-if="not spec_lines">
-                                        <t t-set="spec_lines" t-value="['']"/>
-                                    </t>
-
                                     <t t-set="product_name" t-value="line.product_display_name or line.product_id.name"/>
+                                    <t t-set="spec_text" t-value="(line.name or '').strip() if (line.name or '').strip() != (product_name or '').strip() else ''"/>
+                                    <t t-set="spec_lines" t-value="[s.strip() for s in spec_text.split('\n') if s and s.strip()]"/>
 
                                     <!-- Dòng tên sản phẩm -->
                                     <tr class="so_main_row">
@@ -440,37 +433,39 @@
                                         </td>
                                     </tr>
 
-                                    <!-- Các dòng thông số tách riêng -->
-                                    <t t-foreach="spec_lines" t-as="spec_line">
-                                        <tr class="so_spec_row">
-                                            <td class="so_empty_follow"></td>
-
-                                            <td class="so_product_follow">
-                                                <div class="so_spec_line">
-                                                    <span t-esc="spec_line"/>
-                                                </div>
-                                            </td>
-
-                                            <t t-if="doc.is_show_image">
+                                    <!-- Các dòng diễn giải / thông số -->
+                                    <t t-if="spec_lines">
+                                        <t t-foreach="spec_lines" t-as="spec_line">
+                                            <tr class="so_spec_row">
                                                 <td class="so_empty_follow"></td>
-                                            </t>
 
-                                            <t t-if="doc.is_show_ma_sp">
+                                                <td class="so_product_follow">
+                                                    <div class="so_spec_line">
+                                                        <span t-esc="spec_line"/>
+                                                    </div>
+                                                </td>
+
+                                                <t t-if="doc.is_show_image">
+                                                    <td class="so_empty_follow"></td>
+                                                </t>
+
+                                                <t t-if="doc.is_show_ma_sp">
+                                                    <td class="so_empty_follow"></td>
+                                                </t>
+
                                                 <td class="so_empty_follow"></td>
-                                            </t>
-
-                                            <td class="so_empty_follow"></td>
-                                            <td class="so_empty_follow"></td>
-                                            <td class="so_empty_follow"></td>
-
-                                            <t t-if="doc.is_show_chi_phi_nhan_cong">
                                                 <td class="so_empty_follow"></td>
-                                            </t>
+                                                <td class="so_empty_follow"></td>
 
-                                            <td class="so_empty_follow"></td>
-                                            <td class="so_empty_follow"></td>
-                                            <td class="so_empty_follow"></td>
-                                        </tr>
+                                                <t t-if="doc.is_show_chi_phi_nhan_cong">
+                                                    <td class="so_empty_follow"></td>
+                                                </t>
+
+                                                <td class="so_empty_follow"></td>
+                                                <td class="so_empty_follow"></td>
+                                                <td class="so_empty_follow"></td>
+                                            </tr>
+                                        </t>
                                     </t>
                                 </t>
                             </t>
