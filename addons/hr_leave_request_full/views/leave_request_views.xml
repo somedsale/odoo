@@ -9,7 +9,6 @@
                 <field name="request_date"/>
                 <field name="employee_id"/>
                 <field name="department_id"/>
-                <field name="manager_id"/>
                 <field name="date_from"/>
                 <field name="date_to"/>
                 <field name="total_days"/>
@@ -31,13 +30,11 @@
                     <button name="action_open_reject_wizard" string="Từ chối" type="object" class="btn-secondary" invisible="not can_reject"/>
                     <button name="action_cancel" string="Hủy đơn" type="object" class="btn-secondary" invisible="not can_cancel"/>
                     <button name="action_reset_to_draft" string="Đưa về nháp" type="object" class="btn-secondary" invisible="not can_reset"/>
-                    <button name="%(action_report_somed_leave_request)d" string="In PDF" type="action" class="btn-secondary"/>
+                    <button name="%(hr_leave_request_full.action_report_somed_leave_request)d" string="In PDF" type="action" class="btn-secondary"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,manager_waiting,hr_waiting,director_waiting,approved"/>
                 </header>
                 <sheet>
-                    <div class="oe_title">
-                        <h1><field name="name" readonly="1"/></h1>
-                    </div>
+                    <div class="oe_title"><h1><field name="name" readonly="1"/></h1></div>
                     <group>
                         <group string="Thông tin nhân viên">
                             <field name="request_date" readonly="state != 'draft'"/>
@@ -76,15 +73,15 @@
                     </group>
                     <group string="Thông tin duyệt">
                         <group>
-                            <field name="manager_approved_by"/>
-                            <field name="manager_approved_date"/>
-                            <field name="hr_approved_by"/>
-                            <field name="hr_approved_date"/>
+                            <field name="manager_approved_by" readonly="1"/>
+                            <field name="manager_approved_date" readonly="1"/>
+                            <field name="hr_approved_by" readonly="1"/>
+                            <field name="hr_approved_date" readonly="1"/>
                         </group>
                         <group>
-                            <field name="director_approved_by"/>
-                            <field name="director_approved_date"/>
-                            <field name="reject_reason" invisible="not reject_reason"/>
+                            <field name="director_approved_by" readonly="1"/>
+                            <field name="director_approved_date" readonly="1"/>
+                            <field name="reject_reason" invisible="not reject_reason" readonly="1"/>
                         </group>
                     </group>
                     <field name="can_submit" invisible="1"/>
@@ -108,34 +105,29 @@
         <field name="name">somed.leave.request.search</field>
         <field name="model">somed.leave.request</field>
         <field name="arch" type="xml">
-            <search string="Tìm đơn xin nghỉ phép">
+            <search string="Tìm đơn nghỉ phép">
                 <field name="name"/>
                 <field name="employee_id"/>
                 <field name="department_id"/>
-                <field name="state"/>
                 <filter name="my_requests" string="Đơn của tôi" domain="[('employee_id.user_id','=',uid)]"/>
-                <filter name="waiting" string="Đang chờ duyệt" domain="[('state','in',['manager_waiting','hr_waiting','director_waiting'])]"/>
+                <filter name="waiting" string="Đang chờ duyệt" domain="[('state','in',('manager_waiting','hr_waiting','director_waiting'))]"/>
+                <filter name="approved" string="Đã duyệt" domain="[('state','=','approved')]"/>
                 <group expand="0" string="Nhóm theo">
                     <filter name="group_state" string="Trạng thái" context="{'group_by':'state'}"/>
                     <filter name="group_department" string="Phòng ban" context="{'group_by':'department_id'}"/>
-                    <filter name="group_employee" string="Nhân viên" context="{'group_by':'employee_id'}"/>
                 </group>
             </search>
         </field>
     </record>
 
     <record id="action_somed_leave_request" model="ir.actions.act_window">
-        <field name="name">Đơn xin nghỉ phép</field>
+        <field name="name">Xin nghỉ phép</field>
         <field name="res_model">somed.leave.request</field>
         <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_somed_leave_request_search"/>
         <field name="context">{'search_default_my_requests': 1}</field>
     </record>
 
-    <menuitem id="menu_somed_leave_root"
-              name="Xin nghỉ phép"
-              sequence="6"
-              action="action_somed_leave_request"
-              groups="base.group_user"
-              web_icon="hr_leave_request_full,static/description/icon.png"/>
-    <menuitem id="menu_somed_leave_requests" name="Đơn xin nghỉ phép" parent="menu_somed_leave_root" action="action_somed_leave_request" sequence="10" groups="base.group_user"/>
+    <menuitem id="menu_somed_leave_root" name="Xin nghỉ phép" sequence="4" action="action_somed_leave_request" groups="base.group_user" web_icon="hr_leave_request_full,static/description/icon.png"/>
+    <menuitem id="menu_somed_leave_requests" name="Đơn xin nghỉ phép" parent="menu_somed_leave_root" sequence="10" action="action_somed_leave_request" groups="base.group_user"/>
 </odoo>
