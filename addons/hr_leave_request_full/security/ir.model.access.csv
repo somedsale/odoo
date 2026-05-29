@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_somed_leave_request_user,somed.leave.request user,model_somed_leave_request,base.group_user,1,1,1,1
+access_somed_leave_reject_wizard_user,somed.leave.reject.wizard user,model_somed_leave_reject_wizard,base.group_user,1,1,1,1
+access_somed_leave_request_line_user,somed.leave.request.line user,model_somed_leave_request_line,base.group_user,1,1,1,1

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_somed_leave_request_tree" model="ir.ui.view">
+        <field name="name">somed.leave.request.tree</field>
+        <field name="model">somed.leave.request</field>
+        <field name="arch" type="xml">
+            <tree string="Đơn xin nghỉ phép" decoration-success="state == 'approved'" decoration-warning="state in ('manager_waiting','hr_waiting','director_waiting')" decoration-danger="state == 'rejected'" decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="request_date"/>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="manager_id"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="total_days"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_somed_leave_request_form" model="ir.ui.view">
+        <field name="name">somed.leave.request.form</field>
+        <field name="model">somed.leave.request</field>
+        <field name="arch" type="xml">
+            <form string="Đơn xin nghỉ phép">
+                <header>
+                    <button name="action_submit" string="Trình duyệt" type="object" class="btn-primary" invisible="not can_submit"/>
+                    <button name="action_manager_approve" string="Trưởng bộ phận duyệt" type="object" class="btn-primary" invisible="not can_manager_approve"/>
+                    <button name="action_hr_approve" string="Quản trị viên HR duyệt" type="object" class="btn-primary" invisible="not can_hr_approve"/>
+                    <button name="action_director_approve" string="Giám đốc duyệt" type="object" class="btn-primary" invisible="not can_director_approve"/>
+                    <button name="action_open_reject_wizard" string="Từ chối" type="object" class="btn-secondary" invisible="not can_reject"/>
+                    <button name="action_cancel" string="Hủy đơn" type="object" class="btn-secondary" invisible="not can_cancel"/>
+                    <button name="action_reset_to_draft" string="Đưa về nháp" type="object" class="btn-secondary" invisible="not can_reset"/>
+                    <button name="%(action_report_somed_leave_request)d" string="In PDF" type="action" class="btn-secondary"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,manager_waiting,hr_waiting,director_waiting,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Thông tin nhân viên">
+                            <field name="request_date" readonly="state != 'draft'"/>
+                            <field name="employee_id" readonly="state != 'draft'"/>
+                            <field name="department_id"/>
+                            <field name="job_id"/>
+                            <field name="manager_id"/>
+                            <field name="manager_user_id" invisible="1"/>
+                        </group>
+                        <group string="Tổng hợp nghỉ phép">
+                            <field name="date_from" readonly="1"/>
+                            <field name="date_to" readonly="1"/>
+                            <field name="total_days" readonly="1"/>
+                            <field name="note" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Các mốc thời gian nghỉ">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <tree editable="bottom">
+                                    <field name="leave_type"/>
+                                    <field name="date_from"/>
+                                    <field name="date_to"/>
+                                    <field name="total_days" readonly="1"/>
+                                    <field name="note"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                    <group>
+                        <field name="reason" readonly="state != 'draft'"/>
+                    </group>
+                    <group string="Người phụ trách công việc trong thời gian nghỉ">
+                        <field name="handover_employee_id" readonly="state != 'draft'"/>
+                        <field name="handover_phone" readonly="state != 'draft'"/>
+                    </group>
+                    <group string="Thông tin duyệt">
+                        <group>
+                            <field name="manager_approved_by"/>
+                            <field name="manager_approved_date"/>
+                            <field name="hr_approved_by"/>
+                            <field name="hr_approved_date"/>
+                        </group>
+                        <group>
+                            <field name="director_approved_by"/>
+                            <field name="director_approved_date"/>
+                            <field name="reject_reason" invisible="not reject_reason"/>
+                        </group>
+                    </group>
+                    <field name="can_submit" invisible="1"/>
+                    <field name="can_manager_approve" invisible="1"/>
+                    <field name="can_hr_approve" invisible="1"/>
+                    <field name="can_director_approve" invisible="1"/>
+                    <field name="can_reject" invisible="1"/>
+                    <field name="can_cancel" invisible="1"/>
+                    <field name="can_reset" invisible="1"/>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_somed_leave_request_search" model="ir.ui.view">
+        <field name="name">somed.leave.request.search</field>
+        <field name="model">somed.leave.request</field>
+        <field name="arch" type="xml">
+            <search string="Tìm đơn xin nghỉ phép">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="state"/>
+                <filter name="my_requests" string="Đơn của tôi" domain="[('employee_id.user_id','=',uid)]"/>
+                <filter name="waiting" string="Đang chờ duyệt" domain="[('state','in',['manager_waiting','hr_waiting','director_waiting'])]"/>
+                <group expand="0" string="Nhóm theo">
+                    <filter name="group_state" string="Trạng thái" context="{'group_by':'state'}"/>
+                    <filter name="group_department" string="Phòng ban" context="{'group_by':'department_id'}"/>
+                    <filter name="group_employee" string="Nhân viên" context="{'group_by':'employee_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_somed_leave_request" model="ir.actions.act_window">
+        <field name="name">Đơn xin nghỉ phép</field>
+        <field name="res_model">somed.leave.request</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_my_requests': 1}</field>
+    </record>
+
+    <menuitem id="menu_somed_leave_root"
+              name="Xin nghỉ phép"
+              sequence="6"
+              action="action_somed_leave_request"
+              groups="base.group_user"
+              web_icon="hr_leave_request_full,static/description/icon.png"/>
+    <menuitem id="menu_somed_leave_requests" name="Đơn xin nghỉ phép" parent="menu_somed_leave_root" action="action_somed_leave_request" sequence="10" groups="base.group_user"/>
+</odoo>

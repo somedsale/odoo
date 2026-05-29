@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_somed_leave_request_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family: 'Times New Roman', serif; font-size: 14px; color: #000;">
+                        <div style="text-align:center; line-height: 1.35;">
+                            <div style="font-weight:bold; text-transform:uppercase;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                            <div style="font-weight:bold;">Độc lập – Tự do – Hạnh phúc</div>
+                            <div>---------------------------</div>
+                        </div>
+
+                        <h2 style="text-align:center; margin-top:22px; margin-bottom:22px; font-size:22px; font-weight:bold; text-transform:uppercase;">XÁC NHẬN NGHỈ PHÉP</h2>
+
+                        <p><strong>Kính gửi:</strong> Ban Giám Đốc Công Ty TNHH Giải Pháp Kỹ Thuật Y Tế Miền Nam</p>
+                        <p><strong>Trưởng bộ phận phòng:</strong> <span t-field="o.department_id.name"/> <span t-if="o.manager_id">– <span t-field="o.manager_id.name"/></span></p>
+                        <p><strong>Họ và tên:</strong> <span t-field="o.employee_id.name"/></p>
+                        <p><strong>Vị trí:</strong> <span t-field="o.job_id.name"/></p>
+
+                        <table style="width:100%; border-collapse: collapse; margin-top:14px; margin-bottom:14px;" border="1">
+                            <thead>
+                                <tr style="text-align:center; font-weight:bold;">
+                                    <td style="padding:6px; width:8%;">STT</td>
+                                    <td style="padding:6px; width:26%;">Nội dung</td>
+                                    <td style="padding:6px; width:18%;">Từ ngày</td>
+                                    <td style="padding:6px; width:18%;">Đến ngày</td>
+                                    <td style="padding:6px; width:15%;">Tổng ngày nghỉ</td>
+                                    <td style="padding:6px; width:15%;">Ghi chú</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="padding:6px; text-align:center;">1</td>
+                                    <td style="padding:6px;"><span t-field="o.leave_type"/></td>
+                                    <td style="padding:6px; text-align:center;"><span t-field="o.date_from"/></td>
+                                    <td style="padding:6px; text-align:center;"><span t-field="o.date_to"/></td>
+                                    <td style="padding:6px; text-align:center;"><span t-field="o.number_of_days"/></td>
+                                    <td style="padding:6px;"><span t-field="o.note"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <p><strong>Lý do:</strong> <span t-field="o.reason"/></p>
+                        <p><strong>Người phụ trách công việc trong thời gian tôi nghỉ phép:</strong></p>
+                        <ul>
+                            <li><strong>Họ tên:</strong> <span t-field="o.handover_employee_id.name"/></li>
+                            <li><strong>Số điện thoại:</strong> <span t-field="o.handover_phone"/></li>
+                        </ul>
+
+                        <p style="text-align:justify; margin-top:12px;">
+                            Tôi cam đoan đã sắp xếp công việc, không làm ảnh hưởng đến tiến độ công việc của Công ty trong thời gian tôi nghỉ phép.
+                        </p>
+                        <p>Rất mong Ban Lãnh Đạo xem xét và chấp thuận.</p>
+                        <p>Tôi xin chân thành cảm ơn!</p>
+
+                        <div style="text-align:right; margin-top:16px; margin-right:40px;">
+                            <span t-if="o.request_date">
+                                <span t-esc="o.request_date.strftime('%d')"/> / <span t-esc="o.request_date.strftime('%m')"/> / <span t-esc="o.request_date.strftime('%Y')"/>
+                            </span>
+                        </div>
+
+                        <table style="width:100%; margin-top:18px; text-align:center; border-collapse:collapse; border:1px solid #fff !important; outline:1px solid #fff !important; box-shadow:none !important;">
+                            <tr>
+                                <td style="width:25%; font-weight:bold;">NGƯỜI LÀM ĐƠN</td>
+                                <td style="width:25%; font-weight:bold;">TRƯỞNG BỘ PHẬN</td>
+                                <td style="width:25%; font-weight:bold;">NHÂN SỰ</td>
+                                <td style="width:25%; font-weight:bold;">GIÁM ĐỐC</td>
+                            </tr>
+                            <tr>
+                                <td style="height:70px; vertical-align:top;">(Ký, họ tên)</td>
+                                <td style="height:70px; vertical-align:top;">(Ký, họ tên)</td>
+                                <td style="height:70px; vertical-align:top;">(Ký, họ tên)</td>
+                                <td style="height:70px; vertical-align:top;">(Ký, họ tên)</td>
+                            </tr>
+                            <tr>
+                                <td><span t-field="o.employee_id.name"/></td>
+                                <td><span t-field="o.manager_id.name"/></td>
+                                <td><span t-field="o.hr_approved_by.name"/></td>
+                                <td><span t-field="o.director_approved_by.name"/></td>
+                            </tr>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

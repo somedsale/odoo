@@ -90,7 +90,7 @@ class AccountingPaymentRequest(models.Model):
 
     bankids = fields.Many2one('res.partner.bank', string="Tài khoản người nhận", domain="[('partner_id', '=', receive_person)]")
     note = fields.Text(string="Diễn giải")
-
+    notebook = fields.Text(string="Ghi chú")
     state = fields.Selection([
         ('draft', 'Nháp'),
         ('confirmed', 'Xác nhận'),

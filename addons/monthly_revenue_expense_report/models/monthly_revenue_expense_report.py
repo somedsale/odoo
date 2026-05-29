@@ -625,13 +625,25 @@ class AccountReceiptReport(models.AbstractModel):
                     ["project_id", "=", r.project_id.id],
                 ]
 
+                context = {
+                    "default_type_revenue": tkey,
+                    "default_project_id": r.project_id.id,
+                    "default_date": end_date_str,
+                }
+
                 rev_grouped[tkey][line_key] += r.amount or 0.0
                 rev_domains[tkey][line_key] = {
                     "name": line_name,
                     "domain": domain,
+                    "context": context,
                 }
 
             elif tkey in ("loan", "other"):
+                context = {
+                    "default_type_revenue": tkey,
+                    "default_date": end_date_str,
+                }
+
                 if r.project_id:
                     line_key = f"project_{r.project_id.id}"
                     line_name = r.project_id.name
@@ -640,6 +652,11 @@ class AccountReceiptReport(models.AbstractModel):
                         ["type_revenue", "=", tkey],
                         ["project_id", "=", r.project_id.id],
                     ]
+
+                    context.update({
+                        "default_project_id": r.project_id.id,
+                    })
+
                 else:
                     note = r.note or _("(Không có nội dung)")
                     line_key = f"note_{note}"
@@ -651,6 +668,10 @@ class AccountReceiptReport(models.AbstractModel):
                             ["project_id", "=", False],
                             ["note", "=", r.note],
                         ]
+
+                        context.update({
+                            "default_note": r.note,
+                        })
                     else:
                         domain = receipt_base_domain + [
                             ["type_revenue", "=", tkey],
@@ -662,6 +683,7 @@ class AccountReceiptReport(models.AbstractModel):
                 rev_domains[tkey][line_key] = {
                     "name": line_name,
                     "domain": domain,
+                    "context": context,
                 }
 
             else:
@@ -696,12 +718,17 @@ class AccountReceiptReport(models.AbstractModel):
                 "subtotal": total,
                 "model": "account.receipt",
                 "domain": group_domain,
+                "context": {
+                    "default_type_revenue": key,
+                    "default_date": end_date_str,
+                },
                 "projects": [
                     {
                         "name": rev_domains[key][line_key]["name"],
                         "revenue": amount,
                         "model": "account.receipt",
                         "domain": rev_domains[key][line_key]["domain"],
+                        "context": rev_domains[key][line_key].get("context", {}),
                     }
                     for line_key, amount in project_lines.items()
                 ],
@@ -778,6 +805,11 @@ class AccountReceiptReport(models.AbstractModel):
                 "model": "account.payment.request",
                 "domain": _bucket_domain(bucket),
                 "can_edit_name": True,
+                "context": {
+                    "default_expense_bucket_id": bucket.id,
+                    "default_expense_bucket": bucket.code,
+                    "default_date_payment": end_date_str,
+                },
             }
             for bucket in fixed_buckets
         ]
@@ -791,6 +823,11 @@ class AccountReceiptReport(models.AbstractModel):
                 "model": "account.payment.request",
                 "domain": _bucket_domain(bucket),
                 "can_edit_name": True,
+                "context": {
+                    "default_expense_bucket_id": bucket.id,
+                    "default_expense_bucket": bucket.code,
+                    "default_date_payment": end_date_str,
+                },
             }
             for bucket in company_buckets
         ]
@@ -809,6 +846,11 @@ class AccountReceiptReport(models.AbstractModel):
                     ["cost_classification", "=", "project"],
                     ["project_id", "=", p.project_id.id],
                 ]
+                line_context = {
+                    "default_cost_classification": "project",
+                    "default_project_id": p.project_id.id,
+                    "default_date_payment": end_date_str,
+                }
             else:
                 line_key = "no_project"
                 line_name = _("(Không có dự án)")
@@ -816,11 +858,16 @@ class AccountReceiptReport(models.AbstractModel):
                     ["cost_classification", "=", "project"],
                     ["project_id", "=", False],
                 ]
+                line_context = {
+                    "default_cost_classification": "project",
+                    "default_date_payment": end_date_str,
+                }
 
             project_costs[line_key] += p.total or 0.0
             project_cost_domains[line_key] = {
                 "name": line_name,
                 "domain": line_domain,
+                "context": line_context,
             }
 
         project_cost_lines = [
@@ -829,6 +876,7 @@ class AccountReceiptReport(models.AbstractModel):
                 "expense": amount,
                 "model": "account.payment.request",
                 "domain": project_cost_domains[line_key]["domain"],
+                "context": project_cost_domains[line_key].get("context", {}),
                 "can_edit_name": False,
             }
             for line_key, amount in project_costs.items()
@@ -848,6 +896,11 @@ class AccountReceiptReport(models.AbstractModel):
                     ["cost_classification", "=", "irregular_expenses"],
                     ["expense_category_id", "=", p.expense_category_id.id],
                 ]
+                line_context = {
+                    "default_cost_classification": "irregular_expenses",
+                    "default_expense_category_id": p.expense_category_id.id,
+                    "default_date_payment": end_date_str,
+                }
             else:
                 line_key = "no_category"
                 line_name = _("(Không có khoản mục)")
@@ -855,11 +908,16 @@ class AccountReceiptReport(models.AbstractModel):
                     ["cost_classification", "=", "irregular_expenses"],
                     ["expense_category_id", "=", False],
                 ]
+                line_context = {
+                    "default_cost_classification": "irregular_expenses",
+                    "default_date_payment": end_date_str,
+                }
 
             irregular_costs[line_key] += p.total or 0.0
             irregular_cost_domains[line_key] = {
                 "name": line_name,
                 "domain": line_domain,
+                "context": line_context,
             }
 
         irregular_cost_lines = [
@@ -868,6 +926,7 @@ class AccountReceiptReport(models.AbstractModel):
                 "expense": amount,
                 "model": "account.payment.request",
                 "domain": irregular_cost_domains[line_key]["domain"],
+                "context": irregular_cost_domains[line_key].get("context", {}),
                 "can_edit_name": False,
             }
             for line_key, amount in irregular_costs.items()
@@ -887,6 +946,9 @@ class AccountReceiptReport(models.AbstractModel):
                 "type_label": "A. TỔNG ĐỊNH PHÍ",
                 "model": "account.payment.request",
                 "domain": fixed_domain,
+                "context": {
+                    "default_date_payment": end_date_str,
+                },
                 "lines": A_LINES,
                 "subtotal": sum(x["expense"] for x in A_LINES),
             },
@@ -894,11 +956,17 @@ class AccountReceiptReport(models.AbstractModel):
                 "type_label": "B. TỔNG BIẾN PHÍ THƯỜNG XUYÊN",
                 "model": "account.payment.request",
                 "domain": group_b_domain,
+                "context": {
+                    "default_date_payment": end_date_str,
+                },
                 "subgroups": [
                     {
                         "sub_label": "a. Chi phí công ty",
                         "model": "account.payment.request",
                         "domain": company_domain,
+                        "context": {
+                            "default_date_payment": end_date_str,
+                        },
                         "lines": B_LINES,
                         "subtotal": sum(x["expense"] for x in B_LINES),
                     },
@@ -908,6 +976,10 @@ class AccountReceiptReport(models.AbstractModel):
                         "domain": payment_base_domain + [
                             ["cost_classification", "=", "project"],
                         ],
+                        "context": {
+                            "default_cost_classification": "project",
+                            "default_date_payment": end_date_str,
+                        },
                         "lines": project_cost_lines,
                         "subtotal": sum(project_costs.values()),
                     },
@@ -920,11 +992,18 @@ class AccountReceiptReport(models.AbstractModel):
                 "domain": payment_base_domain + [
                     ["cost_classification", "=", "irregular_expenses"],
                 ],
+                "context": {
+                    "default_cost_classification": "irregular_expenses",
+                    "default_date_payment": end_date_str,
+                },
                 "lines": irregular_cost_lines,
                 "subtotal": sum(irregular_costs.values()),
             },
         ]
 
+        # =====================================================
+        # TỔNG HỢP
+        # =====================================================
         total_revenue = sum(
             (r.amount or 0.0)
             for r in receipts
