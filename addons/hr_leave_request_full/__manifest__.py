@@ -1,19 +1,21 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Somed - Xin nghỉ phép',
-    'version': '17.0.1.1.0',
+    'version': '17.0.1.0.0',
     'category': 'Human Resources',
-    'summary': 'Quản lý đơn xin nghỉ phép, duyệt nhiều cấp và in PDF',
+    'summary': 'Quản lý đơn xin nghỉ phép, luồng duyệt và in PDF',
     'author': 'Somed',
-    'license': 'LGPL-3',
     'depends': ['base', 'mail', 'hr'],
     'data': [
+        'security/leave_request_security.xml',
         'security/ir.model.access.csv',
         'data/sequence.xml',
-        'views/leave_request_views.xml',
-        'views/reject_wizard_views.xml',
+        # Report phải load trước views vì form view có button %(action_report_somed_leave_request)d
         'reports/leave_request_report.xml',
+        'views/reject_wizard_views.xml',
+        'views/leave_request_views.xml',
     ],
     'installable': True,
     'application': True,
+    'license': 'LGPL-3',
 }
