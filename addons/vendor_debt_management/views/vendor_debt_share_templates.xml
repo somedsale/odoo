@@ -8,32 +8,31 @@
             <t t-set="currency_symbol" t-value="summary_data.get('currency_symbol', '')"/>
 
             <style>
-            .container {
-                max-width: 100% !important;
-            }
+                .container {
+                    max-width: 100% !important;
+                }
+
                 body {
                     background: #eef3f8 !important;
                     font-family: "Inter", "Segoe UI", Arial, sans-serif;
                 }
+
                 .vendor-share-page,
                 .vendor-share-page * {
                     box-sizing: border-box;
                 }
+
                 .vendor-share-page .container,
                 .vendor-share-page .container-fluid {
                     max-width: 100% !important;
                 }
+
                 .vendor-share-shell {
                     width: 100%;
                     max-width: 100%;
                     padding: 20px;
                 }
-                .vendor-share-card {
-                    background: #ffffff;
-                    border: 1px solid #e5eaf1;
-                    border-radius: 24px;
-                    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-                }
+
                 .vendor-share-hero {
                     background:
                         radial-gradient(circle at top right, rgba(255,255,255,0.20), transparent 28%),
@@ -44,6 +43,7 @@
                     position: relative;
                     overflow: hidden;
                 }
+
                 .vendor-share-hero:after {
                     content: "";
                     position: absolute;
@@ -54,6 +54,7 @@
                     border-radius: 50%;
                     background: rgba(255,255,255,0.08);
                 }
+
                 .vendor-share-tag {
                     display: inline-flex;
                     align-items: center;
@@ -67,24 +68,28 @@
                     letter-spacing: 0.04em;
                     text-transform: uppercase;
                 }
+
                 .vendor-share-title {
                     margin: 14px 0 8px;
                     font-size: 34px;
                     line-height: 1.15;
                     font-weight: 800;
                 }
+
                 .vendor-share-subtitle {
                     margin: 0;
                     font-size: 16px;
                     line-height: 1.6;
                     color: rgba(255,255,255,0.95);
                 }
+
                 .vendor-share-meta {
                     display: flex;
                     flex-wrap: wrap;
                     gap: 12px;
                     justify-content: flex-end;
                 }
+
                 .vendor-share-meta-box {
                     min-width: 180px;
                     background: rgba(255,255,255,0.12);
@@ -93,6 +98,7 @@
                     padding: 14px 16px;
                     backdrop-filter: blur(4px);
                 }
+
                 .vendor-share-meta-label {
                     font-size: 12px;
                     opacity: 0.85;
@@ -100,19 +106,23 @@
                     text-transform: uppercase;
                     letter-spacing: 0.04em;
                 }
+
                 .vendor-share-meta-value {
                     font-size: 15px;
                     font-weight: 700;
                     line-height: 1.4;
                 }
+
                 .vendor-share-section {
                     margin-top: 18px;
                 }
+
                 .vendor-share-grid {
                     display: grid;
                     grid-template-columns: repeat(6, minmax(0, 1fr));
                     gap: 16px;
                 }
+
                 .vendor-kpi {
                     background: #ffffff;
                     border: 1px solid #e8edf3;
@@ -121,35 +131,42 @@
                     min-height: 116px;
                     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
                 }
+
                 .vendor-kpi-label {
                     font-size: 13px;
                     color: #64748b;
                     margin-bottom: 12px;
                     line-height: 1.4;
                 }
+
                 .vendor-kpi-value {
                     font-size: 24px;
                     font-weight: 800;
                     color: #0f172a;
                     line-height: 1.2;
                 }
+
                 .vendor-kpi-highlight {
                     background: linear-gradient(180deg, #fff8eb 0%, #fff3d6 100%);
                     border: 1px solid #f5c66b;
                 }
+
                 .vendor-kpi-highlight .vendor-kpi-label {
                     color: #9a6700;
                 }
+
                 .vendor-kpi-highlight .vendor-kpi-value {
                     color: #b45309;
                     font-size: 28px;
                 }
+
                 .vendor-note-grid {
                     display: grid;
                     grid-template-columns: 1.2fr 1fr 1fr;
                     gap: 16px;
                     margin-top: 16px;
                 }
+
                 .vendor-note-box {
                     background: #ffffff;
                     border: 1px solid #e8edf3;
@@ -157,17 +174,20 @@
                     padding: 18px 20px;
                     min-height: 102px;
                 }
+
                 .vendor-note-title {
                     font-size: 13px;
                     color: #64748b;
                     margin-bottom: 10px;
                 }
+
                 .vendor-note-content {
                     font-size: 15px;
                     color: #0f172a;
                     font-weight: 600;
                     line-height: 1.55;
                 }
+
                 .vendor-table-card {
                     background: #ffffff;
                     border: 1px solid #e5eaf1;
@@ -175,6 +195,7 @@
                     box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
                     overflow: hidden;
                 }
+
                 .vendor-table-head {
                     padding: 24px 26px 18px;
                     border-bottom: 1px solid #edf2f7;
@@ -184,20 +205,24 @@
                     gap: 16px;
                     flex-wrap: wrap;
                 }
+
                 .vendor-table-title {
                     margin: 0;
                     font-size: 24px;
                     font-weight: 800;
                     color: #0f172a;
                 }
+
                 .vendor-table-desc {
                     margin-top: 6px;
                     font-size: 14px;
                     color: #64748b;
                 }
+
                 .vendor-table-badge {
                     display: inline-flex;
                     align-items: center;
+                    gap: 4px;
                     padding: 9px 14px;
                     border-radius: 999px;
                     background: #eff6ff;
@@ -206,11 +231,13 @@
                     font-size: 13px;
                     font-weight: 700;
                 }
+
                 .vendor-table-wrap {
                     width: 100%;
                     overflow: auto;
                     padding: 0 0 6px;
                 }
+
                 .vendor-table {
                     width: 100%;
                     min-width: 1500px;
@@ -219,6 +246,7 @@
                     margin: 0;
                     background: #ffffff;
                 }
+
                 .vendor-table thead th {
                     background: #f8fafc;
                     color: #0f172a;
@@ -231,9 +259,11 @@
                     border-bottom: 1px solid #dbe3ec;
                     white-space: nowrap;
                 }
+
                 .vendor-table thead tr:first-child th {
                     background: #edf4fb;
                 }
+
                 .vendor-table tbody td {
                     padding: 11px 10px;
                     border-right: 1px solid #edf2f7;
@@ -243,77 +273,129 @@
                     vertical-align: middle;
                     background: #ffffff;
                 }
+
                 .vendor-table tbody tr:hover td {
                     background: #fafcff;
                 }
+
                 .vendor-project-row td {
                     background: #f0f9f4 !important;
                     font-weight: 700;
                     color: #166534;
                     border-bottom: 1px solid #d6eadc;
                 }
+
+                .vendor-contract-row td {
+                    background: #f8fafc !important;
+                    font-weight: 600;
+                }
+
+                .vendor-row-invoice td {
+                    background: #ffffff;
+                }
+
+                .vendor-row-payment td {
+                    background: #fcfcfd;
+                }
+
+                .vendor-row-payment-orphan td {
+                    background: #fffaf0;
+                }
+
                 .vendor-muted {
                     color: #64748b;
                     font-size: 12px;
                 }
-                .vendor-pill {
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 6px 10px;
-                    border-radius: 999px;
-                    background: #fff8e1;
-                    color: #a16207;
+
+                .vendor-total-label {
+                    color: #64748b;
                     font-size: 12px;
                     font-weight: 700;
                     white-space: nowrap;
                 }
+
+                .vendor-line-payment-marker {
+                    color: #64748b;
+                    margin-right: 6px;
+                }
+
+                .vendor-payment-name {
+                    font-weight: 600;
+                    color: #0f172a;
+                }
+
+                .vendor-payment-note {
+                    color: #64748b;
+                    font-size: 12px;
+                    line-height: 1.45;
+                }
+
                 .vendor-empty {
                     padding: 40px 20px;
                     text-align: center;
                     color: #64748b;
                     font-size: 14px;
                 }
+
                 .vendor-footer-note {
                     padding: 16px 26px 24px;
                     font-size: 12px;
                     color: #64748b;
                 }
+
+                .text-end {
+                    text-align: right;
+                }
+
+                .text-center {
+                    text-align: center;
+                }
+
                 @media (max-width: 1400px) {
                     .vendor-share-grid {
                         grid-template-columns: repeat(3, minmax(0, 1fr));
                     }
                 }
+
                 @media (max-width: 992px) {
                     .vendor-share-shell {
                         padding: 12px;
                     }
+
                     .vendor-share-hero {
                         padding: 22px 20px;
                     }
+
                     .vendor-share-title {
                         font-size: 28px;
                     }
+
                     .vendor-share-meta {
                         justify-content: flex-start;
                     }
+
                     .vendor-share-grid {
                         grid-template-columns: repeat(2, minmax(0, 1fr));
                     }
+
                     .vendor-note-grid {
                         grid-template-columns: 1fr;
                     }
+
                     .vendor-table-head {
                         padding: 18px 18px 14px;
                     }
                 }
+
                 @media (max-width: 576px) {
                     .vendor-share-grid {
                         grid-template-columns: 1fr;
                     }
+
                     .vendor-share-title {
                         font-size: 24px;
                     }
+
                     .vendor-kpi-value {
                         font-size: 22px;
                     }
@@ -327,13 +409,16 @@
                         <div class="row g-4 align-items-start">
                             <div class="col-lg-8">
                                 <div class="vendor-share-tag">Supplier Debt Reconciliation</div>
+
                                 <div class="vendor-share-title">Đối chiếu công nợ nhà cung cấp</div>
+
                                 <p class="vendor-share-subtitle">
                                     Nhà cung cấp:
                                     <strong t-esc="summary_data.get('partner_name') or (summary.partner_id.name if summary and summary.partner_id else '')"/>
                                 </p>
+
                                 <p class="vendor-share-subtitle" style="margin-top:10px; max-width:900px;">
-                                    Đây là báo cáo chia sẻ để hai bên đối chiếu các khoản công nợ, hóa đơn, thanh toán và số dư còn nợ tại thời điểm hiện tại.
+                                    Đây là báo cáo chia sẻ để hai bên đối chiếu các khoản công nợ, hợp đồng, hóa đơn, thanh toán và số dư còn nợ tại thời điểm hiện tại.
                                 </p>
                             </div>
 
@@ -343,6 +428,7 @@
                                         <div class="vendor-share-meta-label">Trạng thái</div>
                                         <div class="vendor-share-meta-value">Liên kết chia sẻ đang hoạt động</div>
                                     </div>
+
                                     <div class="vendor-share-meta-box">
                                         <div class="vendor-share-meta-label">Hạn chia sẻ</div>
                                         <div class="vendor-share-meta-value">
@@ -427,7 +513,12 @@
                             <div class="vendor-note-box">
                                 <div class="vendor-note-title">Ghi chú</div>
                                 <div class="vendor-note-content" style="font-weight:500;">
-                                    Vui lòng đối chiếu số liệu và phản hồi lại nếu có chênh lệch giữa hai bên.
+                                    <t t-if="summary_data.get('note')">
+                                        <span t-esc="summary_data.get('note')"/>
+                                    </t>
+                                    <t t-else="">
+                                        Vui lòng đối chiếu số liệu và phản hồi lại nếu có chênh lệch giữa hai bên.
+                                    </t>
                                 </div>
                             </div>
                         </div>
@@ -441,6 +532,7 @@
                                     Dữ liệu được nhóm theo dự án, hợp đồng, hóa đơn và các khoản thanh toán liên quan.
                                 </div>
                             </div>
+
                             <div class="vendor-table-badge">
                                 <span t-esc="len(projects) if projects else 0"/>
                                 <span>dự án</span>
@@ -458,9 +550,10 @@
                                         <th colspan="3">Hóa đơn</th>
                                         <th colspan="2">Đã trả</th>
                                         <th rowspan="2" style="min-width:140px;">Số tiền còn nợ</th>
-                                        <th rowspan="2" style="min-width:140px;">Ghi chú</th>
+                                        <th rowspan="2" style="min-width:160px;">Ghi chú</th>
                                         <th rowspan="2" style="min-width:120px;">Hạn T/T</th>
                                     </tr>
+
                                     <tr>
                                         <th>Số/Ngày</th>
                                         <th>Số tiền</th>
@@ -473,6 +566,7 @@
                                         <th>Số tiền</th>
                                     </tr>
                                 </thead>
+
                                 <tbody>
                                     <t t-set="display_stt" t-value="1"/>
 
@@ -491,8 +585,8 @@
 
                                                 <td colspan="2">
                                                     <div class="vendor-contract-text" style="padding-left: 24px;">
-                                                        <t t-if="contract.get('number_contract') and contract.get('number_contract') != 'Không có hợp đồng'">
-                                                            <span t-esc="contract.get('number_contract')"/>
+                                                        <t t-if="contract.get('contract_name') and contract.get('contract_name') != 'Không có hợp đồng'">
+                                                            <span t-esc="contract.get('contract_name')"/>
                                                             <t t-if="contract.get('contract_date')">
                                                                 <span> / </span>
                                                                 <span t-esc="contract.get('contract_date')"/>
@@ -506,14 +600,57 @@
 
                                                 <td class="text-end">
                                                     <strong>
-                                                        <t t-if="contract.get('contract_amount') not in (False, None, '')">
+                                                        <t t-if="contract.get('contract_amount')">
                                                             <span t-esc="'{:,.0f}'.format(contract.get('contract_amount') or 0.0).replace(',', '.')"/>
                                                             <span t-if="currency_symbol" t-esc="' ' + currency_symbol"/>
                                                         </t>
                                                     </strong>
                                                 </td>
 
-                                                <td colspan="10"></td>
+                                                <td></td>
+
+                                                <td class="text-end"></td>
+
+                                                <td></td>
+
+                                                <td class="text-center">
+                                                    <span class="vendor-total-label">Tổng HĐ</span>
+                                                </td>
+
+                                                <td class="text-end">
+                                                    <strong>
+                                                        <t t-if="contract.get('invoice_total')">
+                                                            <span t-esc="'{:,.0f}'.format(contract.get('invoice_total') or 0.0).replace(',', '.')"/>
+                                                            <span t-if="currency_symbol" t-esc="' ' + currency_symbol"/>
+                                                        </t>
+                                                    </strong>
+                                                </td>
+
+                                                <td class="text-center">
+                                                    <span class="vendor-total-label">Tổng trả</span>
+                                                </td>
+
+                                                <td class="text-end">
+                                                    <strong>
+                                                        <t t-if="contract.get('payment_total')">
+                                                            <span t-esc="'{:,.0f}'.format(contract.get('payment_total') or 0.0).replace(',', '.')"/>
+                                                            <span t-if="currency_symbol" t-esc="' ' + currency_symbol"/>
+                                                        </t>
+                                                    </strong>
+                                                </td>
+
+                                                <td class="text-end">
+                                                    <strong>
+                                                        <t t-if="contract.get('residual_total')">
+                                                            <span t-esc="'{:,.0f}'.format(contract.get('residual_total') or 0.0).replace(',', '.')"/>
+                                                            <span t-if="currency_symbol" t-esc="' ' + currency_symbol"/>
+                                                        </t>
+                                                    </strong>
+                                                </td>
+
+                                                <td></td>
+
+                                                <td></td>
                                             </tr>
 
                                             <!-- HÓA ĐƠN + PHIẾU CHI -->
@@ -538,26 +675,18 @@
                                                             </div>
                                                         </td>
 
-                                                        <!-- Hợp đồng số tiền -->
                                                         <td class="text-end"></td>
-
-                                                        <!-- HSQT số/ngày -->
                                                         <td></td>
-
-                                                        <!-- HSQT số tiền -->
                                                         <td class="text-end"></td>
 
-                                                        <!-- Hóa đơn ngày -->
                                                         <td class="text-center">
                                                             <span t-esc="row.get('invoice_date') or ''"/>
                                                         </td>
 
-                                                        <!-- Hóa đơn số -->
                                                         <td>
                                                             <span t-esc="row.get('invoice_name') or ''"/>
                                                         </td>
 
-                                                        <!-- Hóa đơn số tiền -->
                                                         <td class="text-end">
                                                             <t t-if="row.get('invoice_amount') not in (False, None, '')">
                                                                 <span t-esc="'{:,.0f}'.format(row.get('invoice_amount') or 0.0).replace(',', '.')"/>
@@ -565,13 +694,9 @@
                                                             </t>
                                                         </td>
 
-                                                        <!-- Đã trả ngày -->
+                                                        <td></td>
                                                         <td></td>
 
-                                                        <!-- Đã trả số tiền -->
-                                                        <td></td>
-
-                                                        <!-- Còn nợ -->
                                                         <td class="text-end">
                                                             <t t-if="row.get('residual_display') not in (False, None, '')">
                                                                 <span t-esc="'{:,.0f}'.format(row.get('residual_display') or 0.0).replace(',', '.')"/>
@@ -579,51 +704,43 @@
                                                             </t>
                                                         </td>
 
-                                                        <!-- Ghi chú -->
                                                         <td></td>
 
-                                                        <!-- Hạn T/T -->
                                                         <td class="text-center">
                                                             <span t-esc="row.get('invoice_due_date') or ''"/>
                                                         </td>
                                                     </tr>
                                                 </t>
 
-                                                <!-- DÒNG PHIẾU CHI: chỉ hiện khi thực sự có dữ liệu payment hoặc note -->
-                                                <t t-if="row.get('payment_date') or row.get('payment_amount') not in (False, None, '') or row.get('note')">
+                                                <!-- DÒNG PHIẾU CHI -->
+                                                <t t-if="row.get('payment_id') or row.get('payment_date') or row.get('payment_amount')">
                                                     <tr t-att-class="row.get('note') and 'vendor-row-payment vendor-row-payment-orphan' or 'vendor-row-payment'">
                                                         <td class="text-center"></td>
 
                                                         <td colspan="2">
                                                             <div class="vendor-line-payment-text" style="padding-left: 72px;">
                                                                 <span class="vendor-line-payment-marker">↳</span>
+
+                                                                <t t-if="row.get('payment_name')">
+                                                                    <span class="vendor-payment-name" t-esc="row.get('payment_name')"/>
+                                                                </t>
+                                                                <t t-else="">
+                                                                    <span class="vendor-muted">Phiếu chi</span>
+                                                                </t>
                                                             </div>
                                                         </td>
 
-                                                        <!-- Hợp đồng số tiền -->
                                                         <td class="text-end"></td>
-
-                                                        <!-- HSQT số/ngày -->
                                                         <td></td>
-
-                                                        <!-- HSQT số tiền -->
                                                         <td class="text-end"></td>
-
-                                                        <!-- Hóa đơn ngày -->
+                                                        <td></td>
+                                                        <td></td>
                                                         <td></td>
 
-                                                        <!-- Hóa đơn số -->
-                                                        <td></td>
-
-                                                        <!-- Hóa đơn số tiền -->
-                                                        <td></td>
-
-                                                        <!-- Đã trả ngày -->
                                                         <td class="text-center">
                                                             <span t-esc="row.get('payment_date') or ''"/>
                                                         </td>
 
-                                                        <!-- Đã trả số tiền -->
                                                         <td class="text-end">
                                                             <t t-if="row.get('payment_amount') not in (False, None, '')">
                                                                 <span t-esc="'{:,.0f}'.format(row.get('payment_amount') or 0.0).replace(',', '.')"/>
@@ -631,7 +748,6 @@
                                                             </t>
                                                         </td>
 
-                                                        <!-- Còn nợ -->
                                                         <td class="text-end">
                                                             <t t-if="not row.get('show_invoice') and row.get('residual_display') not in (False, None, '')">
                                                                 <span t-esc="'{:,.0f}'.format(row.get('residual_display') or 0.0).replace(',', '.')"/>
@@ -639,14 +755,13 @@
                                                             </t>
                                                         </td>
 
-                                                        <!-- Ghi chú -->
+                                                        <!-- Ghi chú: chỉ hiện payment_note, không hiện row.note / Không có hóa đơn -->
                                                         <td>
-                                                            <t t-if="row.get('note')">
-                                                                <span class="vendor-pill" t-esc="row.get('note')"/>
+                                                            <t t-if="row.get('payment_note')">
+                                                                <span class="vendor-payment-note" t-esc="row.get('payment_note')"/>
                                                             </t>
                                                         </td>
 
-                                                        <!-- Hạn T/T -->
                                                         <td></td>
                                                     </tr>
                                                 </t>

@@ -396,14 +396,7 @@
 
                                             <!-- Ghi chú -->
                                             <td>
-                                                <t t-if="row.note">
-                                                    <span class="o_payment_status_note" t-esc="row.note"/>
-                                                </t>
-
                                                 <t t-if="row.payment_note">
-                                                    <t t-if="row.note">
-                                                        <br/>
-                                                    </t>
                                                     <span class="o_payment_note" t-esc="row.payment_note"/>
                                                 </t>
                                             </td>

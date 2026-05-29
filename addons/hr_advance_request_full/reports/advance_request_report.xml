@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_somed_advance_request" model="ir.actions.report">
+        <field name="name">Giấy tạm ứng</field>
+        <field name="model">somed.advance.request</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">hr_advance_request_full.report_somed_advance_request_document</field>
+        <field name="report_file">hr_advance_request_full.report_somed_advance_request_document</field>
+        <field name="binding_model_id" ref="model_somed_advance_request"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="hr_advance_request_full.paperformat_somed_advance_a5_landscape"/>
+        <field name="print_report_name">'Giay_tam_ung_%s' % (object.name or '')</field>
+    </record>
+
+    <template id="report_somed_advance_request_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.basic_layout">
+                <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+                <div class="page somed-advance-report" style="font-family:'DejaVu Serif','DejaVu Sans','Arial Unicode MS',Arial,sans-serif; color:#000; font-size:14px; line-height:1.35; padding:0 4px;">
+                    <style type="text/css">
+                        @charset "UTF-8";
+                        * {
+                            font-family:'DejaVu Serif','DejaVu Sans','Arial Unicode MS',Arial,sans-serif !important;
+                        }
+                        .page { width:100%; }
+
+                        /* Ép toàn bộ border của bảng report về none.
+                           Chỉ những dòng có class riêng bên dưới mới được hiện lại. */
+                        .somed-advance-report,
+                        .somed-advance-report table,
+                        .somed-advance-report tbody,
+                        .somed-advance-report thead,
+                        .somed-advance-report tfoot,
+                        .somed-advance-report tr,
+                        .somed-advance-report td,
+                        .somed-advance-report th,
+                        .somed-advance-report div {
+                            border:0 none transparent !important;
+                            border-color:transparent !important;
+                            border-style:none !important;
+                            outline:0 none transparent !important;
+                            box-shadow:none !important;
+                            background:transparent !important;
+                        }
+                        .somed-advance-report table {
+                            border-collapse:collapse !important;
+                            border-spacing:0 !important;
+                        }
+
+                        /* Giữ lại đường gạch chân tiêu đề và dòng chấm để điền thông tin */
+                        .somed-advance-report .title-underline {
+                            border-bottom:1px solid #000 !important;
+                        }
+                        .somed-advance-report .field-line {
+                            border-bottom:1px dotted #000 !important;
+                        }
+                    </style>
+
+                    <table style="width:100%; border:none; border-collapse:collapse; margin-bottom:16px;" border="0" cellspacing="0" cellpadding="0">
+                        <tr style="border:none;">
+                            <td style="width:50%; text-align:center; vertical-align:top; border:none;">
+                                <table style="width:100%; border:none; border-collapse:collapse;" border="0" cellspacing="0" cellpadding="0">
+                                    <tr style="border:none;">
+                                        <td style="width:75px; border:none; vertical-align:top;">
+                                            <img t-if="o.env.company.logo" t-att-src="image_data_uri(o.env.company.logo)" style="max-height:38px; max-width:62px;"/>
+                                        </td>
+                                        <td style="border:none; text-align:center; vertical-align:top;">
+                                            <div style="font-weight:bold; text-transform:uppercase; font-size:13px;">
+                                                <span t-esc="o.env.company.name or 'CÔNG TY TNHH GIẢI PHÁP KỸ THUẬT Y TẾ MIỀN NAM'"/>
+                                            </div>
+                                            <div class="title-underline" style="width:190px; margin:3px auto 0;"></div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td style="width:50%; text-align:center; vertical-align:top; border:none;">
+                                <div style="font-weight:bold; text-transform:uppercase; font-size:13px;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                                <div style="font-weight:bold; font-size:13px;">Độc lập – Tự do – Hạnh phúc</div>
+                                <div class="title-underline" style="width:180px; margin:3px auto 0;"></div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <h2 style="text-align:center; font-size:24px; margin:0 0 10px 0; font-weight:bold; text-transform:uppercase;">GIẤY TẠM ỨNG</h2>
+
+                    <table style="width:100%; border:none; border-collapse:collapse; margin-bottom:14px;" border="0" cellspacing="0" cellpadding="0">
+                        <tr style="border:none;">
+                            <td style="width:34%; border:none; padding-left:95px; vertical-align:top;">Kính gửi:</td>
+                            <td style="width:66%; border:none; vertical-align:top;">
+                                <div>- GIÁM ĐỐC CÔNG TY</div>
+                                <div>- PHÒNG KẾ TOÁN</div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <table style="width:100%; border:none; border-collapse:collapse; font-size:14px; line-height:1.72;" border="0" cellspacing="0" cellpadding="0">
+                        <tr style="border:none;">
+                            <td style="width:170px; border:none; white-space:nowrap; padding-bottom:2px;">Họ và tên:</td>
+                            <td class="field-line" style="border:none; padding-left:8px;"><span t-esc="o.employee_id.name or ''"/></td>
+                        </tr>
+                        <tr style="border:none;">
+                            <td style="border:none; white-space:nowrap; padding-bottom:2px;">Đơn vị công tác:</td>
+                            <td class="field-line" style="border:none; padding-left:8px;"><span t-esc="o.department_id.name or ''"/></td>
+                        </tr>
+                        <tr style="border:none;">
+                            <td style="border:none; white-space:nowrap; padding-bottom:2px;">Lý do:</td>
+                            <td class="field-line" style="border:none; padding-left:8px;"><span t-esc="o.reason or ''"/></td>
+                        </tr>
+                        <tr style="border:none;">
+                            <td style="border:none; white-space:nowrap; padding-bottom:2px;">Chứng từ tạm ứng:</td>
+                            <td class="field-line" style="border:none; padding-left:8px;"><span t-esc="o.advance_document or ''"/></td>
+                        </tr>
+                        <tr style="border:none;">
+                            <td style="border:none; white-space:nowrap; padding-bottom:2px; padding-right:18px;">Số tiền tạm ứng kỳ này:</td>
+                            <td class="field-line" style="border:none; padding-left:16px;">
+                                <span t-field="o.amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                            </td>
+                        </tr>
+                        <tr style="border:none;">
+                            <td style="border:none; white-space:nowrap; font-style:italic; padding-bottom:2px;">Bằng chữ:</td>
+                            <td class="field-line" style="border:none; font-style:italic; padding-left:8px;"><span t-esc="o.amount_text or ''"/></td>
+                        </tr>
+                    </table>
+
+                    <div style="margin-top:25px; border:0 none transparent !important; border-color:transparent !important; border-style:none !important; outline:none !important;">
+                        <table style="color:#000; width:100%; font-size:13px; line-height:1.3; border-color:transparent; border-style:none; outline:none; border-collapse:collapse;" border="0" cellpadding="0" cellspacing="0" rules="none" frame="void">
+                            <tr style="border:none; color:#000 !important;">
+                                <td style="width:25%; text-align:center; vertical-align:top; border:none; border-color:transparent; padding:0 5px;">
+                                    <div style="border:none;">
+                                        <t t-if="o.request_date"><span t-esc="o.request_date.strftime('%d/%m/%Y')"/></t>
+                                        <t t-else="">..... /..... / 2025</t>
+                                    </div>
+                                    <div style="border:none; font-weight:700; text-transform:uppercase;">NGƯỜI TẠM ỨNG</div>
+                                    <div style="border:none; font-style:italic;">(Ký, họ tên)</div>
+                                    <div style="border:none; margin-top:6px; font-style:italic; font-weight:700;">(Đã Xác Nhận)</div>
+                                    <div style="border:none; margin-top:12px; font-style:italic;"><span t-esc="o.employee_id.name or ''"/></div>
+                                </td>
+                                <td style="width:25%; text-align:center; vertical-align:top; border:none; border-color:transparent; padding:0 5px;">
+                                    <div style="border:none;">
+                                        <t t-if="o.manager_approved_date"><span t-esc="o.manager_approved_date.strftime('%d/%m/%Y')"/></t>
+                                        <t t-else="">..... /..... / 2025</t>
+                                    </div>
+                                    <div style="border:none; font-weight:700; text-transform:uppercase;">TRƯỞNG BỘ PHẬN</div>
+                                    <div style="border:none; font-style:italic;">(Ký, họ tên)</div>
+                                    <div t-if="o.manager_approved_by" style="border:none; margin-top:6px; font-style:italic; font-weight:700;">(Đã Xác Nhận)</div>
+                                    <div t-if="o.manager_approved_by" style="border:none; margin-top:12px; font-style:italic;"><span t-esc="o.manager_approved_by.name or ''"/></div>
+                                </td>
+                                <td style="width:25%; text-align:center; vertical-align:top; border:none; border-color:transparent; padding:0 5px;">
+                                    <div style="border:none;">
+                                        <t t-if="o.accountant_approved_date"><span t-esc="o.accountant_approved_date.strftime('%d/%m/%Y')"/></t>
+                                        <t t-else="">..... /..... / 2025</t>
+                                    </div>
+                                    <div style="border:none; font-weight:700; text-transform:uppercase;">KẾ TOÁN TỔNG HỢP</div>
+                                    <div style="border:none; font-style:italic;">(Ký, họ tên)</div>
+                                    <div t-if="o.accountant_approved_by" style="border:none; margin-top:6px; font-style:italic; font-weight:700;">(Đã Xác Nhận)</div>
+                                    <div t-if="o.accountant_approved_by" style="border:none; margin-top:12px; font-style:italic;"><span t-esc="o.accountant_approved_by.name or ''"/></div>
+                                </td>
+                                <td style="width:25%; text-align:center; vertical-align:top; border:none; border-color:transparent; padding:0 5px;">
+                                    <div style="border:none;">
+                                        <t t-if="o.director_approved_date"><span t-esc="o.director_approved_date.strftime('%d/%m/%Y')"/></t>
+                                        <t t-else="">..... / ..... / 2025</t>
+                                    </div>
+                                    <div style="border:none; font-weight:700; text-transform:uppercase;">GIÁM ĐỐC</div>
+                                    <div style="border:none; font-style:italic;">(Ký, họ tên)</div>
+                                    <div t-if="o.director_approved_by" style="border:none; margin-top:6px; font-style:italic; font-weight:700;">(Đã Xác Nhận)</div>
+                                    <div t-if="o.director_approved_by" style="border:none; margin-top:12px; font-style:italic;"><span t-esc="o.director_approved_by.name or ''"/></div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
