@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Đăng ký report -->
-    <report id="report_unpaid_approval_action" model="report.approved.unpaid" string="Khoản chi chưa chi" report_type="qweb-html" name="expense_proposal.report_approved_unpaid" file="expense_proposal.report_approved_unpaid" print_report_name="'Các khoản đã duyệt chưa chi Report'" />
+    <!-- Đăng ký report Odoo 17 -->
+    <record id="report_unpaid_approval_action" model="ir.actions.report">
+        <field name="name">Khoản chi chưa chi</field>
+        <field name="model">report.approved.unpaid</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">expense_proposal.report_approved_unpaid</field>
+        <field name="report_file">expense_proposal.report_approved_unpaid</field>
+        <field name="print_report_name">'Các khoản đã duyệt chưa chi Report'</field>
+    </record>
 
     <record id="custom_sale_report_a4_portrait" model="report.paperformat">
         <field name="name">Custom Sale Report A4 Portrait</field>

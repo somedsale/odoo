@@ -10,7 +10,7 @@
         'security/ir.model.access.csv',
         'data/ir_sequence_data.xml',
         'report/report_proposal_format_page.xml',  # file khai báo định dạng giấy
-        'report/report_proposal_sheet_pdf.xml',          # file khai báo <report>
+        'report/report_proposal_sheet_pdf.xml',          
         'report/report_proposal_sheet_template.xml',     # file chứa QWeb template
         'views/proposal_reject_wizard_views.xml',
         'views/proposal_sheet_views.xml',

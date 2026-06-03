@@ -363,12 +363,10 @@ class ProposalSheet(models.Model):
     @api.depends(
         'state',
         'type',
-        'stock_check_done',
         'requested_by',
         'manager_id',
         'director_user_id',
         'treasurer_confirmed',
-        'material_line_ids.count_diff_qty',
     )
     def _compute_show_buttons(self):
         current_user = self.env.user
@@ -384,15 +382,6 @@ class ProposalSheet(models.Model):
             is_boss = (
                 rec.director_user_id
                 and rec.director_user_id.id == current_user.id
-            )
-
-            stock_check_lines = rec._get_stock_check_lines()
-            has_stock_diff = any(bool(line.count_diff_qty) for line in stock_check_lines)
-
-            can_stock_check = (
-                rec.state == 'draft'
-                and is_creator
-                and has_stock_diff
             )
 
             rec.show_button_submit = rec.state == 'draft' and is_creator
@@ -431,8 +420,9 @@ class ProposalSheet(models.Model):
                 and is_creator
             )
 
-            rec.show_button_apply_actual_stock = can_stock_check
-            rec.show_button_reset_stock_check = can_stock_check and rec.stock_check_done
+            # Đã bỏ chức năng kiểm kho/xác nhận tồn trên phiếu đề xuất.
+            rec.show_button_apply_actual_stock = False
+            rec.show_button_reset_stock_check = False
 
     @api.depends('material_line_ids', 'expense_line_ids', 'expense_noproject_line_ids')
     def _compute_is_type_readonly(self):
@@ -513,50 +503,10 @@ class ProposalSheet(models.Model):
 
         new_record = super(ProposalSheet, self).copy(default)
 
-        # Reset lại kiểm kho trên dòng vật tư theo tồn hiện tại
-        if new_record.type == 'material' and new_record.material_line_ids:
-            for line in new_record.material_line_ids:
-                product = line.product_id
-
-                # Nếu dòng cũ dùng material_id thì cố lấy product từ material_id
-                if not product and line.material_id and hasattr(line.material_id, 'product_id'):
-                    product = line.material_id.product_id
-
-                current_stock_qty = 0.0
-
-                if product and new_record.stock_location_id:
-                    # Lấy tồn hiện tại theo đúng vị trí kho của phiếu
-                    current_stock_qty = product.with_context(
-                        location=new_record.stock_location_id.id
-                    ).qty_available
-
-                vals_line = {}
-
-                # SL kiểm kho = tồn hiện tại để chênh lệch ban đầu = 0
-                if 'actual_count_qty' in line._fields:
-                    vals_line['actual_count_qty'] = current_stock_qty
-
-                # Reset ghi chú kiểm kho
-                if 'count_note' in line._fields:
-                    vals_line['count_note'] = False
-
-                # Reset dữ liệu đã xác nhận lần trước
-                if 'last_counted_qty' in line._fields:
-                    vals_line['last_counted_qty'] = 0.0
-
-                if 'last_counted_by' in line._fields:
-                    vals_line['last_counted_by'] = False
-
-                if 'last_counted_date' in line._fields:
-                    vals_line['last_counted_date'] = False
-
-                # Nếu count_diff_qty là field thường thì set 0.
-                # Nếu là computed field thì Odoo sẽ tự tính lại.
-                if 'count_diff_qty' in line._fields and not line._fields['count_diff_qty'].compute:
-                    vals_line['count_diff_qty'] = 0.0
-
-                if vals_line:
-                    line.write(vals_line)
+        # Không đọc/tính lại tồn kho khi nhân bản.
+        # Trước đây đoạn này gọi product.qty_available, Odoo sẽ truy cập stock.move
+        # và gây lỗi Access Rights cho user không thuộc nhóm Tồn kho.
+        # Phiếu mới vẫn copy nguyên các dòng và giá đề xuất từ phiếu cũ.
 
         new_record.message_post(
             body=Markup(
@@ -717,141 +667,23 @@ class ProposalSheet(models.Model):
     # STOCK CHECK
     # =========================
 
+    # =========================
+    # STOCK CHECK - disabled
+    # =========================
+
     def _get_stock_check_lines(self):
         self.ensure_one()
-
-        if self.type == 'material':
-            return self.material_line_ids
-
         return self.env['proposal.material.line']
 
     def _check_can_apply_actual_stock(self):
         self.ensure_one()
-
-        if self.type != 'material':
-            raise UserError("Chỉ phiếu đề xuất vật tư mới được xác nhận tồn thực tế.")
-
-        if self.state != 'draft':
-            raise UserError("Chỉ được xác nhận tồn thực tế khi phiếu đang ở trạng thái nháp.")
-
-        if self.requested_by.id != self.env.user.id:
-            raise UserError("Chỉ người đề xuất mới được xác nhận tồn thực tế.")
-
-        if not self.stock_location_id:
-            raise UserError("Vui lòng chọn vị trí kho kiểm kê trước khi xác nhận tồn thực tế.")
-
-        if not self.material_line_ids:
-            raise UserError("Phiếu chưa có dòng vật tư để xác nhận tồn thực tế.")
+        raise UserError("Chức năng kiểm kho trên phiếu đề xuất đã được tắt.")
 
     def action_apply_actual_stock(self):
-        for rec in self:
-            rec._check_can_apply_actual_stock()
-            log_items = []
-
-            for line in rec.material_line_ids:
-                if not line.product_id:
-                    raise UserError(
-                        f"Dòng vật tư '{line.display_name}' chưa có sản phẩm nên không thể cập nhật tồn."
-                    )
-
-                if line.actual_count_qty < 0:
-                    raise UserError(
-                        f"Số lượng kiểm kê thực tế của sản phẩm '{line.product_id.display_name}' không được âm."
-                    )
-
-                target_qty = line.actual_count_qty or 0.0
-
-                quant = self.env['stock.quant'].sudo().search([
-                    ('product_id', '=', line.product_id.id),
-                    ('location_id', '=', rec.stock_location_id.id),
-                    ('company_id', '=', rec.env.company.id),
-                    ('lot_id', '=', False),
-                    ('package_id', '=', False),
-                    ('owner_id', '=', False),
-                ], limit=1)
-
-                old_qty = quant.quantity if quant else 0.0
-
-                if not quant:
-                    quant = self.env['stock.quant'].sudo().create({
-                        'product_id': line.product_id.id,
-                        'location_id': rec.stock_location_id.id,
-                        'company_id': rec.env.company.id,
-                    })
-
-                if 'inventory_quantity' in quant._fields:
-                    quant.sudo().write({
-                        'inventory_quantity': target_qty,
-                    })
-                elif 'inventory_diff_quantity' in quant._fields:
-                    quant.sudo().write({
-                        'inventory_diff_quantity': target_qty - (quant.quantity or 0.0),
-                    })
-                else:
-                    raise UserError("Không tìm thấy trường kiểm kê phù hợp trên stock.quant.")
-
-                quant.with_context(from_proposal_sheet_actual_stock=True).sudo().action_apply_inventory()
-
-                line.write({
-                    'last_counted_qty': target_qty,
-                    'last_counted_by': self.env.user.id,
-                    'last_counted_date': fields.Datetime.now(),
-                })
-
-                log_items.append(
-                    f"<li><b>{line.product_id.display_name}</b>: "
-                    f"hệ thống {old_qty:g} → thực tế {target_qty:g} "
-                    f"(chênh {(target_qty - old_qty):g})</li>"
-                )
-
-            rec.sudo().write({
-                'stock_check_done': True,
-                'stock_checked_by': self.env.user.id,
-                'stock_checked_date': fields.Datetime.now(),
-            })
-
-            message = (
-                f"<p>Đã xác nhận tồn thực tế cho phiếu <strong>{rec.name}</strong> tại kho "
-                f"<strong>{rec.stock_location_id.display_name}</strong> bởi "
-                f"<em>{self.env.user.name}</em>.</p>"
-                f"<ul>{''.join(log_items)}</ul>"
-            )
-
-            rec.message_post(body=Markup(message))
-
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'reload'
-        }
+        raise UserError("Chức năng kiểm kho trên phiếu đề xuất đã được tắt.")
 
     def action_reset_stock_check(self):
-        for rec in self:
-            if rec.state != 'draft':
-                raise UserError("Chỉ được reset xác nhận tồn khi phiếu đang ở trạng thái nháp.")
-
-            if rec.requested_by != self.env.user:
-                raise UserError("Chỉ người đề xuất mới được reset xác nhận tồn.")
-
-            rec.material_line_ids.write({
-                'actual_count_qty': 0.0,
-                'count_note': False,
-                'last_counted_qty': 0.0,
-                'last_counted_by': False,
-                'last_counted_date': False,
-            })
-
-            rec.write({
-                'stock_check_done': False,
-                'stock_checked_by': False,
-                'stock_checked_date': False,
-            })
-
-            rec.message_post(body="Đã reset thông tin kiểm kê thực tế trên phiếu đề xuất.")
-
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'reload'
-        }
+        raise UserError("Chức năng kiểm kho trên phiếu đề xuất đã được tắt.")
 
     # =========================
     # WORKFLOW ACTIONS
@@ -872,10 +704,6 @@ class ProposalSheet(models.Model):
         if self.state != 'draft':
             raise UserError(_("Chỉ phiếu ở trạng thái nháp mới được gửi duyệt."))
 
-        if self.type == 'material' and not self.stock_check_done:
-            has_stock_diff = any(bool(line.count_diff_qty) for line in self.material_line_ids)
-            if has_stock_diff:
-                raise ValidationError(_("Phiếu vật tư phải được xác nhận tồn thực tế trước khi gửi duyệt."))
 
         accounting_group = self.env.ref('account.group_account_manager', raise_if_not_found=False)
         is_accounting_user = accounting_group and accounting_group in self.env.user.groups_id
