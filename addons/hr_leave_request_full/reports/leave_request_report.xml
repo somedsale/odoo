@@ -29,9 +29,19 @@
     <template id="report_somed_leave_request_document">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
-                <div class="page" style="font-family:'DejaVu Serif','Times New Roman',serif; color:#000; font-size:14px; line-height:1.45;">
+                <t t-call="web.basic_layout">
+                    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+                    <div class="page somed-leave-report" style="font-family:'DejaVu Sans','Liberation Sans','Arial Unicode MS',Arial,sans-serif; color:#000; font-size:16px; line-height:1.55;">
                     <style>
                         @charset "UTF-8";
+                        * {
+                            font-family: 'DejaVu Sans','Liberation Sans','Arial Unicode MS',Arial,sans-serif !important;
+                            color:#000;
+                        }
+                        body, .page, .somed-leave-report {
+                            font-family: 'DejaVu Sans','Liberation Sans','Arial Unicode MS',Arial,sans-serif !important;
+                            -webkit-text-size-adjust: 100%;
+                        }
                         table.somed-no-border,
                         table.somed-no-border tr,
                         table.somed-no-border td,
@@ -43,7 +53,7 @@
                             outline:0 none transparent !important;
                             box-shadow:none !important;
                         }
-                        .line-dots { border-bottom:1px dotted #000; display:inline-block; min-height:18px; }
+                        .line-dots { border-bottom:0 none transparent !important; display:inline-block; min-height:24px; padding-left:6px; }
                     </style>
 
                     <div style="text-align:center; font-weight:bold; text-transform:uppercase; line-height:1.35;">
@@ -52,72 +62,77 @@
                         <div>---------------------------</div>
                     </div>
 
-                    <h2 style="text-align:center; margin:16px 0 12px 0; font-size:20px; font-weight:bold;">XÁC NHẬN NGHỈ PHÉP</h2>
+                    <h2 style="text-align:center; margin:16px 0 12px 0; font-size:24px; font-weight:bold;">XÁC NHẬN NGHỈ PHÉP</h2>
 
-                    <div style="margin-bottom:6px;">
+                    <div style="margin-bottom:10px;">
                         <strong>Kính gửi:</strong>
                         Ban Giám Đốc Công Ty TNHH Giải Pháp Kỹ Thuật Y Tế Miền Nam
                     </div>
-                    <div style="margin-bottom:6px;">
+                    <div style="margin-bottom:10px;">
                         Trưởng bộ phận phòng
-                        <span class="line-dots" style="width:360px;">
+                        <span style="padding-left:6px;">
                             <span t-esc="o.department_id.name or ''"/>
                         </span>
                     </div>
 
-                    <div style="margin-bottom:6px;">
+                    <div style="margin-bottom:10px;">
                         <strong>Họ và tên:</strong>
-                        <span class="line-dots" style="width:520px;"><span t-esc="o.employee_id.name or ''"/></span>
+                        <span style="padding-left:6px;"><span t-esc="o.employee_id.name or ''"/></span>
                     </div>
-                    <div style="margin-bottom:8px;">
+                    <div style="margin-bottom:10px;">
                         <strong>Vị trí:</strong>
-                        <span class="line-dots" style="width:560px;"><span t-esc="o.job_id.name or ''"/></span>
+                        <span style="padding-left:6px;"><span t-esc="o.job_id.name or ''"/></span>
                     </div>
 
-                    <table style="width:100%; border-collapse:collapse; font-size:13px; margin-top:8px;" border="1" cellspacing="0" cellpadding="4">
+                    <table style="width:100%; border-collapse:collapse; font-size:16px; margin-top:16px; table-layout:fixed;" border="1" cellspacing="0" cellpadding="0">
                         <thead>
-                            <tr style="text-align:center; font-weight:bold;">
-                                <th style="width:6%;">STT</th>
-                                <th style="width:28%;">Nội dung</th>
-                                <th style="width:18%;">Từ ngày</th>
-                                <th style="width:18%;">Đến ngày</th>
-                                <th style="width:14%;">Tổng ngày nghỉ</th>
-                                <th style="width:16%;">Ghi chú</th>
+                            <tr style="text-align:center; font-weight:bold; min-height:40px;">
+                                <th style="width:7%; padding:10px 6px; vertical-align:middle; text-align:center;">STT</th>
+                                <th style="width:25%; padding:10px 8px; vertical-align:middle; text-align:center;">Nội dung</th>
+                                <th style="width:17%; padding:10px 8px; vertical-align:middle; text-align:center;">Từ ngày</th>
+                                <th style="width:17%; padding:10px 8px; vertical-align:middle; text-align:center;">Đến ngày</th>
+                                <th style="width:17%; padding:10px 8px; vertical-align:middle; text-align:center;">Tổng ngày nghỉ</th>
+                                <th style="width:17%; padding:10px 8px; vertical-align:middle; text-align:center;">Ghi chú</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr t-foreach="o.line_ids" t-as="line">
-                                <td style="text-align:center;"><span t-esc="line_index + 1"/></td>
-                                <td><span t-esc="line.leave_type or ''"/></td>
-                                <td style="text-align:center;"><span t-if="line.date_from" t-esc="line.date_from.strftime('%d/%m/%Y')"/></td>
-                                <td style="text-align:center;"><span t-if="line.date_to" t-esc="line.date_to.strftime('%d/%m/%Y')"/></td>
-                                <td style="text-align:center;"><span t-esc="('{:g}'.format(line.total_days or 0))"/></td>
-                                <td><span t-esc="line.note or ''"/></td>
+                            <tr t-foreach="o.line_ids" t-as="line" style="min-height:42px;">
+                                <td style="text-align:center; vertical-align:middle; padding:11px 6px;"><span t-esc="line_index + 1"/></td>
+                                <td style="vertical-align:middle; padding:11px 8px; text-align:left;"><span t-esc="line.leave_type or ''"/></td>
+                                <td style="text-align:center; vertical-align:middle; padding:11px 8px;"><span t-if="line.date_from" t-esc="line.date_from.strftime('%d/%m/%Y')"/></td>
+                                <td style="text-align:center; vertical-align:middle; padding:11px 8px;"><span t-if="line.date_to" t-esc="line.date_to.strftime('%d/%m/%Y')"/></td>
+                                <td style="text-align:center; vertical-align:middle; padding:11px 8px;"><span t-esc="('{:g}'.format(line.total_days or 0))"/></td>
+                                <td style="vertical-align:middle; padding:11px 8px; text-align:left;"><span t-esc="line.note or ''"/></td>
                             </tr>
-                            <tr t-if="not o.line_ids">
-                                <td style="text-align:center;">1</td><td></td><td></td><td></td><td></td><td></td>
+                            <tr t-if="not o.line_ids" style="height:44px;">
+                                <td style="text-align:center; vertical-align:middle; padding:11px 6px;">1</td>
+                                <td style="padding:11px 8px;"></td>
+                                <td style="padding:11px 8px;"></td>
+                                <td style="padding:11px 8px;"></td>
+                                <td style="padding:11px 8px;"></td>
+                                <td style="padding:11px 8px;"></td>
                             </tr>
                         </tbody>
                     </table>
 
-                    <div style="margin-top:10px;">
+                    <div style="margin-top:12px;">
                         <strong>Lý do:</strong>
-                        <span class="line-dots" style="width:560px;"><span t-esc="o.reason or ''"/></span>
+                        <span style="padding-left:6px;"><span t-esc="o.reason or ''"/></span>
                     </div>
 
-                    <div style="margin-top:10px;">Người phụ trách công việc trong thời gian tôi nghỉ phép:</div>
-                    <ul style="margin-top:4px; margin-bottom:6px;">
-                        <li>Họ tên: <span class="line-dots" style="width:360px;"><span t-esc="o.handover_employee_id.name or ''"/></span></li>
-                        <li>Số điện thoại: <span class="line-dots" style="width:330px;"><span t-esc="o.handover_phone or ''"/></span></li>
+                    <div style="margin-top:12px;">Người phụ trách công việc trong thời gian tôi nghỉ phép:</div>
+                    <ul style="margin-top:4px; margin-bottom:10px;">
+                        <li>Họ tên: <span style="padding-left:6px;"><span t-esc="o.handover_employee_id.name or ''"/></span></li>
+                        <li>Số điện thoại: <span style="padding-left:6px;"><span t-esc="o.handover_phone or ''"/></span></li>
                     </ul>
 
-                    <p style="text-align:justify; margin-top:8px;">
+                    <p style="text-align:justify; margin-top:10px;">
                         Tôi cam đoan đã sắp xếp công việc, không làm ảnh hưởng đến tiến độ công việc của Công ty trong thời gian tôi nghỉ phép.
                     </p>
                     <p>Rất mong Ban Lãnh Đạo xem xét và chấp thuận.</p>
                     <p>Tôi xin chân thành cảm ơn!</p>
 
-                    <table class="somed-no-border" border="0" cellpadding="0" cellspacing="0" rules="none" frame="void" style="color:#000; width:100%; font-size:13px; line-height:1.55; margin-top:22px; border-color:transparent; border-style:none; outline:none; border-collapse:collapse;">
+                    <table class="somed-no-border" border="0" cellpadding="0" cellspacing="0" rules="none" frame="void" style="color:#000; width:100%; font-size:15px; line-height:1.65; margin-top:26px; border-color:transparent; border-style:none; outline:none; border-collapse:collapse;">
                         <tr style="border:none; color:#000 !important;">
                             <td style="width:25%; text-align:center; vertical-align:top; border:none; border-color:transparent; padding:0 5px;">
                                 <div><span t-if="o.request_date" t-esc="o.request_date.strftime('%d/%m/%Y')"/><span t-if="not o.request_date">.... / .... / ....</span></div>
@@ -149,7 +164,8 @@
                             </td>
                         </tr>
                     </table>
-                </div>
+                    </div>
+                </t>
             </t>
         </t>
     </template>

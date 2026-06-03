@@ -223,18 +223,6 @@ class ProposalMaterialLine(models.Model):
         for line in self:
             line.estimate_price_total = (line.quantity or 0.0) * (line.estimate_price_unit or 0.0)
 
-    @api.onchange('product_id')
-    def _onchange_init_actual_count_qty_from_stock(self):
-        for line in self:
-            if line.product_id and not line.actual_count_qty:
-                line.actual_count_qty = line.stock_qty_on_hand
-
-    @api.onchange('material_id')
-    def _onchange_init_actual_count_qty_from_material_stock(self):
-        for line in self:
-            if line.material_id and not line.actual_count_qty:
-                line.actual_count_qty = line.stock_qty_on_hand
-
     @api.depends('material_id', 'sheet_id.project_id')
     def _compute_estimate_price_unit(self):
         CostEstimateLine = self.env['cost.estimate.line']
@@ -506,18 +494,21 @@ class ProposalMaterialLine(models.Model):
 
         record = super().create(vals)
 
-        # Sau create: set lại theo ưu tiên giá/thuế mua gần nhất -> mặc định
+        # Sau create: chỉ tự lấy giá/thuế mặc định nếu dòng mới KHÔNG truyền sẵn giá/thuế.
+        # Khi nhân bản phiếu, Odoo sẽ truyền price_unit từ phiếu cũ xuống dòng copy,
+        # nên tuyệt đối không ghi đè lại price_unit trong trường hợp đó.
         write_vals = {}
+
         if record.product_id:
-            write_vals['price_unit'] = record._get_default_purchase_price()
-            default_tax = record._get_default_purchase_tax()
-            write_vals['tax_id'] = default_tax.id if default_tax else False
+            if 'price_unit' not in vals:
+                write_vals['price_unit'] = record._get_default_purchase_price()
+
+            if 'tax_id' not in vals:
+                default_tax = record._get_default_purchase_tax()
+                write_vals['tax_id'] = default_tax.id if default_tax else False
 
         if write_vals:
             record.write(write_vals)
-
-        if 'actual_count_qty' not in vals:
-            record.write({'actual_count_qty': record._prepare_default_actual_count_qty()})
 
         record._ensure_supplierinfo_for_product_vendor()
         return record
@@ -586,21 +577,6 @@ class ProposalMaterialLine(models.Model):
         for line in self:
             if line.quantity <= 0:
                 raise ValidationError("Số lượng vật tư phải lớn hơn 0.")
-
-    @api.constrains('actual_count_qty')
-    def _check_actual_count_qty(self):
-        for line in self:
-            if line.actual_count_qty and line.actual_count_qty < 0:
-                raise ValidationError("Số lượng kiểm kê thực tế không được âm.")
-
-    def action_clear_actual_count(self):
-        for line in self:
-            if line.sheet_id.state != 'draft':
-                raise UserError("Chỉ được xóa số kiểm kê khi phiếu đang ở trạng thái nháp.")
-            line.write({
-                'actual_count_qty': 0.0,
-                'count_note': False,
-            })
 
     def archive(self):
         self.write({'active': False})

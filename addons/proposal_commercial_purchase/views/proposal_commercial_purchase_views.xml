@@ -25,26 +25,10 @@
 
               <field name="arch" type="xml">
 
-                     <xpath expr="//field[@name='stock_check_done']" position="after">
+                     <!-- <xpath expr="//field[@name='project_id']" position="after">
                             <field name="sale_order_product_ids" invisible="1"/>
-                     </xpath>
-
-                     <xpath expr="//field[@name='project_id']" position="after">
                             <field name="sale_order_id" string="Đơn bán" readonly="1" invisible="not project_id"/>
-                     </xpath>
-
-                     <xpath expr="//field[@name='stock_checked_by']" position="attributes">
-                            <attribute name="invisible">type not in ['material', 'commercial_purchase'] or not stock_check_done</attribute>
-                     </xpath>
-
-                     <xpath expr="//field[@name='stock_checked_date']" position="attributes">
-                            <attribute name="invisible">type not in ['material', 'commercial_purchase'] or not stock_check_done</attribute>
-                     </xpath>
-
-                     <xpath expr="//button[@name='action_apply_actual_stock']" position="attributes">
-                            <attribute name="invisible">not show_button_apply_actual_stock</attribute>
-                            <attribute name="string">Người đề xuất xác nhận tồn</attribute>
-                     </xpath>
+                     </xpath> -->
 
                      <!-- <xpath expr="//header/button[@name='action_reset_stock_check']" position="after">
                 <button name="action_load_commercial_from_sale_order" type="object" string="Nạp từ đơn bán" class="btn-primary" invisible="state != 'draft' or type != 'commercial_purchase'"/>
@@ -79,14 +63,6 @@
 
                             <field name="sale_subtotal" string="Thành tiền bán" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng bán"/> -->
 
-                                                 <field name="stock_qty_on_hand" string="Tồn thực tế" readonly="1"/>
-
-                                                 <field name="actual_count_qty" string="SL kiểm kê"/>
-
-                                                 <field name="count_diff_qty" string="Chênh lệch" readonly="1"/>
-
-                                                 <field name="last_counted_qty" string="SL đã xác nhận" readonly="1" optional="hide"/>
-
                                                  <field name="quantity" string="Số lượng đề xuất" required="1"/>
 
                                                  <field name="unit" string="ĐVT"/>
@@ -102,8 +78,6 @@
                                                  <field name="price_total_taxed" string="Thành tiền sau thuế" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" sum="Tổng sau thuế" optional="show"/>
 
                                                  <field name="vendor_id" string="Nhà cung cấp" required="1"/>
-
-                                                 <field name="count_note" string="Ghi chú kiểm kho" optional="hide"/>
 
                                                  <field name="description" string="Ghi chú" optional="show"/>
                                           </tree>
@@ -138,19 +112,7 @@
                                                         </group>
 
                                                         <group>
-                                                               <group string="Tồn kho thực tế">
-                                                                      <field name="stock_qty_on_hand" string="Tồn hệ thống" readonly="1"/>
-
-                                                                      <field name="actual_count_qty" string="Tồn thực tế"/>
-
-                                                                      <field name="count_diff_qty" string="Chênh lệch" readonly="1"/>
-
-                                                                      <field name="last_counted_qty" string="SL đã xác nhận" readonly="1"/>
-
-                                                                      <field name="count_note" string="Ghi chú kiểm kho"/>
-                                                               </group>
-
-                                                               <group string="Thông tin đề xuất">
+<group string="Thông tin đề xuất">
                                                                       <field name="quantity" string="Số lượng đề xuất"/>
 
                                                                       <field name="unit" string="ĐVT"/>

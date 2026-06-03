@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Đăng ký report (cũ, vẫn giữ cho backward-compat) -->
-    <report id="supplier_summary_report_action" model="supplier.invoice.payment.summary" string="Supplier Summary" report_type="qweb-html" name="vendor_debt_management.report_supplier_summary_view" file="vendor_debt_management.report_supplier_summary_view" print_report_name="'Supplier Summary Report'" />
+    <!-- Đăng ký report Odoo 17 -->
+    <record id="supplier_summary_report_action" model="ir.actions.report">
+        <field name="name">Supplier Summary</field>
+        <field name="model">supplier.invoice.payment.summary</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">vendor_debt_management.report_supplier_summary_view</field>
+        <field name="report_file">vendor_debt_management.report_supplier_summary_view</field>
+        <field name="print_report_name">'Supplier Summary Report'</field>
+    </record>
 
     <!-- Paperformat -->
     <record id="custom_sale_report_a4_portrait" model="report.paperformat">

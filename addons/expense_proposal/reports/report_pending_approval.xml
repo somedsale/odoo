@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Đăng ký report -->
-    <!-- <report id="report_pending_approval_action" model="report.pending.approval" string="Khoản chi chưa được duyệt" report_type="qweb-html" name="expense_proposal.report_pending_approval" file="expense_proposal.report_pending_approval" print_report_name="'Các khoản chi chưa duyệt Report'" /> -->
+    <!-- Đăng ký report Odoo 17 -->
 
     <record id="custom_sale_report_a4_portrait" model="report.paperformat">
         <field name="name">Custom Sale Report A4 Portrait</field>
