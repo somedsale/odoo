@@ -107,27 +107,63 @@ class ExportExcelWizard(models.TransientModel):
         def qty_format(cell):
             cell.number_format = '#,##0.##'
 
+        def get_product_name(line):
+            return line.product_display_name or line.product_id.name or ""
+
         def get_spec_text(line):
             """
-            Ưu tiên lấy field thông số riêng.
-            Không lấy line.name để tránh sản phẩm không có thông số vẫn sinh dòng thông số.
+            Làm giống PDF:
+            - Tên sản phẩm lấy từ product_display_name / product_id.name.
+            - Dòng diễn giải / thông số lấy từ line.name.
+            - Nếu line.name trùng tên sản phẩm thì không sinh dòng thông số.
             """
-            for field_name in ['x_thongso', 'x_thong_so']:
-                if field_name in line._fields:
-                    return (getattr(line, field_name, '') or '').strip()
-            return ''
+            product_name = (get_product_name(line) or "").strip()
+            line_name = (line.name or "").strip()
+
+            if line_name and line_name != product_name:
+                return line_name
+
+            return ""
+
+        def safe_get(record, field_name, default=""):
+            if record and field_name in record._fields:
+                return getattr(record, field_name) or default
+            return default
 
         for doc_index, doc in enumerate(sale_orders, start=1):
             if doc_index > 1:
                 current_row += 3
 
             company = doc.company_id
-            emp = self.env['hr.employee'].search([('user_id', '=', doc.user_id.id)], limit=1)
+
+            # PDF đang ưu tiên doc.user_id nếu người tạo/sửa là cùng user,
+            # ngược lại lấy write_uid. Excel cũng lấy theo cách này để đồng bộ PDF.
+            sale_user = (
+                doc.user_id
+                if doc.user_id and doc.write_uid and doc.user_id.id == doc.write_uid.id
+                else doc.write_uid
+            )
+
+            sale_user_name = sale_user.name if sale_user else ""
+            sale_user_email = sale_user.email if sale_user else ""
+            sale_user_phone = (
+                safe_get(sale_user, "mobile_phone")
+                or safe_get(sale_user, "mobile")
+                or safe_get(sale_user, "phone")
+                or (sale_user.partner_id.mobile or sale_user.partner_id.phone or "" if sale_user and sale_user.partner_id else "")
+            )
+            sale_user_address = ""
+            if sale_user and sale_user.address_id and sale_user.address_id.contact_address:
+                sale_user_address = (
+                    sale_user.address_id.contact_address
+                    .replace(sale_user.address_id.complete_name or "", "")
+                    .strip()
+                )
 
             # =========================
             # Dynamic columns
             # =========================
-            headers = ["STT", "Sản phẩm"]
+            headers = ["STT", "Sản phẩm", "Thông số"]
 
             if doc.is_show_image:
                 headers.append("Ảnh")
@@ -151,6 +187,9 @@ class ExportExcelWizard(models.TransientModel):
             col_no += 1
 
             product_col = col_no
+            col_no += 1
+
+            spec_col = col_no
             col_no += 1
 
             image_col = None
@@ -190,7 +229,8 @@ class ExportExcelWizard(models.TransientModel):
             # =========================
             widths = []
             widths.append(5.5)   # STT
-            widths.append(42)    # Sản phẩm
+            widths.append(34)    # Sản phẩm
+            widths.append(38)    # Thông số
 
             if doc.is_show_image:
                 widths.append(11)   # Ảnh
@@ -310,25 +350,38 @@ class ExportExcelWizard(models.TransientModel):
                 right_label_col = total_cols - 1
                 right_value_start = total_cols
 
-            sale_user_name = (
-                doc.user_id.name if doc.user_id and doc.write_uid and doc.user_id.id == doc.write_uid.id
-                else (doc.write_uid.name if doc.write_uid else '')
+            customer_address = (
+                (doc.partner_id.contact_address or "")
+                .replace(doc.partner_id.name or "", "")
+                .strip()
             )
-            sale_user_email = (
-                doc.user_id.email if doc.user_id and doc.write_uid and doc.user_id.id == doc.write_uid.id
-                else (doc.write_uid.email if doc.write_uid else '')
+
+            partner_phone = (
+                doc.partner_contact_id.phone
+                if doc.partner_contact_id and doc.partner_contact_id.phone
+                else doc.partner_id.phone or ""
             )
-            customer_address = (doc.partner_id.contact_address or '').replace(doc.partner_id.name or '', '').strip()
-            employee_address = (
-                (emp.address_id.contact_address or '').replace(emp.address_id.complete_name or '', '').strip()
-                if emp and emp.address_id else ''
+            partner_email = (
+                doc.partner_contact_id.email
+                if doc.partner_contact_id and doc.partner_contact_id.email
+                else doc.partner_id.email or ""
             )
+
+            if doc.partner_contact_id:
+                partner_phone_label = "Người liên hệ:"
+                partner_phone_value = "%s - %s" % (
+                    doc.partner_contact_id.name or "",
+                    doc.partner_contact_id.phone or "",
+                )
+            else:
+                partner_phone_label = "Điện thoại:"
+                partner_phone_value = partner_phone
 
             info_rows = [
                 ("Khách hàng:", doc.partner_id.name or "", "Nhân viên kinh doanh:", sale_user_name),
-                ("Địa chỉ:", customer_address, "Địa chỉ:", employee_address),
-                ("Điện thoại:", doc.partner_contact_id.phone or doc.partner_id.phone or "", "Điện thoại:", emp.mobile_phone or ""),
-                ("Email:", doc.partner_contact_id.email or doc.partner_id.email or "", "Email:", sale_user_email),
+                ("Địa chỉ:", customer_address, "Địa chỉ:", sale_user_address),
+                (partner_phone_label, partner_phone_value, "Điện thoại:", sale_user_phone),
+                ("Email:", partner_email, "Email:", sale_user_email),
             ]
 
             for left_label, left_value, right_label, right_value in info_rows:
@@ -429,10 +482,31 @@ class ExportExcelWizard(models.TransientModel):
                     current_row += 1
                     continue
 
+                if line.display_type == 'line_note':
+                    ws.cell(row=current_row, column=stt_col).value = ""
+                    ws.cell(row=current_row, column=stt_col).font = font_italic
+                    ws.cell(row=current_row, column=stt_col).alignment = align_top_center
+                    ws.cell(row=current_row, column=stt_col).border = border_all
+                    ws.cell(row=current_row, column=stt_col).fill = fill_spec
+
+                    merge_row_text(
+                        current_row, product_col, total_cols, line.name or "",
+                        font=font_italic, alignment=align_top_left, border=border_all, fill=fill_spec
+                    )
+                    apply_row_style(
+                        current_row, product_col, total_cols,
+                        font=font_italic, alignment=align_top_left, border=border_all, fill=fill_spec
+                    )
+
+                    set_row_height(current_row, 32)
+                    current_row += 1
+                    continue
+
                 if line.display_type:
                     continue
 
                 stt += 1
+                spec_text = get_spec_text(line)
 
                 # Main row
                 ws.cell(row=current_row, column=stt_col).value = stt
@@ -440,10 +514,15 @@ class ExportExcelWizard(models.TransientModel):
                 ws.cell(row=current_row, column=stt_col).alignment = align_center
                 ws.cell(row=current_row, column=stt_col).border = border_all
 
-                ws.cell(row=current_row, column=product_col).value = line.product_display_name or line.product_id.name or ""
+                ws.cell(row=current_row, column=product_col).value = get_product_name(line)
                 ws.cell(row=current_row, column=product_col).font = font_bold
                 ws.cell(row=current_row, column=product_col).alignment = align_top_left
                 ws.cell(row=current_row, column=product_col).border = border_all
+
+                ws.cell(row=current_row, column=spec_col).value = spec_text
+                ws.cell(row=current_row, column=spec_col).font = font_spec if spec_text else font_normal
+                ws.cell(row=current_row, column=spec_col).alignment = align_top_left
+                ws.cell(row=current_row, column=spec_col).border = border_all
 
                 if image_col:
                     ws.cell(row=current_row, column=image_col).alignment = align_center
@@ -478,11 +557,16 @@ class ExportExcelWizard(models.TransientModel):
                     ws.cell(row=current_row, column=labor_col).border = border_all
                     money_format(ws.cell(row=current_row, column=labor_col))
 
-                ws.cell(row=current_row, column=price_col).value = line.price_unit or 0.0
-                ws.cell(row=current_row, column=price_col).font = font_normal
-                ws.cell(row=current_row, column=price_col).alignment = align_right
-                ws.cell(row=current_row, column=price_col).border = border_all
-                money_format(ws.cell(row=current_row, column=price_col))
+                price_cell = ws.cell(row=current_row, column=price_col)
+                if "formatted_price" in line._fields and line.formatted_price:
+                    # PDF đang hiển thị line.formatted_price, nên Excel cũng ưu tiên field này.
+                    price_cell.value = line.formatted_price
+                else:
+                    price_cell.value = line.price_unit or 0.0
+                    money_format(price_cell)
+                price_cell.font = font_normal
+                price_cell.alignment = align_right
+                price_cell.border = border_all
 
                 ws.cell(row=current_row, column=subtotal_col).value = line.price_subtotal or 0.0
                 ws.cell(row=current_row, column=subtotal_col).font = font_normal
@@ -495,7 +579,12 @@ class ExportExcelWizard(models.TransientModel):
                 ws.cell(row=current_row, column=note_col).alignment = align_top_left
                 ws.cell(row=current_row, column=note_col).border = border_all
 
-                row_height = 28
+                product_name_line_count = len(str(get_product_name(line) or "").splitlines()) or 1
+                spec_line_count = len(str(spec_text or "").splitlines()) or 1
+                note_line_count = len(str(line.x_note or "").splitlines()) or 1
+                text_line_count = max(product_name_line_count, spec_line_count, note_line_count)
+                row_height = max(28, min(120, 18 * text_line_count))
+
                 if image_col and line.product_id.image_1920:
                     try:
                         img_data = base64.b64decode(line.product_id.image_1920)
@@ -509,46 +598,12 @@ class ExportExcelWizard(models.TransientModel):
 
                         xl_img = Image(img_io)
                         ws.add_image(xl_img, f"{get_column_letter(image_col)}{current_row}")
-                        row_height = 58
+                        row_height = max(row_height, 58)
                     except Exception:
-                        row_height = 28
+                        pass
 
                 set_row_height(current_row, row_height)
                 current_row += 1
-
-                # =========================
-                # Spec rows - only if has actual spec text
-                # =========================
-                spec_text = get_spec_text(line)
-                if spec_text:
-                    spec_lines = [s.strip() for s in spec_text.split('\n') if s.strip()]
-                    for spec_line in spec_lines:
-                        for c in range(1, total_cols + 1):
-                            cell = ws.cell(row=current_row, column=c)
-                            cell.border = border_spec
-                            cell.fill = fill_spec
-                            cell.alignment = align_top_left
-
-                        ws.cell(row=current_row, column=product_col).value = spec_line
-                        ws.cell(row=current_row, column=product_col).font = font_spec
-                        ws.cell(row=current_row, column=product_col).alignment = align_top_left
-
-                        ws.cell(row=current_row, column=stt_col).alignment = align_top_center
-                        if image_col:
-                            ws.cell(row=current_row, column=image_col).alignment = align_top_center
-                        if ma_sp_col:
-                            ws.cell(row=current_row, column=ma_sp_col).alignment = align_top_center
-                        ws.cell(row=current_row, column=xuatxu_col).alignment = align_top_center
-                        ws.cell(row=current_row, column=uom_col).alignment = align_top_center
-                        ws.cell(row=current_row, column=qty_col).alignment = align_top_center
-                        if labor_col:
-                            ws.cell(row=current_row, column=labor_col).alignment = align_right
-                        ws.cell(row=current_row, column=price_col).alignment = align_right
-                        ws.cell(row=current_row, column=subtotal_col).alignment = align_right
-                        ws.cell(row=current_row, column=note_col).alignment = align_top_left
-
-                        set_row_height(current_row, 22)
-                        current_row += 1
 
             # =========================
             # Summary
@@ -710,7 +765,7 @@ class ExportExcelWizard(models.TransientModel):
                 current_row, right_start, total_cols,
                 "%s\nCÔNG TY TNHH GIẢI PHÁP KỸ THUẬT Y TẾ MIỀN NAM\nPHÒNG KINH DOANH\n\n%s" % (
                     doc.formatted_date or "",
-                    doc.user_id.name or ""
+                    sale_user_name or ""
                 ),
                 font=font_sign, alignment=align_center
             )
@@ -726,7 +781,8 @@ class ExportExcelWizard(models.TransientModel):
             ws.page_margins.right = 0.25
             ws.page_margins.top = 0.4
             ws.page_margins.bottom = 0.4
-            ws.freeze_panes = f"A{header_row + 1}"
+            # Không freeze header để tránh cố định khi kéo scroll trong file Excel.
+            ws.freeze_panes = None
 
         output = BytesIO()
         wb.save(output)
