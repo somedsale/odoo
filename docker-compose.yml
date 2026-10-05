@@ -12,63 +12,27 @@ services:
       - ./addons:/mnt/extra-addons
       - ./config:/etc/odoo
     environment:
-      - HOST=db
-      - USER=odoo
-      - PASSWORD=odoo
+      HOST: db
+      USER: odoo
+      PASSWORD: odoo
     command: >
       /bin/bash -c "
-      pip install Pillow &&
-      pip install openpyxl &&
-      pip install xlrd &&
-      pip install xlsxwriter &&
-      pip install boto3 &&
-      /usr/bin/odoo --config /etc/odoo/odoo.conf
+      pip install --no-cache-dir Pillow openpyxl xlrd xlsxwriter boto3 &&
+      exec /usr/bin/odoo --config /etc/odoo/odoo.conf
       "
-
-  # ✅ Odoo giả lập thời gian (test qua tuần) mở port 8070
-  web_timewarp:
-    build:
-      context: .
-      dockerfile: Dockerfile.faketime
-    depends_on:
-      - db
-    ports:
-      - "8070:8069"
-    volumes:
-      - odoo-web-data-timewarp:/var/lib/odoo
-      - ./addons:/mnt/extra-addons
-      - ./config:/etc/odoo
-    environment:
-      - HOST=db
-      - USER=odoo
-      - PASSWORD=odoo
-
-      # ✅ Fake time: +7 ngày (giả lập sang tuần sau)
-      - FAKETIME=+13d
-
-      # ✅ preload libfaketime (đường dẫn phổ biến trên Debian/Ubuntu)
-      - LD_PRELOAD=/usr/lib/x86_64-linux-gnu/faketime/libfaketime.so.1
-
-    command: >
-      /bin/bash -c "
-      pip install Pillow &&
-      pip install openpyxl &&
-      pip install xlrd &&
-      pip install xlsxwriter &&
-      pip install boto3 &&
-      /usr/bin/odoo --config /etc/odoo/odoo.conf
-      "
+    restart: unless-stopped
 
   db:
     image: postgres:15
     environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_PASSWORD=odoo
-      - POSTGRES_USER=odoo
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: odoo
+      POSTGRES_USER: odoo
     ports:
       - "5432:5432"
     volumes:
       - odoo-db-data:/var/lib/postgresql/data
+    restart: unless-stopped
 
   pgadmin:
     image: dpage/pgadmin4
@@ -80,8 +44,8 @@ services:
       - "5050:80"
     depends_on:
       - db
+    restart: unless-stopped
 
 volumes:
   odoo-web-data:
-  odoo-web-data-timewarp:
   odoo-db-data:
